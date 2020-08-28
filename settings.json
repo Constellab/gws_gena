@@ -1,0 +1,29 @@
+{
+    "name"                  : "gena",
+    "authors"               : "Gencovery",
+    "version"               : "0.1",
+    
+    "db_dir"                : "./data/",
+    "db_name"               : "db.sqlite3",
+
+    "dirs"     :{
+        "gena:testdata_dir"    : "./tests/testdata"
+    },
+
+    "dependencies"  : {
+        "biota" : "../biota-py",
+        "gaia" : "../gaia-py"
+    },
+    
+    "app" : {
+        "title"             : "Gena - Genome-based Analytics",
+        "description"       : "Web services for genome-based analytics",
+        "statics" : {
+            "/static/biox"   : "./public/static"
+        },
+        "scripts": [],
+        "modules": [],
+        "styles": [],
+        "buttons":{}
+    }
+}
