@@ -11,7 +11,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.templating import Jinja2Templates
 
 settings = Settings.retrieve()
-template_dir = settings.get_template_dir("gena")
+template_dir = settings.get_public_dir("gena")
 templates = Jinja2Templates(directory=template_dir)
 
 async def homepage(request):
