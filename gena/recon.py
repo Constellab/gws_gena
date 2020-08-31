@@ -186,8 +186,30 @@ class CellMaker(Process):
         t = self.output_specs['cell']
         cell = t()
 
-        Q = EnzymeFunction.select().join(Enzyme).where( Enzyme.ec << ec_list ).order_by(EnzymeFunction.taxonomy)
-        for e in Q:
-            cell[e.id] = e
+        # Q = EnzymeFunction.select().join(Enzyme).where( Enzyme.ec << ec_list ).order_by(EnzymeFunction.taxonomy)
+        # for e in Q:
+        #     cell[e.id] = e
 
+        bulk_size = 100; start = 0
+        while True:
+            stop = min(start+bulk_size, len(ec_list))
+
+            tax_ids = self.get_param('tax_ids')
+            print()
+            if len(tax_ids) == 0:
+                Q = EnzymeFunction.select().join(Enzyme).where( Enzyme.ec << ec_list[start:stop] ).order_by(EnzymeFunction.taxonomy)
+            else:
+                Q = EnzymeFunction.select() \
+                                    .join(Enzyme) \
+                                    .where( Enzyme.ec << ec_list[start:stop] & EnzymeFunction.taxonomy << tax_ids ) \
+                                    .order_by(EnzymeFunction.taxonomy)
+
+            for e in Q:
+                cell[e.id] = e
+
+            if stop >= len(ec_list):
+                break
+            
+            start = start+bulk_size
+ 
         self.output["cell"] = cell

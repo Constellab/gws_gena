@@ -94,11 +94,13 @@ class TestImporter(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
+        Cell.drop_table()
         Reaction.drop_table()
         EnzymeFunction.drop_table()
         Enzyme.drop_table()
         Compound.drop_table()
 
+        Cell.create_table()
         Compound.create_table()
         Enzyme.create_table()
         Reaction.create_table()
@@ -164,11 +166,17 @@ class TestImporter(unittest.TestCase):
                 vm = G3JSONViewModel(c)
                 print(vm.render())
 
+                import json
+                r = json.loads(vm.render())
+                
+                with open(os.path.join(test_dir, "./cell.json"), "r") as fp:
+                    txt = fp.read()
+                    expected = json.loads(txt)
+                    self.assertEquals(r, expected)
+
             proto.on_end( _on_end )
             
             await proto.run()
-
-
 
         asyncio.run( _import_ec(self) )
 
