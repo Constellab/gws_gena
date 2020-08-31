@@ -7,6 +7,7 @@ python3 -m virtualenv .venv --python=python3
 . ./.venv/bin/activate
 
 # dependencis
+python3 -m pip install -r ../gws-py/requirements.txt
 python3 -m pip install -r ../biota-py/requirements.txt
 python3 -m pip install -r ../gaia-py/requirements.txt
 

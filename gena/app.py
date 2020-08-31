@@ -15,7 +15,10 @@ template_dir = settings.get_public_dir("gena")
 templates = Jinja2Templates(directory=template_dir)
 
 async def homepage(request):
-    return templates.TemplateResponse('index.html', {'request': request, 'settings': settings})
+    return templates.TemplateResponse('index.html', {
+        'request': request, 
+        'settings': settings
+    })
 
 class App:
     """
