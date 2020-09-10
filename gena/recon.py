@@ -5,6 +5,7 @@ from gws.prism.view import JSONViewTemplate
 from gaia.datatable import Datatable as D, Importer
 
 from biota.db.enzyme import Enzyme
+from biota.db.taxonomy import Taxonomy
 from biota.db.enzyme_function import EnzymeFunction
 
 # ####################################################################
@@ -63,8 +64,20 @@ class Cell(ResourceSet):
     _reactions = None
 
     @property
-    def enzyme_functions(self):
+    def enzymes(self):
         return self.set
+
+    @property
+    def enzyme_functions(self):
+        ef = []
+        for k in self.enzymes:
+            Q = self.enzymes[k].enzyme_functions
+            #print(len(Q))
+            ef.append(Q[0])
+            #for ef in enzyme.enzyme_functions:
+                #enzyme_functions.append(ef)
+        
+        return ef
 
     @property
     def compounds(self):
@@ -87,9 +100,14 @@ class Cell(ResourceSet):
     def reactions(self):
         if self._reactions is None:
             self._reactions = []
-            for k in self.enzyme_functions:
-                Q = self.enzyme_functions[k].reactions
-                self._reactions.append(Q[0])
+            for ef in self.enzyme_functions:
+                #print(ef)
+                Q = ef.reactions
+                #print(len(Q))
+
+                # @Todo: Check if len(Q) can be 0 ?!!!
+                if len(Q) > 0:
+                    self._reactions.append(Q[0])
 
         return self._reactions
 
@@ -162,10 +180,6 @@ class G3JSONViewModel(JSONViewModel):
     def as_json(self) -> dict:
         return self._model.as_g3_json()
         
-         
-
-
-    
 
 # ####################################################################
 #
@@ -177,7 +191,8 @@ class CellMaker(Process):
     input_specs = {'datatable': Datatable}
     output_specs = {'cell': Cell}
     config_specs = {
-        'tax_ids': {"type": 'list', "default": '[]', "description": "The taxonomy ids of the targeted organisms"}
+        'tax_ids': {"type": 'list', "default": '[]', "description": "The taxonomy ids of the targeted organisms"},
+        'species': {"type": 'list', "default": '[]', "description": "The names of the target species"}
     }
 
     def task(self):
@@ -186,27 +201,15 @@ class CellMaker(Process):
         t = self.output_specs['cell']
         cell = t()
 
-        # Q = EnzymeFunction.select().join(Enzyme).where( Enzyme.ec << ec_list ).order_by(EnzymeFunction.taxonomy)
-        # for e in Q:
-        #     cell[e.id] = e
-
         bulk_size = 100; start = 0
         while True:
             stop = min(start+bulk_size, len(ec_list))
 
-            tax_ids = self.get_param('tax_ids')
-            print()
-            if len(tax_ids) == 0:
-                Q = EnzymeFunction.select().join(Enzyme).where( Enzyme.ec << ec_list[start:stop] ).order_by(EnzymeFunction.taxonomy)
-            else:
-                Q = EnzymeFunction.select() \
-                                    .join(Enzyme) \
-                                    .where( Enzyme.ec << ec_list[start:stop] & EnzymeFunction.taxonomy << tax_ids ) \
-                                    .order_by(EnzymeFunction.taxonomy)
+            Q = Enzyme.select().where( Enzyme.ec << ec_list[start:stop] )
 
             for e in Q:
                 cell[e.id] = e
-
+            
             if stop >= len(ec_list):
                 break
             

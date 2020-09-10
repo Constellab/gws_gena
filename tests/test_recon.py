@@ -132,7 +132,7 @@ class TestImporter(unittest.TestCase):
             
             # cell maker
             cell_maker = CellMaker()
-
+            cell_maker.set_param("tax_ids", [4753, 4754, 42068, 263815])
             # protocol
             proto = Protocol(
                 name = "cell_maker_protocol",
