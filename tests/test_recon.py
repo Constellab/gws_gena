@@ -4,8 +4,8 @@ import asyncio
 import unittest
 
 from gws.settings import Settings
-from gws.prism.model import Protocol
-from gws.prism.controller import Controller
+from gws.model import Protocol
+from gws.controller import Controller
 
 from biota.db.compound import Compound
 from biota.db.enzyme import Enzyme

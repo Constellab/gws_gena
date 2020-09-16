@@ -12,8 +12,8 @@
     },
 
     "dependencies"  : {
-        "biota" : "../biota-py",
-        "gaia" : "../gaia-py"
+        "biota" : "../biota",
+        "gaia" : "../gaia"
     },
     
     "app" : {

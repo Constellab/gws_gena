@@ -1,6 +1,6 @@
 from gws.logger import Logger
-from gws.prism.model import Process, ResourceSet, JSONViewModel
-from gws.prism.view import JSONViewTemplate
+from gws.model import Process, ResourceSet, JSONViewModel
+from gws.view import JSONViewTemplate
 
 from gaia.datatable import Datatable as D, Importer
 
