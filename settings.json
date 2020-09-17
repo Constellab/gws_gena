@@ -1,12 +1,13 @@
 {
-    "name"                  : "gena",
-    "authors"               : "Gencovery",
-    "version"               : "0.1",
-    
-    "db_dir"                : "./data/",
-    "db_name"               : "db.sqlite3",
-    "test_db_name"          : "db_test.sqlite3",
-    
+    "type"          : "brick",
+    "name"          : "gena",
+    "authors"       : "Gencovery",
+    "version"       : "0.1",
+    "log_dir"       : "../../logs",
+    "db_dir"        : "../../data/db/",
+    "db_name"       : "db.sqlite3",
+    "test_db_name"  : "db_test.sqlite3",
+
     "dirs"     :{
         "gena:testdata_dir"    : "./tests/testdata"
     },
