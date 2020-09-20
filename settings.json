@@ -12,10 +12,11 @@
         "gena:testdata_dir"    : "./tests/testdata"
     },
 
-    "dependencies"  : {
-        "biota" : "../biota",
-        "gaia" : "../gaia"
-    },
+    "externs"  : [],
+    "dependencies"  : [
+        "biota",
+        "gaia"
+    ],
     
     "app" : {
         "title"             : "Gena - Genome-based Analytics",
