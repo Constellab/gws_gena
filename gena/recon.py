@@ -62,7 +62,7 @@ class Cell(ResourceSet):
 
     _compounds = None
     _reactions = None
-
+    
     @property
     def enzymes(self):
         return self.set
@@ -214,5 +214,16 @@ class CellMaker(Process):
                 break
             
             start = start+bulk_size
- 
+
+        #cell = self._check_mass_balance(cell)
+
         self.output["cell"] = cell
+
+    def _check_mass_balance( self, cell ):
+        return cell
+
+    def _compute_metabolite_mass( self, cell ):
+        return cell
+        
+    def _compute_metabolite_mass( self, cell ):
+        return cell
