@@ -3,6 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from gws.app import BaseApp
 from gws.settings import Settings
 from gaia.app import App as GaiaApp
 
@@ -20,15 +21,13 @@ async def homepage(request):
         'settings': settings
     })
 
-class App:
+class App(BaseApp):
     """
     App class of Biox brick
     """
 
-    routes = []
-
     @classmethod
-    def init_routes(cls):
+    def init(cls):
         """
         Defines the web routes of the brick.
 
