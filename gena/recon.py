@@ -6,7 +6,7 @@ from gaia.datatable import Datatable as D, Importer
 
 from biota.db.enzyme import Enzyme
 from biota.db.taxonomy import Taxonomy
-from biota.db.enzyme_function import EnzymeFunction
+from biota.db.enzyme import Enzyme
 
 # ####################################################################
 #
@@ -68,18 +68,6 @@ class Cell(ResourceSet):
         return self.set
 
     @property
-    def enzyme_functions(self):
-        ef = []
-        for k in self.enzymes:
-            Q = self.enzymes[k].enzyme_functions
-            #print(len(Q))
-            ef.append(Q[0])
-            #for ef in enzyme.enzyme_functions:
-                #enzyme_functions.append(ef)
-        
-        return ef
-
-    @property
     def compounds(self):
         if self._compounds is None:
             self._compounds = []
@@ -100,9 +88,8 @@ class Cell(ResourceSet):
     def reactions(self):
         if self._reactions is None:
             self._reactions = []
-            for ef in self.enzyme_functions:
-                #print(ef)
-                Q = ef.reactions
+            for enzyme in self.enzymes.values():
+                Q = enzyme.reactions
                 #print(len(Q))
 
                 # @Todo: Check if len(Q) can be 0 ?!!!
@@ -204,8 +191,7 @@ class CellMaker(Process):
         bulk_size = 100; start = 0
         while True:
             stop = min(start+bulk_size, len(ec_list))
-
-            Q = Enzyme.select().where( Enzyme.ec << ec_list[start:stop] )
+            Q = Enzyme.select().where( Enzyme.ec_number << ec_list[start:stop] )
 
             for e in Q:
                 cell[e.id] = e

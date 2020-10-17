@@ -9,8 +9,8 @@ from gws.controller import Controller
 
 from biota.db.compound import Compound
 from biota.db.enzyme import Enzyme
-from biota.db.reaction import Reaction, ReactionEnzymeFunction
-from biota.db.enzyme_function import EnzymeFunction, EnzymeFunctionBTO
+from biota.db.reaction import Reaction, ReactionEnzyme
+from biota.db.enzyme import Enzyme, EnzymeBTO
 
 from gena.recon import Datatable, DataImporter, CellMaker, Cell, G3JSONViewModel
 
@@ -31,15 +31,10 @@ def insert_data(data):
         r.products.add(p[k])
 
     e = {}
-    ef = {}
     for k in data["enzymes"]:
-        e[k] = Enzyme(ec=k)
+        e[k] = Enzyme(ec_number=k)
         e[k].save()
-
-        ef[k] = EnzymeFunction(enzyme=e[k])
-        ef[k].save()
-        r.enzyme_functions.add(ef[k])
-        ef[k].save()
+        r.enzymes.add(e[k])
 
     r.save()
 
@@ -96,7 +91,7 @@ class TestImporter(unittest.TestCase):
     def setUpClass(cls):
         Cell.drop_table()
         Reaction.drop_table()
-        EnzymeFunction.drop_table()
+        Enzyme.drop_table()
         Enzyme.drop_table()
         Compound.drop_table()
 
@@ -104,13 +99,13 @@ class TestImporter(unittest.TestCase):
         Compound.create_table()
         Enzyme.create_table()
         Reaction.create_table()
-        EnzymeFunction.create_table()
+        Enzyme.create_table()
         pass
 
     @classmethod
     def tearDownClass(cls): 
         # Reaction.drop_table()
-        # EnzymeFunction.drop_table()
+        # Enzyme.drop_table()
         # Enzyme.drop_table()
         # Compound.drop_table()
         pass
@@ -154,7 +149,7 @@ class TestImporter(unittest.TestCase):
                 self.assertEquals(dt.get_ec_numbers()[0], "1.4.1.2")
 
                 c = proto.output["cell"]
-                ez = c.enzyme_functions
+                ez = c.enzymes
                 #self.assertEquals(len(ez), 1398)
                 self.assertEquals(len(ez), 4)
 
