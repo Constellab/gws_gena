@@ -3,23 +3,17 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from starlette.routing import Route
+from starlette.authentication import requires
+from starlette.responses import RedirectResponse
+
 from gws.app import BaseApp
-from gws.settings import Settings
-from gaia.app import App as GaiaApp
 
-from starlette.routing import Route, Mount
-from starlette.endpoints import HTTPEndpoint
-from starlette.templating import Jinja2Templates
+brick = "gena"
 
-settings = Settings.retrieve()
-template_dir = settings.get_public_dir("gena")
-templates = Jinja2Templates(directory=template_dir)
-
-async def homepage(request):
-    return templates.TemplateResponse('index.html', {
-        'request': request, 
-        'settings': settings
-    })
+@requires("authenticated")
+async def home_page(request):
+    return RedirectResponse(url=f'/page/{brick}')
 
 class App(BaseApp):
     """
@@ -41,4 +35,4 @@ class App(BaseApp):
         """
 
         # adds new routes
-        cls.routes.append(Route('/gena/', homepage) )
+        cls.routes.append(Route(f'/{brick}/', home_page) )

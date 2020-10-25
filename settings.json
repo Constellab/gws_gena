@@ -22,7 +22,7 @@
         "title"             : "Gena - Genome-based Analytics",
         "description"       : "Web services for genome-based analytics",
         "statics" : {
-            "/static/biox"   : "./public/static"
+            "/static/biox"   : "./web/static"
         },
         "scripts": [],
         "modules": [],
