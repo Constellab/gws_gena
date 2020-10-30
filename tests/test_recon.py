@@ -4,7 +4,7 @@ import asyncio
 import unittest
 
 from gws.settings import Settings
-from gws.model import Protocol
+from gws.model import Protocol, Experiment
 from gws.controller import Controller
 
 from biota.db.compound import Compound
@@ -12,7 +12,7 @@ from biota.db.enzyme import Enzyme
 from biota.db.reaction import Reaction, ReactionEnzyme
 from biota.db.enzyme import Enzyme, EnzymeBTO
 
-from gena.recon import Datatable, DataImporter, CellMaker, Cell, G3JSONViewModel
+from gena.recon import Datatable, DataImporter, CellMaker, Cell, CellViewModel
 
 def insert_data(data):
     r = Reaction(data=data, direction="UN")
@@ -142,6 +142,8 @@ class TestImporter(unittest.TestCase):
                 outerfaces = {'cell': cell_maker>>'cell'}
             )
 
+            proto.set_active_experiment(Experiment())
+
             # tests (on end)
             def _on_end(*args, **kwargs):
                 dt = importer.output['datatable']
@@ -158,7 +160,7 @@ class TestImporter(unittest.TestCase):
                 print(Q[3].data)
                 print(Q[0].direction)
 
-                vm = G3JSONViewModel(c)
+                vm = CellViewModel(model=c)
                 print(vm.render())
 
                 import json

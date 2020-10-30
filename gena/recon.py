@@ -158,7 +158,7 @@ class Cell(ResourceSet):
 #
 # ####################################################################
 
-class G3JSONViewModel(JSONViewModel):
+class CellViewModel(JSONViewModel):
     """
     ...
     """
