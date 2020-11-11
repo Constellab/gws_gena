@@ -12,7 +12,10 @@
         "gena:testdata_dir"    : "./tests/testdata"
     },
 
-    "externs"  : [],
+    "externs"  : [
+        "gena-cpp"
+    ],
+
     "dependencies"  : [
         "biota",
         "gaia"
