@@ -98,7 +98,7 @@ class Cell(ResourceSet):
 
         return self._reactions
 
-    def as_g3_json(self) -> str:
+    def as_json(self) -> str:
 
         reactions = []
         metabolites = []
@@ -139,7 +139,7 @@ class Cell(ResourceSet):
 
         import json
         return json.dumps({
-            "id": self.id,
+            "uri": self.uri,
             "name": "",
             "version": "",
             "metabolites": metabolites,
@@ -150,23 +150,6 @@ class Cell(ResourceSet):
                 "e": "extracellular space"
             }
         })
-
-
-# ####################################################################
-#
-# ViewModel classes
-#
-# ####################################################################
-
-class CellViewModel(JSONViewModel):
-    """
-    ...
-    """
-    model_specs = [ Cell ]
-
-    def as_json(self) -> dict:
-        return self._model.as_g3_json()
-        
 
 # ####################################################################
 #
@@ -201,8 +184,6 @@ class CellMaker(Process):
             
             start = start+bulk_size
 
-        #cell = self._check_mass_balance(cell)
-
         self.output["cell"] = cell
 
     def _check_mass_balance( self, cell ):
@@ -213,3 +194,8 @@ class CellMaker(Process):
         
     def _compute_metabolite_mass( self, cell ):
         return cell
+
+from gws.model import Protocol
+
+class Prot(Protocol):
+    pass
