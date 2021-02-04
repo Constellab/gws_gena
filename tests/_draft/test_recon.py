@@ -1,5 +1,5 @@
 
-import os
+import os, json
 import asyncio
 import unittest
 
@@ -12,7 +12,7 @@ from biota.db.enzyme import Enzyme
 from biota.db.reaction import Reaction, ReactionEnzyme
 from biota.db.enzyme import Enzyme, EnzymeBTO
 
-from gena.recon import Datatable, DataImporter, CellMaker, Cell, CellViewModel
+from gena.recon import Datatable, DataImporter, CellMaker, Cell
 
 def insert_data(data):
     r = Reaction(data=data, direction="UN")
@@ -21,12 +21,12 @@ def insert_data(data):
     s = {}
     p = {}
     for k in data["substrates"]:
-        s[k] = Compound(name="", chebi_id=k)
+        s[k] = Compound(title="", chebi_id=k)
         s[k].save()
         r.substrates.add(s[k])
 
     for k in data["products"]:
-        p[k] = Compound(name="", chebi_id=k)
+        p[k] = Compound(title="", chebi_id=k)
         p[k].save()
         r.products.add(p[k])
 
@@ -90,16 +90,16 @@ class TestImporter(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         Cell.drop_table()
-        Reaction.drop_table()
-        Enzyme.drop_table()
-        Enzyme.drop_table()
-        Compound.drop_table()
+        #Reaction.drop_table()
+        #Enzyme.drop_table()
+        #Enzyme.drop_table()
+        #Compound.drop_table()
 
         Cell.create_table()
-        Compound.create_table()
-        Enzyme.create_table()
-        Reaction.create_table()
-        Enzyme.create_table()
+        #Compound.create_table()
+        #Enzyme.create_table()
+        #Reaction.create_table()
+        #Enzyme.create_table()
         pass
 
     @classmethod
@@ -110,72 +110,60 @@ class TestImporter(unittest.TestCase):
         # Compound.drop_table()
         pass
     
-    def test_cell(self):
-        create_db()
-
-
     def test_recon(self):
-        async def _import_ec(self):
-            settings = Settings.retrieve()
-            test_dir = settings.get_dir("gena:testdata_dir")
+        #create_db()
+        
+        settings = Settings.retrieve()
+        test_dir = settings.get_dir("gena:testdata_dir")
 
-            # importer
-            importer = DataImporter()
-            importer.set_param("file_path", os.path.join(test_dir, "./ec_data.xlsx"))
-            importer.set_param("header", 0)
-            importer.set_param("ec_column_name", "EC Number")
+        importer = DataImporter()
+        cell_maker = CellMaker()
+        proto = Protocol(
+            title = "cell_maker_protocol",
+            processes = {
+                'importer': importer,
+                'cell_maker': cell_maker
+            },
+            connectors = [
+                importer>>'datatable' | cell_maker<<'datatable'
+            ],
+            interfaces = {},
+            outerfaces = {'cell': cell_maker>>'cell'}
+        )
+
+        cell_maker.set_param("tax_ids", [4753, 4754, 42068, 263815])
+        importer.set_param("file_path", os.path.join(test_dir, "./ec_data.xlsx"))
+        importer.set_param("header", 0)
+        importer.set_param("ec_column_name", "EC Number")
+
+        # tests (on end)
+        def _on_end(*args, **kwargs):
+            dt = importer.output['datatable']
+            self.assertIsInstance(dt, Datatable)
+            self.assertEquals(dt.get_ec_numbers()[0], "1.4.1.2")
+
+            c = proto.output["cell"]
+            ez = c.enzymes
+            #self.assertEquals(len(ez), 1398)
+            self.assertEquals(len(ez), 4)
+
+            Q = c.reactions
+            self.assertEquals(len(Q), 4)
+            print(Q[3].data)
+            print(Q[0].direction)
             
-            # cell maker
-            cell_maker = CellMaker()
-            cell_maker.set_param("tax_ids", [4753, 4754, 42068, 263815])
-            # protocol
-            proto = Protocol(
-                name = "cell_maker_protocol",
-                processes = {
-                    'importer': importer,
-                    'cell_maker': cell_maker
-                },
-                connectors = [
-                    importer>>'datatable' | cell_maker<<'datatable'
-                ],
-                interfaces = {},
-                outerfaces = {'cell': cell_maker>>'cell'}
-            )
-
-            proto.set_active_experiment(Experiment())
-
-            # tests (on end)
-            def _on_end(*args, **kwargs):
-                dt = importer.output['datatable']
-                self.assertIsInstance(dt, Datatable)
-                self.assertEquals(dt.get_ec_numbers()[0], "1.4.1.2")
-
-                c = proto.output["cell"]
-                ez = c.enzymes
-                #self.assertEquals(len(ez), 1398)
-                self.assertEquals(len(ez), 4)
-
-                Q = c.reactions
-                self.assertEquals(len(Q), 4)
-                print(Q[3].data)
-                print(Q[0].direction)
-
-                vm = CellViewModel(model=c)
-                print(vm.render())
-
-                import json
-                r = json.loads(vm.render())
-                
-                with open(os.path.join(test_dir, "./cell.json"), "r") as fp:
-                    txt = fp.read()
-                    expected = json.loads(txt)
-                    self.assertEquals(r, expected)
-
-            proto.on_end( _on_end )
+            #print(c.as_json(stringify=True, prettify=True, bare=True))
             
-            await proto.run()
+            with open(os.path.join(test_dir, "./cell.json"), "r") as fp:
+                txt = fp.read()
+                expected = json.loads(txt)
+                self.assertEquals(c.as_json(bare=True), expected)
 
-        asyncio.run( _import_ec(self) )
+        e = proto.create_experiment()
+        e.on_end( _on_end )
+            
+ 
+        asyncio.run( e.run() )
 
  
 

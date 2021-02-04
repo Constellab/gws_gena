@@ -1,56 +1,15 @@
-from gws.logger import Logger
-from gws.model import Process, ResourceSet, JSONViewModel
-from gws.view import JSONViewTemplate
+import json
 
-from gaia.datatable import Datatable as D, Importer
+from gws.logger import Error
+from gws.model import Process, ResourceSet
+from gws.view import JSONViewTemplate
 
 from biota.db.enzyme import Enzyme
 from biota.db.taxonomy import Taxonomy
 from biota.db.enzyme import Enzyme
 
-# ####################################################################
-#
-# Datatable class
-#
-# ####################################################################
 
-class Datatable(D):
-    @property
-    def ec_column_name(self):
-        return self.data['ec_column_name']
-
-    @ec_column_name.setter
-    def ec_column_name(self, name):
-        self.data['ec_column_name'] = name
-
-    def get_ec_numbers(self, rtype='list') -> ('DataFrame', list):
-        if rtype == 'list':
-            return list(self.table[self.ec_column_name].values)
-        else:
-            return self.table[[self.ec_column_name]]
-
-# ####################################################################
-#
-# DataImporter class
-#
-# ####################################################################
-
-class DataImporter(Importer):
-    input_specs = {}
-    output_specs = {'datatable': Datatable}
-    config_specs = {
-        **Importer.config_specs,
-        'ec_column_name': {"type": 'str', "default": 'ec_number', "description": "The name of the EC Number column name"},
-    }
-
-    def task(self):
-        super().task()
-        dt = self.output['datatable']
-        
-        if not dt.column_exists( self.get_param('ec_column_name') ):
-            Logger.error(Exception("DataImporter", "task", f"No ec numbers found (no column with name '{self.get_param('ec_column_name')}')"))
-
-        dt.ec_column_name = self.get_param('ec_column_name')
+from .data import ECData
 
 # ####################################################################
 #
@@ -97,8 +56,8 @@ class Cell(ResourceSet):
                     self._reactions.append(Q[0])
 
         return self._reactions
-
-    def as_json(self) -> str:
+    
+    def as_json(self, stringify: bool = False, prettify: bool = False, bare:bool = False) -> str:
 
         reactions = []
         metabolites = []
@@ -120,7 +79,7 @@ class Cell(ResourceSet):
 
             reactions.append({
                 "id": reac_id,
-                "uri": reac.uri,
+                "uri": "" if bare else reac.uri,
                 "name": ",".join(reac.data["enzymes"]),
                 "metabolites": mets,
                 "lower_bound": -1000.0,
@@ -130,16 +89,15 @@ class Cell(ResourceSet):
         for met in self.compounds:
             metabolites.append({
                 "id": met.chebi_id,
-                "uri": met.uri,
-                "name": met.name,
+                "uri": "" if bare else met.uri,
+                "name": met.get_title(),
                 "compartment": "c"
             })
 
         genes = []
 
-        import json
-        return json.dumps({
-            "uri": self.uri,
+        _json = {
+            "uri": "" if bare else self.uri,
             "name": "",
             "version": "",
             "metabolites": metabolites,
@@ -149,7 +107,15 @@ class Cell(ResourceSet):
                 "c": "cytosol",
                 "e": "extracellular space"
             }
-        })
+        }
+        
+        if stringify:
+            if prettify:
+                return json.dumps(_json, indent=4)
+            else:
+                return json.dumps(_json)
+        else:
+            return _json
 
 # ####################################################################
 #
@@ -158,15 +124,15 @@ class Cell(ResourceSet):
 # ####################################################################
 
 class CellMaker(Process):
-    input_specs = {'datatable': Datatable}
+    input_specs = {'ec_data': ECData}
     output_specs = {'cell': Cell}
     config_specs = {
         'tax_ids': {"type": 'list', "default": '[]', "description": "The taxonomy ids of the targeted organisms"},
         'species': {"type": 'list', "default": '[]', "description": "The names of the target species"}
     }
 
-    def task(self):
-        dt = self.input['datatable']
+    async def task(self):
+        dt = self.input['ec_data']
         ec_list = dt.get_ec_numbers(rtype="list")
         t = self.output_specs['cell']
         cell = t()
@@ -177,7 +143,8 @@ class CellMaker(Process):
             Q = Enzyme.select().where( Enzyme.ec_number << ec_list[start:stop] )
 
             for e in Q:
-                cell[e.id] = e
+                if not e.ec_number in cell:
+                    cell[e.ec_number] = e
             
             if stop >= len(ec_list):
                 break
@@ -194,8 +161,3 @@ class CellMaker(Process):
         
     def _compute_metabolite_mass( self, cell ):
         return cell
-
-from gws.model import Protocol
-
-class Prot(Protocol):
-    pass
