@@ -26,3 +26,5 @@ if __name__ == "__main__":
     __cdir__ = os.path.dirname(os.path.abspath(__file__))
     load_settings(__cdir__)
     runner.run()
+    
+    

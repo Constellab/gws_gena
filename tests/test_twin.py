@@ -7,6 +7,7 @@ settings = Settings.retrieve()
 settings.use_prod_biota_db(True)
 
 from gena.twin import Compound, Reaction, Twin
+from gena.context import Context
 from biota.db.compound import Compound as BiotaCompound
 
 
@@ -104,4 +105,22 @@ class TestTwin(unittest.TestCase):
         
         self.assertEqual(str(tw.reactions["EX_glc__D_e"]), "(1.0) glc__D_e <=> *")
         self.assertEqual(str(tw.reactions["GLNabc"]), "(1.0) atp_c + (1.0) gln__L_e <=> (1.0) adp_c + (1.0) gln__L_c")
+    
+    def test_import_with_context(self):
         
+        data_dir = settings.get_dir("gena:testdata_dir")
+        
+        file_path = os.path.join(data_dir, "small.json")
+        with open(file_path) as f:
+            data = json.load(f)
+            tw = Twin.from_json(data)
+        
+        file_path = os.path.join(data_dir, "toy_phenotype.json")
+        with open(file_path) as f:
+            data = json.load(f)
+            ctx = Context.from_json(data)
+        
+        tw.add_context(ctx)
+        
+        print("----------------------")
+        print(tw.as_json(expand_context=True))

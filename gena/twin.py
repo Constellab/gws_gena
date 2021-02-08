@@ -310,11 +310,12 @@ class Twin(Resource):
         if ctx.id in self.contexts:
             raise Error("Twin", "add_context", f"Context id {ctx.id} duplicate")
             
-        self.contexts[ctx.id] = ctx
+        self.contexts[ctx.id] = ctx        
         
-    #def as_json(self, stringify=False, prettify=False):
-    #    _json = super().as_json(stringify, prettify)
-    #    return _json
+    def as_json(self, stringify=False, prettify=False, expand_context=False):
+        _json = super().as_json(stringify, prettify)
+        _json["data"]["model"] = self.dumps(expand_context=expand_context) #override model to account for new updates
+        return _json
             
     # -- B --
     
