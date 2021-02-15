@@ -6,27 +6,33 @@ from gws.settings import Settings
 settings = Settings.retrieve()
 settings.use_prod_biota_db(True)
 
-from gena.twin import Compound, Reaction, Twin
+from gena.network import Compound, Reaction, Network
 from gena.context import Context
-from biota.db.compound import Compound as BiotaCompound
+from gena.biomodel import Biomodel
 
-
-class TestTwin(unittest.TestCase):
+class TestNetwork(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        Twin.drop_table()
-        Twin.create_table()
+        Biomodel.drop_table()
+        Biomodel.create_table()
+        Context.drop_table()
+        Context.create_table()
+        Network.drop_table()
+        Network.create_table()
         pass
 
     @classmethod
     def tearDownClass(cls):
+        Biomodel.drop_table()
+        Context.drop_table()
+        Network.drop_table()
         settings.use_prod_biota_db(False)
         pass
     
     def test_compound(self):
-        t = Twin()        
-        comp1 = Compound(id=1, twin=t, chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
+        t = Network()        
+        comp1 = Compound(id=1, network=t, chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
         
         bc1 = comp1.get_related_biota_compound()
         self.assertEqual(bc1.name, "glucose")
@@ -49,7 +55,7 @@ class TestTwin(unittest.TestCase):
         self.assertEqual(comp3.monoisotopic_mass, 180.06339)
         
     def test_reaction(self):
-        t = Twin()
+        t = Network()
   
         rxn1 = Reaction()
         t.add_reaction(rxn1)
@@ -84,7 +90,7 @@ class TestTwin(unittest.TestCase):
         
         with open(file_path) as f:
             data = json.load(f)
-            tw = Twin.from_json(data)
+            tw = Network.from_json(data)
         
         _json = tw.dumps(stringify=True, prettify=True)
         print(_json)        
@@ -105,22 +111,3 @@ class TestTwin(unittest.TestCase):
         
         self.assertEqual(str(tw.reactions["EX_glc__D_e"]), "(1.0) glc__D_e <=> *")
         self.assertEqual(str(tw.reactions["GLNabc"]), "(1.0) atp_c + (1.0) gln__L_e <=> (1.0) adp_c + (1.0) gln__L_c")
-    
-    def test_import_with_context(self):
-        
-        data_dir = settings.get_dir("gena:testdata_dir")
-        
-        file_path = os.path.join(data_dir, "small.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            tw = Twin.from_json(data)
-        
-        file_path = os.path.join(data_dir, "toy_phenotype.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            ctx = Context.from_json(data)
-        
-        tw.add_context(ctx)
-        
-        print("----------------------")
-        print(tw.as_json(expand_context=True))

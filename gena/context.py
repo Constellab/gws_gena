@@ -8,7 +8,8 @@ import uuid
 from typing import List
 
 from gws.logger import Error
-from gws.model import Resource
+from gws.model import Resource, ResourceSet
+from gws.utils import generate_random_chars
 
 # ####################################################################
 #
@@ -52,11 +53,15 @@ class Measure:
     
     id: str = None
     name: str = None
-    _variables: List[Variable] = None
+    
     lower_bound: float = None
     upper_bound: float = None
     target: float = None
     confidence_score: float = None
+    
+    _variables: List[Variable] = None
+    _flattening_delim = ":"
+    _ids = []
     
     def __init__( self, id: str = None, name: str = "", \
                  target:float = None, confidence_score:float = 1.0, \
@@ -65,8 +70,8 @@ class Measure:
         if id:
             self.id = id
         else:
-            self.id = str(uuid.uuid4())
-            
+            self.id = self.__generate_unique_id()
+
         self.name = name
         self.target = target
         self.lower_bound = lower_bound
@@ -85,7 +90,7 @@ class Measure:
     def as_json(self):
         
         _json = {
-            "id": self.id,
+            "id": self._format(self.id),
             "name": self.name,
             "variables": [],
             "lower_bound": self.lower_bound,
@@ -99,6 +104,18 @@ class Measure:
         
         return _json
     
+    @classmethod
+    def _format(cls, id):
+        return id.replace(cls._flattening_delim,"_")
+    
+    @classmethod
+    def __generate_unique_id(cls):
+        while True:
+            id = generate_random_chars(9)
+            if not id in cls._ids:
+                cls._ids.append(id)
+                return id
+                    
     # -- V --
     
     @property
@@ -114,45 +131,48 @@ class Measure:
 class Context(Resource):
     
     _measures: List[Measure] = None
-        
-    def __init__( self, *args, twin: 'Twin' = None, **kwargs ):
+    _flattening_delim = ":"
+    
+    def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
-        
-        if twin:
-            self.add_to_twin(twin)
-            
+  
         self._measures = {}
         
         if self.data:
             self.__build_from_dump(self.data["measures"])
         else:
             self.data = {
+                'title': 'Context',
+                'description': '',
                 'measures': None
             }
  
     # -- A --
     
-    #def as_json(self, stringify=False, prettify=False):
-    #    _json = super().as_json(stringify, prettify)
-    #    return _json
-    
+    def as_json(self, stringify=False, prettify=False):
+        _json = super().as_json()
+        _json["data"]["measures"] = self.dumps()  #override to account for new updates
+        
+        if stringify:
+            if prettify:
+                return json.dumps(_json, indent=4)
+            else:
+                return json.dumps(_json)
+        else:
+            return _json    
     
     def add_measure(self, measure: Measure):
         if measure.id in self._measures:
             raise Error("gena.context.Context", "add_measure", "Measure duplicate")
             
         self._measures[measure.id] = measure
-        
-    def add_to_twin( tw: 'Twin' = None ):
-        tw.add_context(self)
-        
-    
+
     # -- B --
     
     def __build_from_dump(self, data: dict):
         for _meas in data["measures"]:
             measure = Measure( \
-                id = _meas["id"], \
+                id = self._format(_meas["id"]), \
                 name = _meas.get("name"), \
                 target = _meas.get("target"), \
                 confidence_score = _meas.get("confidence_score",1.0), \
@@ -166,16 +186,16 @@ class Context(Resource):
                     reference_id = _var["reference_id"], \
                     reference_type = _var["reference_type"] \
                 )
-                
                 measure.add_variable(variable)
                               
             self.add_measure(measure)
-    
+            self.data["name"] = self._format( data.get("name","Context") )
+            self.data["description"] = data.get("description","")
+        
     # -- D -- 
     
     def dumps(self, stringify=False, prettify=False):
         _json = []
-        
         for k in self._measures:
             _json.append( self._measures[k].as_json() )
         
@@ -183,6 +203,10 @@ class Context(Resource):
         
         
     # -- F --
+    
+    @classmethod
+    def _format(cls, id):
+        return id.replace(cls._flattening_delim,"_")
     
     @classmethod
     def from_json(cls, data: dict):
@@ -199,6 +223,6 @@ class Context(Resource):
                            
     # -- S --
     
-    def save(*args, **kwargs):
+    def save(self, *args, **kwargs):
         self.data["measures"] = self.dumps()
         return super().save(*args, **kwargs)

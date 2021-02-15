@@ -8,17 +8,13 @@ import uuid
 from typing import List
 
 from gws.logger import Error
-from gws.model import Model, Process, Resource, ResourceSet
-from gws.view import JSONViewTemplate
+from gws.model import Model, Resource, ResourceSet
 from gws.utils import generate_random_chars
 
 from biota.db.compound import Compound as BiotaCompound
 from biota.db.reaction import Reaction as BiotaReaction
-from biota.db.enzyme import Enzyme as BiotaEnzyme, Enzo as BiotaEnzo
-from biota.db.taxonomy import Taxonomy
 
-from .data import ECData
-from .context import Context
+flattening_delimiter = ":"
 
 # ####################################################################
 #
@@ -30,7 +26,7 @@ class Compound:
                                 
     id = None
     name = None
-    twin = None
+    network = None
     charge = None
     mass = None
     monoisotopic_mass = None
@@ -46,7 +42,9 @@ class Compound:
     COMPARTMENT_BIOMASS    = "b"
     COMPARTMENT_EXTRACELL  = "e"
     
-    def __init__(self, id: str=None, name: str=None, twin:'Twin'=None, formula=None, \
+    _flattening_delimiter = flattening_delimiter
+    
+    def __init__(self, id: str=None, name: str=None, network:'Network'=None, formula=None, \
                  charge=None, mass=None, monoisotopic_mass=None, inchi=None, \
                  chebi_id=None, kegg_id=None, compartment=None):  
         
@@ -61,8 +59,8 @@ class Compound:
                 
             self.compartment = compartment
  
-        if twin:
-            self.add_to_twin(twin)
+        if network:
+            self.add_to_network(network)
         
         self.name = name
         self.charge = charge
@@ -75,11 +73,21 @@ class Compound:
         
     # -- A --
 
-    def add_to_twin(self, tw: 'Twin'):  
+    def add_to_network(self, tw: 'Network'):  
         tw.add_compound(self)
         
     # -- F --
     
+    @classmethod
+    def _flatten_id(cls, id, ctx_name, is_compartment=False):
+        delim = cls._flattening_delimiter
+        skip_list = [ cls.COMPARTMENT_EXTRACELL ]
+        for c in skip_list:
+            if id.endswith("_" + c) or (is_compartment and id == c):
+                return id
+
+        return ctx_name + delim + id.replace(delim,"_")
+     
     @classmethod
     def from_extern(cls, chebi_id=None, kegg_id=None) -> 'Compound':
         try:
@@ -88,7 +96,7 @@ class Compound:
             elif kegg_id:
                 comp = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
         except:
-            raise Error("gena.twin.Reaction", "from_extern", "Chebi compound not found")
+            raise Error("gena.network.Reaction", "from_extern", "Chebi compound not found")
         
         c = cls(id=comp.chebi_id)
         c.chebi_id = comp.chebi_id
@@ -111,7 +119,8 @@ class Compound:
                 return BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
         except:
             return None
-    
+
+
 # ####################################################################
 #
 # Reaction class
@@ -121,7 +130,7 @@ class Compound:
 class Reaction:    
     id: str = None
     name: str = None
-    twin: 'Twin' = None
+    network: 'Network' = None
     direction: str = "B"
     lower_bound: float = -1000
     upper_bound: float = 1000
@@ -130,9 +139,9 @@ class Reaction:
     
     _substrates: dict = None
     _products: dict = None
+    _flattening_delimiter = flattening_delimiter
     
-    
-    def __init__(self, id: str = None, name: str = None, twin: 'Twin' = None, \
+    def __init__(self, id: str = None, name: str = None, network: 'Network' = None, \
                  direction: str= "B", lower_bound: float = -1000, upper_bound: float = 1000):  
         
         if id:
@@ -140,8 +149,8 @@ class Reaction:
         else:
             self.id = str(uuid.uuid4())
 
-        if twin:
-            self.add_to_twin(twin)
+        if network:
+            self.add_to_network(network)
         
         self.name = name
         self.direction = direction
@@ -154,12 +163,12 @@ class Reaction:
         
     # -- A --
 
-    def add_to_twin(self, tw: 'Twin'):  
+    def add_to_network(self, tw: 'Network'):  
         tw.add_reaction(self)
     
     def add_substrate( self, comp: Compound, stoich: float ):
         if comp.id in self._substrates:
-            raise Error("gena.twin.Reaction", "add_substrate", "Substrate duplicate")
+            raise Error("gena.network.Reaction", "add_substrate", "Substrate duplicate")
             
         self._substrates[comp.id] = {
             "compound": comp,
@@ -168,7 +177,7 @@ class Reaction:
     
     def add_product( self, comp: Compound, stoich: float ):
         if comp.id in self._products:
-            raise Error("gena.twin.Reaction", "add_substrate", "Product duplicate")
+            raise Error("gena.network.Reaction", "add_substrate", "Product duplicate")
             
         self._products[comp.id] = {
             "compound": comp,
@@ -178,12 +187,17 @@ class Reaction:
     # -- F --
     
     @classmethod
+    def _flatten_id(cls, id, ctx_name):
+        delim = cls._flattening_delimiter
+        return ctx_name + delim + id.replace(delim,"_")
+        
+    @classmethod
     def from_extern(cls, rhea_id=None) -> 'Reaction':
         try:
             if rhea_id:
                 comp = BiotaReaction.get(BiotaReaction.rhea_id == rhea_id)
         except:
-            raise Error("gena.twin.Reaction", "from_extern", "Chebi compound not found")
+            raise Error("gena.network.Reaction", "from_extern", "Chebi compound not found")
         
         rxn = cls(id=comp.rhea_id)
 
@@ -239,100 +253,103 @@ class Reaction:
     
 # ####################################################################
 #
-# Twin class
+# Network class
 #
 # ####################################################################
 
-class Twin(Resource):
+class Network(Resource):
     
     _compounds = None
     _reactions = None
     _compartments = None
     
-    _contexts = None
-    
     _fts_fields = {'title': 2.0, 'description': 1.0}
-    _table_name = "gena_twin"
+    _table_name = "gena_network"
     
-
+    _flattening_delimiter = flattening_delimiter
+    
     def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
 
         self._compounds = {}
         self._reactions = {}
         self._compartments = {}
-        self._contexts = {}
         
         if self.data:
-            self.__build_from_dump(self.data["model"])
+            self.__build_from_dump(self.data["network"])
         else:
             self.data = {
-                'title': '',
+                'title': 'Network',
                 'description': '',
-                'model': None,
+                'network': None,
             }
     
     # -- A --
     
     def add_compound(self, comp: Compound):
         if not isinstance(comp, Compound):
-            raise Error("Twin", "add_compound", "The compound must an instance of Compound")
+            raise Error("Network", "add_compound", "The compound must an instance of Compound")
         
-        if comp.twin:
-            raise Error("Twin", "add_compound", "The compound is already in a twin")
+        if comp.network:
+            raise Error("Network", "add_compound", "The compound is already in a network")
         
         if comp.id in self._compounds:
-            raise Error("Twin", "add_compound", f"Compound id {comp.id} duplicate")
+            raise Error("Network", "add_compound", f"Compound id {comp.id} duplicate")
         
         if not comp.compartment:
-            raise Error("Twin", "add_compound", "No compartment defined for the compound")
+            raise Error("Network", "add_compound", "No compartment defined for the compound")
             
-        comp.twin = self
+        comp.network = self
         self.compounds[comp.id] = comp
         
     def add_reaction(self, rxn: Reaction):
         if not isinstance(rxn, Reaction):
-            raise Error("Twin", "add_reaction", "The reaction must an instance of Reaction")
+            raise Error("Network", "add_reaction", "The reaction must an instance of Reaction")
         
-        if rxn.twin:
-            raise Error("Twin", "add_reaction", "The reaction is already in a twin")
+        if rxn.network:
+            raise Error("Network", "add_reaction", "The reaction is already in a network")
         
         if rxn.id in self.reactions:
-            raise Error("Twin", "add_reaction", f"Reaction id {rxn.id} duplicate")
+            raise Error("Network", "add_reaction", f"Reaction id {rxn.id} duplicate")
             
-        rxn.twin = self
+        rxn.network = self
         self.reactions[rxn.id] = rxn
-    
-    def add_context(self, ctx: 'Context'):
-        if not isinstance(ctx, Context):
-            raise Error("Twin", "add_context", "The context must an instance of Context")
+
+    def as_json(self, stringify=False, prettify=False):
+        _json = super().as_json()
+        _json["data"]["network"] = self.dumps() #override to account for new updates
         
-        if ctx.id in self.contexts:
-            raise Error("Twin", "add_context", f"Context id {ctx.id} duplicate")
-            
-        self.contexts[ctx.id] = ctx        
-        
-    def as_json(self, stringify=False, prettify=False, expand_context=False):
-        _json = super().as_json(stringify, prettify)
-        _json["data"]["model"] = self.dumps(expand_context=expand_context) #override model to account for new updates
-        return _json
-            
+        if stringify:
+            if prettify:
+                return json.dumps(_json, indent=4)
+            else:
+                return json.dumps(_json)
+        else:
+            return _json
+                    
     # -- B --
     
     def __build_from_dump(self, data):
+        delim = self._flattening_delimiter
         self.compartments = data["compartments"]
-        ckey = "compound" if "compound" in data else "metabolites"
+        ckey = "compounds" if "compounds" in data else "metabolites"
         for val in data[ckey]:
             compart = val["compartment"]
             
             if not compart in self.compartments:
-                raise Error(f"The compartment of the compound not declared in the lists of compartments")
+                raise Error(f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
             
-            comp = Compound(id=val["id"], name=val["name"], twin=self, compartment=compart)
+            comp = Compound(id=val["id"].replace(delim,"_"), \
+                            name=val["name"], \
+                            network=self, \
+                            compartment=compart)
             
         for val in data["reactions"]:
-            rxn = Reaction(id=val["id"], name=val.get("name"), twin=self, \
-                           lower_bound=val.get("lower_bound"), upper_bound=val.get("upper_bound"))
+            rxn = Reaction(id=val["id"].replace(delim,"_"), \
+                           name=val.get("name"), \
+                           network=self, \
+                           lower_bound=val.get("lower_bound"), \
+                           upper_bound=val.get("upper_bound"))
             
             for k in val[ckey]:
                 comp_id = k
@@ -341,13 +358,12 @@ class Twin(Resource):
                     rxn.add_substrate( self.compounds[comp_id], stoich )
                 elif stoich > 0:
                     rxn.add_product( self.compounds[comp_id], stoich )
-      
-        for val in data.get("contexts",{}):
-            ctx = Context.get(Context.uri == val["uri"])
-            self.add_context(ctx)
+        
+        self.data["name"] = data.get("name","Network").replace(delim,"_")
+        self.data["description"] = data.get("description","")
         
     # -- C --
-    
+        
     @property
     def compartments(self):
         return self._compartments
@@ -359,10 +375,6 @@ class Twin(Resource):
     @property
     def compounds(self):
         return self._compounds
-    
-    @property
-    def contexts(self):
-        return self._contexts
     
     # -- D --
     
@@ -388,10 +400,9 @@ class Twin(Resource):
         
         self.data["description"] = ""
     
-    def dumps(self, stringify=False, prettify=False, expand_context=False):
+    def dumps(self, stringify=False, prettify=False):
         _met_json = []
         _rxn_json = []
-        _ctx_json = []
         
         for _met in self.compounds.values():
             _met_json.append({
@@ -420,18 +431,11 @@ class Twin(Resource):
                 "name": _rxn.name,
                 "metabolites": _rxn_met,
             })
-        
-        for _ctx in self.contexts.values():
-            if expand_context:
-                _ctx_json.append( _ctx.as_json() )
-            else:
-                _ctx_json.append( {"uri": _ctx.uri} )
-            
+  
         _json = {
             "metabolites": _met_json,
             "reactions": _rxn_json,
             "compartments": self.compartments,
-            "contexts": _ctx_json
         }
         
         if stringify:
@@ -446,10 +450,10 @@ class Twin(Resource):
     
     @classmethod
     def from_json(cls, data: dict):
-        tw = Twin()
-        tw.__build_from_dump(data)
-        tw.data["model"] = tw.dumps()
-        return tw
+        net = Network()
+        net.__build_from_dump(data)
+        net.data["network"] = net.dumps()
+        return net
     
     # -- N --
     
@@ -485,6 +489,6 @@ class Twin(Resource):
     
     # -- S --
     
-    def save(*args, **kwargs):
-        self.data["model"] = self.dumps()
+    def save(self, *args, **kwargs):
+        self.data["network"] = self.dumps()
         return super().save(*args, **kwargs)

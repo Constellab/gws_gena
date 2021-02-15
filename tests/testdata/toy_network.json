@@ -49,7 +49,7 @@
         {
             "id": "XB",
             "name": "XB",
-            "compartment":"biomass"
+            "compartment":"b"
         }
     ],
     "reactions": [
@@ -129,6 +129,7 @@
     "compartments": {
         "c": "cytosol",
         "e": "extracellular",
-        "n": "nucleus"
+        "n": "nucleus",
+        "b": "biomass"
     }
 }

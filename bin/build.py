@@ -27,3 +27,8 @@ if __name__ == "__main__":
             os.makedirs(build_path)
 
         copyfile(os.path.join(gena_cwd, "bazel-bin", "gena", point), os.path.join(build_path, point))
+        
+        subprocess.call(
+            [ "chmod", "a+x", f"fba" ],
+            cwd = build_path
+        )

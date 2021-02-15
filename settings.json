@@ -18,17 +18,5 @@
     "dependencies"  : [
         "biota",
         "gaia"
-    ],
-    
-    "app" : {
-        "title"             : "Gena - Genome-based Analytics",
-        "description"       : "Web services for genome-based analytics",
-        "statics" : {
-            "/static/biox"   : "./web/static"
-        },
-        "scripts": [],
-        "modules": [],
-        "styles": [],
-        "buttons":{}
-    }
+    ]
 }
