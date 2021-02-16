@@ -13,6 +13,8 @@ from gws.utils import generate_random_chars
 
 from biota.db.compound import Compound as BiotaCompound
 from biota.db.reaction import Reaction as BiotaReaction
+from biota.db.enzyme import Enzyme as BiotaEnzyme
+
 
 flattening_delimiter = ":"
 
@@ -36,29 +38,29 @@ class Compound:
     chebi_id = None
     kegg_id = None
     
-    VALID_COMPARTMENTS     = ["c","n","b","e"]
+    
     COMPARTMENT_CYTOSOL    = "c"
     COMPARTMENT_NUCLEUS    = "n"
     COMPARTMENT_BIOMASS    = "b"
     COMPARTMENT_EXTRACELL  = "e"
+    VALID_COMPARTMENTS     = ["c","n","b","e"]
     
     _flattening_delimiter = flattening_delimiter
     
-    def __init__(self, id: str=None, name: str=None, network:'Network'=None, formula=None, \
+    def __init__(self, id=None, name="unnamed", compartment="c", network:'Network'=None, formula=None, \
                  charge=None, mass=None, monoisotopic_mass=None, inchi=None, \
-                 chebi_id=None, kegg_id=None, compartment=None):  
+                 chebi_id=None, kegg_id=None):  
+        
+        if not compartment in self.VALID_COMPARTMENTS:
+            raise Error("gena.network.Compound", "__init__", "Invalid compartment")  
+        
+        self.compartment = compartment   
         
         if id:
             self.id = id
         else:
-            self.id = str(uuid.uuid4())
-            
-        if compartment:
-            if not compartment in self.VALID_COMPARTMENTS:
-                raise Error("Invalid compartment")
-                
-            self.compartment = compartment
- 
+            self.id = name + "_" + compartment
+        
         if network:
             self.add_to_network(network)
         
@@ -95,13 +97,14 @@ class Compound:
                 comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
             elif kegg_id:
                 comp = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
+            else:
+                raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
         except:
             raise Error("gena.network.Reaction", "from_biota", "Chebi compound not found")
         
-        c = cls(id=comp.chebi_id)
+        c = cls(name=comp.name)
         c.chebi_id = comp.chebi_id
         c.kegg_id = comp.kegg_id
-        c.name = comp.name
         c.charge = comp.charge
         c.formula = comp.formula
         c.mass = comp.mass
@@ -141,19 +144,22 @@ class Reaction:
     _products: dict = None
     _flattening_delimiter = flattening_delimiter
     
-    def __init__(self, id: str = None, name: str = None, network: 'Network' = None, \
+    def __init__(self, id: str=None, name: str = None, network: 'Network' = None, \
                  direction: str= "B", lower_bound: float = -1000, upper_bound: float = 1000):  
         
         if id:
             self.id = id
         else:
-            self.id = str(uuid.uuid4())
-
+            self.id = name
+            
+        self.name = name
+        
         if network:
             self.add_to_network(network)
-        
-        self.name = name
-        self.direction = direction
+
+        if direction in ["B", "L", "R"]:
+            self.direction = direction
+            
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         
@@ -192,15 +198,53 @@ class Reaction:
         return ctx_name + delim + id.replace(delim,"_")
         
     @classmethod
-    def from_biota(cls, rhea_id=None) -> 'Reaction':
+    def from_biota(cls, rhea_id=None, ec_number=None, tax_id=None, network=None) -> 'Reaction':
         try:
             if rhea_id:
-                comp = BiotaReaction.get(BiotaReaction.rhea_id == rhea_id)
+                biota_rxn = BiotaReaction.get(BiotaReaction.rhea_id == rhea_id) 
+            elif ec_number:
+                e = None
+                if tax_id:
+                    e = BiotaEnzyme.get((BiotaEnzyme.ec_number == ec_number) & (BiotaEnzyme.tax_id == tax_id))
+                else:
+                    e = BiotaEnzyme.get(BiotaEnzyme.ec_number == ec_number) 
+                
+                if e:
+                    biota_rxn = e.reactions[0]
+                else:
+                    raise Error("gena.network.Reaction", "from_biota", f"No reaction found for enzyme {ec_number}")
+            else:
+                raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
         except:
-            raise Error("gena.network.Reaction", "from_biota", "Chebi compound not found")
+            raise Error("gena.network.Reaction", "from_biota", "ChEBI compound not found")
         
-        rxn = cls(id=comp.rhea_id)
-
+        rxn = cls(name=biota_rxn.rhea_id, network=network, direction=biota_rxn.direction, lower_bound=-1000, upper_bound=1000)
+        
+        eqn = biota_rxn.data["equation"]
+        for chebi_id in eqn["substrates"]:
+            stoich =  eqn["substrates"][chebi_id]
+            biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+            c = Compound(name=biota_comp.name)
+            c.chebi_id = biota_comp.chebi_id
+            c.kegg_id = biota_comp.kegg_id
+            c.charge = biota_comp.charge
+            c.formula = biota_comp.formula
+            c.mass = biota_comp.mass
+            c.monoisotopic_mass = biota_comp.monoisotopic_mass
+            rxn.add_substrate(c, stoich)
+        
+        for chebi_id in eqn["products"]:
+            stoich = eqn["products"][chebi_id]
+            biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+            c = Compound(name=biota_comp.name)
+            c.chebi_id = biota_comp.chebi_id
+            c.kegg_id = biota_comp.kegg_id
+            c.charge = biota_comp.charge
+            c.formula = biota_comp.formula
+            c.mass = biota_comp.mass
+            c.monoisotopic_mass = biota_comp.monoisotopic_mass
+            rxn.add_product(c, stoich)
+            
         return rxn
 
     # -- P --
@@ -267,6 +311,7 @@ class Network(Resource):
     _table_name = "gena_network"
     
     _flattening_delimiter = flattening_delimiter
+    _defaultNetwork = None
     
     def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
@@ -377,7 +422,7 @@ class Network(Resource):
         return self._compounds
     
     # -- D --
-    
+
     @property
     def description(self) -> str:
         """ 
@@ -405,6 +450,10 @@ class Network(Resource):
         _rxn_json = []
         
         for _met in self.compounds.values():
+            #id = _met.id.replace(":","_")
+            #if not id.endswith("_"+_met.compartment):
+            #    id = id + "_" + _met.compartment
+                
             _met_json.append({
                 "id": _met.id,
                 "name": _met.name,
@@ -425,7 +474,8 @@ class Network(Resource):
                 _rxn_met.update({
                     prod["compound"].id: abs(prod["stoichiometry"])
                 })
-                
+            
+            #id = _rxn.id.replace(":","_")
             _rxn_json.append({
                 "id": _rxn.id,
                 "name": _rxn.name,

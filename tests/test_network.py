@@ -32,7 +32,7 @@ class TestNetwork(unittest.TestCase):
     
     def test_compound(self):
         t = Network()        
-        comp1 = Compound(id=1, network=t, chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
+        comp1 = Compound(name="gluc", network=t, compartment=Compound.COMPARTMENT_CYTOSOL, chebi_id="CHEBI:17234")
         
         bc1 = comp1.get_related_biota_compound()
         self.assertEqual(bc1.name, "glucose")
@@ -41,7 +41,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(bc1.mass, 180.15588)
         self.assertEqual(bc1.monoisotopic_mass, 180.06339)
         
-        comp2 = Compound(compartment=Compound.COMPARTMENT_CYTOSOL)
+        comp2 = Compound(name="gluc2", compartment=Compound.COMPARTMENT_CYTOSOL)
         t.add_compound(comp2)
         comp2.kegg_id = "C00293"
         bc2 = comp2.get_related_biota_compound()
@@ -60,29 +60,33 @@ class TestNetwork(unittest.TestCase):
         rxn1 = Reaction()
         t.add_reaction(rxn1)
         
-        comp1 = Compound(id="ATP[c]", chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
+        comp1 = Compound(name="ATP", chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
         rxn1.add_substrate(comp1, -1)
         
-        comp2 = Compound(id="ADP[n]", chebi_id="CHEBI:17235", compartment=Compound.COMPARTMENT_NUCLEUS)
+        comp2 = Compound(name="ADP", chebi_id="CHEBI:17235", compartment=Compound.COMPARTMENT_NUCLEUS)
         rxn1.add_product(comp2, +1)
         
-        comp3 = Compound(id="Creatine[c]", chebi_id="CHEBI:17236", compartment=Compound.COMPARTMENT_CYTOSOL)
+        comp3 = Compound(name="Creatine", chebi_id="CHEBI:17236", compartment=Compound.COMPARTMENT_CYTOSOL)
         rxn1.add_substrate(comp3, -1)
         
-        comp4 = Compound(id="Phosphocreatine[n]", chebi_id="CHEBI:17237", compartment=Compound.COMPARTMENT_NUCLEUS)
+        comp4 = Compound(name="Phosphocreatine", chebi_id="CHEBI:17237", compartment=Compound.COMPARTMENT_NUCLEUS)
         rxn1.add_product(comp4, 1)
         
         print(rxn1)
         self.assertRaises(Exception, rxn1.add_product, comp4, 2)
-        self.assertEqual(str(rxn1), "(1) ATP[c] + (1) Creatine[c] <=> (1) ADP[n] + (1) Phosphocreatine[n]")
+        self.assertEqual(str(rxn1), "(1) ATP_c + (1) Creatine_c <=> (1) ADP_n + (1) Phosphocreatine_n")
         
         rxn1.direction = "R"
-        self.assertEqual(str(rxn1), "(1) ATP[c] + (1) Creatine[c] => (1) ADP[n] + (1) Phosphocreatine[n]")
+        self.assertEqual(str(rxn1), "(1) ATP_c + (1) Creatine_c => (1) ADP_n + (1) Phosphocreatine_n")
         print(rxn1)
         
         rxn1.direction = "L"
-        self.assertEqual(str(rxn1), "(1) ATP[c] + (1) Creatine[c] <= (1) ADP[n] + (1) Phosphocreatine[n]")
+        self.assertEqual(str(rxn1), "(1) ATP_c + (1) Creatine_c <= (1) ADP_n + (1) Phosphocreatine_n")
         print(rxn1)
+        
+        
+        rxn = Reaction.from_biota(rhea_id="RHEA:15133") 
+        print(rxn)
     
     def test_import(self):
         data_dir = settings.get_dir("gena:testdata_dir")
