@@ -5,7 +5,7 @@
 
 import os
 import subprocess
-from shutil import copyfile
+import shutil
 
 __cdir__ = os.path.dirname(os.path.abspath(__file__))
 EXTERNS = os.path.join(__cdir__, "../../../externs")
@@ -26,9 +26,9 @@ if __name__ == "__main__":
         if not os.path.exists(build_path):
             os.makedirs(build_path)
 
-        copyfile(os.path.join(gena_cwd, "bazel-bin", "gena", point), os.path.join(build_path, point))
+        shutil.copyfile(os.path.join(gena_cwd, "bazel-bin", "gena", point), os.path.join(build_path, point))
         
         subprocess.call(
-            [ "chmod", "a+x", f"fba" ],
+            [ "chmod", "a+x", os.path.join(build_path, point) ],
             cwd = build_path
         )

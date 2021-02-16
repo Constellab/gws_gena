@@ -8,14 +8,16 @@ import os
 from gws.json import JSONData
 from gws.typing import Path
 from gws.shell import Shell
-from gws.file import File
+from gws.file import File as BaseFile
 from gws.settings import Settings
 from gws.logger import Error
 
 from gena.biomodel import Biomodel
 
-class FBAResult(JSONData):
-    pass
+class File(File):
+    
+    def as_json(self, **kwargs):
+        _json = super().as_json(**kwargs)
 
 class FluxAnalyzer(Shell):
     

@@ -89,14 +89,14 @@ class Compound:
         return ctx_name + delim + id.replace(delim,"_")
      
     @classmethod
-    def from_extern(cls, chebi_id=None, kegg_id=None) -> 'Compound':
+    def from_biota(cls, chebi_id=None, kegg_id=None) -> 'Compound':
         try:
             if chebi_id:
                 comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
             elif kegg_id:
                 comp = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
         except:
-            raise Error("gena.network.Reaction", "from_extern", "Chebi compound not found")
+            raise Error("gena.network.Reaction", "from_biota", "Chebi compound not found")
         
         c = cls(id=comp.chebi_id)
         c.chebi_id = comp.chebi_id
@@ -192,12 +192,12 @@ class Reaction:
         return ctx_name + delim + id.replace(delim,"_")
         
     @classmethod
-    def from_extern(cls, rhea_id=None) -> 'Reaction':
+    def from_biota(cls, rhea_id=None) -> 'Reaction':
         try:
             if rhea_id:
                 comp = BiotaReaction.get(BiotaReaction.rhea_id == rhea_id)
         except:
-            raise Error("gena.network.Reaction", "from_extern", "Chebi compound not found")
+            raise Error("gena.network.Reaction", "from_biota", "Chebi compound not found")
         
         rxn = cls(id=comp.rhea_id)
 

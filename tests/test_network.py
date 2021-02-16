@@ -51,7 +51,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(bc2.mass, 180.15588)
         self.assertEqual(bc2.monoisotopic_mass, 180.06339)
         
-        comp3 = Compound.from_extern(kegg_id="C00293")
+        comp3 = Compound.from_biota(kegg_id="C00293")
         self.assertEqual(comp3.monoisotopic_mass, 180.06339)
         
     def test_reaction(self):
