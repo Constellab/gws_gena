@@ -153,10 +153,6 @@ class Reaction:
             self.id = name
             
         self.name = name
-        
-        if network:
-            self.add_to_network(network)
-
         if direction in ["B", "L", "R"]:
             self.direction = direction
             
@@ -165,7 +161,9 @@ class Reaction:
         
         self._substrates = {}
         self._products = {}
-
+        
+        if network:
+            self.add_to_network(network)
         
     # -- A --
 
@@ -175,7 +173,12 @@ class Reaction:
     def add_substrate( self, comp: Compound, stoich: float ):
         if comp.id in self._substrates:
             raise Error("gena.network.Reaction", "add_substrate", "Substrate duplicate")
-            
+        
+        # add the compound to the reaction network
+        if self.network:
+            if not comp.id in self.network.compounds:
+                self.network.add_compound(comp)
+                
         self._substrates[comp.id] = {
             "compound": comp,
             "stoichiometry": abs(stoich)
@@ -184,7 +187,12 @@ class Reaction:
     def add_product( self, comp: Compound, stoich: float ):
         if comp.id in self._products:
             raise Error("gena.network.Reaction", "add_substrate", "Product duplicate")
-            
+        
+        # add the compound to the reaction network
+        if self.network:
+            if not comp.id in self.network.compounds:
+                self.network.add_compound(comp)
+                
         self._products[comp.id] = {
             "compound": comp,
             "stoichiometry": abs(stoich)
@@ -356,9 +364,23 @@ class Network(Resource):
         
         if rxn.id in self.reactions:
             raise Error("Network", "add_reaction", f"Reaction id {rxn.id} duplicate")
-            
+        
+        # add reaction compounds to the network
+        for sub in rxn.substrates:
+            comp = sub["compound"]
+            if not comp.id in self.compounds:
+                self.add_compound(comp)
+        
+        for prod in rxn.products:
+            comp = prod["compound"]
+            if not comp.id in self.compounds:
+                self.add_compound(comp)
+                
+        # add the reaction
         rxn.network = self
         self.reactions[rxn.id] = rxn
+        
+        
 
     def as_json(self, stringify=False, prettify=False):
         _json = super().as_json()
