@@ -1,4 +1,4 @@
-# Core GWS app module
+# Gencovery software - All rights reserved
 # This software is the exclusive property of Gencovery SAS. 
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
@@ -14,6 +14,7 @@ from gws.utils import generate_random_chars
 from biota.db.compound import Compound as BiotaCompound
 from biota.db.reaction import Reaction as BiotaReaction
 from biota.db.enzyme import Enzyme as BiotaEnzyme
+from biota.db.taxonomy import Taxonomy as BiotaTaxo
 
 
 flattening_delimiter = ":"
@@ -37,7 +38,6 @@ class Compound:
     compartment = None
     chebi_id = None
     kegg_id = None
-    
     
     COMPARTMENT_CYTOSOL    = "c"
     COMPARTMENT_NUCLEUS    = "n"
@@ -135,17 +135,20 @@ class Reaction:
     name: str = None
     network: 'Network' = None
     direction: str = "B"
-    lower_bound: float = -1000
-    upper_bound: float = 1000
-    
+    lower_bound: float = -1000.0
+    upper_bound: float = 1000.0
     rhea_id = None
+    ec_number = ""
+    source_tax = { "id": "", "title": "", "rank": "", "distance": 0.0 }
     
+    _tax_ids = []
     _substrates: dict = None
     _products: dict = None
     _flattening_delimiter = flattening_delimiter
     
     def __init__(self, id: str=None, name: str = None, network: 'Network' = None, \
-                 direction: str= "B", lower_bound: float = -1000, upper_bound: float = 1000):  
+                 direction: str= "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0, \
+                 ec_number=""):  
         
         if id:
             self.id = id
@@ -158,6 +161,7 @@ class Reaction:
             
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
+        self.ec_number = ec_number
         
         self._substrates = {}
         self._products = {}
@@ -181,7 +185,7 @@ class Reaction:
                 
         self._substrates[comp.id] = {
             "compound": comp,
-            "stoichiometry": abs(stoich)
+            "stoichiometry": abs(float(stoich))
         }
     
     def add_product( self, comp: Compound, stoich: float ):
@@ -195,7 +199,7 @@ class Reaction:
                 
         self._products[comp.id] = {
             "compound": comp,
-            "stoichiometry": abs(stoich)
+            "stoichiometry": abs(float(stoich))
         }
     
     # -- F --
@@ -206,54 +210,124 @@ class Reaction:
         return ctx_name + delim + id.replace(delim,"_")
         
     @classmethod
-    def from_biota(cls, rhea_id=None, ec_number=None, tax_id=None, network=None) -> 'Reaction':
-        try:
-            if rhea_id:
-                biota_rxn = BiotaReaction.get(BiotaReaction.rhea_id == rhea_id) 
-            elif ec_number:
-                e = None
-                if tax_id:
-                    e = BiotaEnzyme.get((BiotaEnzyme.ec_number == ec_number) & (BiotaEnzyme.tax_id == tax_id))
-                else:
-                    e = BiotaEnzyme.get(BiotaEnzyme.ec_number == ec_number) 
-                
-                if e:
-                    biota_rxn = e.reactions[0]
-                else:
-                    raise Error("gena.network.Reaction", "from_biota", f"No reaction found for enzyme {ec_number}")
+    def from_biota(cls, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up', network=None) -> 'Reaction':
+        """
+        Returns a reaction using biota DB
+        
+        :param rhea_id: The ID of the Rhea reaction to fetch. If given, the other parameters are not considered
+        :rtype rhea_id: `str`
+        :param ec_number: The EC number of the enzyme related to the reaction. If given, all the Rhea reactions associated with this enzyme are retrieved
+        :rtype ec_number: `str`
+        :param tax_id: The taxonomy ID of the target organism. If given, the enzymes are fetched in the corresponding taxonomy. If the taxonomy ID is not valid, no reaction is built.  
+        :rtype tax_id: `str`
+        :param tax_search_method: The taxonomy search method (Defaults to `bottom_up`). 
+            * `none`: the algorithm will only search at the given taxonomy level
+            * `bottom_up`: the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found
+        :rtype tax_search_method: `none` or `bottom_up`
+        :param network: The network to which the reaction is added. If the reaction already exists, an exception is raised.
+        :rtype network: `Network`
+        """
+        
+        rxns = []
+        tax_tree = BiotaTaxo._tax_tree
+        
+        def __create_rxn(rhea_rxn, network, enzyme, tax=None, distance=0.0):
+            rxn = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number, 
+                      network=network, 
+                      direction=rhea_rxn.direction,
+                      ec_number = enzyme.ec_number)
+            if tax:
+                rxn.source_tax = { "id": tax.tax_id, "title": tax.title, "rank": tax.rank, "distance": distance }
             else:
-                raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
-        except:
-            raise Error("gena.network.Reaction", "from_biota", "ChEBI compound not found")
-        
-        rxn = cls(name=biota_rxn.rhea_id, network=network, direction=biota_rxn.direction, lower_bound=-1000, upper_bound=1000)
-        
-        eqn = biota_rxn.data["equation"]
-        for chebi_id in eqn["substrates"]:
-            stoich =  eqn["substrates"][chebi_id]
-            biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-            c = Compound(name=biota_comp.name)
-            c.chebi_id = biota_comp.chebi_id
-            c.kegg_id = biota_comp.kegg_id
-            c.charge = biota_comp.charge
-            c.formula = biota_comp.formula
-            c.mass = biota_comp.mass
-            c.monoisotopic_mass = biota_comp.monoisotopic_mass
-            rxn.add_substrate(c, stoich)
-        
-        for chebi_id in eqn["products"]:
-            stoich = eqn["products"][chebi_id]
-            biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-            c = Compound(name=biota_comp.name)
-            c.chebi_id = biota_comp.chebi_id
-            c.kegg_id = biota_comp.kegg_id
-            c.charge = biota_comp.charge
-            c.formula = biota_comp.formula
-            c.mass = biota_comp.mass
-            c.monoisotopic_mass = biota_comp.monoisotopic_mass
-            rxn.add_product(c, stoich)
+                rxn.source_tax = Reaction.source_tax.copy()
+                
+            eqn = rhea_rxn.data["equation"]
+            for chebi_id in eqn["substrates"]:
+                stoich =  eqn["substrates"][chebi_id]
+                biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+                c = Compound(name=biota_comp.name)
+                c.chebi_id = biota_comp.chebi_id
+                c.kegg_id = biota_comp.kegg_id
+                c.charge = biota_comp.charge
+                c.formula = biota_comp.formula
+                c.mass = biota_comp.mass
+                c.monoisotopic_mass = biota_comp.monoisotopic_mass
+                rxn.add_substrate(c, stoich)
+
+            for chebi_id in eqn["products"]:
+                stoich = eqn["products"][chebi_id]
+                biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+                c = Compound(name=biota_comp.name)
+                c.chebi_id = biota_comp.chebi_id
+                c.kegg_id = biota_comp.kegg_id
+                c.charge = biota_comp.charge
+                c.formula = biota_comp.formula
+                c.mass = biota_comp.mass
+                c.monoisotopic_mass = biota_comp.monoisotopic_mass
+                rxn.add_product(c, stoich)
             
-        return rxn
+            return rxn
+        
+        if rhea_id:
+            Q = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
+            _added_rxns = []
+            for rhea_rxn in Q:
+                for e in rhea_rxn.enzymes:
+                    if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                        continue
+                    _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                    rxns.append( __create_rxn(rhea_rxn, network, e) )
+
+            return rxns
+            
+        elif ec_number:
+            e = None
+            
+            if tax_id:
+                try:
+                    tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
+                except:
+                    return rxns
+                
+                tax_field = getattr(BiotaEnzyme, "tax_"+tax.rank)
+                Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == tax.tax_id))
+                
+                distance = 0.0
+                    
+                if not Q:
+                    if tax_search_method == 'bottom_up':
+                        # search in higher taxonomy levels
+                        for t in tax.ancestors:
+                            distance = distance + 1.0
+                            if t.rank == "no rank":
+                                return rxns
+
+                            tax_field = getattr(BiotaEnzyme, "tax_"+t.rank)
+                            Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == t.tax_id))
+                            if Q:
+                                tax = t
+                                break
+                
+                _added_rxns = []
+                for e in Q:
+                    for rhea_rxn in e.reactions:
+                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                            continue
+                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                        rxns.append( __create_rxn(rhea_rxn, network, e, tax, distance) )
+            else:
+                Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
+                _added_rxns = []
+                for e in Q:
+                    for rhea_rxn in e.reactions:
+                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                            continue
+                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                        rxns.append( __create_rxn(rhea_rxn, network, e) ) 
+        else:
+            raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
+
+        return rxns
 
     # -- P --
     
@@ -277,7 +351,7 @@ class Reaction:
     def __str__(self):
         _left = []
         _right = []
-        _dir = {"L": " <= ", "R": " => ", "B": " <=> "}
+        _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
         
         for k in self._substrates:
             sub = self._substrates[k]
@@ -297,7 +371,7 @@ class Reaction:
         if not _right:
             _right = ["*"]
             
-        return " + ".join(_left) + _dir[self.direction] + " + ".join(_right)
+        return " + ".join(_left) + _dir[self.direction].replace("E", self.ec_number) + " + ".join(_right)
     
     @property
     def substrates(self):
@@ -415,9 +489,10 @@ class Network(Resource):
             rxn = Reaction(id=val["id"].replace(delim,"_"), \
                            name=val.get("name"), \
                            network=self, \
-                           lower_bound=val.get("lower_bound"), \
-                           upper_bound=val.get("upper_bound"))
-            
+                           lower_bound=val.get("lower_bound", Reaction.lower_bound), \
+                           upper_bound=val.get("upper_bound", Reaction.upper_bound), \
+                           ec_number=val.get("ec_number",""))
+            rxn.source_tax = val.get("source_tax", Reaction.source_tax.copy())
             for k in val[ckey]:
                 comp_id = k
                 stoich = val[ckey][k]
@@ -501,6 +576,8 @@ class Network(Resource):
             _rxn_json.append({
                 "id": _rxn.id,
                 "name": _rxn.name,
+                "ec_number": _rxn.ec_number,
+                "source_tax": _rxn.source_tax,
                 "metabolites": _rxn_met,
             })
   
@@ -553,6 +630,16 @@ class Network(Resource):
         
         return self.set_title(name)
     
+    # -- P --
+    
+    def print(self):
+        s = ""
+        for _id in self.reactions:
+            s = s + "\n" + str(self.reactions[_id])
+        
+        print(s)
+        
+        
     # -- R --
     
     @property
@@ -564,3 +651,6 @@ class Network(Resource):
     def save(self, *args, **kwargs):
         self.data["network"] = self.dumps()
         return super().save(*args, **kwargs)
+    
+    
+            

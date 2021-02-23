@@ -1,3 +1,8 @@
+# Gencovery software - All rights reserved
+# This software is the exclusive property of Gencovery SAS. 
+# The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
+# About us: https://gencovery.com
+
 import json
 from typing import List
 
@@ -20,11 +25,13 @@ from biota.db.enzyme import Enzyme
 
 class ECData(CSVData):
     
+    EC_COLUMN_NAME = "ec_number"
+    
     # -- E --
     
     @property
     def ec_column_name(self):
-        return self.data['ec_column_name']
+        return self.data.get('ec_column_name', self.EC_COLUMN_NAME)
 
     @ec_column_name.setter
     def ec_column_name(self, name):
@@ -54,9 +61,10 @@ class ECData(CSVData):
         """
         
         data = super()._import(*args, **kwargs)
-        if not dt.column_exists( ec_column_name ):
+        if not data.column_exists( ec_column_name ):
             raise Error("ECData", "task", f"No ec numbers found (no column with name 'ec_column_name')")
-
+        
+        data.ec_column_name = ec_column_name
         return data
     
 # ####################################################################
