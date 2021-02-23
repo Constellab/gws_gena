@@ -371,7 +371,9 @@ class Reaction:
         if not _right:
             _right = ["*"]
             
-        return " + ".join(_left) + _dir[self.direction].replace("E", self.ec_number) + " + ".join(_right)
+        _str = " + ".join(_left) + _dir[self.direction].replace("E", self.ec_number) + " + ".join(_right)
+        _str = _str + " " + str(self.source_tax)
+        return _str
     
     @property
     def substrates(self):
