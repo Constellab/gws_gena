@@ -71,7 +71,8 @@ class TestNetwork(unittest.TestCase):
         
         comp4 = Compound(name="Phosphocreatine", chebi_id="CHEBI:17237", compartment=Compound.COMPARTMENT_NUCLEUS)
         rxn1.add_product(comp4, 1)
-        rxn1.ec_number = "MyEnzyme"
+        rxn1.enzyme = {"ec_number": "MyEnzyme"}
+        
         print(rxn1)
         self.assertRaises(Exception, rxn1.add_product, comp4, 2)
         self.assertEqual(str(rxn1), "(1) ATP_c + (1) Creatine_c <==(MyEnzyme)==> (1) ADP_n + (1) Phosphocreatine_n")
@@ -125,5 +126,5 @@ class TestNetwork(unittest.TestCase):
         
         self.assertEqual(len(tw.reactions), 2)
         
-        self.assertEqual(str(tw.reactions["EX_glc__D_e"]), "(1.0) glc__D_e <==()==> *")
-        self.assertEqual(str(tw.reactions["GLNabc"]), "(1.0) atp_c + (1.0) gln__L_e <==()==> (1.0) adp_c + (1.0) gln__L_c")
+        self.assertEqual(str(tw.reactions["EX_glc__D_e"]), "(1) glc__D_e <==()==> *")
+        self.assertEqual(str(tw.reactions["GLNabc"]), "(1) atp_c + (1) gln__L_e <==()==> (1) adp_c + (1) gln__L_c")

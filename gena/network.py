@@ -138,8 +138,7 @@ class Reaction:
     lower_bound: float = -1000.0
     upper_bound: float = 1000.0
     rhea_id = None
-    ec_number = ""
-    source_tax = { "id": "", "title": "", "rank": "", "distance": 0.0 }
+    enzyme = None
     
     _tax_ids = []
     _substrates: dict = None
@@ -148,7 +147,7 @@ class Reaction:
     
     def __init__(self, id: str=None, name: str = None, network: 'Network' = None, \
                  direction: str= "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0, \
-                 ec_number=""):  
+                 enzyme: dict={}):  
         
         if id:
             self.id = id
@@ -161,7 +160,7 @@ class Reaction:
             
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.ec_number = ec_number
+        self.enzyme = enzyme
         
         self._substrates = {}
         self._products = {}
@@ -174,7 +173,7 @@ class Reaction:
     def add_to_network(self, tw: 'Network'):  
         tw.add_reaction(self)
     
-    def add_substrate( self, comp: Compound, stoich: float ):
+    def add_substrate( self, comp: Compound, stoich: int ):
         if comp.id in self._substrates:
             raise Error("gena.network.Reaction", "add_substrate", "Substrate duplicate")
         
@@ -185,10 +184,10 @@ class Reaction:
                 
         self._substrates[comp.id] = {
             "compound": comp,
-            "stoichiometry": abs(float(stoich))
+            "stoichiometry": abs(int(stoich))
         }
     
-    def add_product( self, comp: Compound, stoich: float ):
+    def add_product( self, comp: Compound, stoich: int ):
         if comp.id in self._products:
             raise Error("gena.network.Reaction", "add_substrate", "Product duplicate")
         
@@ -199,7 +198,7 @@ class Reaction:
                 
         self._products[comp.id] = {
             "compound": comp,
-            "stoichiometry": abs(float(stoich))
+            "stoichiometry": abs(int(stoich))
         }
     
     # -- F --
@@ -231,16 +230,19 @@ class Reaction:
         rxns = []
         tax_tree = BiotaTaxo._tax_tree
         
-        def __create_rxn(rhea_rxn, network, enzyme, tax=None, distance=0.0):
+        def __create_rxn(rhea_rxn, network, enzyme, tax=None):
+            if enzyme:
+                e = {"ec_number": enzyme.ec_number}
+                for f in BiotaTaxo._tax_tree: 
+                    e[f] = getattr(enzyme, "tax_"+f)
+            else:
+                e = {}
+                
             rxn = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number, 
                       network=network, 
                       direction=rhea_rxn.direction,
-                      ec_number = enzyme.ec_number)
-            if tax:
-                rxn.source_tax = { "id": tax.tax_id, "title": tax.title, "rank": tax.rank, "distance": distance }
-            else:
-                rxn.source_tax = Reaction.source_tax.copy()
-                
+                      enzyme = e)
+      
             eqn = rhea_rxn.data["equation"]
             for chebi_id in eqn["substrates"]:
                 stoich =  eqn["substrates"][chebi_id]
@@ -269,6 +271,7 @@ class Reaction:
             return rxn
         
         if rhea_id:
+            tax = None
             Q = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
             _added_rxns = []
             for rhea_rxn in Q:
@@ -276,11 +279,12 @@ class Reaction:
                     if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                         continue
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                    rxns.append( __create_rxn(rhea_rxn, network, e) )
+                    rxns.append( __create_rxn(rhea_rxn, network, e, tax) )
 
             return rxns
             
         elif ec_number:
+            tax = None
             e = None
             
             if tax_id:
@@ -305,7 +309,6 @@ class Reaction:
                             tax_field = getattr(BiotaEnzyme, "tax_"+t.rank)
                             Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == t.tax_id))
                             if Q:
-                                tax = t
                                 break
                 
                 _added_rxns = []
@@ -314,7 +317,7 @@ class Reaction:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append( __create_rxn(rhea_rxn, network, e, tax, distance) )
+                        rxns.append( __create_rxn(rhea_rxn, network, e, tax) )
             else:
                 Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
                 _added_rxns = []
@@ -323,7 +326,7 @@ class Reaction:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append( __create_rxn(rhea_rxn, network, e) ) 
+                        rxns.append( __create_rxn(rhea_rxn, network, e, tax) ) 
         else:
             raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
 
@@ -371,8 +374,8 @@ class Reaction:
         if not _right:
             _right = ["*"]
             
-        _str = " + ".join(_left) + _dir[self.direction].replace("E", self.ec_number) + " + ".join(_right)
-        _str = _str + " " + str(self.source_tax)
+        _str = " + ".join(_left) + _dir[self.direction].replace("E", self.enzyme.get("ec_number","")) + " + ".join(_right)
+        #_str = _str + " " + str(self.enzyme)
         return _str
     
     @property
@@ -493,8 +496,7 @@ class Network(Resource):
                            network=self, \
                            lower_bound=val.get("lower_bound", Reaction.lower_bound), \
                            upper_bound=val.get("upper_bound", Reaction.upper_bound), \
-                           ec_number=val.get("ec_number",""))
-            rxn.source_tax = val.get("source_tax", Reaction.source_tax.copy())
+                           enzyme=val.get("enzyme",{}))
             for k in val[ckey]:
                 comp_id = k
                 stoich = val[ckey][k]
@@ -578,8 +580,7 @@ class Network(Resource):
             _rxn_json.append({
                 "id": _rxn.id,
                 "name": _rxn.name,
-                "ec_number": _rxn.ec_number,
-                "source_tax": _rxn.source_tax,
+                "enzyme": _rxn.enzyme,
                 "metabolites": _rxn_met,
             })
   
