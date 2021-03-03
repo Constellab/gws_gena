@@ -13,9 +13,9 @@ from gws.csv import CSVData, \
                     Loader as CSVLoader, Dumper as CSVDumper, \
                     Importer as CSVImporter, Exporter as CSVExporter
 
-from biota.db.enzyme import Enzyme
-from biota.db.taxonomy import Taxonomy
-from biota.db.enzyme import Enzyme
+from biota.enzyme import Enzyme
+from biota.taxonomy import Taxonomy
+from biota.enzyme import Enzyme
 
 # ####################################################################
 #

@@ -11,10 +11,10 @@ from gws.logger import Error
 from gws.model import Model, Resource, ResourceSet
 from gws.utils import generate_random_chars
 
-from biota.db.compound import Compound as BiotaCompound
-from biota.db.reaction import Reaction as BiotaReaction
-from biota.db.enzyme import Enzyme as BiotaEnzyme
-from biota.db.taxonomy import Taxonomy as BiotaTaxo
+from biota.compound import Compound as BiotaCompound
+from biota.reaction import Reaction as BiotaReaction
+from biota.enzyme import Enzyme as BiotaEnzyme
+from biota.taxonomy import Taxonomy as BiotaTaxo
 
 
 flattening_delimiter = ":"
