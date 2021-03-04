@@ -36,7 +36,7 @@ class FluxAnalyzer(Shell):
     def build_command(self) -> list:
         settings = Settings.retrieve()
         _dir = settings.get_dependency_dir("gena")
-        bin_file = os.path.join(_dir, "bin/build/fba")
+        bin_file = os.path.join(_dir, "bin/fba")
         
         biomodel = self.input["biomodel"]
         self.network_file = os.path.join(self.cwd.name,"network.json")
