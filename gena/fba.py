@@ -30,13 +30,14 @@ class FluxAnalyzer(Shell):
     def after_command(self, stdout: str=None):
         f = File()
         f.path = self.output_file
+        
         self.output["file"] = f
         self.data["stdout"] = stdout
     
     def build_command(self) -> list:
         settings = Settings.retrieve()
         _dir = settings.get_dependency_dir("gena")
-        bin_file = os.path.join(_dir, "bin/fba")
+        bin_file = os.path.join(_dir, "bin/fba/fba")
         
         biomodel = self.input["biomodel"]
         self.network_file = os.path.join(self.cwd.name,"network.json")
@@ -63,5 +64,5 @@ class FluxAnalyzer(Shell):
             "--config", self.config_file,
             "--out", self.output_file
         ]
-        
+
         return cmd
