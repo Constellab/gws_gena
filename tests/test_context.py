@@ -9,7 +9,7 @@ settings.use_prod_biota_db(True)
 from gena.network import Network, Compound, Reaction
 from gena.biomodel import Biomodel
 from gena.context import Context
-from biota.db.compound import Compound as BiotaCompound
+from biota.compound import Compound as BiotaCompound
 
 
 class TestTwin(unittest.TestCase):
