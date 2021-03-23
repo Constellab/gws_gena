@@ -4,6 +4,7 @@ import unittest
 import asyncio
 
 from gws.settings import Settings
+from gws.model import Study
 settings = Settings.retrieve()
 settings.use_prod_biota_db(True)
 
@@ -18,11 +19,10 @@ class TestRecon(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         Biomodel.drop_table()
-        Biomodel.create_table()
         Context.drop_table()
-        Context.create_table()
         Network.drop_table()
-        Network.create_table()
+        DraftRecon.drop_table()
+        ECData.drop_table()
         pass
 
     @classmethod
@@ -48,7 +48,7 @@ class TestRecon(unittest.TestCase):
             print(net.as_json(stringify=True, prettify=True))
             net.print()
             
-        e = bm.create_experiment()
+        e = bm.create_experiment( study =Study.get_default_instance() )
         e.on_end( _on_end )
         
         asyncio.run( e.run() )

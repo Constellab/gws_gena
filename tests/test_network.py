@@ -15,11 +15,8 @@ class TestNetwork(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         Biomodel.drop_table()
-        Biomodel.create_table()
         Context.drop_table()
-        Context.create_table()
         Network.drop_table()
-        Network.create_table()
         pass
 
     @classmethod

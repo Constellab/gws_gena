@@ -3,7 +3,7 @@ import asyncio
 import os, json
 import unittest
 
-from gws.model import Protocol
+from gws.model import Protocol, Study, Experiment
 from gws.settings import Settings
 settings = Settings.retrieve()
 settings.use_prod_biota_db(True)
@@ -17,19 +17,24 @@ class TestFba(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
+        Experiment.drop_table()
+        Protocol.drop_table()
+        Study.drop_table()
         Biomodel.drop_table()
-        Biomodel.create_table()
         Context.drop_table()
-        Context.create_table()
         Network.drop_table()
-        Network.create_table()
+        FluxAnalyzer.drop_table()
         pass
 
     @classmethod
     def tearDownClass(cls):
+        Experiment.drop_table()
+        Protocol.drop_table()
+        Study.drop_table()
         Biomodel.drop_table()
         Context.drop_table()
         Network.drop_table()
+        FluxAnalyzer.drop_table()
         settings.use_prod_biota_db(False)
         pass
 
@@ -68,6 +73,6 @@ class TestFba(unittest.TestCase):
                 self.assertEqual( data, result_content )
             
         
-        e = fba.create_experiment()
+        e = fba.create_experiment(study=Study.get_default_instance())
         e.on_end(_on_end)
         asyncio.run( e.run() )
