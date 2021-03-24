@@ -46,15 +46,10 @@ class TestBiomodel(unittest.TestCase):
         bio.add_network(net)
         bio.add_context(ctx, related_network=net)
         
+        # export as json
         _json = bio.dumps(expand=True, prettify=True, stringify=True)
         #print(_json)
         
         self.assertRaises(Exception, bio.add_network, net)
-        
-        #bio.add_network(net2, related_context=ctx2)
-        #_json = bio.dumps(expand=True, prettify=True, stringify=True)
-        #print(_json)
-        
-        
         flat = json.dumps(bio.flatten(), indent=4)
         print(flat)

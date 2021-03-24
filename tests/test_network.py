@@ -104,24 +104,28 @@ class TestNetwork(unittest.TestCase):
         
         with open(file_path) as f:
             data = json.load(f)
-            tw = Network.from_json(data)
+            net = Network.from_json(data)
         
-        _json = tw.dumps(stringify=True, prettify=True)
+        _json = net.dumps(stringify=True, prettify=True)
         print(_json)        
-        print(tw.as_json())
+        print(net.as_json())
         
-        self.assertEqual(len(tw.compounds), 5)
+        self.assertEqual(len(net.compounds), 5)
+        self.assertEqual(net.compounds["glc__D_e"].id, "glc__D_e")
+        self.assertEqual(net.compounds["glc__D_e"].name, "D-Glucose")
+        self.assertEqual(net.compounds["glc__D_e"].compartment, "e")
+        self.assertEqual(net.compounds["atp_c"].id, "atp_c")
+        self.assertEqual(net.compounds["atp_c"].name, "ATP C10H12N5O13P3")
+        self.assertEqual(net.compounds["atp_c"].compartment, "c")
+        self.assertEqual(len(net.reactions), 2)
+        self.assertEqual(str(net.reactions["EX_glc__D_e"]), "(1) glc__D_e <==()==> *")
+        self.assertEqual(str(net.reactions["GLNabc"]), "(1) atp_c + (1) gln__L_e <==()==> (1) adp_c + (1) gln__L_c")
         
-        self.assertEqual(tw.compounds["glc__D_e"].id, "glc__D_e")
-        self.assertEqual(tw.compounds["glc__D_e"].name, "D-Glucose")
-        self.assertEqual(tw.compounds["glc__D_e"].compartment, "e")
         
-        self.assertEqual(tw.compounds["atp_c"].id, "atp_c")
-        self.assertEqual(tw.compounds["atp_c"].name, "ATP C10H12N5O13P3")
-        self.assertEqual(tw.compounds["atp_c"].compartment, "c")
-        
-        
-        self.assertEqual(len(tw.reactions), 2)
-        
-        self.assertEqual(str(tw.reactions["EX_glc__D_e"]), "(1) glc__D_e <==()==> *")
-        self.assertEqual(str(tw.reactions["GLNabc"]), "(1) atp_c + (1) gln__L_e <==()==> (1) adp_c + (1) gln__L_c")
+        # export as table
+        csv = net.as_csv()
+        file_path = os.path.join(data_dir, "smal.csv")
+        with open(file_path, 'w') as f:
+            f.write(csv)
+
+        print(csv)

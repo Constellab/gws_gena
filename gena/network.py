@@ -26,7 +26,36 @@ flattening_delimiter = ":"
 # ####################################################################
 
 class Compound:
-                                
+    """
+    Class that represents a network compound. 
+    
+    Network compounds are proxy of biota compounds (i.e. Chebi compounds). 
+    They a used to build reconstructed digital twins. 
+
+    :property id: The id of the compound
+    :type id: `str`
+    :property name: The name of the compound
+    :type name: `str`
+    :property charge: The charge of the compound
+    :type charge: `str`
+    :property mass: The mass of the compound
+    :type mass: `str`
+    :property monoisotopic_mass: The monoisotopic mass of the compound
+    :type monoisotopic_mass: `str`
+    :property formula: The formula of the compound
+    :type formula: `str`
+    :property inchi: The inchi of the compound
+    :type inchi: `str`
+    :property compartment: The compartment of the compound
+    :type compartment: `str`
+    :property compartment: The compartment of the compound
+    :type compartment: `str`
+    :property chebi_id: The corresponding ChEBI id of the compound
+    :type chebi_id: `str`
+    :property kegg_id: The corresponding Kegg id of the compound
+    :type kegg_id: `str`
+    """
+    
     id = None
     name = None
     network = None
@@ -47,9 +76,9 @@ class Compound:
     
     _flattening_delimiter = flattening_delimiter
     
-    def __init__(self, id=None, name="unnamed", compartment="c", network:'Network'=None, formula=None, \
-                 charge=None, mass=None, monoisotopic_mass=None, inchi=None, \
-                 chebi_id=None, kegg_id=None):  
+    def __init__(self, id="", name="unnamed", compartment="c", network:'Network'=None, formula="", \
+                 charge="", mass="", monoisotopic_mass="", inchi="", \
+                 chebi_id="", kegg_id=""):  
         
         if not compartment in self.VALID_COMPARTMENTS:
             raise Error("gena.network.Compound", "__init__", "Invalid compartment")  
@@ -75,23 +104,54 @@ class Compound:
         
     # -- A --
 
-    def add_to_network(self, tw: 'Network'):  
-        tw.add_compound(self)
+    def add_to_network(self, net: 'Network'):  
+        """
+        Adds the compound to a newtork
+        
+        :param net: The network
+        :type net: `gena.network.Network`
+        """
+        
+        net.add_compound(self)
         
     # -- F --
     
     @classmethod
-    def _flatten_id(cls, id, ctx_name, is_compartment=False):
+    def _flatten_id(cls, id, ctx_name, is_in_compartment=False) -> str:
+        """
+        Flattens a compound id
+        
+        :param id: The id
+        :type id: `str`
+        :param ctx_name: The name of the (metabolic, biological, network) context
+        :type ctx_name: `str`
+        :param is_in_compartment: True if the compound is in a compartement id, False otherwise
+        :type is_in_compartment: `bool`
+        :return: The flattened id
+        :rtype: `str`
+        """
+        
         delim = cls._flattening_delimiter
         skip_list = [ cls.COMPARTMENT_EXTRACELL ]
         for c in skip_list:
-            if id.endswith("_" + c) or (is_compartment and id == c):
+            if id.endswith("_" + c) or (is_in_compartment and id == c):
                 return id
 
         return ctx_name + delim + id.replace(delim,"_")
      
     @classmethod
     def from_biota(cls, chebi_id=None, kegg_id=None) -> 'Compound':
+        """
+        Create a network compound from a ChEBI of Kegg id
+        
+        :param chebi_id: The ChEBI id
+        :type chebi_id: `str`
+        :param kegg_id: The Kegg id
+        :type kegg_id: `str`
+        :return: The network compound
+        :rtype: `gena.network.Compound`
+        """
+        
         try:
             if chebi_id:
                 comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
@@ -115,6 +175,13 @@ class Compound:
     # -- R --
     
     def get_related_biota_compound(self):
+        """
+        Get the biota compound that is related to this network compound
+        
+        :return: The biota compound corresponding to the chebi of kegg id. Returns `None` is no biota coumpund is found
+        :rtype: `bioa.compound.Compound`, `None`
+        """
+        
         try:
             if self.chebi_id:
                 return BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
@@ -130,22 +197,46 @@ class Compound:
 #
 # ####################################################################
 
-class Reaction:    
+class Reaction:   
+    """
+    Class that represents a network reaction. 
+    
+    Network reactions are proxy of biota reaction (i.e. Rhea compounds). 
+    They a used to build reconstructed digital twins. 
+
+    :property id: The id of the reaction
+    :type id: `str`
+    :property name: The name of the reaction
+    :type name: `str`
+    :property network: The network of the reaction
+    :type network: `gena.network.Network`
+    :property direction: The direction of the reaction. Bidirectional (B), Left direction (L), Righ direction (R)
+    :type direction: `str`
+    :property lower_bound: The lower bound of the reaction flux (metabolic flux)
+    :type lower_bound: `float`
+    :property upper_bound: The upper bound of the reaction flux (metabolic flux)
+    :type upper_bound: `float`
+    :property rhea_id: The corresponding Rhea if of the reaction
+    :type rhea_id: `str`
+    :property enzyme: The details on the enzyme that regulates the reaction
+    :type enzyme: `dict`
+    """
+    
     id: str = None
     name: str = None
     network: 'Network' = None
     direction: str = "B"
     lower_bound: float = -1000.0
     upper_bound: float = 1000.0
-    rhea_id = None
-    enzyme = None
+    rhea_id: str = None
+    enzyme: dict = None
     
     _tax_ids = []
     _substrates: dict = None
     _products: dict = None
     _flattening_delimiter = flattening_delimiter
     
-    def __init__(self, id: str=None, name: str = None, network: 'Network' = None, \
+    def __init__(self, id: str="", name: str = "", network: 'Network' = None, \
                  direction: str= "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0, \
                  enzyme: dict={}):  
         
@@ -170,10 +261,26 @@ class Reaction:
         
     # -- A --
 
-    def add_to_network(self, tw: 'Network'):  
-        tw.add_reaction(self)
+    def add_to_network(self, net: 'Network'):  
+        """
+        Adds the reaction to a newtork
+        
+        :param net: The network
+        :type net: `gena.network.Network`
+        """
+        
+        net.add_reaction(self)
     
     def add_substrate( self, comp: Compound, stoich: int ):
+        """
+        Adds a substrate to the reaction
+        
+        :param comp: The compound to add as substrate
+        :type comp: `gena.network.Compound`
+        :param stoich: The stoichiometry of the compound in the reaction
+        :type stoich: `int`
+        """
+        
         if comp.id in self._substrates:
             raise Error("gena.network.Reaction", "add_substrate", "Substrate duplicate")
         
@@ -188,6 +295,15 @@ class Reaction:
         }
     
     def add_product( self, comp: Compound, stoich: int ):
+        """
+        Adds a product to the reaction
+        
+        :param comp: The compound to add as product
+        :type comp: `gena.network.Compound`
+        :param stoich: The stoichiometry of the compound in the reaction
+        :type stoich: `int`
+        """
+        
         if comp.id in self._products:
             raise Error("gena.network.Reaction", "add_substrate", "Product duplicate")
         
@@ -201,21 +317,66 @@ class Reaction:
             "stoichiometry": abs(int(stoich))
         }
     
+    def as_str(self) -> str:
+        """
+        Returns a string representation of the reaction
+        
+        :return: The string
+        :rtype: `str`
+        """
+        
+        _left = []
+        _right = []
+        _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
+        
+        for k in self._substrates:
+            sub = self._substrates[k]
+            comp = sub["compound"]
+            stoich = sub["stoichiometry"]
+            _left.append( f"({stoich}) {comp.id}" )
+        
+        for k in self._products:
+            sub = self._products[k]
+            comp = sub["compound"]
+            stoich = sub["stoichiometry"]
+            _right.append( f"({stoich}) {comp.id}" )
+        
+        if not _left:
+            _left = ["*"]
+            
+        if not _right:
+            _right = ["*"]
+            
+        _str = " + ".join(_left) + _dir[self.direction].replace("E", self.enzyme.get("ec_number","")) + " + ".join(_right)
+        #_str = _str + " " + str(self.enzyme)
+        return _str
+    
     # -- F --
     
     @classmethod
-    def _flatten_id(cls, id, ctx_name):
+    def _flatten_id(cls, id:str , ctx_name:str) -> str:
+        """
+        Flattens a reaction id
+        
+        :param id: The id
+        :type id: `str`
+        :param ctx_name: The name of the (metabolic, biological, network) context
+        :type ctx_name: `str`
+        :return: The flattened id
+        :rtype: `str`
+        """
+        
         delim = cls._flattening_delimiter
         return ctx_name + delim + id.replace(delim,"_")
         
     @classmethod
     def from_biota(cls, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up', network=None) -> 'Reaction':
         """
-        Returns a reaction using biota DB
+        Create a biota reaction from a Rhea id or an EC number.
         
-        :param rhea_id: The ID of the Rhea reaction to fetch. If given, the other parameters are not considered
+        :param rhea_id: The Rhea id of the reaction. If given, the other parameters are not considered
         :rtype rhea_id: `str`
-        :param ec_number: The EC number of the enzyme related to the reaction. If given, all the Rhea reactions associated with this enzyme are retrieved
+        :param ec_number: The EC number of the enzyme related to the reaction. If given, all the Rhea reactions associated with this enzyme are retrieved for the biota DB
         :rtype ec_number: `str`
         :param tax_id: The taxonomy ID of the target organism. If given, the enzymes are fetched in the corresponding taxonomy. If the taxonomy ID is not valid, no reaction is built.  
         :rtype tax_id: `str`
@@ -224,20 +385,52 @@ class Reaction:
             * `bottom_up`: the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found
         :rtype tax_search_method: `none` or `bottom_up`
         :param network: The network to which the reaction is added. If the reaction already exists, an exception is raised.
-        :rtype network: `Network`
+        :return: The network reaction
+        :rtype: `gena.network.Reaction`
         """
         
         rxns = []
-        tax_tree = BiotaTaxo._tax_tree
+        #tax_tree = BiotaTaxo._tax_tree
         
-        def __create_rxn(rhea_rxn, network, enzyme, tax=None):
+        all_tax = {}
+        def __create_rxn(rhea_rxn, network, enzyme):
             if enzyme:
-                e = {"ec_number": enzyme.ec_number}
-                for f in BiotaTaxo._tax_tree: 
-                    e[f] = getattr(enzyme, "tax_"+f)
+                
+                e = {
+                    "title": enzyme.title,
+                    "ec_number": enzyme.ec_number,
+                }
+                
+                e["tax"] = {}
+                try:
+                    tax = BiotaTaxo.get(BiotaTaxo.tax_id == enzyme.tax_id)
+                except:
+                    tax = None
+                    
+                if tax:
+                    e["tax"][tax.rank] = {
+                        "id": tax.id,
+                        "title": tax.title
+                    }
+                    
+                    for t in tax.ancestors:
+                        e["tax"][t.rank] = {
+                            "id": t.id,
+                            "title": t.title
+                        }
+                    
+                #for f in BiotaTaxo._tax_tree: 
+                #    e[f] = getattr(enzyme, "tax_"+f)
                     
                 if enzyme.related_deprecated_enzyme:
-                    e["related_deprecated_enzyme"] = enzyme.related_deprecated_enzyme.ec_number
+                    e["related_deprecated_enzyme"] = {
+                        "title": enzyme.related_deprecated_enzyme.title, 
+                        "ec_number": enzyme.related_deprecated_enzyme.ec_number 
+                    }
+                
+                pwy = enzyme.pathway
+                if pwy:
+                    e["pathway"] = pwy.data
                     
             else:
                 e = {}
@@ -245,7 +438,7 @@ class Reaction:
             rxn = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number, 
                       network=network, 
                       direction=rhea_rxn.direction,
-                      enzyme = e)
+                      enzyme=e)
       
             eqn = rhea_rxn.data["equation"]
             for chebi_id in eqn["substrates"]:
@@ -283,7 +476,7 @@ class Reaction:
                     if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                         continue
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                    rxns.append( __create_rxn(rhea_rxn, network, e, tax) )
+                    rxns.append( __create_rxn(rhea_rxn, network, e) )
 
             return rxns
             
@@ -300,13 +493,11 @@ class Reaction:
                 #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == tax.tax_id))
                 
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
-                distance = 0.0
                     
                 if not Q:
                     if tax_search_method == 'bottom_up':
                         # search in higher taxonomy levels
                         for t in tax.ancestors:
-                            distance = distance + 1.0
                             if t.rank == "no rank":
                                 return rxns
 
@@ -322,7 +513,7 @@ class Reaction:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append( __create_rxn(rhea_rxn, network, e, tax) )
+                        rxns.append( __create_rxn(rhea_rxn, network, e) )
             else:
                 #Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
@@ -332,7 +523,7 @@ class Reaction:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append( __create_rxn(rhea_rxn, network, e, tax) ) 
+                        rxns.append( __create_rxn(rhea_rxn, network, e) ) 
         else:
             raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
 
@@ -341,51 +532,42 @@ class Reaction:
     # -- P --
     
     @property
-    def products(self):
+    def products(self) -> str:
+        """
+        Returns the products of the reaction
+        
+        :return: The list of products as {key,value} dictionnary
+        :rtype: `dict`
+        """
+        
         return self._products
     
     # -- R --
     
-    def get_related_biota_compound(self):
+    def get_related_biota_reaction(self):
+        """
+        Get the biota reaction that is related to this network reaction
+        
+        :return: The biota compound corresponding to the rhea id. Returns `None` is no biota reaction is found
+        :rtype: `bioa.reaction.Reaction`, `None`
+        """
+        
         try:
-            if self.chebi_id:
-                return BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
-            elif self.kegg_id:
-                return BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
+            return BiotaReaction.get(BiotaReaction.rhea_id == self.rhea_id)
         except:
             return None
     
     # -- S --
     
-    def __str__(self):
-        _left = []
-        _right = []
-        _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
-        
-        for k in self._substrates:
-            sub = self._substrates[k]
-            comp = sub["compound"]
-            stoich = sub["stoichiometry"]
-            _left.append( f"({stoich}) {comp.id}" )
-        
-        for k in self._products:
-            sub = self._products[k]
-            comp = sub["compound"]
-            stoich = sub["stoichiometry"]
-            _right.append( f"({stoich}) {comp.id}" )
-        
-        if not _left:
-            _left = ["*"]
-            
-        if not _right:
-            _right = ["*"]
-            
-        _str = " + ".join(_left) + _dir[self.direction].replace("E", self.enzyme.get("ec_number","")) + " + ".join(_right)
-        #_str = _str + " " + str(self.enzyme)
-        return _str
-    
     @property
-    def substrates(self):
+    def substrates(self) -> dict:
+        """
+        Returns the substrates of the reaction
+        
+        :return: The list of substrates as {key,value} dictionnary
+        :rtype: `dict`
+        """
+        
         return self._substrates
     
 # ####################################################################
@@ -395,6 +577,11 @@ class Reaction:
 # ####################################################################
 
 class Network(Resource):
+    """
+    Class that represents a network. 
+    
+    A network is a collection of reconstructed metabolic pathways.
+    """
     
     _compounds = None
     _reactions = None
@@ -425,6 +612,13 @@ class Network(Resource):
     # -- A --
     
     def add_compound(self, comp: Compound):
+        """
+        Adds a compound 
+        
+        :param comp: The compound to add
+        :type comp: `gena.network.Compound`
+        """
+        
         if not isinstance(comp, Compound):
             raise Error("Network", "add_compound", "The compound must an instance of Compound")
         
@@ -441,6 +635,13 @@ class Network(Resource):
         self.compounds[comp.id] = comp
         
     def add_reaction(self, rxn: Reaction):
+        """
+        Adds a product
+        
+        :param rxn: The reaction to add
+        :type rxn: `gena.network.Reaction`
+        """
+        
         if not isinstance(rxn, Reaction):
             raise Error("Network", "add_reaction", "The reaction must an instance of Reaction")
         
@@ -465,10 +666,136 @@ class Network(Resource):
         rxn.network = self
         self.reactions[rxn.id] = rxn
         
+    
+    def as_str(self) -> str:
+        """
+        Returns a string representation of the network
         
+        :rtype: `str`
+        """
+        
+        _str = ""
+        for _id in self.reactions:
+            _str += "\n" + self.reactions[_id].as_str()
+        return _str
+    
+    def as_csv(self) -> str:
+        """
+        Returns a CSV representation of the network
+        
+        :rtype: `str`
+        """
+        
+        return self.as_table(stringify=True)
+        
+    def as_table(self, stringify=False) -> ('pandas.DataFrame', str):
+        """
+        Returns a tabular representation of the network
+        
+        :param stringify: True to stringify the table (as CSV string will be returned). False otherwise
+        :type stringify: `bool`
+        :rtype: `pandas.DataFrame`, `str`
+        """
+        
+        column_names = [
+            "#", "id", "equation", \
+            "enzyme", "related_deprecated_enzyme", \
+            "substrates", "products", \
+            *BiotaTaxo._tax_tree, \
+            "brenda_pathway", "kegg_pathway", "metacyc_pathway"]
+        
+        table = []
+        rxn_count = 1
+        for k in self.reactions:
+            rxn = self.reactions[k]
+            
+            enz = ""
+            deprecated_enz = ""
+            pathway_cols = ["", "", ""]
+            tax_cols = [""] * len(BiotaTaxo._tax_tree)
+            
+            if rxn.enzyme:
+                enz = rxn.enzyme["title"] + " (" + rxn.enzyme["ec_number"] + ")"
+                deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
+                if deprecated_enz:
+                     deprecated_enz = deprecated_enz["title"] + " (" + deprecated_enz["ec_number"] + ")"
 
-    def as_json(self, stringify=False, prettify=False):
-        _json = super().as_json()
+                if rxn.enzyme.get("pathway"):
+                    pathway_cols = []
+                    bkms = ['brenda', 'kegg', 'metacyc']
+                    pw = rxn.enzyme["pathway"]
+                    for db in bkms:
+                        if pw.get(db+"_pathway"):
+                            keys = list(pw[db+"_pathway"].keys())
+                            vals = list(pw[db+"_pathway"].values())
+                            pathway_cols.append( vals[0] + " (" + keys[0] + ")" )
+                        else:
+                            pathway_cols.append("")
+                
+                if rxn.enzyme.get("tax"):
+                    tax_cols = []
+                    tax = rxn.enzyme.get("tax")
+                    for f in BiotaTaxo._tax_tree: 
+                        if f in tax:
+                            tax_cols.append( tax[f]["title"] + " (" + str(tax[f]["id"]) + ")" )
+                        else:
+                            tax_cols.append("")
+                    
+            subs = []
+            for m in rxn.substrates:
+                c = rxn.substrates[m]["compound"]
+                subs.append( c.name + " (" + c.chebi_id + ")" )
+                
+            prods = []
+            for m in rxn.products:
+                c = rxn.products[m]["compound"]
+                prods.append( c.name + " (" + c.chebi_id + ")" )
+            
+            if not subs:
+                subs = ["*"]
+            
+            if not prods:
+                prods = ["*"]
+                
+            rxn_row = [
+                rxn_count, \
+                rxn.id, \
+                rxn.as_str(), \
+                enz, \
+                deprecated_enz, \
+                "; ".join(subs), \
+                "; ".join(prods), \
+                *tax_cols, \
+                *pathway_cols
+            ]
+            
+            rxn_count += 1
+            
+            table.append(rxn_row)
+        
+        import pandas
+        table = pandas.DataFrame(table, columns=column_names)
+        
+        if stringify:
+            return table.to_csv()
+        else:
+            return table
+        
+    def as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
+        """
+        Returns JSON string or dictionnary representation of the model.
+        
+        :param stringify: If True, returns a JSON string. Returns a python dictionary otherwise. Defaults to False
+        :type stringify: bool
+        :param prettify: If True, indent the JSON string. Defaults to False.
+        :type prettify: bool
+        :param kwargs: Theses parameters are passed to the super class
+        :type kwargs: keyword arguments
+        :return: The representation
+        :rtype: dict, str
+        """
+        
+        _json = super().as_json(**kwargs)
         _json["data"]["network"] = self.dumps() #override to account for new updates
         
         if stringify:
@@ -482,6 +809,10 @@ class Network(Resource):
     # -- B --
     
     def __build_from_dump(self, data):
+        """
+        Create a network from a dump
+        """
+        
         delim = self._flattening_delimiter
         self.compartments = data["compartments"]
         ckey = "compounds" if "compounds" in data else "metabolites"
@@ -518,14 +849,31 @@ class Network(Resource):
         
     @property
     def compartments(self):
+        """
+        Returns the list of compartments
+        
+        :rtype: `dict`
+        """
         return self._compartments
     
     @compartments.setter
-    def compartments(self, val):
+    def compartments(self, vals: list):
+        """ 
+        Set the list of compartments.
+        
+        :param vals: The list of compartments
+        :type vals: `list` of `str`
+        """
         self._compartments = val
     
     @property
-    def compounds(self):
+    def compounds(self) -> dict:
+        """
+        Returns the list of compounds
+        
+        :rtype: `dict`
+        """
+        
         return self._compounds
     
     # -- D --
@@ -533,7 +881,7 @@ class Network(Resource):
     @property
     def description(self) -> str:
         """ 
-        Set the description of the compartment.
+        Set the description.
         
         :param description: The description
         :type description: `str`
@@ -553,6 +901,10 @@ class Network(Resource):
         self.data["description"] = ""
     
     def dumps(self, stringify=False, prettify=False):
+        """
+        Dumps the network
+        """
+        
         _met_json = []
         _rxn_json = []
         
@@ -608,6 +960,10 @@ class Network(Resource):
     
     @classmethod
     def from_json(cls, data: dict):
+        """
+        Create a network from a JSON dump
+        """
+        
         net = Network()
         net.__build_from_dump(data)
         net.data["network"] = net.dumps()
@@ -641,23 +997,25 @@ class Network(Resource):
     
     # -- P --
     
-    def print(self):
-        s = ""
-        for _id in self.reactions:
-            s = s + "\n" + str(self.reactions[_id])
-        
-        print(s)
-        
-        
     # -- R --
     
     @property
-    def reactions(self):
+    def reactions(self) -> dict:
+        """
+        Returns the list of reactions
+        
+        :rtype: `dict`
+        """
+        
         return self._reactions #self.kv_store["reactions"]
     
     # -- S --
     
     def save(self, *args, **kwargs):
+        """
+        Save the metwork
+        """
+        
         self.data["network"] = self.dumps()
         return super().save(*args, **kwargs)
     

@@ -35,7 +35,7 @@ class TestRecon(unittest.TestCase):
 
     def test_draft_recon(self):
         data_dir = settings.get_dir("gena:testdata_dir")
-        file_path = os.path.join(data_dir, "ec_data2.csv")
+        file_path = os.path.join(data_dir, "ec_data.csv")
         
         ec_data = ECData._import(file_path, ec_column_name="EC Number")
         ec_data.save()
@@ -46,7 +46,12 @@ class TestRecon(unittest.TestCase):
         def _on_end(*args, **kwargs):
             net = bm.output['network']
             print(net.as_json(stringify=True, prettify=True))
-            net.print()
+            print(net.as_str())
+            
+            file_path = os.path.join(data_dir, "recon_net.csv")
+            with open(file_path, 'r') as f:
+                self.assertEqual( f.read(), net.as_csv() )
+                #f.write(net.as_csv())
             
         e = bm.create_experiment( study =Study.get_default_instance() )
         e.on_end( _on_end )

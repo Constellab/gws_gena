@@ -21,6 +21,12 @@ from .context import Context
 # ####################################################################
 
 class Biomodel(Resource):
+    """
+    Class that represents a biomodel.
+    
+    A biomodel is defined by a set of networks related to a set of contexts. It
+    can therefore be used for simulation and prediction.
+    """
     
     _networks = None
     _network_contexts = None
@@ -50,6 +56,15 @@ class Biomodel(Resource):
     # -- A --
     
     def add_network(self, network: 'Network', related_context: 'Context' = None):
+        """
+        Add a network to the biomodel
+
+        :param network: The network to add
+        :type network: `gena.network.Network`
+        :param related_context: A context related to the network
+        :type related_context: `gena.context.Context`
+        """
+        
         if not isinstance(network, Network):
             raise Error("Network", "add_network", "The network must an instance of Network")
         
@@ -67,7 +82,16 @@ class Biomodel(Resource):
             
             self.add_context(related_context, network)
         
-    def add_context(self, ctx: 'Context', related_network: 'Network' = None):    
+    def add_context(self, ctx: 'Context', related_network: 'Network' = None):  
+        """
+        Add a context to the biomodel
+
+        :param context: The context to add
+        :type context: `gena.context.Context`
+        :param related_network: A network related to the context
+        :type related_network: `gena.network.Network`
+        """
+        
         if not isinstance(ctx, Context):
             raise Error("Network", "add_context", "The context must be an instance of Context")
         
@@ -92,8 +116,23 @@ class Biomodel(Resource):
         
             self.network_contexts[related_network.uri] = ctx
         
-    def as_json(self, stringify=False, prettify=False, expand=False):
-        _json = super().as_json()
+    def as_json(self, stringify=False, prettify=False, expand=False, **kwargs):
+        """
+        Returns a JSON string or dictionnary representation of the model.
+        
+        :param stringify: If True, returns a JSON string. Returns a python dictionary otherwise. Defaults to False
+        :type stringify: bool
+        :param prettify: If True, indent the JSON string. Defaults to False.
+        :type prettify: bool
+        :param expand: If True, the  content of the biomodel is expanded. False otherwise.
+        :type expand: bool
+        :param kwargs: Theses parameters are passed to the super class
+        :type kwargs: keyword arguments
+        :return: The representation
+        :rtype: dict, str
+        """
+        
+        _json = super().as_json(**kwargs)
         _json["data"]["biomodel"] = self.dumps(expand=expand) #override to account for new updates
         
         if stringify:
@@ -103,7 +142,7 @@ class Biomodel(Resource):
                 return json.dumps(_json)
         else:
             return _json  
-            
+    
     # -- B --
     
     def __build_from_dump(self, data):
