@@ -724,14 +724,20 @@ class Network(Resource):
                     pathway_cols = []
                     bkms = ['brenda', 'kegg', 'metacyc']
                     pw = rxn.enzyme["pathway"]
+                    #for db in bkms:
+                    #    if pw.get(db+"_pathway"):
+                    #        keys = list(pw[db+"_pathway"].keys())
+                    #        vals = list(pw[db+"_pathway"].values())
+                    #        pathway_cols.append( vals[0] + " (" + keys[0] + ")" )
+                    #    else:
+                    #        pathway_cols.append("")
+                    
                     for db in bkms:
-                        if pw.get(db+"_pathway"):
-                            keys = list(pw[db+"_pathway"].keys())
-                            vals = list(pw[db+"_pathway"].values())
-                            pathway_cols.append( vals[0] + " (" + keys[0] + ")" )
+                        if pw.get(db):
+                            pathway_cols.append( pw[db]["name"] + " (" + (pw[db]["id"] if pw[db]["id"] else "--") + ")" )
                         else:
                             pathway_cols.append("")
-                
+                            
                 if rxn.enzyme.get("tax"):
                     tax_cols = []
                     tax = rxn.enzyme.get("tax")

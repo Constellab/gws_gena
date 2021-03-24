@@ -51,7 +51,9 @@ class TestRecon(unittest.TestCase):
             file_path = os.path.join(data_dir, "recon_net.csv")
             with open(file_path, 'r') as f:
                 self.assertEqual( f.read(), net.as_csv() )
-                #f.write(net.as_csv())
+             
+            #with open(file_path, 'w') as f:
+            #    f.write(net.as_csv())
             
         e = bm.create_experiment( study =Study.get_default_instance() )
         e.on_end( _on_end )
