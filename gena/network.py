@@ -652,6 +652,7 @@ class Network(Resource):
         # only used for the reconstruction
         self.data["errored_ec_numbers"] = []
         self.data["partial_ec_numbers"] = []
+        self.data["not_found_ec_numbers"] = []
         
     # -- A --
     
@@ -746,10 +747,11 @@ class Network(Resource):
         column_names = [
             "id", "equation", \
             "enzyme", "ec_number", "enzyme_class", \
-            "related_deprecated_enzyme", \
+            "comments", \
             "substrates", "products", \
             *BiotaTaxo._tax_tree, \
-            "brenda_pathway", "kegg_pathway", "metacyc_pathway"]
+            "brenda_pathway", "kegg_pathway", "metacyc_pathway"
+        ]
         
         table = []
         rxn_count = 1
@@ -817,8 +819,8 @@ class Network(Resource):
                 rxn.id, \
                 rxn.as_str(), \
                 enz, ec, \
-                deprecated_enz, \
                 enzyme_class, \
+                deprecated_enz, \
                 "; ".join(subs), \
                 "; ".join(prods), \
                 *tax_cols, \
@@ -840,14 +842,25 @@ class Network(Resource):
             except:
                 pass
             
+            rxn_row[5] = "partial_ec_numbers"
             rxn_count += 1
             table.append(rxn_row)
         
-        # add the classification of incomplete ec numbers
+        # add the errored ec numbers
         errored_ec_numbers = self.data.get("errored_ec_numbers")
         for ec in errored_ec_numbers:
             rxn_row = [""] * len(column_names)
             rxn_row[3] = ec
+            rxn_row[5] = "errored_ec_numbers"
+            rxn_count += 1
+            table.append(rxn_row)
+            
+        # add the not found ec numbers
+        not_found_ec_numbers = self.data.get("not_found_ec_numbers")
+        for ec in not_found_ec_numbers:
+            rxn_row = [""] * len(column_names)
+            rxn_row[3] = ec
+            rxn_row[5] = "not_found_ec_numbers"
             rxn_count += 1
             table.append(rxn_row)
             

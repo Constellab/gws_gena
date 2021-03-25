@@ -32,7 +32,9 @@ class DraftRecon(Process):
                 net.data["partial_ec_numbers"].append(ec)
             else:
                 try:
-                    Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
+                    rxns = Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
+                    if not rxns:
+                        net.data["not_found_ec_numbers"].append(ec)
                 except ReactionDuplicate:
                     pass
                 except Exception:
