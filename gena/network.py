@@ -76,7 +76,7 @@ class Compound:
     
     _flattening_delimiter = flattening_delimiter
     
-    def __init__(self, id="", name="unnamed", compartment="c", network:'Network'=None, formula="", \
+    def __init__(self, id="", name="", compartment="c", network:'Network'=None, formula="", \
                  charge="", mass="", monoisotopic_mass="", inchi="", \
                  chebi_id="", kegg_id=""):  
         
@@ -85,9 +85,22 @@ class Compound:
         
         self.compartment = compartment   
         
+
         if id:
             self.id = id
         else:
+            # try to use chebi compound name if possible
+            if not name:
+                if chebi_id:
+                    try:
+                        c = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+                        name = c.title
+                    except:
+                        name = chebi_id
+                else:
+                    raise Error("gena.network.Compound", "__init__", "Please provide at least a valid compound id, name or chebi_id")
+                    
+                
             self.id = name + "_" + compartment
         
         if network:
@@ -117,16 +130,16 @@ class Compound:
     # -- F --
     
     @classmethod
-    def _flatten_id(cls, id, ctx_name, is_in_compartment=False) -> str:
+    def _flatten_id(cls, id, ctx_name, is_compartment=False) -> str:
         """
-        Flattens a compound id
+        Flattens a compound or compartment id
         
         :param id: The id
         :type id: `str`
         :param ctx_name: The name of the (metabolic, biological, network) context
         :type ctx_name: `str`
-        :param is_in_compartment: True if the compound is in a compartement id, False otherwise
-        :type is_in_compartment: `bool`
+        :param is_compartment: True if it is a compartement id, Otherwise it is a compound id
+        :type is_compartment: `bool`
         :return: The flattened id
         :rtype: `str`
         """
@@ -134,7 +147,7 @@ class Compound:
         delim = cls._flattening_delimiter
         skip_list = [ cls.COMPARTMENT_EXTRACELL ]
         for c in skip_list:
-            if id.endswith("_" + c) or (is_in_compartment and id == c):
+            if id.endswith("_" + c) or (is_compartment and id == c):
                 return id
 
         return ctx_name + delim + id.replace(delim,"_")
@@ -493,17 +506,16 @@ class Reaction:
                 #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == tax.tax_id))
                 
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
-                    
                 if not Q:
                     if tax_search_method == 'bottom_up':
                         # search in higher taxonomy levels
                         for t in tax.ancestors:
                             if t.rank == "no rank":
                                 return rxns
-
-                            tax_field = getattr(BiotaEnzyme, "tax_"+t.rank)
+                            
+                            #tax_field = getattr(BiotaEnzyme, "tax_"+t.rank)
                             #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == t.tax_id))
-                            Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
+                            Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = t.tax_id)
                             if Q:
                                 break
                 
@@ -870,7 +882,7 @@ class Network(Resource):
         :param vals: The list of compartments
         :type vals: `list` of `str`
         """
-        self._compartments = val
+        self._compartments = vals
     
     @property
     def compounds(self) -> dict:
@@ -1015,6 +1027,16 @@ class Network(Resource):
         
         return self._reactions #self.kv_store["reactions"]
     
+    def remove_reaction(self, rxn_id: str):
+        """
+        Remove a reaction from the network
+        
+        :param rxn_id: The id of the reaction to remove
+        :type rxn_id: `str`
+        """
+        
+        del this.reactions[rxn_id]
+        
     # -- S --
     
     def save(self, *args, **kwargs):

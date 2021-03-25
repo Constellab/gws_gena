@@ -255,7 +255,7 @@ class Biomodel(Resource):
             uname = __get_network_uname(net)
             
             for k in tmp_json["compartments"]:
-                c_name = Compound._flatten_id(k,uname,is_compartment=True)
+                c_name = Compound._flatten_id(k, uname, is_compartment=True)
                 c_desc = tmp_json["compartments"][k]
                 _comps[c_name] = c_desc
 
