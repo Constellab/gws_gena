@@ -257,14 +257,24 @@ class Reaction:
             self.id = id
         else:
             self.id = name
-            
+        
         self.name = name
+        self.enzyme = enzyme
+        
+        if not self.id:
+            if self.enzyme:
+                self.id = self.enzyme.get("ec_numner","")
+                self.name = self.id
+        
+        if not self.id:
+            raise Error("gena.network.Reaction", "__init__", "At least a valid reaction id or name is reaction")
+            
         if direction in ["B", "L", "R"]:
             self.direction = direction
             
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.enzyme = enzyme
+        
         
         self._substrates = {}
         self._products = {}
@@ -664,12 +674,14 @@ class Network(Resource):
             raise Error("Network", "add_reaction", f"Reaction id {rxn.id} duplicate")
         
         # add reaction compounds to the network
-        for sub in rxn.substrates:
+        for k in rxn.substrates:            
+            sub = rxn.substrates[k]
             comp = sub["compound"]
             if not comp.id in self.compounds:
                 self.add_compound(comp)
         
-        for prod in rxn.products:
+        for k in rxn.products:
+            prod = rxn.products[k]
             comp = prod["compound"]
             if not comp.id in self.compounds:
                 self.add_compound(comp)
@@ -727,7 +739,7 @@ class Network(Resource):
             tax_cols = [""] * len(BiotaTaxo._tax_tree)
             
             if rxn.enzyme:
-                enz = rxn.enzyme["title"] + " (" + rxn.enzyme["ec_number"] + ")"
+                enz = rxn.enzyme.get("title","unamed_enzyme") + " (" + rxn.enzyme.get("ec_number","no_ec_number") + ")"
                 deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
                      deprecated_enz = deprecated_enz["title"] + " (" + deprecated_enz["ec_number"] + ")"
@@ -735,20 +747,13 @@ class Network(Resource):
                 if rxn.enzyme.get("pathway"):
                     pathway_cols = []
                     bkms = ['brenda', 'kegg', 'metacyc']
-                    pw = rxn.enzyme["pathway"]
-                    #for db in bkms:
-                    #    if pw.get(db+"_pathway"):
-                    #        keys = list(pw[db+"_pathway"].keys())
-                    #        vals = list(pw[db+"_pathway"].values())
-                    #        pathway_cols.append( vals[0] + " (" + keys[0] + ")" )
-                    #    else:
-                    #        pathway_cols.append("")
-                    
-                    for db in bkms:
-                        if pw.get(db):
-                            pathway_cols.append( pw[db]["name"] + " (" + (pw[db]["id"] if pw[db]["id"] else "--") + ")" )
-                        else:
-                            pathway_cols.append("")
+                    pw = rxn.enzyme.get("pathway")
+                    if pw:
+                        for db in bkms:
+                            if pw.get(db):
+                                pathway_cols.append( pw[db]["name"] + " (" + (pw[db]["id"] if pw[db]["id"] else "--") + ")" )
+                            else:
+                                pathway_cols.append("")
                             
                 if rxn.enzyme.get("tax"):
                     tax_cols = []

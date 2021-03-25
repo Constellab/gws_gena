@@ -54,7 +54,7 @@ class TestNetwork(unittest.TestCase):
     def test_reaction(self):
         t = Network()
   
-        rxn1 = Reaction()
+        rxn1 = Reaction(id="my-reaction")
         t.add_reaction(rxn1)
         
         comp1 = Compound(name="ATP", chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
