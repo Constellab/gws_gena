@@ -7,7 +7,7 @@ from gws.model import Process
 from gena.network import Reaction
 
 from .data import ECData
-from .network import Network
+from .network import Network, ReactionDuplicate
 
 class DraftRecon(Process):
     input_specs = { 'ec_data': (ECData,) }
@@ -25,11 +25,19 @@ class DraftRecon(Process):
         tax_id = self.get_param('tax_id')
         
         for ec in ec_list:
-            try:
-                Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
-            except:
-                pass
-                                      
+            ec = str(ec).strip()
+            is_incomplete_ec = ("-" in ec)
+            
+            if is_incomplete_ec:
+                net.data["partial_ec_numbers"].append(ec)
+            else:
+                try:
+                    Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
+                except ReactionDuplicate:
+                    pass
+                except Exception:
+                    net.data["errored_ec_numbers"].append(ec)
+        
         self.output["network"] = net
         
 class GapFiller(Process):

@@ -21,6 +21,25 @@ flattening_delimiter = ":"
 
 # ####################################################################
 #
+# Error class
+#
+# ####################################################################
+
+
+class CompoundDuplicate(Error): 
+    pass
+
+class SubstrateDuplicate(Error): 
+    pass
+
+class ProductDuplicate(Error): 
+    pass
+
+class ReactionDuplicate(Error): 
+    pass
+
+# ####################################################################
+#
 # Compound class
 #
 # ####################################################################
@@ -274,8 +293,7 @@ class Reaction:
             
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        
-        
+
         self._substrates = {}
         self._products = {}
         
@@ -305,7 +323,7 @@ class Reaction:
         """
         
         if comp.id in self._substrates:
-            raise Error("gena.network.Reaction", "add_substrate", "Substrate duplicate")
+            raise SubstrateDuplicate("gena.network.Reaction", "add_substrate", "Substrate duplicate")
         
         # add the compound to the reaction network
         if self.network:
@@ -328,7 +346,7 @@ class Reaction:
         """
         
         if comp.id in self._products:
-            raise Error("gena.network.Reaction", "add_substrate", "Product duplicate")
+            raise ProductDuplicate("gena.network.Reaction", "add_substrate", "Product duplicate")
         
         # add the compound to the reaction network
         if self.network:
@@ -447,8 +465,8 @@ class Reaction:
                     
                 if enzyme.related_deprecated_enzyme:
                     e["related_deprecated_enzyme"] = {
-                        "title": enzyme.related_deprecated_enzyme.title, 
-                        "ec_number": enzyme.related_deprecated_enzyme.ec_number 
+                        "ec_number": enzyme.related_deprecated_enzyme.ec_number,
+                        "reason": enzyme.related_deprecated_enzyme.data["ec_number"],
                     }
                 
                 pwy = enzyme.pathway
@@ -630,7 +648,11 @@ class Network(Resource):
                 'description': '',
                 'network': None,
             }
-    
+        
+        # only used for the reconstruction
+        self.data["errored_ec_numbers"] = []
+        self.data["partial_ec_numbers"] = []
+        
     # -- A --
     
     def add_compound(self, comp: Compound):
@@ -648,7 +670,7 @@ class Network(Resource):
             raise Error("Network", "add_compound", "The compound is already in a network")
         
         if comp.id in self._compounds:
-            raise Error("Network", "add_compound", f"Compound id {comp.id} duplicate")
+            raise CompoundDuplicate("Network", "add_compound", f"Compound id {comp.id} duplicate")
         
         if not comp.compartment:
             raise Error("Network", "add_compound", "No compartment defined for the compound")
@@ -671,7 +693,7 @@ class Network(Resource):
             raise Error("Network", "add_reaction", "The reaction is already in a network")
         
         if rxn.id in self.reactions:
-            raise Error("Network", "add_reaction", f"Reaction id {rxn.id} duplicate")
+            raise ReactionDuplicate("Network", "add_reaction", f"Reaction id {rxn.id} duplicate")
         
         # add reaction compounds to the network
         for k in rxn.substrates:            
@@ -722,8 +744,9 @@ class Network(Resource):
         """
         
         column_names = [
-            "#", "id", "equation", \
-            "enzyme", "related_deprecated_enzyme", \
+            "id", "equation", \
+            "enzyme", "ec_number", "enzyme_class", \
+            "related_deprecated_enzyme", \
             "substrates", "products", \
             *BiotaTaxo._tax_tree, \
             "brenda_pathway", "kegg_pathway", "metacyc_pathway"]
@@ -734,15 +757,19 @@ class Network(Resource):
             rxn = self.reactions[k]
             
             enz = ""
+            ec = ""
             deprecated_enz = ""
+            enzyme_class = ""
             pathway_cols = ["", "", ""]
             tax_cols = [""] * len(BiotaTaxo._tax_tree)
             
             if rxn.enzyme:
-                enz = rxn.enzyme.get("title","unamed_enzyme") + " (" + rxn.enzyme.get("ec_number","no_ec_number") + ")"
+                enz = rxn.enzyme.get("title","--") 
+                ec = rxn.enzyme.get("ec_number","--")
+                
                 deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
-                     deprecated_enz = deprecated_enz["title"] + " (" + deprecated_enz["ec_number"] + ")"
+                     deprecated_enz = deprecated_enz["ec_number"] + " (" + deprecated_enz["reason"] + ")"
 
                 if rxn.enzyme.get("pathway"):
                     pathway_cols = []
@@ -763,7 +790,13 @@ class Network(Resource):
                             tax_cols.append( tax[f]["title"] + " (" + str(tax[f]["id"]) + ")" )
                         else:
                             tax_cols.append("")
-                    
+                
+                if rxn.enzyme.get("ec_number"):
+                    try:
+                        enzyme_class = EnsymeClass.get(EnsymeClass.ec_numbner == rxn.enzyme.get("ec_number"))
+                    except:
+                        pass
+                
             subs = []
             for m in rxn.substrates:
                 c = rxn.substrates[m]["compound"]
@@ -781,11 +814,11 @@ class Network(Resource):
                 prods = ["*"]
                 
             rxn_row = [
-                rxn_count, \
                 rxn.id, \
                 rxn.as_str(), \
-                enz, \
+                enz, ec, \
                 deprecated_enz, \
+                enzyme_class, \
                 "; ".join(subs), \
                 "; ".join(prods), \
                 *tax_cols, \
@@ -793,9 +826,32 @@ class Network(Resource):
             ]
             
             rxn_count += 1
-            
             table.append(rxn_row)
         
+        # add the classification of incomplete ec numbers
+        from biota.enzyme import EnzymeClass
+        partial_ec_numbers = self.data.get("partial_ec_numbers")
+        for ec in partial_ec_numbers:
+            rxn_row = [""] * len(column_names)
+            rxn_row[3] = ec
+            try:
+                enzyme_class = EnzymeClass.get(EnzymeClass.ec_number == ec)
+                rxn_row[4] = enzyme_class.title
+            except:
+                pass
+            
+            rxn_count += 1
+            table.append(rxn_row)
+        
+        # add the classification of incomplete ec numbers
+        errored_ec_numbers = self.data.get("errored_ec_numbers")
+        for ec in errored_ec_numbers:
+            rxn_row = [""] * len(column_names)
+            rxn_row[3] = ec
+            rxn_count += 1
+            table.append(rxn_row)
+            
+        # export
         import pandas
         table = pandas.DataFrame(table, columns=column_names)
         
