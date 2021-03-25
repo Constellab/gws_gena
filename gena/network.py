@@ -1040,7 +1040,7 @@ class Network(Resource):
         :type rxn_id: `str`
         """
         
-        del this.reactions[rxn_id]
+        del self.reactions[rxn_id]
         
     # -- S --
     
