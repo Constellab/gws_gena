@@ -41,7 +41,7 @@ class TestRecon(unittest.TestCase):
         ec_data.save()
         
         recon = DraftRecon()
-        #recon.set_param('tax_id', "263815")  #target pneumocyctis
+        recon.set_param('tax_id', "263815")  #target pneumocyctis
         recon.input['ec_data'] = ec_data
         
         def _on_end(*args, **kwargs):

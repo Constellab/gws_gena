@@ -450,13 +450,13 @@ class Reaction:
                     
                 if tax:
                     e["tax"][tax.rank] = {
-                        "id": tax.id,
+                        "tax_id": tax.tax_id,
                         "title": tax.title
                     }
                     
                     for t in tax.ancestors:
                         e["tax"][t.rank] = {
-                            "id": t.id,
+                            "tax_id": t.tax_id,
                             "title": t.title
                         }
                     
@@ -530,31 +530,30 @@ class Reaction:
                     tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
                 except:
                     raise Error("Reaction", "from_biota", f"No taxonomy found with tax_id {tax_id}") 
-                    #return rxns
-                    
+                    return rxns
                 #tax_field = getattr(BiotaEnzyme, "tax_"+tax.rank)
                 #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == tax.tax_id))
                 
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
                 if not Q:
                     if tax_search_method == 'bottom_up':
-                        # search in higher taxonomy levels
                         found_Q = []
+                        Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
+                        # search in higher taxonomy levels
                         for t in tax.ancestors:
                             if t.rank == "no rank":
                                 continue
                                 
-                            Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
                             for e in Q:
-                                if getattr(e, "tax_"+t.rank) == t.tax_id:
-                                    found_Q.append(e)
+                                if getattr(e, "tax_"+t.rank) == tax_id:
+                                    found_Q = e
+                                    break
+                                    
+                            if found_Q:
+                                break
                         
-                        Q = found_Q
-                            #tax_field = getattr(BiotaEnzyme, "tax_"+t.rank)
-                            #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == t.tax_id))
-                            #Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = t.tax_id)
-                            #if Q:
-                            #    break
+                        if found_Q:
+                            Q = found_Q
                 
                 _added_rxns = []
                 for e in Q:
@@ -799,7 +798,7 @@ class Network(Resource):
                     tax = rxn.enzyme.get("tax")
                     for f in BiotaTaxo._tax_tree: 
                         if f in tax:
-                            tax_cols.append( tax[f]["title"] + " (" + str(tax[f]["id"]) + ")" )
+                            tax_cols.append( tax[f]["title"] + " (" + str(tax[f]["tax_id"]) + ")" )
                         else:
                             tax_cols.append("")
                 
