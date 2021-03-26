@@ -545,9 +545,8 @@ class Reaction:
                                 continue
                                 
                             for e in Q:
-                                if getattr(e, "tax_"+t.rank) == tax_id:
-                                    found_Q = e
-                                    break
+                                if getattr(e, "tax_"+t.rank) == t.tax_id:
+                                    found_Q.append(e)
                                     
                             if found_Q:
                                 break
