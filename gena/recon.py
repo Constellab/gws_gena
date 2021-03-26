@@ -39,7 +39,7 @@ class DraftRecon(Process):
                 except ReactionDuplicate:
                     pass
                 except Exception as err:
-                    #raise Error(err)
+                    raise Error(err)
                     net.data["errored_ec_numbers"].append(ec)
         
         self.output["network"] = net

@@ -529,23 +529,32 @@ class Reaction:
                 try:
                     tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
                 except:
-                    return rxns
+                    raise Error("Reaction", "from_biota", f"No taxonomy found with tax_id {tax_id}") 
+                    #return rxns
+                    
                 #tax_field = getattr(BiotaEnzyme, "tax_"+tax.rank)
                 #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == tax.tax_id))
                 
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
                 if not Q:
                     if tax_search_method == 'bottom_up':
                         # search in higher taxonomy levels
+                        found_Q = []
                         for t in tax.ancestors:
                             if t.rank == "no rank":
-                                return rxns
-                            
+                                continue
+                                
+                            Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
+                            for e in Q:
+                                if getattr(e, "tax_"+t.rank) == t.tax_id:
+                                    found_Q.append(e)
+                        
+                        Q = found_Q
                             #tax_field = getattr(BiotaEnzyme, "tax_"+t.rank)
                             #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == t.tax_id))
-                            Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = t.tax_id)
-                            if Q:
-                                break
+                            #Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = t.tax_id)
+                            #if Q:
+                            #    break
                 
                 _added_rxns = []
                 for e in Q:
@@ -558,6 +567,7 @@ class Reaction:
                 #Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
                 _added_rxns = []
+                
                 for e in Q:
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:

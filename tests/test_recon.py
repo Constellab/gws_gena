@@ -40,13 +40,14 @@ class TestRecon(unittest.TestCase):
         ec_data = ECData._import(file_path, ec_column_name="EC Number")
         ec_data.save()
         
-        bm = DraftRecon()
-        bm.input['ec_data'] = ec_data
+        recon = DraftRecon()
+        #recon.set_param('tax_id', "263815")  #target pneumocyctis
+        recon.input['ec_data'] = ec_data
         
         def _on_end(*args, **kwargs):
-            net = bm.output['network']
-            print(net.as_json(stringify=True, prettify=True))
-            print(net.as_str())
+            net = recon.output['network']
+            #print(net.as_json(stringify=True, prettify=True))
+            #print(net.as_str())
             
             file_path = os.path.join(data_dir, "recon_net.csv")
             #with open(file_path, 'r') as f:
@@ -55,7 +56,7 @@ class TestRecon(unittest.TestCase):
             with open(file_path, 'w') as f:
                 f.write(net.as_csv())
             
-        e = bm.create_experiment( study =Study.get_default_instance() )
+        e = recon.create_experiment( study =Study.get_default_instance() )
         e.on_end( _on_end )
         
         asyncio.run( e.run() )
