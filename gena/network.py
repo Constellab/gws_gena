@@ -466,7 +466,7 @@ class Reaction:
                 if enzyme.related_deprecated_enzyme:
                     e["related_deprecated_enzyme"] = {
                         "ec_number": enzyme.related_deprecated_enzyme.ec_number,
-                        "reason": enzyme.related_deprecated_enzyme.data["ec_number"],
+                        "reason": enzyme.related_deprecated_enzyme.data["reason"],
                     }
                 
                 pwy = enzyme.pathway
@@ -814,7 +814,7 @@ class Network(Resource):
             
             if not prods:
                 prods = ["*"]
-                
+
             rxn_row = [
                 rxn.id, \
                 rxn.as_str(), \

@@ -5,6 +5,7 @@
 
 from gws.model import Process
 from gena.network import Reaction
+from gws.logger import Error
 
 from .data import ECData
 from .network import Network, ReactionDuplicate
@@ -37,7 +38,8 @@ class DraftRecon(Process):
                         net.data["not_found_ec_numbers"].append(ec)
                 except ReactionDuplicate:
                     pass
-                except Exception:
+                except Exception as err:
+                    #raise Error(err)
                     net.data["errored_ec_numbers"].append(ec)
         
         self.output["network"] = net
