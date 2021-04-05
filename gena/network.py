@@ -531,9 +531,7 @@ class Reaction:
                 except:
                     raise Error("Reaction", "from_biota", f"No taxonomy found with tax_id {tax_id}") 
                     return rxns
-                #tax_field = getattr(BiotaEnzyme, "tax_"+tax.rank)
-                #Q = BiotaEnzyme.select().where((BiotaEnzyme.ec_number == ec_number) & (tax_field == tax.tax_id))
-                
+
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
                 if not Q:
                     if tax_search_method == 'bottom_up':
