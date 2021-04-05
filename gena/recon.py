@@ -30,17 +30,18 @@ class DraftRecon(Process):
             is_incomplete_ec = ("-" in ec)
             
             if is_incomplete_ec:
-                net.data["partial_ec_numbers"].append(ec)
+                net.data["errors"].append({
+                    "ec_number": ec,
+                    "reason": "partial_ec_number"
+                })
             else:
                 try:
-                    rxns = Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
-                    if not rxns:
-                        net.data["not_found_ec_numbers"].append(ec)
-                except ReactionDuplicate:
-                    pass
+                    Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
                 except Exception as err:
-                    raise Error(err)
-                    net.data["errored_ec_numbers"].append(ec)
+                    net.data["errors"].append({
+                        "ec_number": ec,
+                        "reason": str(err)
+                    })
         
         self.output["network"] = net
         
