@@ -111,15 +111,15 @@ class TestNetwork(unittest.TestCase):
         print(net.as_json())
         
         self.assertEqual(len(net.compounds), 5)
-        self.assertEqual(net.compounds["glc__D_e"].id, "glc__D_e")
-        self.assertEqual(net.compounds["glc__D_e"].name, "D-Glucose")
-        self.assertEqual(net.compounds["glc__D_e"].compartment, "e")
+        self.assertEqual(net.compounds["glc_D_e"].id, "glc_D_e")
+        self.assertEqual(net.compounds["glc_D_e"].name, "D-Glucose")
+        self.assertEqual(net.compounds["glc_D_e"].compartment, "e")
         self.assertEqual(net.compounds["atp_c"].id, "atp_c")
         self.assertEqual(net.compounds["atp_c"].name, "ATP C10H12N5O13P3")
         self.assertEqual(net.compounds["atp_c"].compartment, "c")
         self.assertEqual(len(net.reactions), 2)
-        self.assertEqual(net.reactions["EX_glc__D_e"].as_str(), "(1) glc__D_e <==()==> *")
-        self.assertEqual(net.reactions["GLNabc"].as_str(), "(1) atp_c + (1) gln__L_e <==()==> (1) adp_c + (1) gln__L_c")
+        self.assertEqual(net.reactions["EX_glc_D_e"].as_str(), "(1) glc_D_e <==()==> *")
+        self.assertEqual(net.reactions["GLNabc"].as_str(), "(1) atp_c + (1) gln_L_e <==()==> (1) adp_c + (1) gln_L_c")
         
         
         # export as table

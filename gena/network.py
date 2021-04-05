@@ -9,7 +9,7 @@ from typing import List
 
 from gws.logger import Error
 from gws.model import Model, Resource, ResourceSet
-from gws.utils import generate_random_chars
+from gws.utils import generate_random_chars, slugify
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction
@@ -17,6 +17,9 @@ from biota.enzyme import Enzyme as BiotaEnzyme
 from biota.taxonomy import Taxonomy as BiotaTaxo
 
 
+def slugify_id(_id):
+    return slugify(_id, snakefy=True, to_lower=False)
+    
 flattening_delimiter = ":"
 
 # ####################################################################
@@ -106,7 +109,7 @@ class Compound:
         
 
         if id:
-            self.id = id
+            self.id = slugify_id(id)
         else:
             # try to use chebi compound name if possible
             if not name:
@@ -120,7 +123,7 @@ class Compound:
                     raise Error("gena.network.Compound", "__init__", "Please provide at least a valid compound id, name or chebi_id")
                     
                 
-            self.id = name + "_" + compartment
+            self.id = slugify_id(name + "_" + compartment)
         
         if network:
             self.add_to_network(network)
@@ -169,7 +172,7 @@ class Compound:
             if id.endswith("_" + c) or (is_compartment and id == c):
                 return id
 
-        return ctx_name + delim + id.replace(delim,"_")
+        return slugify_id(ctx_name + delim + id.replace(delim,"_"))
      
     @classmethod
     def from_biota(cls, chebi_id=None, kegg_id=None) -> 'Compound':
@@ -273,9 +276,9 @@ class Reaction:
                  enzyme: dict={}):  
         
         if id:
-            self.id = id
+            self.id = slugify_id(id)
         else:
-            self.id = name
+            self.id = slugify_id(name)
         
         self.name = name
         self.enzyme = enzyme
@@ -358,7 +361,7 @@ class Reaction:
             "stoichiometry": abs(int(stoich))
         }
     
-    def as_str(self) -> str:
+    def as_str(self, only_ids=False) -> str:
         """
         Returns a string representation of the reaction
         
@@ -374,13 +377,21 @@ class Reaction:
             sub = self._substrates[k]
             comp = sub["compound"]
             stoich = sub["stoichiometry"]
-            _left.append( f"({stoich}) {comp.id}" )
+            if only_ids:
+                _id = comp.chebi_id if comp.chebi_id else comp.id
+                _left.append( f"({stoich}) {_id}" )
+            else:
+                _left.append( f"({stoich}) {comp.id}" )
         
         for k in self._products:
             sub = self._products[k]
             comp = sub["compound"]
             stoich = sub["stoichiometry"]
-            _right.append( f"({stoich}) {comp.id}" )
+            if only_ids:
+                _id = comp.chebi_id if comp.chebi_id else comp.id
+                _right.append( f"({stoich}) {_id}" )
+            else:
+                _right.append( f"({stoich}) {comp.id}" )
         
         if not _left:
             _left = ["*"]
@@ -408,7 +419,7 @@ class Reaction:
         """
         
         delim = cls._flattening_delimiter
-        return ctx_name + delim + id.replace(delim,"_")
+        return slugify_id(ctx_name + delim + id.replace(delim,"_"))
         
     @classmethod
     def from_biota(cls, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up', network=None) -> 'Reaction':
@@ -511,14 +522,22 @@ class Reaction:
         if rhea_id:
             tax = None
             Q = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
+            
+            if not Q:
+                raise Error("gena.network.Reaction", "from_biota", f"No reaction found with rhea id {rhea_id}")
+          
             _added_rxns = []
             for rhea_rxn in Q:
                 for e in rhea_rxn.enzymes:
                     if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                         continue
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                    rxns.append( __create_rxn(rhea_rxn, network, e) )
-
+                    
+                    try:
+                        rxns.append( __create_rxn(rhea_rxn, network, e) )
+                    except:
+                        pass
+                 
             return rxns
             
         elif ec_number:
@@ -530,7 +549,6 @@ class Reaction:
                     tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
                 except:
                     raise Error("Reaction", "from_biota", f"No taxonomy found with tax_id {tax_id}") 
-                    return rxns
 
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
                 if not Q:
@@ -552,24 +570,56 @@ class Reaction:
                         if found_Q:
                             Q = found_Q
                 
+                if not Q:
+                    raise Error("gena.network.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")
+                    
                 _added_rxns = []
+                messages = []
                 for e in Q:
+                    if not e.reactions:
+                        messages.append(f"No rhea found for {e.ec_number}")
+                                        
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append( __create_rxn(rhea_rxn, network, e) )
+                        
+                        try:
+                            rxns.append( __create_rxn(rhea_rxn, network, e) )
+                        except:
+                            pass
+                        
+                
+                if not rxns:
+                    messages.append(f"No new reactions found with ec number {ec_number}")
+                    raise Error("gena.network.Reaction", "from_biota", ", ".join(messages))
+                    
             else:
                 #Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
-                _added_rxns = []
                 
+                if not Q:
+                    raise Error("gena.network.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")
+                
+                _added_rxns = []
+                messages = []
                 for e in Q:
+                    if not e.reactions:
+                        messages.append(f"No rhea found for {e.ec_number}")
+                        
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append( __create_rxn(rhea_rxn, network, e) ) 
+                        
+                        try:
+                            rxns.append( __create_rxn(rhea_rxn, network, e) ) 
+                        except:
+                            pass
+                        
+                if not rxns:
+                    messages.append(f"No new reactions found with ec number {ec_number}")
+                    raise Error("gena.network.Reaction", "from_biota",  ", ".join(messages))
         else:
             raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
 
@@ -656,9 +706,7 @@ class Network(Resource):
             }
         
         # only used for the reconstruction
-        self.data["errored_ec_numbers"] = []
-        self.data["partial_ec_numbers"] = []
-        self.data["not_found_ec_numbers"] = []
+        self.data["errors"] = []
         
     # -- A --
     
@@ -751,7 +799,7 @@ class Network(Resource):
         """
         
         column_names = [
-            "id", "equation", \
+            "id", "equation_str", \
             "enzyme", "ec_number", "enzyme_class", \
             "comments", \
             "substrates", "products", \
@@ -836,43 +884,28 @@ class Network(Resource):
             rxn_count += 1
             table.append(rxn_row)
         
-        # add the classification of incomplete ec numbers
-        from biota.enzyme import EnzymeClass
-        partial_ec_numbers = self.data.get("partial_ec_numbers")
-        for ec in partial_ec_numbers:
-            rxn_row = [""] * len(column_names)
-            rxn_row[3] = ec
-            try:
-                enzyme_class = EnzymeClass.get(EnzymeClass.ec_number == ec)
-                rxn_row[4] = enzyme_class.title
-            except:
-                pass
-            
-            rxn_row[5] = "partial_ec_numbers"
-            rxn_count += 1
-            table.append(rxn_row)
-        
         # add the errored ec numbers
-        errored_ec_numbers = self.data.get("errored_ec_numbers")
-        for ec in errored_ec_numbers:
+        from biota.enzyme import EnzymeClass
+        errors = self.data.get("errors")
+        for err in errors:
             rxn_row = [""] * len(column_names)
-            rxn_row[3] = ec
-            rxn_row[5] = "errored_ec_numbers"
-            rxn_count += 1
-            table.append(rxn_row)
+            rxn_row[3] = err["ec_number"]
+            rxn_row[5] = err["reason"]
             
-        # add the not found ec numbers
-        not_found_ec_numbers = self.data.get("not_found_ec_numbers")
-        for ec in not_found_ec_numbers:
-            rxn_row = [""] * len(column_names)
-            rxn_row[3] = ec
-            rxn_row[5] = "not_found_ec_numbers"
+            if err["reason"] == "partial_ec_number":
+                try:
+                    enzyme_class = EnzymeClass.get(EnzymeClass.ec_number == err["ec_number"])
+                    rxn_row[4] = enzyme_class.title
+                except:
+                    pass
+            
             rxn_count += 1
             table.append(rxn_row)
             
         # export
         import pandas
         table = pandas.DataFrame(table, columns=column_names)
+        table = table.sort_values(by=['ec_number'])
         
         if stringify:
             return table.to_csv()
