@@ -12,6 +12,7 @@ from gena.network import Network
 from gena.context import Context
 from gena.biomodel import Biomodel
 from gena.fba import FluxAnalyzer
+from gws.unittest import GTest
 
 class TestFba(unittest.TestCase):
     
@@ -24,6 +25,7 @@ class TestFba(unittest.TestCase):
         Context.drop_table()
         Network.drop_table()
         FluxAnalyzer.drop_table()
+        GTest.init()
         pass
 
     @classmethod
@@ -67,12 +69,11 @@ class TestFba(unittest.TestCase):
             
             file_path = os.path.join(data_dir, "flat_toy_result.json")
             with open(file_path) as fp:
-                data = json.load(fp)            
+                expected_result_content = json.load(fp)            
                 result_content = f.as_json(read_content=True)["data"]["content"]
-                
-                self.assertEqual( data, result_content )
+                self.assertEqual( result_content, expected_result_content  )
             
         
-        e = fba.create_experiment(study=Study.get_default_instance())
+        e = fba.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)
         asyncio.run( e.run() )

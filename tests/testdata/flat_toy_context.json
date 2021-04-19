@@ -5,7 +5,7 @@
          "name":"M1",
          "variables":[
             {
-               "reference_id":"Network1:R1_ex",
+               "reference_id":"Network1_R1_ex",
                "reference_type":"reaction",
                "coefficient":1.0
             }
@@ -20,12 +20,12 @@
          "name":"M2",
          "variables":[
             {
-               "reference_id":"Network1:R1_ex",
+               "reference_id":"Network1_R1_ex",
                "reference_type":"reaction",
                "coefficient":1.0
             },
             {
-               "reference_id":"Network1:R5_ex",
+               "reference_id":"Network1_R5_ex",
                "reference_type":"reaction",
                "coefficient":2.0
             }

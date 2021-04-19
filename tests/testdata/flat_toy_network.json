@@ -1,47 +1,47 @@
 {
    "metabolites":[
       {
-         "id":"Network1:X1",
+         "id":"Network1_X1",
          "name":"X1",
          "charge":null,
          "mass":null,
          "formula":null,
-         "compartment":"Network1:c"
+         "compartment":"Network1_c"
       },
       {
-         "id":"Network1:X2",
+         "id":"Network1_X2",
          "name":"X2",
          "charge":null,
          "mass":null,
          "formula":null,
-         "compartment":"Network1:c"
+         "compartment":"Network1_c"
       },
       {
-         "id":"Network1:X3",
+         "id":"Network1_X3",
          "name":"X3",
          "charge":null,
          "mass":null,
          "formula":null,
-         "compartment":"Network1:c"
+         "compartment":"Network1_c"
       },
       {
-         "id":"Network1:X4",
+         "id":"Network1_X4",
          "name":"X4",
          "charge":null,
          "mass":null,
          "formula":null,
-         "compartment":"Network1:c"
+         "compartment":"Network1_c"
       },
       {
-         "id":"Network1:X5",
+         "id":"Network1_X5",
          "name":"X5",
          "charge":null,
          "mass":null,
          "formula":null,
-         "compartment":"Network1:c"
+         "compartment":"Network1_c"
       },
       {
-         "id":"Network1:X1_ex",
+         "id":"Network1_X1_ex",
          "name":"X1_ex",
          "charge":null,
          "mass":null,
@@ -49,7 +49,7 @@
          "compartment":"e"
       },
       {
-         "id":"Network1:X2_ex",
+         "id":"Network1_X2_ex",
          "name":"X2_ex",
          "charge":null,
          "mass":null,
@@ -57,7 +57,7 @@
          "compartment":"e"
       },
       {
-         "id":"Network1:X4_ex",
+         "id":"Network1_X4_ex",
          "name":"X4_ex",
          "charge":null,
          "mass":null,
@@ -65,7 +65,7 @@
          "compartment":"e"
       },
       {
-         "id":"Network1:X5_ex",
+         "id":"Network1_X5_ex",
          "name":"X5_ex",
          "charge":null,
          "mass":null,
@@ -73,78 +73,78 @@
          "compartment":"e"
       },
       {
-         "id":"Network1:XB",
+         "id":"Network1_XB",
          "name":"XB",
          "charge":null,
          "mass":null,
          "formula":null,
-         "compartment":"Network1:b"
+         "compartment":"Network1_b"
       }
    ],
    "reactions":[
       {
-         "id":"Network1:R1",
+         "id":"Network1_R1",
          "name":"R1",
          "metabolites":{
-            "Network1:X1":-1.0,
-            "Network1:X2":1.0,
-            "Network1:X3":1.0
+            "Network1_X1":-1.0,
+            "Network1_X2":1.0,
+            "Network1_X3":1.0
          }
       },
       {
-         "id":"Network1:R2",
+         "id":"Network1_R2",
          "name":"R2",
          "metabolites":{
-            "Network1:X4":-1.0,
-            "Network1:X3":1.0
+            "Network1_X4":-1.0,
+            "Network1_X3":1.0
          }
       },
       {
-         "id":"Network1:RB",
+         "id":"Network1_RB",
          "name":"RB",
          "metabolites":{
-            "Network1:X3":-1.0,
-            "Network1:X5":-2.0,
-            "Network1:XB":3.0
+            "Network1_X3":-1.0,
+            "Network1_X5":-2.0,
+            "Network1_XB":3.0
          }
       },
       {
-         "id":"Network1:R1_ex",
+         "id":"Network1_R1_ex",
          "name":"R1_ex",
          "metabolites":{
-            "Network1:X1_ex":-1.0,
-            "Network1:X1":1.0
+            "Network1_X1_ex":-1.0,
+            "Network1_X1":1.0
          }
       },
       {
-         "id":"Network1:R2_ex",
+         "id":"Network1_R2_ex",
          "name":"R2_ex",
          "metabolites":{
-            "Network1:X2":-1.0,
-            "Network1:X2_ex":1.0
+            "Network1_X2":-1.0,
+            "Network1_X2_ex":1.0
          }
       },
       {
-         "id":"Network1:R4_ex",
+         "id":"Network1_R4_ex",
          "name":"R4_ex",
          "metabolites":{
-            "Network1:X4_ex":-1.0,
-            "Network1:X4":1.0
+            "Network1_X4_ex":-1.0,
+            "Network1_X4":1.0
          }
       },
       {
-         "id":"Network1:R5_ex",
+         "id":"Network1_R5_ex",
          "name":"R5_ex",
          "metabolites":{
-            "Network1:X5_ex":-1.0,
-            "Network1:X5":1.0
+            "Network1_X5_ex":-1.0,
+            "Network1_X5":1.0
          }
       }
    ],
    "compartments":{
-      "Network1:c":"cytosol",
+      "Network1_c":"cytosol",
       "e":"extracellular",
-      "Network1:n":"nucleus",
-      "Network1:b":"biomass"
+      "Network1_n":"nucleus",
+      "Network1_b":"biomass"
    }
 }

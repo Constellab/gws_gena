@@ -16,7 +16,6 @@ from biota.reaction import Reaction as BiotaReaction
 from biota.enzyme import Enzyme as BiotaEnzyme
 from biota.taxonomy import Taxonomy as BiotaTaxo
 
-
 def slugify_id(_id):
     return slugify(_id, snakefy=True, to_lower=False)
     

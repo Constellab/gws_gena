@@ -48,13 +48,14 @@ class FluxAnalyzer(Shell):
         flat_bio = biomodel.flatten()
 
         with open(self.network_file, "w") as fp:
-            json.dump(flat_bio["network"], fp)
+            json.dump(flat_bio["network"], fp) 
         
         with open(self.context_file, "w") as fp:
             json.dump(flat_bio["context"], fp)
-            
+
         with open(self.config_file, "w") as fp:
             json.dump(self.config.params, fp)
+
             
         cmd = [ 
             bin_file, 
