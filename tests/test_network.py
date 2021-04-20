@@ -124,7 +124,7 @@ class TestNetwork(unittest.TestCase):
         
         # export as table
         csv = net.as_csv()
-        file_path = os.path.join(data_dir, "smal.csv")
+        file_path = os.path.join(data_dir, "small.csv")
         with open(file_path, 'w') as f:
             f.write(csv)
 

@@ -16,6 +16,8 @@ from biota.reaction import Reaction as BiotaReaction
 from biota.enzyme import Enzyme as BiotaEnzyme
 from biota.taxonomy import Taxonomy as BiotaTaxo
 
+from gena.medium import Medium
+
 def slugify_id(_id):
     return slugify(_id, snakefy=True, to_lower=False)
     
@@ -188,13 +190,19 @@ class Compound:
         
         try:
             if chebi_id:
+                if isinstance(chebi_id, float) or isinstance(chebi_id, int):
+                    chebi_id = f"CHEBI:{chebi_id}"
+
+                if "CHEBI" not in chebi_id:
+                    chebi_id = f"CHEBI:{chebi_id}"
+            
                 comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
             elif kegg_id:
                 comp = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
             else:
-                raise Error("gena.network.Reaction", "from_biota", "Invalid arguments")
+                raise Error("gena.network.Compound", "from_biota", "Invalid arguments")
         except:
-            raise Error("gena.network.Reaction", "from_biota", "Chebi compound not found")
+            raise Error("gena.network.Compound", "from_biota", "Chebi compound not found")
         
         c = cls(name=comp.name)
         c.chebi_id = comp.chebi_id
@@ -314,7 +322,7 @@ class Reaction:
         
         net.add_reaction(self)
     
-    def add_substrate( self, comp: Compound, stoich: int ):
+    def add_substrate( self, comp: Compound, stoich: float ):
         """
         Adds a substrate to the reaction
         
@@ -331,13 +339,13 @@ class Reaction:
         if self.network:
             if not comp.id in self.network.compounds:
                 self.network.add_compound(comp)
-                
+
         self._substrates[comp.id] = {
             "compound": comp,
-            "stoichiometry": abs(int(stoich))
+            "stoichiometry": abs(float(stoich))
         }
     
-    def add_product( self, comp: Compound, stoich: int ):
+    def add_product( self, comp: Compound, stoich: float ):
         """
         Adds a product to the reaction
         
@@ -357,7 +365,7 @@ class Reaction:
                 
         self._products[comp.id] = {
             "compound": comp,
-            "stoichiometry": abs(int(stoich))
+            "stoichiometry": abs(float(stoich))
         }
     
     def as_str(self, only_ids=False) -> str:
@@ -495,7 +503,7 @@ class Reaction:
             for chebi_id in eqn["substrates"]:
                 stoich =  eqn["substrates"][chebi_id]
                 biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                c = Compound(name=biota_comp.name)
+                c = Compound(name=biota_comp.name, compartment="c")
                 c.chebi_id = biota_comp.chebi_id
                 c.kegg_id = biota_comp.kegg_id
                 c.charge = biota_comp.charge
@@ -507,7 +515,7 @@ class Reaction:
             for chebi_id in eqn["products"]:
                 stoich = eqn["products"][chebi_id]
                 biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                c = Compound(name=biota_comp.name)
+                c = Compound(name=biota_comp.name, compartment="c")
                 c.chebi_id = biota_comp.chebi_id
                 c.kegg_id = biota_comp.kegg_id
                 c.charge = biota_comp.charge
@@ -555,16 +563,15 @@ class Reaction:
                         found_Q = []
                         Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
                         # search in higher taxonomy levels
-                        for t in tax.ancestors:
-                            if t.rank == "no rank":
-                                continue
-                                
-                            for e in Q:
+                        
+                        for e in Q:
+                            for t in tax.ancestors:
+                                if t.rank == "no rank":
+                                    continue
+            
                                 if getattr(e, "tax_"+t.rank) == t.tax_id:
                                     found_Q.append(e)
-                                    
-                            if found_Q:
-                                break
+                                    break  #-> stop at this tawonomy rank
                         
                         if found_Q:
                             Q = found_Q
@@ -624,6 +631,12 @@ class Reaction:
 
         return rxns
 
+    # -- I --
+    
+    @property
+    def is_empty(self):
+        return not bool(self._substrates) and not bool(self._products)
+        
     # -- P --
     
     @property
@@ -681,6 +694,7 @@ class Network(Resource):
     _compounds = None
     _reactions = None
     _compartments = None
+    _medium = None
     
     _fts_fields = {'title': 2.0, 'description': 1.0}
     _table_name = "gena_network"
@@ -693,7 +707,13 @@ class Network(Resource):
 
         self._compounds = {}
         self._reactions = {}
-        self._compartments = {}
+        self._compartments = {
+            "e": "extracellular",
+            "c": "cytosol",
+            "n": "nucleus",
+            "b": "biomass"
+        }
+        self._medium = {}
         
         if self.data:
             self.__build_from_dump(self.data["network"])
@@ -728,7 +748,10 @@ class Network(Resource):
         
         if not comp.compartment:
             raise Error("Network", "add_compound", "No compartment defined for the compound")
-            
+        
+        if not comp.compartment in self._compartments:
+            self.compartment[comp.compartment] = comp.compartment
+        
         comp.network = self
         self.compounds[comp.id] = comp
         
@@ -766,7 +789,6 @@ class Network(Resource):
         rxn.network = self
         self.reactions[rxn.id] = rxn
         
-    
     def as_str(self) -> str:
         """
         Returns a string representation of the network
@@ -1049,7 +1071,8 @@ class Network(Resource):
                 "charge": _met.charge,
                 "mass": _met.mass,
                 "formula": _met.formula,
-                "compartment": _met.compartment
+                "compartment": _met.compartment,
+                "chebi_id": _met.chebi_id
             })
             
         for _rxn in self.reactions.values():
@@ -1098,6 +1121,25 @@ class Network(Resource):
         net.__build_from_dump(data)
         net.data["network"] = net.dumps()
         return net
+    
+    # -- G --
+    
+    def get_compound_by_id(self, c_id):
+        return self._compounds.get(c_id)
+    
+    def get_compound_by_chebi_id(self, chebi_id):
+        if isinstance(chebi_id, float) or isinstance(chebi_id, int):
+            chebi_id = f"CHEBI:{chebi_id}"
+        
+        if "CHEBI" not in chebi_id:
+            chebi_id = f"CHEBI:{chebi_id}"
+            
+        for c_id in self._compounds:
+            comp = self._compounds[c_id]
+            if comp.chebi_id == chebi_id:
+                return comp
+        
+        return None
     
     # -- N --
     

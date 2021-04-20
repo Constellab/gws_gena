@@ -9,13 +9,7 @@ from typing import List
 from gws.logger import Error
 from gws.model import Process, ResourceSet
 from gws.file import File
-from gws.csv import CSVData, \
-                    Loader as CSVLoader, Dumper as CSVDumper, \
-                    Importer as CSVImporter, Exporter as CSVExporter
-
-from biota.enzyme import Enzyme
-from biota.taxonomy import Taxonomy
-from biota.enzyme import Enzyme
+from gws.csv import CSVData, Loader, Dumper, Importer, Exporter
 
 # ####################################################################
 #
@@ -40,10 +34,7 @@ class ECData(CSVData):
     # -- F --
     
     def get_ec_numbers(self, rtype='list') -> ('DataFrame', list):
-        if rtype == 'list':
-            return list(self.table[self.ec_column_name].values)
-        else:
-            return self.table[[self.ec_column_name]]
+        return self.get_column(self.ec_column_name, rtype)
     
     # -- I --
 
@@ -52,17 +43,19 @@ class ECData(CSVData):
         """ 
         Import from a repository
         
-        Additional parameters
-        
+
         :param ec_column_name: The name of the column containing the EC numbers
         :type ec_column_name: `str`
+        :param kwargs: Additional parameters passed to the superclass
+        :type kwargs: `dict`
         :returns: the parsed data
         :rtype ECData
         """
         
         data = super()._import(*args, **kwargs)
+        
         if not data.column_exists( ec_column_name ):
-            raise Error("ECData", "task", f"No ec numbers found (no column with name 'ec_column_name')")
+            raise Error("ECData", "task", f"No ec numbers found (no column with name '{ec_column_name}')")
         
         data.ec_column_name = ec_column_name
         return data
@@ -73,12 +66,12 @@ class ECData(CSVData):
 #
 # ####################################################################
     
-class Importer(CSVImporter):
+class ECImporter(Importer):
     input_specs = {'file' : File}
-    output_specs = {'resource': ECData}
+    output_specs = {"data": ECData}
     config_specs = {
-        **CSVImporter.config_specs,
-        'ec_column_name': {"type": 'str', "default": 'ec_number', "description": "The name of the EC Number column name"},
+        **Importer.config_specs,
+        'ec_column_name': {"type": 'str', "default": 'ec_number', "description": "The ec number column name"},
     }
 
 # ####################################################################
@@ -87,11 +80,11 @@ class Importer(CSVImporter):
 #
 # ####################################################################
 
-class Exporter(CSVExporter):
-    input_specs = {'resource': ECData}
+class ECExporter(Exporter):
+    input_specs = {"data": ECData}
     output_specs = {'file' : File}
     config_specs = {
-        **CSVExporter.config_specs,
+        **Exporter.config_specs,
     }
 
 # ####################################################################
@@ -100,12 +93,12 @@ class Exporter(CSVExporter):
 #
 # ####################################################################
 
-class Loader(CSVLoader):
+class ECLoader(Loader):
     input_specs = {}
-    output_specs = {'resource' : CSVData}
+    output_specs = {"data" : ECData}
     config_specs = {
-        **CSVLoader.config_specs,
-        'ec_column_name': {"type": 'str', "default": 'ec_number', "description": "The name of the EC Number column name"},
+        **Loader.config_specs,
+        'ec_column_name': {"type": 'str', "default": 'ec_number', "description": "The ec number column name"},
     }
 
 # ####################################################################
@@ -114,9 +107,9 @@ class Loader(CSVLoader):
 #
 # ####################################################################
 
-class Dumper(CSVDumper):
-    input_specs = {'resource' : CSVData}
+class ECDumper(Dumper):
+    input_specs = {"data" : ECData}
     output_specs = {}
     config_specs = {
-        **CSVDumper.config_specs,
+        **Dumper.config_specs,
     }

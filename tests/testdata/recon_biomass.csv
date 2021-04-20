@@ -1,0 +1,37 @@
+Component	Chebi ID	Biomass	Protein	DNA	RNA
+Biomass		1			
+Protein		-0.317663551	1		
+DNA		-0.050537383		1	
+RNA		-0.025990654			1
+Cofactors		-0.021658879			
+Phospholipids		-0.154266667			
+Carbohydrates		-0.202149533			
+Cell wall		-0.115			
+L-alanine zwitterion	CHEBI:57972		-0.587530055		
+L-argininium(1+)	CHEBI:32682		-0.104025999		
+L-asparagine zwitterion	CHEBI:58048		-0.47552295		
+L-aspartate(1-)	CHEBI:29991		-0.610918536		
+L-cysteine zwitterion	CHEBI:35235		-0.475540207		
+L-glutamine zwitterion	CHEBI:58359		-0.332833349		
+L-glutamate(1-)	CHEBI:29985		-0.166907054		
+glycine zwitterion	CHEBI:57305		-1.517272544		
+L-histidine zwitterion	CHEBI:57595		-0.623494829		
+L-isoleucine zwitterion	CHEBI:58045		-0.87550672		
+L-leucine zwitterion	CHEBI:57427		-0.183363222		
+L-lysinium(1+)	CHEBI:32551		-0.487365325		
+L-methionine zwitterion	CHEBI:57844		-0.276665758		
+L-phenylalanine zwitterion	CHEBI:58095		-0.244286816		
+L-proline zwitterion	CHEBI:60039		-0.454954293		
+L-serine zwitterion	CHEBI:33384		-1.000212965		
+L-threonine zwitterion	CHEBI:57926		-0.499161506		
+L-tryptophan zwitterion	CHEBI:57912		-0.254378061		
+L-tyrosine zwitterion	CHEBI:58315		-0.06526649		
+L-valine zwitterion	CHEBI:57762		-0.381473698		
+dAMP	CHEBI:17713			-1.167724079	
+2'-deoxycytosine 5'-monophosphate(2-) (dCMP)	CHEBI:57566			-0.465255786	
+dTMP(2-)	CHEBI:63528			-1.198713221	
+dGMP	CHEBI:16192			-0.410310717	
+adenosine 5'-monophosphate(2-) (AMP)	CHEBI:456215				-0.88
+guanosine 5'-monophosphate(2-) (GMP)	CHEBI:58115				-0.723
+cytidine 5'-monophosphate(2-) (CMP)	CHEBI:60377				-0.637
+uridine 5'-monophosphate(2-) (UMP)	CHEBI:57865				-0.869
