@@ -132,7 +132,10 @@ class DraftRecon(Process):
                             net.add_compound(comp)
                             _comps.append(comp)
                         except:
-                            raise Error("DraftRecon", "_create_biomass_compounds", f"No compound found for CheBI ID {c_id}")
+                            comp = Compound(name=row_name, chebi_id=c_id, compartment="c")
+                            net.add_compound(comp)
+                            _comps.append(comp)
+                            #raise Error("DraftRecon", "_create_biomass_compounds", f"No compound found for CheBI ID {c_id}")
                     else:
                          _comps.append(comp)
  
