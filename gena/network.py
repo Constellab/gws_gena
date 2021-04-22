@@ -1303,7 +1303,7 @@ class Network(Resource):
     
     # views
     
-    def view__compound_stats__as_csv(self, stringify=False, **kwargs) -> (str, "DataFrame"):
+    def view__compound_stats__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
         stats = self.stats
         table = View.dict_to_table(stats["compounds"], columns=["count", "freq"], stringify=False)
         table = table.sort_values(by=['freq'], ascending=False)

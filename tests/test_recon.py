@@ -86,9 +86,7 @@ class TestRecon(unittest.TestCase):
                 
             file_path = os.path.join(data_dir, "recon_stats.csv")
             with open(file_path, 'w') as f:
-                stats = net.stats()
-                csv = CSVData.from_dict(stats["compounds"], columns=["count", "freq"])
-                table = csv.table.sort_values(by=['freq'], ascending=False)
+                table = net.view__compound_stats__as_table()
                 f.write(table.to_csv())
             
         e = proto.create_experiment( study=GTest.study, user=GTest.user )
