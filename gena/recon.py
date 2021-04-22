@@ -69,12 +69,19 @@ class DraftRecon(Process):
             name = row_names[i]
             subs = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_EXTRACELL)
             prod = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
-            rxn = Reaction(
-                id=prod.name+"_ex", 
-                network=net
-            )
-            rxn.add_product(prod, 1)
-            rxn.add_substrate(subs, 1)
+            try:
+                rxn = Reaction(
+                    id=prod.name+"_ex", 
+                    network=net
+                )
+                rxn.add_product(prod, 1)
+                rxn.add_substrate(subs, 1)
+            except ReactionDuplicate:
+                # ... the reactoin alread exits => OK!
+                pass
+            except Exception as err:
+                raise Error("DraftRecon", "_create_culture_medium", f"Unexpected error. Exception: {err}")
+                
             i += 1
             
     def _create_biomass_rxns(self, net, biomass_comps):
