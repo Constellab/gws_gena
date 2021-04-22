@@ -842,7 +842,7 @@ class Network(Resource):
             _str += "\n" + self.reactions[_id].as_str()
         return _str
     
-    def as_csv(self) -> str:
+    def to_csv(self) -> str:
         """
         Returns a CSV representation of the network
         

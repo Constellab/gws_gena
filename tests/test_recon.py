@@ -76,13 +76,12 @@ class TestRecon(unittest.TestCase):
             with open(file_path, 'w') as f:
                 json.dump(net.to_json(), f)
             
-            
             #with open(file_path, 'r') as f:
-            #    self.assertEqual( f.read(), net.as_csv() )
+            #    self.assertEqual( f.read(), net.to_csv() )
             
             file_path = os.path.join(data_dir, "recon_net.csv")
             with open(file_path, 'w') as f:
-                f.write(net.as_csv())
+                f.write(net.to_csv())
                 
             file_path = os.path.join(data_dir, "recon_stats.csv")
             with open(file_path, 'w') as f:
