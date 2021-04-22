@@ -65,12 +65,12 @@ class TestFba(unittest.TestCase):
         def _on_end(*args, **kwargs):
             f = fba.output["file"]
             print( f.extension )
-            print( f.as_json(read_content=True, prettify=True, stringify=True) )
+            print( f.to_json(read_content=True, prettify=True, stringify=True) )
             
             file_path = os.path.join(data_dir, "flat_toy_result.json")
             with open(file_path) as fp:
                 expected_result_content = json.load(fp)            
-                result_content = f.as_json(read_content=True)["data"]["content"]
+                result_content = f.to_json(read_content=True)["data"]["content"]
                 self.assertEqual( result_content, expected_result_content  )
             
         

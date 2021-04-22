@@ -10,6 +10,7 @@ from typing import List
 from gws.logger import Error
 from gws.model import Model, Resource, ResourceSet
 from gws.utils import generate_random_chars, slugify
+from gws.view import View
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction
@@ -29,6 +30,9 @@ flattening_delimiter = ":"
 #
 # ####################################################################
 
+
+class NoCompartmentFound(Error): 
+    pass
 
 class CompoundDuplicate(Error): 
     pass
@@ -96,19 +100,22 @@ class Compound:
     COMPARTMENT_BIOMASS    = "b"
     COMPARTMENT_EXTRACELL  = "e"
     VALID_COMPARTMENTS     = ["c","n","b","e"]
-    
+        
     _flattening_delimiter = flattening_delimiter
     
-    def __init__(self, id="", name="", compartment="c", network:'Network'=None, formula="", \
+    def __init__(self, id="", name="", compartment=None, \
+                 network:'Network'=None, formula="", \
                  charge="", mass="", monoisotopic_mass="", inchi="", \
                  chebi_id="", kegg_id=""):  
         
+        if not compartment:
+            compartment = Compound.COMPARTMENT_CYTOSOL
+            
         if not compartment in self.VALID_COMPARTMENTS:
             raise Error("gena.network.Compound", "__init__", "Invalid compartment")  
         
         self.compartment = compartment   
-        
-
+    
         if id:
             self.id = slugify_id(id)
         else:
@@ -126,6 +133,9 @@ class Compound:
                 
             self.id = slugify_id(name + "_" + compartment)
         
+        if not name:
+            name = self.id
+            
         if network:
             self.add_to_network(network)
         
@@ -176,7 +186,7 @@ class Compound:
         return slugify_id(ctx_name + delim + id.replace(delim,"_"))
      
     @classmethod
-    def from_biota(cls, chebi_id=None, kegg_id=None) -> 'Compound':
+    def from_biota(cls, chebi_id=None, kegg_id=None, compartment=None) -> 'Compound':
         """
         Create a network compound from a ChEBI of Kegg id
         
@@ -204,7 +214,10 @@ class Compound:
         except:
             raise Error("gena.network.Compound", "from_biota", "Chebi compound not found")
         
-        c = cls(name=comp.name)
+        if compartment is None:
+            compartment = Compound.COMPARTMENT_CYTOSOL
+            
+        c = cls(name=comp.name, compartment=compartment)
         c.chebi_id = comp.chebi_id
         c.kegg_id = comp.kegg_id
         c.charge = comp.charge
@@ -213,7 +226,8 @@ class Compound:
         c.monoisotopic_mass = comp.monoisotopic_mass
         return c
 
-    
+    # -- I --
+ 
     # -- R --
     
     def get_related_biota_compound(self):
@@ -232,7 +246,24 @@ class Compound:
         except:
             return None
 
-
+    def get_related_biota_reactions(self):
+        """
+        Get the biota reactions that are related to this network compound
+        
+        :return: The list of biota reactions corresponding to the chebi of kegg id. Returns [] is no biota reaction is found
+        :rtype: `List[bioa.compound.reaction]` or SQL `select` resutls
+        """
+        
+        try:
+            if self.chebi_id:
+                comp = BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
+            elif self.kegg_id:
+                comp = BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
+            
+            return comp.reactions
+        except:
+            return None
+        
 # ####################################################################
 #
 # Reaction class
@@ -503,7 +534,7 @@ class Reaction:
             for chebi_id in eqn["substrates"]:
                 stoich =  eqn["substrates"][chebi_id]
                 biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                c = Compound(name=biota_comp.name, compartment="c")
+                c = Compound(name=biota_comp.name, compartment=Compound.COMPARTMENT_CYTOSOL)
                 c.chebi_id = biota_comp.chebi_id
                 c.kegg_id = biota_comp.kegg_id
                 c.charge = biota_comp.charge
@@ -515,7 +546,7 @@ class Reaction:
             for chebi_id in eqn["products"]:
                 stoich = eqn["products"][chebi_id]
                 biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                c = Compound(name=biota_comp.name, compartment="c")
+                c = Compound(name=biota_comp.name, compartment=Compound.COMPARTMENT_CYTOSOL)
                 c.chebi_id = biota_comp.chebi_id
                 c.kegg_id = biota_comp.kegg_id
                 c.charge = biota_comp.charge
@@ -701,6 +732,8 @@ class Network(Resource):
     
     _flattening_delimiter = flattening_delimiter
     _defaultNetwork = None
+    _stats = None
+    _cofactor_freq_threshold = 0.7
     
     def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
@@ -722,10 +755,16 @@ class Network(Resource):
                 'title': 'Network',
                 'description': '',
                 'network': None,
+                "recon_errors":{
+                    "reactions": [],
+                    "compounds": []
+                }
             }
         
+        self._stats = {}
+        
         # only used for the reconstruction
-        self.data["errors"] = []
+        # self.data["errors"] = []
         
     # -- A --
     
@@ -740,20 +779,21 @@ class Network(Resource):
         if not isinstance(comp, Compound):
             raise Error("Network", "add_compound", "The compound must an instance of Compound")
         
-        if comp.network:
-            raise Error("Network", "add_compound", "The compound is already in a network")
+        if comp.network and comp.network != self:
+            raise Error("Network", "add_compound", "The compound is already in another network")
         
         if comp.id in self._compounds:
             raise CompoundDuplicate("Network", "add_compound", f"Compound id {comp.id} duplicate")
         
         if not comp.compartment:
-            raise Error("Network", "add_compound", "No compartment defined for the compound")
+            raise NoCompartmentFound("Network", "add_compound", "No compartment defined for the compound")
         
         if not comp.compartment in self._compartments:
             self.compartment[comp.compartment] = comp.compartment
         
         comp.network = self
         self.compounds[comp.id] = comp
+        self._stats = {}
         
     def add_reaction(self, rxn: Reaction):
         """
@@ -788,6 +828,7 @@ class Network(Resource):
         # add the reaction
         rxn.network = self
         self.reactions[rxn.id] = rxn
+        self._stats = {}
         
     def as_str(self) -> str:
         """
@@ -907,7 +948,7 @@ class Network(Resource):
         
         # add the errored ec numbers
         from biota.enzyme import EnzymeClass
-        errors = self.data.get("errors")
+        errors = self.data.get("recon_errors",{}).get("reactions")
         for err in errors:
             rxn_row = [""] * len(column_names)
             rxn_row[3] = err["ec_number"]
@@ -932,31 +973,6 @@ class Network(Resource):
             return table.to_csv()
         else:
             return table
-        
-    def as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
-        """
-        Returns JSON string or dictionnary representation of the model.
-        
-        :param stringify: If True, returns a JSON string. Returns a python dictionary otherwise. Defaults to False
-        :type stringify: bool
-        :param prettify: If True, indent the JSON string. Defaults to False.
-        :type prettify: bool
-        :param kwargs: Theses parameters are passed to the super class
-        :type kwargs: keyword arguments
-        :return: The representation
-        :rtype: dict, str
-        """
-        
-        _json = super().as_json(**kwargs)
-        _json["data"]["network"] = self.dumps() #override to account for new updates
-        
-        if stringify:
-            if prettify:
-                return json.dumps(_json, indent=4)
-            else:
-                return json.dumps(_json)
-        else:
-            return _json
                     
     # -- B --
     
@@ -1108,7 +1124,27 @@ class Network(Resource):
                 return json.dumps(_json)
         else:
             return _json
+       
+    # -- E --
+    
+    def exists(self, elt: (Compound, Reaction))->bool:
+        """
+        Check that a compound or a reaction exists in the the network
         
+        :param elt: The element (compound or reaction)
+        :type elt: `gws.gena.Compound` or `gws.gena.Reaction`
+        :return: True if the element exists, False otherwise
+        :rtype: `bool`
+        """
+        
+        if isinstance(elt, Reaction):
+            return elt.id in self.reactions
+        
+        if isinstance(elt, Compound):
+            return elt.id in self.compounds
+            
+        raise Error("Network", "exists", "Invalid element. The element must be an instance of gws.gena.Compound or gws.gena.Reaction")
+    
     # -- F --
     
     @classmethod
@@ -1127,19 +1163,23 @@ class Network(Resource):
     def get_compound_by_id(self, c_id):
         return self._compounds.get(c_id)
     
-    def get_compound_by_chebi_id(self, chebi_id):
+    def get_compounds_by_chebi_id(self, chebi_id, compartment=None):
         if isinstance(chebi_id, float) or isinstance(chebi_id, int):
             chebi_id = f"CHEBI:{chebi_id}"
         
         if "CHEBI" not in chebi_id:
             chebi_id = f"CHEBI:{chebi_id}"
-            
-        for c_id in self._compounds:
-            comp = self._compounds[c_id]
-            if comp.chebi_id == chebi_id:
-                return comp
         
-        return None
+        _list = []
+        for chebi_id in self._compounds:
+            comp = self._compounds[chebi_id]
+            if comp.chebi_id == chebi_id:
+                if compartment is None:
+                    _list.append(comp)
+                elif comp.compartment == compartment:
+                    _list.append(comp)
+        
+        return _list
     
     # -- N --
     
@@ -1193,6 +1233,38 @@ class Network(Resource):
         
     # -- S --
     
+    @property
+    def stats(self) -> dict:
+        if self._stats:
+            return self._stats
+        
+        stats = {
+            "compound_count": len(self.compounds),
+            "reaction_count": len(self.reactions),
+            "compounds": {},
+            "reactions": {}
+        }
+        
+        for comp_id in self.compounds:
+            stats["compounds"][comp_id] = {
+                "count": 0
+            }
+            
+        for rxn_id in self.reactions:
+            rxn = self.reactions[rxn_id]
+            for comp_id in rxn.products:
+                stats["compounds"][comp_id]["count"] += 1
+            
+            for comp_id in rxn.substrates:
+                stats["compounds"][comp_id]["count"] += 1
+        
+        if stats["compound_count"]:
+            for comp_id in self.compounds:
+                stats["compounds"][comp_id]["freq"] = stats["compounds"][comp_id]["count"] / stats["compound_count"]
+        
+        self._stats = stats
+        return stats
+  
     def save(self, *args, **kwargs):
         """
         Save the metwork
@@ -1202,4 +1274,54 @@ class Network(Resource):
         return super().save(*args, **kwargs)
     
     
-            
+    # -- T --
+    
+    def to_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
+        """
+        Returns JSON string or dictionnary representation of the model.
+        
+        :param stringify: If True, returns a JSON string. Returns a python dictionary otherwise. Defaults to False
+        :type stringify: bool
+        :param prettify: If True, indent the JSON string. Defaults to False.
+        :type prettify: bool
+        :param kwargs: Theses parameters are passed to the super class
+        :type kwargs: keyword arguments
+        :return: The representation
+        :rtype: dict, str
+        """
+        
+        _json = super().to_json(**kwargs)
+        _json["data"]["network"] = self.dumps() #override to account for new updates
+        
+        if stringify:
+            if prettify:
+                return json.dumps(_json, indent=4)
+            else:
+                return json.dumps(_json)
+        else:
+            return _json
+    
+    # views
+    
+    def view__compound_stats__as_csv(self, stringify=False, **kwargs) -> (str, "DataFrame"):
+        stats = self.stats
+        table = View.dict_to_table(stats["compounds"], columns=["count", "freq"], stringify=False)
+        table = table.sort_values(by=['freq'], ascending=False)
+        
+        if stringify:
+            return table.to_csv()
+        else:
+            return table
+    
+    def view__compound_stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
+        return self.stats["compounds"]
+   
+    def view__stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
+        stats = self.stats
+        if stringify:
+            if prettify:
+                return json.dumps(_json, indent=4)
+            else:
+                return json.dumps(_json)
+        else:
+            return _json

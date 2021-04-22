@@ -53,7 +53,7 @@ class MediumData(CSVData):
         :rtype MediumData
         """
         
-        data = super()._import(*args, **kwargs)
+        data = super()._import(*args, index_col=0, **kwargs)
         
         if not data.column_exists( chebi_column_name ):
             raise Error("MediumData", "task", f"No chebi ids found (no column with name '{chebi_column_name}')")

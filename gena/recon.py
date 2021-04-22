@@ -4,14 +4,13 @@
 # About us: https://gencovery.com
 
 import math
-
 from gws.logger import Error
 from gws.model import Process
-from gena.network import Network, Compound, Reaction, ReactionDuplicate
-from gena.data import ECData, BiomassData
+from gena.network import Network, Compound, Reaction, ReactionDuplicate, CompoundDuplicate
+from gena.data import ECData, BiomassData, MediumData
 
 class DraftRecon(Process):
-    input_specs = { 'ec_data': (ECData,), 'biomass_data': (BiomassData, None) }
+    input_specs = { 'ec_data': (ECData,), 'biomass_data': (BiomassData, None), 'medium_data': (MediumData, None) }
     output_specs = { 'network': (Network,) }
     config_specs = {
         'tax_id': {"type": 'str', "default": '', "description": "The taxonomy id"},
@@ -20,7 +19,9 @@ class DraftRecon(Process):
     
     async def task(self):
         net = self._create_network()
-        rxns = self._create_biomass_equation(net)
+        self._create_biomass_equation(net)
+        self._create_culture_medium(net)
+        
         self.output["network"] = net
      
     def _create_network(self):
@@ -35,7 +36,7 @@ class DraftRecon(Process):
             is_incomplete_ec = ("-" in ec)
             
             if is_incomplete_ec:
-                net.data["errors"].append({
+                net.data["recon_errors"]["reactions"].append({
                     "ec_number": ec,
                     "reason": "partial_ec_number"
                 })
@@ -43,7 +44,7 @@ class DraftRecon(Process):
                 try:
                     Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
                 except Exception as err:
-                    net.data["errors"].append({
+                    net.data["recon_errors"]["reactions"].append({
                         "ec_number": ec,
                         "reason": str(err)
                     })
@@ -53,9 +54,34 @@ class DraftRecon(Process):
         rxns = []
         biomass_comps = self._create_biomass_compounds(net)
         self._create_biomass_rxns(net, biomass_comps)
+    
+    def _create_culture_medium(self, net):
+        medium_data = self.input['medium_data']
+        if not medium_data:
+            return
         
+        row_names = medium_data.row_names
+        col_names = medium_data.column_names
+        chebi_ids = medium_data.get_chebi_ids()
+
+        i = 0
+        for chebi_id in chebi_ids:    
+            name = row_names[i]
+            subs = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_EXTRACELL)
+            prod = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
+            rxn = Reaction(
+                id=prod.name+"_ex", 
+                network=net
+            )
+            rxn.add_product(prod, 1)
+            rxn.add_substrate(subs, 1)
+            i += 1
+            
     def _create_biomass_rxns(self, net, biomass_comps):
         biomass_data = self.input['biomass_data']
+        if not biomass_data:
+            return
+        
         col_names = biomass_data.column_names
         chebi_ids = biomass_data.get_chebi_ids()
         
@@ -71,7 +97,6 @@ class DraftRecon(Process):
             error_message = "The reaction is empty"
             
             for i in range(0,len(coefs)):
-                
                 if isinstance(coefs[i], str):
                     coefs[i] = coefs[i].strip()
                     if not coefs[i]:
@@ -97,7 +122,7 @@ class DraftRecon(Process):
             if not rxn.is_empty:
                 net.add_reaction(rxn)
             else:
-                net.data["errors"].append({
+                net.data["recon_errors"]["reactions"].append({
                     "ec_number": col_name,
                     "reason": error_message
                 })
@@ -110,38 +135,58 @@ class DraftRecon(Process):
         
         _comps = []
         i = 0
-        for c_id in chebi_ids:
-            row_name = row_names[i]
-            if row_name == biomass_col_name:
-                comp = Compound(name=row_name, compartment="b")
-                net.add_compound(comp)
+        for chebi_id in chebi_ids:
+            name = row_names[i]
+            if name == biomass_col_name:
+                comp = Compound(name=name, compartment=Compound.COMPARTMENT_BIOMASS)
                 _comps.append(comp)
             else:
-                if not isinstance(c_id, str):
-                    c_id = str(c_id)
-                    
-                if "CHEBI" not in c_id:
-                    comp = Compound(name=row_name, compartment="c")
-                    net.add_compound(comp)
-                    _comps.append(comp)
-                else:
-                    comp = net.get_compound_by_chebi_id(c_id)
-                    if not comp:
-                        try:
-                            comp = Compound.from_biota(chebi_id = c_id)
-                            net.add_compound(comp)
-                            _comps.append(comp)
-                        except:
-                            comp = Compound(name=row_name, chebi_id=c_id, compartment="c")
-                            net.add_compound(comp)
-                            _comps.append(comp)
-                            #raise Error("DraftRecon", "_create_biomass_compounds", f"No compound found for CheBI ID {c_id}")
-                    else:
-                         _comps.append(comp)
- 
+                comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
+                _comps.append(comp)
+                
             i += 1
-   
+       
+        if not net.exists(comp):
+            net.add_compound(comp)
+        
         return _comps
+    
+    @staticmethod
+    def _retrieve_or_create_comp(net, chebi_id, name, compartment):
+        if not isinstance(chebi_id, str):
+            chebi_id = str(chebi_id)
+                
+        chebi_id = chebi_id.upper()
+        if "CHEBI" not in chebi_id:
+            comp = Compound(name=name, compartment=compartment)
+        else:   
+            comps = net.get_compounds_by_chebi_id(chebi_id, compartment=compartment)  
+            if not comps:
+                try:
+                    comp = Compound.from_biota(chebi_id = chebi_id, compartment=compartment)
+                    net.data["recon_errors"]["compounds"].append({
+                        "chebi_id": comp.chebi_id,
+                        "is_isolated": True
+                    })
+                except:
+                    #invalid chebi_id
+                    comp = Compound(name=name, compartment=compartment) 
+                    net.data["recon_errors"]["compounds"].append({
+                        "chebi_id": comp.chebi_id,
+                        "is_isolated": True,
+                        "invalid_chebi_id": True
+                    })
+            else:
+                comp = comps[0]
+        
+        if not net.exists(comp):
+            net.add_compound(comp)
             
+        return comp
+        
 class GapFiller(Process):
-    pass
+    
+    
+    @classmethod
+    def _fil_compound_gap_using_biota(cls, net, comp):
+        pass

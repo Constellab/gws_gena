@@ -39,7 +39,7 @@ class TestTwin(unittest.TestCase):
         
         _json = ctx.dumps(stringify=True, prettify=True)
         print(_json)        
-        print(ctx.as_json())
+        print(ctx.to_json())
 
         self.assertEqual( data["measures"][1], ctx.dumps()[1] )
         self.assertEqual( data["measures"][0].get("confidence_score"), 1.0 )

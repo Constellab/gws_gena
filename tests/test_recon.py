@@ -5,6 +5,8 @@ import asyncio
 
 from gws.settings import Settings
 from gws.model import *
+from gws.csv import CSVData
+
 settings = Settings.retrieve()
 settings.use_prod_biota_db(True)
 
@@ -63,7 +65,8 @@ class TestRecon(unittest.TestCase):
             },
             connectors = [
                 ec_loader>>"data" | recon<<"ec_data",
-                biomass_loader>>"data" | recon<<"biomass_data"
+                biomass_loader>>"data" | recon<<"biomass_data",
+                medium_loader>>"data" | recon<<"medium_data"
             ]
         )
         
@@ -71,7 +74,7 @@ class TestRecon(unittest.TestCase):
             net = recon.output['network']
             file_path = os.path.join(data_dir, "recon_net.json")
             with open(file_path, 'w') as f:
-                json.dump(net.as_json(), f)
+                json.dump(net.to_json(), f)
             
             
             #with open(file_path, 'r') as f:
@@ -80,6 +83,13 @@ class TestRecon(unittest.TestCase):
             file_path = os.path.join(data_dir, "recon_net.csv")
             with open(file_path, 'w') as f:
                 f.write(net.as_csv())
+                
+            file_path = os.path.join(data_dir, "recon_stats.csv")
+            with open(file_path, 'w') as f:
+                stats = net.stats()
+                csv = CSVData.from_dict(stats["compounds"], columns=["count", "freq"])
+                table = csv.table.sort_values(by=['freq'], ascending=False)
+                f.write(table.to_csv())
             
         e = proto.create_experiment( study=GTest.study, user=GTest.user )
         e.on_end( _on_end )

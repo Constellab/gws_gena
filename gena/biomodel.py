@@ -115,33 +115,6 @@ class Biomodel(Resource):
             
         
             self.network_contexts[related_network.uri] = ctx
-        
-    def as_json(self, stringify=False, prettify=False, expand=False, **kwargs):
-        """
-        Returns a JSON string or dictionnary representation of the model.
-        
-        :param stringify: If True, returns a JSON string. Returns a python dictionary otherwise. Defaults to False
-        :type stringify: bool
-        :param prettify: If True, indent the JSON string. Defaults to False.
-        :type prettify: bool
-        :param expand: If True, the  content of the biomodel is expanded. False otherwise.
-        :type expand: bool
-        :param kwargs: Theses parameters are passed to the super class
-        :type kwargs: keyword arguments
-        :return: The representation
-        :rtype: dict, str
-        """
-        
-        _json = super().as_json(**kwargs)
-        _json["data"]["biomodel"] = self.dumps(expand=expand) #override to account for new updates
-        
-        if stringify:
-            if prettify:
-                return json.dumps(_json, indent=4)
-            else:
-                return json.dumps(_json)
-        else:
-            return _json  
     
     # -- B --
     
@@ -198,13 +171,13 @@ class Biomodel(Resource):
         
         for _net in self.networks.values():
             if expand:
-                _net_json.append( _net.as_json() )
+                _net_json.append( _net.to_json() )
             else:
                 _net_json.append( {"uri": _net.uri} )
             
         for _ctx in self.contexts.values():
             if expand:
-                _ctx_json.append( _ctx.as_json() )
+                _ctx_json.append( _ctx.to_json() )
             else:
                 _ctx_json.append( {"uri": _ctx.uri} )
         
@@ -364,6 +337,35 @@ class Biomodel(Resource):
         self.data["biomodel"] = self.dumps()
         return super().save(*args, **kwargs)
     
+    # -- T --
+    
+    def to_json(self, stringify=False, prettify=False, expand=False, **kwargs):
+        """
+        Returns a JSON string or dictionnary representation of the model.
+        
+        :param stringify: If True, returns a JSON string. Returns a python dictionary otherwise. Defaults to False
+        :type stringify: bool
+        :param prettify: If True, indent the JSON string. Defaults to False.
+        :type prettify: bool
+        :param expand: If True, the  content of the biomodel is expanded. False otherwise.
+        :type expand: bool
+        :param kwargs: Theses parameters are passed to the super class
+        :type kwargs: keyword arguments
+        :return: The representation
+        :rtype: dict, str
+        """
+        
+        _json = super().to_json(**kwargs)
+        _json["data"]["biomodel"] = self.dumps(expand=expand) #override to account for new updates
+        
+        if stringify:
+            if prettify:
+                return json.dumps(_json, indent=4)
+            else:
+                return json.dumps(_json)
+        else:
+            return _json  
+        
     # -- U --
     
     @staticmethod
