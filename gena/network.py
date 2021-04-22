@@ -364,7 +364,7 @@ class Reaction:
         """
         
         if comp.id in self._substrates:
-            raise SubstrateDuplicate("gena.network.Reaction", "add_substrate", "Substrate duplicate")
+            raise SubstrateDuplicate("gena.network.Reaction", "add_substrate", f"Substrate duplicate (id= {comp.id})")
         
         # add the compound to the reaction network
         if self.network:
@@ -387,7 +387,7 @@ class Reaction:
         """
         
         if comp.id in self._products:
-            raise ProductDuplicate("gena.network.Reaction", "add_substrate", "Product duplicate")
+            raise ProductDuplicate("gena.network.Reaction", "add_substrate", "Product duplicate (id= {comp.id})")
         
         # add the compound to the reaction network
         if self.network:
