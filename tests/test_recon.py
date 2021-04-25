@@ -60,6 +60,7 @@ class TestRecon(unittest.TestCase):
         gapfiller = GapFiller()
         #gapfiller.set_param('tax_id', "4753")    #fungi 
         gapfiller.set_param('tax_id', "2759")    #eukaryota
+        gapfiller.set_param('biomass_and_medium_gaps_only', True)
         
         proto = Protocol(
             processes = {
@@ -91,14 +92,21 @@ class TestRecon(unittest.TestCase):
                 table = net.view__compound_stats__as_table()
                 f.write(table.to_csv())
             
+            file_path = os.path.join(data_dir, file_name+"_gaps.csv")
+            with open(file_path, 'w') as f:
+                table = net.view__gaps__as_table()
+                f.write(table.to_csv())
+            
         def _on_end(*args, **kwargs):
             net = recon.output['network']
             file_name = "recon"
             _export_network(net, file_name)
             
-            #net = gapfiller.output['network']
-            #file_name = "gapfill"
-            #_export_network(net, file_name)
+            net = gapfiller.output['network']
+            file_name = "gapfill"
+            _export_network(net, file_name)
+            
+            
             
         e = proto.create_experiment( study=GTest.study, user=GTest.user )
         e.on_end( _on_end )

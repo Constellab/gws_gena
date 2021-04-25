@@ -46,6 +46,7 @@ class GapFiller(Process):
     output_specs = { 'network': (Network,) }
     config_specs = {
         'tax_id': {"type": 'str', "default": '', "description": "The taxonomy id"},
+        'biomass_and_medium_gaps_only': {"type": 'bool', "default": False, "description": "True to only fill gaps related to compounds comming from the biomass equation or the medium composition; False otherwise."},
         'nb_iterations': {"type": 'int', "default": 3, "description": "Number of gap filling iterations"},
     }
     
@@ -70,35 +71,16 @@ class GapFiller(Process):
             
             if not _nb_filled:
                 break 
+                
         self.output["network"] = output_net
         
         Info("Gap filling done.")
-        
-    
-    def __comp_info(self, net):
-        _comps = {}
-        for k in net._compounds:
-            _comps[k] = {
-                "is_substrate": False,
-                "is_product": False
-            }
-            
-        for k in net._reactions:
-            rxn = net._reactions[k]
-            for c_id in rxn._substrates:
-                comp = rxn._substrates[c_id]["compound"]
-                _comps[comp.id]["is_substrate"] = True
-                
-            for c_id in rxn._products:
-                comp = rxn._products[c_id]["compound"]
-                _comps[comp.id]["is_product"] = True
-        
-        return _comps
-    
+
     def __fill_gaps(self, net):
         _nb_filled = 0
-        _comps = self.__comp_info(net)
+        _gap_info = net._get_gap_info()
         tax_id = self.get_param("tax_id")
+        biomass_and_medium_gaps_only = self.get_param("biomass_and_medium_gaps_only")
         
         if tax_id:
             try:
@@ -108,48 +90,54 @@ class GapFiller(Process):
         else:
             tax = None
             
-        for k in _comps:
-            if not _comps[k]["is_product"] or not _comps[k]["is_substrate"]:
+        for k in _gap_info:
+            if _gap_info[k]["is_gap"]:
                 comp = net._compounds[k]
-                
-                if comp.is_intracellular:
-                    if not comp.chebi_id in Compound.COFACTORS:
-                        try:
-                            biota_c = BiotaCompound.get(BiotaCompound.chebi_id == comp.chebi_id)
-                        except Exception as err:
-                            net.set_compound_tag(comp.id, {
-                                "id": comp.id,
-                                "is_chebi_not_found": True,
-                                "error": "Chebi id not found"
-                            })
-    
-                        for biota_r in biota_c.reactions:
-                            if tax:
-                                OK = False
-                                enzymes = biota_r.enzymes
-                                for e in enzymes:
-                                    enzyme_tax_id = getattr(e, "tax_"+tax.rank)
-                                    if enzyme_tax_id == tax.tax_id:
-                                        # an enzyme exists in the taxonomy level
-                                        OK = True
-                                        break
-                                
-                                if not OK:
-                                    #> search in ancestors
-                                    pass
-                            else:
-                                OK = True
-                            
-                            if OK:
-                                rxns = Reaction.from_biota(biota_reaction=biota_r)
-                                for rxn in rxns:
-                                    if not net.exists(rxn):
-                                        _nb_filled += 1
-                                        net.add_reaction(rxn)
 
-                                        net.set_reaction_tag(rxn.id, {
-                                            "id": rxn.id,
-                                            "is_gap_filled": True
-                                        })
+                if biomass_and_medium_gaps_only:
+                    is_in_biomass_or_medium = net.get_compound_tag(comp.id, "is_in_biomass_or_medium")
+                    if not is_in_biomass_or_medium:
+                        # skip this compound
+                        continue
+
+                if not comp.chebi_id in Compound.COFACTORS:
+                    try:
+                        biota_c = BiotaCompound.get(BiotaCompound.chebi_id == comp.chebi_id)
+                    except Exception as err:
+                        net.set_compound_tag(comp.id, {
+                            "id": comp.id,
+                            "is_chebi_not_found": True,
+                            "error": "Chebi id not found"
+                        })
+                        continue
+
+                    for biota_r in biota_c.reactions:
+                        if tax:
+                            OK = False
+                            enzymes = biota_r.enzymes
+                            for e in enzymes:
+                                enzyme_tax_id = getattr(e, "tax_"+tax.rank)
+                                if enzyme_tax_id == tax.tax_id:
+                                    # an enzyme exists in the taxonomy level
+                                    OK = True
+                                    break
+
+                            if not OK:
+                                #> search in ancestors
+                                pass
+                        else:
+                            OK = True
+
+                        if OK:
+                            rxns = Reaction.from_biota(biota_reaction=biota_r)
+                            for rxn in rxns:
+                                if not net.exists(rxn):
+                                    _nb_filled += 1
+                                    net.add_reaction(rxn)
+
+                                    net.set_reaction_tag(rxn.id, {
+                                        "id": rxn.id,
+                                        "is_from_gap_filling": True
+                                    })
      
         return _nb_filled 

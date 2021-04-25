@@ -103,6 +103,7 @@ class Compound:
     COFACTORS = {
         "CHEBI:15378": "hydron",
         "CHEBI:15377": "water",
+        "CHEBI:16240": "hydrogen_peroxide",
         "CHEBI:43474": "hydrogenphosphate",
         "CHEBI:33019": "diphosphate_3",
         
@@ -117,6 +118,8 @@ class Compound:
         "CHEBI:30879": "alcohol",
         "CHEBI:456216": "ADP_3",
         "CHEBI:30616": "ATP_4",
+        "CHEBI:456215": "AMP",
+        
         "CHEBI:57692": "FAD_3",
         "CHEBI:58307": "FADH2_2",
         "CHEBI:58210": "FMN_3",
@@ -958,6 +961,9 @@ class Network(Resource):
         self.data["name"] = data.get("name","Network").replace(delim,"_")
         self.data["description"] = data.get("description","")
         
+        if data.get("tags"):
+            self.data["tags"] = data.get("tags")
+        
     # -- C --
         
     @property
@@ -1064,6 +1070,7 @@ class Network(Resource):
             "metabolites": _met_json,
             "reactions": _rxn_json,
             "compartments": self.compartments,
+            "tags": self.data["tags"]
         }
         
         if stringify:
@@ -1109,23 +1116,21 @@ class Network(Resource):
     
     # -- G --
     
-    def get_compound_tag(self, tag_id, tag_name: "str"):
-        if not isinstance(tag_name, str):
-            raise Error("Network", "get_tag", "The tag name must be a string")
- 
-        if isinstance(elt, Compound):
+    def get_compound_tag(self, tag_id, tag_name: str = None):
+        if tag_name:
             return self.data["tags"]["compounds"].get(tag_id,{}).get(tag_name)
-    
+        else:
+            return self.data["tags"]["compounds"].get(tag_id,{})
+        
     def get_compound_tags(self):
         return self.data["tags"]["compounds"]
     
-    def get_reaction_tag(self, tag_id, tag_name: "str"):
-        if not isinstance(tag_name, str):
-            raise Error("Network", "get_tag", "The tag name must be a string")
- 
-        if isinstance(elt, Reaction):
+    def get_reaction_tag(self, tag_id, tag_name: str = None):
+        if tag_name:
             return self.data["tags"]["reactions"].get(tag_id,{}).get(tag_name)
-    
+        else:
+            return self.data["tags"]["reactions"].get(tag_id,{})
+        
     def get_reaction_tags(self):
         return self.data["tags"]["reactions"]
     
@@ -1149,6 +1154,33 @@ class Network(Resource):
                     _list.append(comp)
         
         return _list
+    
+    def _get_gap_info(self):
+        _info = {}
+        for k in self._compounds:
+            _info[k] = {
+                "is_substrate": False,
+                "is_product": False,
+                "is_gap": False
+            }
+            
+        for k in self._reactions:
+            rxn = self._reactions[k]
+            for c_id in rxn._substrates:
+                comp = rxn._substrates[c_id]["compound"]
+                _info[comp.id]["is_substrate"] = True
+                
+            for c_id in rxn._products:
+                comp = rxn._products[c_id]["compound"]
+                _info[comp.id]["is_product"] = True
+        
+        for k in _info:
+            if not _info[k]["is_product"] or not _info[k]["is_substrate"]:
+                comp = self._compounds[k]
+                if comp.is_intracellular:
+                    _info[k]["is_gap"] = True
+                    
+        return _info
     
     # -- N --
     
@@ -1320,7 +1352,9 @@ class Network(Resource):
         
         column_names = [
             "id", "equation_str", \
-            "enzyme", "ec_number", "enzyme_class", \
+            "enzyme", "ec_number", \
+            "enzyme_class", \
+            "is_from_gap_filling",
             "comments", \
             "substrates", "products", \
             *BiotaTaxo._tax_tree, \
@@ -1334,18 +1368,23 @@ class Network(Resource):
             
             enz = ""
             ec = ""
-            deprecated_enz = ""
+            comment = []
             enzyme_class = ""
+            is_from_gap_filling = False
             pathway_cols = ["", "", ""]
             tax_cols = [""] * len(BiotaTaxo._tax_tree)
             
+            flag = self.get_reaction_tag(rxn.id, "is_from_gap_filling")
+            if flag:
+                is_from_gap_filling = True
+                
             if rxn.enzyme:
                 enz = rxn.enzyme.get("title","--") 
                 ec = rxn.enzyme.get("ec_number","--")
                 
                 deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
-                     deprecated_enz = deprecated_enz["ec_number"] + " (" + deprecated_enz["reason"] + ")"
+                     comment.append(deprecated_enz["ec_number"] + " (" + deprecated_enz["reason"] + ")")
 
                 if rxn.enzyme.get("pathway"):
                     pathway_cols = []
@@ -1388,13 +1427,14 @@ class Network(Resource):
             
             if not prods:
                 prods = ["*"]
-
+            
             rxn_row = [
                 rxn.id, \
                 rxn.to_str(), \
                 enz, ec, \
                 enzyme_class, \
-                deprecated_enz, \
+                is_from_gap_filling, \
+                "; ".join(comment), \
                 "; ".join(subs), \
                 "; ".join(prods), \
                 *tax_cols, \
@@ -1420,8 +1460,8 @@ class Network(Resource):
                 continue
             
             rxn_row = [""] * len(column_names)
-            rxn_row[3] = ec
-            rxn_row[5] = error
+            rxn_row[3] = ec      # ec number
+            rxn_row[6] = error   # comment
             
             if is_partial_ec_number:
                 try:
@@ -1437,7 +1477,6 @@ class Network(Resource):
         import pandas
         table = pandas.DataFrame(table, columns=column_names)
         table = table.sort_values(by=['ec_number'])
-        
         if stringify:
             return table.to_csv()
         else:
@@ -1445,23 +1484,31 @@ class Network(Resource):
         
     # -- V --
     
+    def view__compound_stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
+        return self.stats["compounds"]
+    
     def view__compound_stats__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
-        stats = self.stats
-        _dict = stats["compounds"]
+        _dict = self.stats["compounds"]
         for comp_id in _dict:
             _dict[comp_id]["chebi_id"] = self._compounds[comp_id].chebi_id
-            
         table = View.dict_to_table(_dict, columns=["count", "freq", "chebi_id"], stringify=False)
         table = table.sort_values(by=['freq'], ascending=False)
-        
         if stringify:
             return table.to_csv()
         else:
             return table
     
-    def view__compound_stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
-        return self.stats["compounds"]
-   
+    def view__gaps__as_json(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+        return self._get_gap_info()
+    
+    def view__gaps__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+        _dict = self._get_gap_info()
+        table = View.dict_to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=False)
+        if stringify:
+            return table.to_csv()
+        else:
+            return table
+
     def view__stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
         stats = self.stats
         if stringify:

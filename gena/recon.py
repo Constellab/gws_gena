@@ -217,9 +217,10 @@ class DraftRecon(Process):
         
         if not net.exists(comp):
             net.add_compound(comp)
-            net.set_compound_tag(comp.id, {
-                "compound_id": comp.id,
-                "is_isolated": True
-            })
+            
+        net.set_compound_tag(comp.id, {
+            "id": comp.id,
+            "is_in_biomass_or_medium": True
+        })
             
         return comp
