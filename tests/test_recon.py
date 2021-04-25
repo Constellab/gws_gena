@@ -15,6 +15,7 @@ from gena.context import Context
 from gena.biomodel import Biomodel
 from gena.data import *
 from gena.recon import DraftRecon
+from gena.gapfill import GapFiller
 
 from gws.unittest import GTest
 
@@ -55,38 +56,49 @@ class TestRecon(unittest.TestCase):
 
         recon = DraftRecon()
         recon.set_param('tax_id', "263815")  #target pneumocyctis
-
+        
+        gapfiller = GapFiller()
+        #gapfiller.set_param('tax_id', "4753")    #fungi 
+        gapfiller.set_param('tax_id', "2759")    #eukaryota
+        
         proto = Protocol(
             processes = {
                 "ec_loader": ec_loader,
                 "medium_loader": medium_loader,
                 "biomass_loader": biomass_loader,
-                "recon": recon
+                "recon": recon,
+                "gapfiller": gapfiller
             },
             connectors = [
                 ec_loader>>"data" | recon<<"ec_data",
                 biomass_loader>>"data" | recon<<"biomass_data",
-                medium_loader>>"data" | recon<<"medium_data"
+                medium_loader>>"data" | recon<<"medium_data",
+                recon>>"network" | gapfiller<<"network"
             ]
         )
         
-        def _on_end(*args, **kwargs):
-            net = recon.output['network']
-            file_path = os.path.join(data_dir, "recon_net.json")
+        def _export_network(net, file_name):
+            file_path = os.path.join(data_dir, file_name+"_net.json")
             with open(file_path, 'w') as f:
                 json.dump(net.to_json(), f)
-            
-            #with open(file_path, 'r') as f:
-            #    self.assertEqual( f.read(), net.to_csv() )
-            
-            file_path = os.path.join(data_dir, "recon_net.csv")
+
+            file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'w') as f:
                 f.write(net.to_csv())
                 
-            file_path = os.path.join(data_dir, "recon_stats.csv")
+            file_path = os.path.join(data_dir, file_name+"_stats.csv")
             with open(file_path, 'w') as f:
                 table = net.view__compound_stats__as_table()
                 f.write(table.to_csv())
+            
+        def _on_end(*args, **kwargs):
+            net = recon.output['network']
+            file_name = "recon"
+            _export_network(net, file_name)
+            
+            net = gapfiller.output['network']
+            file_name = "gapfill"
+            _export_network(net, file_name)
             
         e = proto.create_experiment( study=GTest.study, user=GTest.user )
         e.on_end( _on_end )

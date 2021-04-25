@@ -36,18 +36,27 @@ class DraftRecon(Process):
             is_incomplete_ec = ("-" in ec)
             
             if is_incomplete_ec:
-                net.data["recon_errors"]["reactions"].append({
+                net.set_reaction_tag(ec, {
                     "ec_number": ec,
-                    "reason": "partial_ec_number"
+                    "is_partial_ec_number": True,
+                    "error": "Partial ec number"
                 })
+                #net.data["logs"]["reactions"].append({
+                #    "ec_number": ec,
+                #    "reason": "partial_ec_number"
+                #})
             else:
                 try:
                     Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
                 except Exception as err:
-                    net.data["recon_errors"]["reactions"].append({
+                    net.set_reaction_tag(ec, {
                         "ec_number": ec,
-                        "reason": str(err)
+                        "error": str(err)
                     })
+                    #net.data["logs"]["reactions"].append({
+                    #    "ec_number": ec,
+                    #    "reason": str(err)
+                    #})
         return net
     
     def _create_biomass_equation(self, net):
@@ -129,10 +138,15 @@ class DraftRecon(Process):
             if not rxn.is_empty:
                 net.add_reaction(rxn)
             else:
-                net.data["recon_errors"]["reactions"].append({
-                    "ec_number": col_name,
-                    "reason": error_message
+                ec = col_name
+                net.set_reaction_tag(ec, {
+                    "ec_number": ec,
+                    "error": error_message
                 })
+                #net.data["logs"]["reactions"].append({
+                #    "ec_number": col_name,
+                #    "reason": error_message
+                #})
                 
     def _create_biomass_compounds(self, net):
         biomass_data = self.input['biomass_data']
@@ -171,23 +185,19 @@ class DraftRecon(Process):
             if not comps:
                 try:
                     comp = Compound.from_biota(chebi_id = chebi_id, compartment=compartment)
-                    net.data["recon_errors"]["compounds"].append({
-                        "chebi_id": comp.chebi_id,
-                        "is_isolated": True
-                    })
+                    
                 except:
                     #invalid chebi_id
                     comp = Compound(name=name, compartment=compartment) 
-                    net.data["recon_errors"]["compounds"].append({
-                        "chebi_id": comp.chebi_id,
-                        "is_isolated": True,
-                        "invalid_chebi_id": True
-                    })
             else:
                 comp = comps[0]
         
         if not net.exists(comp):
             net.add_compound(comp)
+            net.set_compound_tag(comp.id, {
+                "compound_id": comp.id,
+                "is_isolated": True
+            })
             
         return comp
         

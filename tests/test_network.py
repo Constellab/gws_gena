@@ -72,14 +72,14 @@ class TestNetwork(unittest.TestCase):
         
         print(rxn1)
         self.assertRaises(Exception, rxn1.add_product, comp4, 2)
-        self.assertEqual(rxn1.as_str(), "(1.0) ATP_c + (1.0) Creatine_c <==(MyEnzyme)==> (1.0) ADP_n + (1.0) Phosphocreatine_n")
+        self.assertEqual(rxn1.to_str(), "(1.0) ATP_c + (1.0) Creatine_c <==(MyEnzyme)==> (1.0) ADP_n + (1.0) Phosphocreatine_n")
         
         rxn1.direction = "R"
-        self.assertEqual(rxn1.as_str(), "(1.0) ATP_c + (1.0) Creatine_c ==(MyEnzyme)==> (1.0) ADP_n + (1.0) Phosphocreatine_n")
+        self.assertEqual(rxn1.to_str(), "(1.0) ATP_c + (1.0) Creatine_c ==(MyEnzyme)==> (1.0) ADP_n + (1.0) Phosphocreatine_n")
         print(rxn1)
         
         rxn1.direction = "L"
-        self.assertEqual(rxn1.as_str(), "(1.0) ATP_c + (1.0) Creatine_c <==(MyEnzyme)== (1.0) ADP_n + (1.0) Phosphocreatine_n")
+        self.assertEqual(rxn1.to_str(), "(1.0) ATP_c + (1.0) Creatine_c <==(MyEnzyme)== (1.0) ADP_n + (1.0) Phosphocreatine_n")
         print(rxn1)
         
         print("--->")
@@ -118,12 +118,12 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(net.compounds["atp_c"].name, "ATP C10H12N5O13P3")
         self.assertEqual(net.compounds["atp_c"].compartment, "c")
         self.assertEqual(len(net.reactions), 2)
-        self.assertEqual(net.reactions["EX_glc_D_e"].as_str(), "(1.0) glc_D_e <==()==> *")
-        self.assertEqual(net.reactions["GLNabc"].as_str(), "(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c")
+        self.assertEqual(net.reactions["EX_glc_D_e"].to_str(), "(1.0) glc_D_e <==()==> *")
+        self.assertEqual(net.reactions["GLNabc"].to_str(), "(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c")
         
         
         # export as table
-        csv = net.as_csv()
+        csv = net.to_csv()
         file_path = os.path.join(data_dir, "small.csv")
         with open(file_path, 'w') as f:
             f.write(csv)
