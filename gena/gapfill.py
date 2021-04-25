@@ -50,11 +50,12 @@ class GapFiller(Process):
     }
     
     async def task(self):
+        Info("Gap filling under progress ...")
+        
         input_net = self.input["network"]
         output_net = Network.from_json(input_net.dumps())
         nb_iter = self.get_param("nb_iterations")
         self.progress_bar.set_max_value(nb_iter)
-        
         _nb_filled = True
         for i in range(0,nb_iter):
             _nb_filled = self.__fill_gaps(output_net)
@@ -68,9 +69,10 @@ class GapFiller(Process):
             Info(message)
             
             if not _nb_filled:
-                break
-            
+                break 
         self.output["network"] = output_net
+        
+        Info("Gap filling done.")
         
     
     def __comp_info(self, net):

@@ -4,12 +4,32 @@
 # About us: https://gencovery.com
 
 import math
-from gws.logger import Error
+from gws.logger import Error, Info
 from gws.model import Process
 from gena.network import Network, Compound, Reaction, ReactionDuplicate, CompoundDuplicate
 from gena.data import ECData, BiomassData, MediumData
 
 class DraftRecon(Process):
+    """
+    DraftRecon class.
+    
+    This process performs a draft reconstruction of the metabolic network using a list of ec numbers.
+    
+    * for each `ec_number`, we find all the corresponding enzymes from the biota DB. If the `tax_id` is also given, we only retrieve enzyme that match the `ec_number` and the taxonomy.
+      * if enzymes found
+        * for each enzyme
+          * we add the corresponding reaction to the network
+          * continue
+      * if no enzyme found
+        * if `tax_id` is given and `tax_search_method == bottom_up`, we traverse the taxonomy tree above the `tax_id` of retrieve all the enzymes matching against the `ec_number`.
+        * for each enzyme
+          * we add the reaction corresponding the lowest taxonomy lever (i.e. closest to `tax_id`)
+          * break the current loop
+      * continue
+      
+    At the end of the process all the possible reactions existing in the biota DB will be added to the draft network.
+    """
+    
     input_specs = { 'ec_data': (ECData,), 'biomass_data': (BiomassData, None), 'medium_data': (MediumData, None) }
     output_specs = { 'network': (Network,) }
     config_specs = {
@@ -18,11 +38,14 @@ class DraftRecon(Process):
     }
     
     async def task(self):
+        Info("Reconstruction under progress ...")
+        
         net = self._create_network()
         self._create_biomass_equation(net)
         self._create_culture_medium(net)
-        
         self.output["network"] = net
+        
+        Info("Reconstruction done.")
      
     def _create_network(self):
         ec_data = self.input['ec_data']
