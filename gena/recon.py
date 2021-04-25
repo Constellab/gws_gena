@@ -200,10 +200,3 @@ class DraftRecon(Process):
             })
             
         return comp
-        
-class GapFiller(Process):
-    
-    
-    @classmethod
-    def _fil_compound_gap_using_biota(cls, net, comp):
-        pass

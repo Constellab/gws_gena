@@ -96,9 +96,9 @@ class TestRecon(unittest.TestCase):
             file_name = "recon"
             _export_network(net, file_name)
             
-            net = gapfiller.output['network']
-            file_name = "gapfill"
-            _export_network(net, file_name)
+            #net = gapfiller.output['network']
+            #file_name = "gapfill"
+            #_export_network(net, file_name)
             
         e = proto.create_experiment( study=GTest.study, user=GTest.user )
         e.on_end( _on_end )
