@@ -624,17 +624,49 @@ class Reaction:
                     if tax_search_method == 'bottom_up':
                         found_Q = []
                         Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
-                        # search in higher taxonomy levels
+
+                        #-> for each ec: we select the best enzyme
+                        #is_best_enzyme_found_for_this_ec = False
+                        #for e in Q:
+                        #    for t in tax.ancestors:
+                        #        if t.rank == "no rank":
+                        #            continue
+                        #        if getattr(e, "tax_"+t.rank) == t.tax_id:
+                        #            found_Q.append(e)
+                        #            is_best_enzyme_found_for_this_ec = True
+                        #            break  #-> stop at this taxonomy rank
                         
+                        tab = {}
                         for e in Q:
-                            for t in tax.ancestors:
-                                if t.rank == "no rank":
-                                    continue
-            
-                                if getattr(e, "tax_"+t.rank) == t.tax_id:
-                                    found_Q.append(e)
-                                    break  #-> stop at this tawonomy rank
+                            if not e.ec_number in tab:
+                                tab[e.ec_number] = []
+                                
+                            tab[e.ec_number].append(e)
                         
+                        for t in tax.ancestors:
+                            is_found = False
+                            for ec in tab:
+                                e_group = tab[ec]
+                                for e in e_group:
+                                    if t.rank == "no rank":
+                                        continue
+                                    if getattr(e, "tax_"+t.rank) == t.tax_id:
+                                        found_Q.append(e)
+                                        is_found = True
+                                        break  #-> stop at this taxonomy rank
+                                
+                                if is_found:
+                                    del tab[ec]
+                                    break
+                        
+                        # add remaining enzyme
+                        for ec in tab:
+                            e_group = tab[ec]
+                            for e in e_group:
+                                found_Q.append(e)
+                                break
+                                   
+                                
                         if found_Q:
                             Q = found_Q
                 
@@ -655,6 +687,8 @@ class Reaction:
                         try:
                             rxns.append( __create_rxn(rhea_rxn, network, e) )
                         except:
+                            # reaction duplicate
+                            # skip error!s
                             pass
                         
                 

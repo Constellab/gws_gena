@@ -1,10 +1,10 @@
 ,is_substrate,is_product,is_gap
 water_c,True,True,False
 L_glutamate_1_c,True,True,False
-NAD_1_c,True,False,True
+NAD_1_c,True,True,False
 2_oxoglutarate_2_c,True,True,False
 hydron_c,True,True,False
-NADH_2_c,False,True,True
+NADH_2_c,True,True,False
 ammonium_c,True,True,False
 ATP_4_c,True,True,False
 ADP_3_c,False,True,True
@@ -44,6 +44,7 @@ L_cystine_residue_c,False,True,True
 alcohol_c,False,True,True
 glutathionate_1_c,True,False,True
 glutathione_disulfide_2_c,False,True,True
+sodium_1_c,False,True,True
 Protein_c,True,True,False
 DNA_c,True,True,False
 RNA_c,True,True,False

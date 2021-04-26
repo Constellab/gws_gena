@@ -1,10 +1,10 @@
 ,is_substrate,is_product,is_gap
 water_c,True,True,False
 L_glutamate_1_c,True,True,False
-NAD_1_c,True,False,True
+NAD_1_c,True,True,False
 2_oxoglutarate_2_c,True,True,False
 hydron_c,True,True,False
-NADH_2_c,False,True,True
+NADH_2_c,True,True,False
 ammonium_c,True,True,False
 ATP_4_c,True,False,True
 ADP_3_c,False,True,True
@@ -31,7 +31,7 @@ R_dihydrolipoamide_c,True,False,True
 R_lipoamide_c,False,True,True
 L_serine_zwitterion_c,True,True,False
 L_aspartate_1_c,True,False,True
-oxaloacetate_2_c,False,True,True
+oxaloacetate_2_c,True,True,False
 hydrogencarbonate_c,True,False,True
 pyruvate_c,True,True,False
 adenosine_3_5_bismonophosphate_4_c,True,False,True
@@ -44,6 +44,7 @@ L_cystine_residue_c,False,True,True
 alcohol_c,False,True,True
 glutathionate_1_c,True,False,True
 glutathione_disulfide_2_c,False,True,True
+sodium_1_c,True,True,False
 Protein_c,True,True,False
 DNA_c,True,True,False
 RNA_c,True,True,False
