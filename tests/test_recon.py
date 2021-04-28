@@ -14,6 +14,8 @@ from gena.network import Network
 from gena.context import Context
 from gena.biomodel import Biomodel
 from gena.data import *
+from gws.csv import Dumper
+
 from gena.recon import DraftRecon
 from gena.gapfill import GapFiller
 
@@ -23,7 +25,7 @@ class TestRecon(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        tables = ( Biomodel, Context, Network, DraftRecon, ECData, MediumData, Experiment, Study, User, Activity, ProgressBar, )
+        tables = ( Resource, Biomodel, Context, Network, DraftRecon, ECData, MediumData, Experiment, Study, User, Activity, ProgressBar, )
         GTest.drop_tables(tables)
         GTest.init()
         pass
@@ -31,12 +33,16 @@ class TestRecon(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         tables = ( Biomodel, Context, Network, DraftRecon, ECData, MediumData, Experiment, Study, User, Activity, ProgressBar, )
-        GTest.drop_tables(tables)
-        settings.use_prod_biota_db(False)
+        #GTest.drop_tables(tables)
+        #settings.use_prod_biota_db(False)
         pass
 
-    def test_draft_recon(self):
-        data_dir = settings.get_dir("gena:testdata_dir")
+    #def test_recon_proto(self):
+    #    from gena.app import API
+    #    asyncio.run( API.test_recon() )
+
+    def test_recon(self):
+s        data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "recon_ec_data.csv")
         ec_loader = ECLoader()
@@ -57,11 +63,20 @@ class TestRecon(unittest.TestCase):
         recon = DraftRecon()
         recon.set_param('tax_id', "263815")  #target pneumocyctis
         
+        #recon_dumper = Dumper()
+        #file_path = os.path.join(data_dir, "recon_net.csv")
+        #recon_dumper.set_param("file_path", file_path)
+        #recon_dumper.set_param("file_path", file_path)
+        
         gapfiller = GapFiller()
         #gapfiller.set_param('tax_id', "4753")    #fungi 
         gapfiller.set_param('tax_id', "2759")    #eukaryota
         gapfiller.set_param('biomass_and_medium_gaps_only', True)
         
+        #gapfill_dimper = Dumper()
+        #file_path = os.path.join(data_dir, "gapfill_net.csv")
+        #gapfill_dimper.set_param("file_path", file_path)
+
         proto = Protocol(
             processes = {
                 "ec_loader": ec_loader,

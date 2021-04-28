@@ -1,3 +1,3 @@
-,id,equation_str,enzyme,ec_number,enzyme_class,comments,substrates,products,superkingdom,clade,kingdom,subkingdom,class,phylum,subphylum,order,genus,family,species,brenda_pathway,kegg_pathway,metacyc_pathway
-0,EX_glc_D_e,(1.0) glc_D_e <==()==> *,,,,,D-Glucose (),*,,,,,,,,,,,,,,
-1,GLNabc,(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c,,,,,ATP C10H12N5O13P3 (); L-Glutamine (),ADP C10H12N5O10P2 (); L-Glutamine (),,,,,,,,,,,,,,
+,id,equation_str,enzyme,ec_number,enzyme_class,is_from_gap_filling,comments,substrates,products,superkingdom,clade,kingdom,subkingdom,class,phylum,subphylum,order,genus,family,species,brenda_pathway,kegg_pathway,metacyc_pathway
+0,EX_glc_D_e,(1.0) glc_D_e <==()==> *,,,,False,,D-Glucose (),*,,,,,,,,,,,,,,
+1,GLNabc,(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c,,,,False,,ATP C10H12N5O13P3 (); L-Glutamine (),ADP C10H12N5O10P2 (); L-Glutamine (),,,,,,,,,,,,,,

@@ -10,7 +10,7 @@ from typing import List
 from gws.logger import Error
 from gws.model import Model, Resource, ResourceSet
 from gws.utils import generate_random_chars, slugify
-from gws.view import View
+from gws.view import DictView
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction
@@ -688,7 +688,7 @@ class Reaction:
                             rxns.append( __create_rxn(rhea_rxn, network, e) )
                         except:
                             # reaction duplicate
-                            # skip error!s
+                            # skip error!
                             pass
                         
                 
@@ -837,7 +837,7 @@ class Network(Resource):
     _medium = None
     
     _fts_fields = {'title': 2.0, 'description': 1.0}
-    _table_name = "gena_network"
+    #_table_name = "gena_network"
     
     _flattening_delimiter = flattening_delimiter
     _defaultNetwork = None
@@ -1525,7 +1525,7 @@ class Network(Resource):
         _dict = self.stats["compounds"]
         for comp_id in _dict:
             _dict[comp_id]["chebi_id"] = self._compounds[comp_id].chebi_id
-        table = View.dict_to_table(_dict, columns=["count", "freq", "chebi_id"], stringify=False)
+        table = DictView.to_table(_dict, columns=["count", "freq", "chebi_id"], stringify=False)
         table = table.sort_values(by=['freq'], ascending=False)
         if stringify:
             return table.to_csv()
@@ -1537,7 +1537,7 @@ class Network(Resource):
     
     def view__gaps__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
         _dict = self._get_gap_info()
-        table = View.dict_to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=False)
+        table = DictView.to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=False)
         if stringify:
             return table.to_csv()
         else:
