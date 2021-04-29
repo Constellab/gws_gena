@@ -42,7 +42,7 @@ class TestRecon(unittest.TestCase):
     #    asyncio.run( API.test_recon() )
 
     def test_recon(self):
-s        data_dir = settings.get_dir("gena:testdata_dir")
+        data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "recon_ec_data.csv")
         ec_loader = ECLoader()
@@ -94,9 +94,9 @@ s        data_dir = settings.get_dir("gena:testdata_dir")
         )
         
         def _export_network(net, file_name):
-            file_path = os.path.join(data_dir, file_name+"_net.json")
-            with open(file_path, 'w') as f:
-                json.dump(net.to_json(), f)
+            #file_path = os.path.join(data_dir, file_name+"_net.json")
+            #with open(file_path, 'w') as f:
+            #    json.dump(net.to_json(), f)
 
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'w') as f:
@@ -117,9 +117,9 @@ s        data_dir = settings.get_dir("gena:testdata_dir")
             file_name = "recon"
             _export_network(net, file_name)
             
-            net = gapfiller.output['network']
-            file_name = "gapfill"
-            _export_network(net, file_name)
+            #net = gapfiller.output['network']
+            #file_name = "gapfill"
+            #_export_network(net, file_name)
             
             
             
