@@ -89,9 +89,9 @@ class TestRecon(unittest.TestCase):
         )
         
         def _export_network(net, file_name):
-            file_path = os.path.join(data_dir, file_name+"_net.json")
-            with open(file_path, 'w') as f:
-                json.dump(net.to_json(), f)
+            #file_path = os.path.join(data_dir, file_name+"_net.json")
+            #with open(file_path, 'w') as f:
+            #    json.dump(net.to_json(), f)
 
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'w') as f:
@@ -112,9 +112,9 @@ class TestRecon(unittest.TestCase):
             file_name = "recon"
             _export_network(net, file_name)
             
-            net = gapfiller.output['network']
-            file_name = "gapfill"
-            _export_network(net, file_name)
+            #net = gapfiller.output['network']
+            #file_name = "gapfill"
+            #_export_network(net, file_name)
             
             net = merger.output['network']
             file_name = "merger"
