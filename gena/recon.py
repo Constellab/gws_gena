@@ -222,5 +222,3 @@ class DraftRecon(Process):
         })
             
         return comp
-    
-

@@ -10,11 +10,11 @@ from gws.logger import Error, Info
 from gws.model import Protocol
 from gws.settings import Settings
 
-from gena.data import *
+from gena.file import *
 from gena.recon import DraftRecon
 from gena.gapfill import GapFiller
 
-class Recon(Protocol):
+class ReconProtocol(Protocol):
     
     def __init__(self, *args, user = None, **kwargs):
         
@@ -38,12 +38,11 @@ class Recon(Protocol):
         biomass_loader.set_param("chebi_column_name", "Chebi ID")
         
         recon = DraftRecon()
-        recon.set_param('tax_id', "263815")  #target pneumocyctis
+        #recon.set_param('tax_id', "263815")  #target pneumocyctis
         
         gapfiller = GapFiller()
         #gapfiller.set_param('tax_id', "4753")    #fungi 
-        gapfiller.set_param('tax_id', "2759")    #eukaryota
-        gapfiller.set_param('biomass_and_medium_gaps_only', True)
+        #gapfiller.set_param('tax_id', "2759")    #eukaryota
         
         processes = {
             "ec_loader": ec_loader,

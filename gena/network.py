@@ -6,18 +6,18 @@
 import json
 import uuid
 from typing import List
+from pathlib import Path
 
 from gws.logger import Error
 from gws.model import Model, Resource, ResourceSet
 from gws.utils import generate_random_chars, slugify
 from gws.view import DictView
+from gws.json import *
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction
 from biota.enzyme import Enzyme as BiotaEnzyme
 from biota.taxonomy import Taxonomy as BiotaTaxo
-
-from gena.medium import Medium
 
 def slugify_id(_id):
     return slugify(_id, snakefy=True, to_lower=False)
@@ -225,7 +225,7 @@ class Compound:
         return slugify_id(ctx_name + delim + id.replace(delim,"_"))
      
     @classmethod
-    def from_biota(cls, biota_compound=None, chebi_id=None, kegg_id=None, compartment=None) -> 'Compound':
+    def from_biota(cls, biota_compound=None, chebi_id=None, kegg_id=None, compartment=None, network=None) -> 'Compound':
         """
         Create a network compound from a ChEBI of Kegg id
         
@@ -261,7 +261,7 @@ class Compound:
         if compartment is None:
             compartment = Compound.COMPARTMENT_CYTOSOL
             
-        c = cls(name=comp.name, compartment=compartment)
+        c = cls(name=comp.name, compartment=compartment, network=network)
         c.chebi_id = comp.chebi_id
         c.kegg_id = comp.kegg_id
         c.charge = comp.charge
@@ -275,14 +275,23 @@ class Compound:
     @property
     def is_intracellular(self)->bool:
         """
-        Returns True to the compound is intracellular (is not in the extracellular or biomass compartment)
+        Test if the compound is intracellular
         
-        :return: 
+        :return: True if the compound is intracellular, False otherwise
         :rtype: `bool`
         """
         
         return self.compartment != self.COMPARTMENT_EXTRACELL and self.compartment != self.COMPARTMENT_BIOMASS 
 
+    def is_cofactor(self)->bool:
+        """
+        Test if the compound is a factor
+        
+        :return: True if the compound is intracellular, False otherwise
+        :rtype: `bool`
+        """
+        
+        return self.chebi_id in self.COFACTORS
     
     # -- R --
     
@@ -379,7 +388,7 @@ class Reaction:
         
         if not self.id:
             if self.enzyme:
-                self.id = self.enzyme.get("ec_numner","")
+                self.id = self.enzyme.get("ec_number","")
                 self.name = self.id
         
         if not self.id:
@@ -952,25 +961,44 @@ class Network(Resource):
         delim = self._flattening_delimiter
         self.compartments = data["compartments"]
         ckey = "compounds" if "compounds" in data else "metabolites"
+        
+        added_comps = {}
         for val in data[ckey]:
             compart = val["compartment"]
             
             if not compart in self.compartments:
                 raise Error("Network", "__build_from_dump", f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
             
-            comp = Compound(
-                id=val["id"].replace(delim,"_"), \
-                name=val["name"], \
-                network=self, \
-                compartment=compart,\
-                charge = val.get("charge",""),\
-                mass = val.get("mass",""),\
-                monoisotopic_mass = val.get("monoisotopic_mass",""),\
-                formula = val.get("formula",""),\
-                inchi = val.get("inchi",""),\
-                chebi_id = val.get("chebi_id",""),\
-                kegg_id = val.get("kegg_id","")\
-            )
+            chebi_id = ""
+            comp = None
+
+            id = val["id"]
+            chebi_id = val.get("chebi_id","")
+            if "CHEBI:" in id:
+                chebi_id = id
+            
+            if chebi_id:
+                try:
+                    comp = Compound.from_biota(chebi_id=chebi_id, )
+                except:
+                    pass
+                 
+            if not comp:   
+                comp = Compound(
+                    id=val["id"].replace(delim,"_"), \
+                    name=val["name"], \
+                    network=self, \
+                    compartment=compart,\
+                    charge = val.get("charge",""),\
+                    mass = val.get("mass",""),\
+                    monoisotopic_mass = val.get("monoisotopic_mass",""),\
+                    formula = val.get("formula",""),\
+                    inchi = val.get("inchi",""),\
+                    chebi_id = val.get("chebi_id",""),\
+                    kegg_id = val.get("kegg_id","")\
+                )
+            
+            added_comps[id] = comp
             
         for val in data["reactions"]:
             rxn = Reaction(
@@ -984,13 +1012,22 @@ class Network(Resource):
                 rhea_id=val.get("rhea_id","")\
             )
             
-            for k in val[ckey]:
-                comp_id = k
-                stoich = val[ckey][k]
+            for comp_id in val[ckey]:
+                comp = added_comps[comp_id]
+                
+                # search according to compound ids
+                if "CHEBI:" in comp_id:
+                    comps = self.get_compounds_by_chebi_id(comp_id)
+                    # select the compound in the good compartment
+                    for c in comps:
+                        if c.compartement == comp.compartement:
+                            break
+                             
+                stoich = val[ckey][comp_id]
                 if stoich < 0:
-                    rxn.add_substrate( self.compounds[comp_id], stoich )
+                    rxn.add_substrate( comp, stoich )
                 elif stoich > 0:
-                    rxn.add_product( self.compounds[comp_id], stoich )
+                    rxn.add_product( comp, stoich )
         
         self.data["name"] = data.get("name","Network").replace(delim,"_")
         self.data["description"] = data.get("description","")
@@ -999,6 +1036,9 @@ class Network(Resource):
             self.data["tags"] = data.get("tags")
         
     # -- C --
+    
+    def copy(self) -> 'Network':
+        return Network.from_json( self.to_json()["data"]["network"] )
         
     @property
     def compartments(self):
@@ -1062,10 +1102,6 @@ class Network(Resource):
         _rxn_json = []
         
         for _met in self.compounds.values():
-            #id = _met.id.replace(":","_")
-            #if not id.endswith("_"+_met.compartment):
-            #    id = id + "_" + _met.compartment
-                
             _met_json.append({
                 "id": _met.id,
                 "name": _met.name,
@@ -1091,7 +1127,6 @@ class Network(Resource):
                     prod["compound"].id: abs(prod["stoichiometry"])
                 })
             
-            #id = _rxn.id.replace(":","_")
             _rxn_json.append({
                 "id": _rxn.id,
                 "name": _rxn.name,
@@ -1135,12 +1170,38 @@ class Network(Resource):
             
         raise Error("Network", "exists", "Invalid element. The element must be an instance of gws.gena.Compound or gws.gena.Reaction")
     
+    # -- E --
+    
+    def _export(self, file_path: str, file_format:str = None):
+        """ 
+        Export the network to a repository
+
+        :param file_path: The destination file path
+        :type file_path: str
+        """
+        
+        file_extension = Path(file_path).suffix
+        
+        with open(file_path, 'r') as fp:
+            if file_extension in [".json"] or file_format == ".json":
+                data = self.to_json()
+                json.dump(data, fp)
+            elif file_extension in [".csv", ".txt", ".tsv"] or file_format in [".csv", ".txt", ".tsv"]:
+                fp.write(self.to_csv())
+            else:
+                raise Error("Network","_export","Invalid file format")
+            
     # -- F --
     
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: dict) -> 'Network':
         """
         Create a network from a JSON dump
+        
+        :param data: The dictionnay describing the network
+        :type data: `dict`
+        :return: The network
+        :rtype: `gena.network.Network`
         """
         
         net = Network()
@@ -1150,28 +1211,85 @@ class Network(Resource):
     
     # -- G --
     
-    def get_compound_tag(self, tag_id, tag_name: str = None):
-        if tag_name:
-            return self.data["tags"]["compounds"].get(tag_id,{}).get(tag_name)
-        else:
-            return self.data["tags"]["compounds"].get(tag_id,{})
+    def get_compound_tag(self, comp_id: str, tag_name: str = None):
+        """
+        Get a compound tag value a compound id and a tag name.
         
-    def get_compound_tags(self):
+        :param comp_id: The compound id
+        :type comp_id: `str`
+        :param tag_name: The tag name
+        :type tag_name: `str`
+        :return: The tag value
+        :rtype: `str`
+        """
+        
+        if tag_name:
+            return self.data["tags"]["compounds"].get(comp_id,{}).get(tag_name)
+        else:
+            return self.data["tags"]["compounds"].get(comp_id,{})
+        
+    def get_compound_tags(self) -> dict:
+        """
+        Get all the compound tags
+        
+        :return: The tags
+        :rtype: `dict`
+        """
+        
         return self.data["tags"]["compounds"]
     
-    def get_reaction_tag(self, tag_id, tag_name: str = None):
-        if tag_name:
-            return self.data["tags"]["reactions"].get(tag_id,{}).get(tag_name)
-        else:
-            return self.data["tags"]["reactions"].get(tag_id,{})
+    def get_reaction_tag(self, rxn_id: str, tag_name: str = None):
+        """
+        Get a reaction tag value a compound id and a tag name.
         
-    def get_reaction_tags(self):
+        :param rxn_id: The reaction id
+        :type rxn_id: `str`
+        :param tag_name: The tag name
+        :type tag_name: `str`
+        :return: The tags
+        :rtype: `dict`
+        """
+        
+        if tag_name:
+            return self.data["tags"]["reactions"].get(rxn_id,{}).get(tag_name)
+        else:
+            return self.data["tags"]["reactions"].get(rxn_id,{})
+        
+        
+    def get_reaction_tags(self) -> dict:
+        """
+        Get all the reaction tags
+        
+        :return: The tags
+        :rtype: `dict`
+        """
+        
         return self.data["tags"]["reactions"]
     
-    def get_compound_by_id(self, c_id):
-        return self._compounds.get(c_id)
+    def get_compound_by_id(self, comp_id: str) -> Compound:
+        """
+        Get a compound by its id.
+        
+        :param comp_id: The compound id
+        :type comp_id: `str`
+        :return: The compound or `None` if the compond is not found
+        :rtype: `gena.network.Compound` or `None`
+        """
+        
+        return self._compounds.get(comp_id)
     
-    def get_compounds_by_chebi_id(self, chebi_id, compartment=None):
+    def get_compounds_by_chebi_id(self, chebi_id: str, compartment: str=None)->Compound:
+        """
+        Get a compound by its chebi id and compartment.
+        
+        :param chebi_id: The chebi id of the compound
+        :type chebi_id: `str`
+        :param compartment: The compartment of the compound
+        :type compartment: `str`
+        :return: The compound or `None` if the compond is not found
+        :rtype: `gena.network.Compound` or `None`
+        """
+        
         if isinstance(chebi_id, float) or isinstance(chebi_id, int):
             chebi_id = f"CHEBI:{chebi_id}"
         
@@ -1189,7 +1307,38 @@ class Network(Resource):
         
         return _list
     
-    def _get_gap_info(self):
+    def get_reaction_by_id(self, rxn_id: str)->Reaction:
+        """
+        Get a reaction by its id.
+        
+        :param rxn_id: The reaction id
+        :type rxn_id: `str`
+        :return: The reaction or `None` if the reaction is not found
+        :rtype: `gena.network.Reaction` or `None`
+        """
+        
+        return self._reactions.get(rxn_id)
+    
+    def get_reaction_by_ec_number(self, ec_number: str)->Reaction:
+        """
+        Get a reaction by its ec number.
+        
+        :param ec_number: The ec number of the reaction
+        :type ec_number: `str`
+        :return: The reaction or `None` if the reaction is not found
+        :rtype: `gena.network.Reaction` or `None`
+        """
+        
+        for k in self._reactions:
+            rxn = self._reactions[k]
+            if rxn.ec_number == ec_number:
+                return rxn
+
+    def _get_gap_info(self)->dict:
+        """
+        Get gap information
+        """
+        
         _info = {}
         for k in self._compounds:
             _info[k] = {
@@ -1215,6 +1364,56 @@ class Network(Resource):
                     _info[k]["is_gap"] = True
                     
         return _info
+    
+    def get_biomass_reaction(self) -> Reaction:
+        """ 
+        Get the biomass reaction if it exists
+        
+        :returns: The biomass reaction (or `None` if the biomass reaction does not exist)
+        :rtype: `gena.network.Reaction` or `None`
+        """
+        
+        for k in self.reactions:
+            if "biomass" in k.lower():
+                return self.reactions[k]
+            
+        return None
+    
+    # -- I --
+
+    @classmethod
+    def _import(cls, file_path: str, file_format:str = None) -> 'Network':
+        """ 
+        Import a network from a repository
+        
+        :param file_path: The source file path
+        :type file_path: str
+        :returns: the parsed data
+        :rtype: any
+        """
+
+        file_extension = Path(file_path).suffix
+        
+        if file_extension in [".json"] or file_format == ".json":
+            with open(file_path, 'r') as fp:
+                try:
+                    _json = json.load(fp)
+                except Exception as err:
+                    raise Error("Network","_import", f"Cannot load JSON file {file_path}. Error: {err}")
+                    
+                if _json.get("reactions"):
+                    # is a raw network data
+                    net = cls.from_json(_json)
+                elif _json.get("data",{}).get("network"): 
+                    # is gws resource
+                    net = cls.from_json(_json["data"]["network"])
+                else:
+                    raise Error("Network","_import","Invalid network data")
+        
+        else:
+            raise Error("Network","_import","Invalid file format")
+            
+        return net
     
     # -- N --
     
@@ -1552,3 +1751,59 @@ class Network(Resource):
                 return json.dumps(_json)
         else:
             return _json
+    
+
+# ####################################################################
+#
+# Importer class
+#
+# ####################################################################
+    
+class NetworkImporter(JSONImporter):
+    input_specs = {'file' : File}
+    output_specs = {'data': Network}
+    config_specs = {
+        'file_format': {"type": str, "default": ".json", 'description': "File format"}
+    }
+
+# ####################################################################
+#
+# Exporter class
+#
+# ####################################################################
+
+class NetworkExporter(JSONExporter):
+    input_specs = {'data': Network}
+    output_specs = {'file' : File}
+    config_specs = {
+        'file_name': {"type": str, "default": 'network.json', 'description': "Destination file name in the store"},
+        'file_format': {"type": str, "default": ".json", 'description': "File format"},
+    }
+    
+# ####################################################################
+#
+# Loader class
+#
+# ####################################################################
+
+class NetworkLoader(JSONLoader):
+    input_specs = {}
+    output_specs = {'data' : Network}
+    config_specs = {
+        'file_path': {"type": str, "default": None, 'description': "Location of the file to import"},
+        'file_format': {"type": str, "default": ".json", 'description': "File format"},
+    }
+    
+# ####################################################################
+#
+# Dumper class
+#
+# ####################################################################
+
+class NetworkDumper(JSONDumper):
+    input_specs = {'data' : Network}
+    output_specs = {}
+    config_specs = {
+        'file_path': {"type": str, "default": None, 'description': "Destination of the exported file"},
+        'file_format': {"type": str, "default": ".json", 'description': "File format"},
+    }

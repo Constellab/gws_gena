@@ -9,7 +9,7 @@ from typing import List
 from gws.logger import Error
 from gws.model import Process, ResourceSet
 from gws.file import File
-from gws.csv import CSVData, Loader, Dumper, Importer, Exporter
+from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
 
 # ####################################################################
 #
@@ -18,6 +18,24 @@ from gws.csv import CSVData, Loader, Dumper, Importer, Exporter
 # ####################################################################
 
 class MediumData(CSVData):
+    """ 
+    Represents medium composition data
+        
+    * The first column the a compound name (offical or user-defined name)
+    * The next columns are:
+      * chebi_id: the list chebi ids
+      
+    For example:
+      
+    ```  
+    -------------------------------------
+    component           | chebi_id  
+    -------------------------------------
+    2-oxoglutarate      | CEHBI:16810
+    H20                 | CHEBI:15377
+    -------------------------------------
+    ```
+    """
     
     CHEBI_COLUMN_NAME = "chebi_id"
     
@@ -50,13 +68,13 @@ class MediumData(CSVData):
         :param kwargs: Additional parameters passed to the superclass
         :type kwargs: `dict`
         :returns: the parsed data
-        :rtype MediumData
+        :rtype: MediumData
         """
         
         data = super()._import(*args, index_col=0, **kwargs)
         
         if not data.column_exists( chebi_column_name ):
-            raise Error("MediumData", "task", f"No chebi ids found (no column with name '{chebi_column_name}')")
+            raise Error("MediumData", "_import", f"No chebi ids found (no column with name '{chebi_column_name}')")
         
         data.chebi_column_name = chebi_column_name
         return data
@@ -67,12 +85,12 @@ class MediumData(CSVData):
 #
 # ####################################################################
     
-class MediumImporter(Importer):
+class MediumImporter(CSVImporter):
     input_specs = {'file' : File}
     output_specs = {'data': MediumData}
     config_specs = {
-        **Importer.config_specs,
-        'chebi_column_name': {"type": 'str', "default": 'chebi_id', "description": "The CheBI ID column name"},
+        **CSVImporter.config_specs,
+        'chebi_column_name': {"type": 'str', "default": MediumData.CHEBI_COLUMN_NAME, "description": "The CheBI ID column name"},
     }
 
 # ####################################################################
@@ -81,11 +99,11 @@ class MediumImporter(Importer):
 #
 # ####################################################################
 
-class MediumExporter(Exporter):
+class MediumExporter(CSVExporter):
     input_specs = {'data': MediumData}
     output_specs = {'file' : File}
     config_specs = {
-        **Exporter.config_specs,
+        **CSVExporter.config_specs,
     }
 
 # ####################################################################
@@ -94,12 +112,12 @@ class MediumExporter(Exporter):
 #
 # ####################################################################
 
-class MediumLoader(Loader):
+class MediumLoader(CSVLoader):
     input_specs = {}
     output_specs = {'data' : MediumData}
     config_specs = {
-        **Loader.config_specs,
-        'chebi_column_name': {"type": 'str', "default": 'chebi_id', "description": "The CheBI ID column name"},
+        **CSVLoader.config_specs,
+        'chebi_column_name': {"type": 'str', "default": MediumData.CHEBI_COLUMN_NAME, "description": "The CheBI ID column name"},
     }
 
 # ####################################################################
@@ -108,9 +126,9 @@ class MediumLoader(Loader):
 #
 # ####################################################################
 
-class MediumDumper(Dumper):
+class MediumDumper(CSVDumper):
     input_specs = {'data' : MediumData}
     output_specs = {}
     config_specs = {
-        **Dumper.config_specs,
+        **CSVDumper.config_specs,
     }

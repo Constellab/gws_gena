@@ -78,12 +78,12 @@ L_tyrosine_zwitterion_c,True,False,True
 L_valine_zwitterion_c,True,False,True
 2_deoxyadenosine_5_monophosphate_c,True,False,True
 2_deoxycytosine_5_monophosphate_2_c,True,False,True
-dTMP_2_c,True,True,False
+dTMP_2_c,True,False,True
 2_deoxyguanosine_5_monophosphate_c,True,False,True
 guanosine_5_monophosphate_2_c,True,False,True
 cytidine_5_monophosphate_2_c,True,False,True
 uridine_5_monophosphate_2_c,True,False,True
-cholesterol_c,False,True,True
+cholesterol_c,True,True,False
 deoxyribonucleotide_2_deoxyribose_deoxyribonucleotide_residue_3_c,True,False,True
 3_end_deoxyribonucleotide_2_3_dehydro_2_3_deoxyribose_phosphate_2_residue_c,False,True,True
 5_end_2_deoxyribonucleotide_2_residue_c,False,True,True
@@ -91,5 +91,3 @@ deoxyribonucleotide_2_deoxyribose_deoxyribonucleotide_residue_3_c,True,False,Tru
 GDP_alpha_D_mannose_2_c,True,False,True
 alpha_D_mannosyl_1_6_1D_myo_inositol_1_phospho_N_R_2_hydroxy_very_long_chain_fatty_acyl_R_4_hydroxysphingoid_base_1_c,False,True,True
 GDP_3_c,False,True,True
-dUMP_2_c,True,False,True
-dihydrofolate_2_c,False,True,True

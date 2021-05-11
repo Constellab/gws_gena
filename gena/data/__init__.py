@@ -1,4 +1,3 @@
-
 from .ec import ECData, \
                     ECImporter, \
                     ECExporter, \
@@ -17,4 +16,8 @@ from .biomass import BiomassData, \
                     BiomassLoader, \
                     BiomassDumper
 
-
+from .flux import FluxData, \
+                    FluxImporter, \
+                    FluxExporter, \
+                    FluxLoader, \
+                    FluxDumper

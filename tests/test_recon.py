@@ -5,21 +5,19 @@ import asyncio
 
 from gws.settings import Settings
 from gws.model import *
-from gws.csv import CSVData
+from gws.unittest import GTest
 
 settings = Settings.retrieve()
-settings.use_prod_biota_db(True)
 
-from gena.network import Network
+from gena.network import *
 from gena.context import Context
 from gena.biomodel import Biomodel
-from gena.data import *
-from gws.csv import Dumper
-
 from gena.recon import DraftRecon
-from gena.gapfill import GapFiller
+from gena.gapfill import GapFiller 
+from gena.merge import NetworkMerger
+from gena.data import *
 
-from gws.unittest import GTest
+from biota.base import DbManager as BiotaDbManager
 
 class TestRecon(unittest.TestCase):
     
@@ -28,21 +26,17 @@ class TestRecon(unittest.TestCase):
         tables = ( Resource, Biomodel, Context, Network, DraftRecon, ECData, MediumData, Experiment, Study, User, Activity, ProgressBar, )
         GTest.drop_tables(tables)
         GTest.init()
-        pass
+        BiotaDbManager.use_prod_db(True)
 
     @classmethod
     def tearDownClass(cls):
+        BiotaDbManager.use_prod_db(False)
         tables = ( Biomodel, Context, Network, DraftRecon, ECData, MediumData, Experiment, Study, User, Activity, ProgressBar, )
-        #GTest.drop_tables(tables)
-        #settings.use_prod_biota_db(False)
-        pass
-
-    #def test_recon_proto(self):
-    #    from gena.app import API
-    #    asyncio.run( API.test_recon() )
+        GTest.drop_tables(tables)        
+        
 
     def test_recon(self):
-s        data_dir = settings.get_dir("gena:testdata_dir")
+        data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "recon_ec_data.csv")
         ec_loader = ECLoader()
@@ -62,34 +56,35 @@ s        data_dir = settings.get_dir("gena:testdata_dir")
 
         recon = DraftRecon()
         recon.set_param('tax_id', "263815")  #target pneumocyctis
-        
-        #recon_dumper = Dumper()
-        #file_path = os.path.join(data_dir, "recon_net.csv")
-        #recon_dumper.set_param("file_path", file_path)
-        #recon_dumper.set_param("file_path", file_path)
-        
+
         gapfiller = GapFiller()
-        #gapfiller.set_param('tax_id', "4753")    #fungi 
-        gapfiller.set_param('tax_id', "2759")    #eukaryota
+        gapfiller.set_param('tax_id', "4753")    #fungi 
+        #gapfiller.set_param('tax_id', "2759")    #eukaryota
         gapfiller.set_param('biomass_and_medium_gaps_only', True)
         
-        #gapfill_dimper = Dumper()
-        #file_path = os.path.join(data_dir, "gapfill_net.csv")
-        #gapfill_dimper.set_param("file_path", file_path)
 
+        file_path = os.path.join(data_dir, "recon_addon.json")
+        net_loader = NetworkLoader()
+        net_loader.set_param("file_path", file_path)
+        merger = NetworkMerger()
+        
         proto = Protocol(
             processes = {
                 "ec_loader": ec_loader,
                 "medium_loader": medium_loader,
                 "biomass_loader": biomass_loader,
                 "recon": recon,
-                "gapfiller": gapfiller
+                "gapfiller": gapfiller,
+                "merger": merger,
+                "net_loader": net_loader
             },
             connectors = [
                 ec_loader>>"data" | recon<<"ec_data",
                 biomass_loader>>"data" | recon<<"biomass_data",
                 medium_loader>>"data" | recon<<"medium_data",
-                recon>>"network" | gapfiller<<"network"
+                recon>>"network" | merger<<"network_1",
+                net_loader>>"data" | merger<<"network_2",
+                merger>>"network" | gapfiller<<"network",
             ]
         )
         
@@ -119,6 +114,10 @@ s        data_dir = settings.get_dir("gena:testdata_dir")
             
             net = gapfiller.output['network']
             file_name = "gapfill"
+            _export_network(net, file_name)
+            
+            net = merger.output['network']
+            file_name = "merger"
             _export_network(net, file_name)
             
             

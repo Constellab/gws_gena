@@ -8,8 +8,14 @@ import uuid
 from typing import List
 
 from gws.logger import Error
-from gws.model import Resource, ResourceSet
-from gws.utils import generate_random_chars
+from gws.model import Resource, Process
+from gws.utils import generate_random_chars, slugify
+
+from gena.network import Network
+from gena.data import FluxData
+
+def slugify_id(_id):
+    return slugify(_id, snakefy=True, to_lower=False)
 
 # ####################################################################
 #
@@ -23,7 +29,8 @@ class Variable:
     reference_id = None
     reference_type = None #reaction | ...
     
-    _allowed_ref_types = ["reaction"]
+    REACTION_REFERENCE_TYPE = "reaction"
+    _allowed_ref_types = [ REACTION_REFERENCE_TYPE ]
     
     def __init__( self, coefficient: float, reference_id: str, reference_type: str = "reaction"):
         
@@ -34,8 +41,8 @@ class Variable:
         self.reference_id = reference_id
         self.reference_type = reference_type
         
-    
-    def as_json(self):
+
+    def to_json(self):
         _json = {
             "reference_id": self.reference_id,
             "reference_type": self.reference_type,
@@ -71,7 +78,9 @@ class Measure:
             self.id = id
         else:
             self.id = self.__generate_unique_id()
-
+        
+        self.id = slugify_id(self.id)
+        
         self.name = name
         self.target = target
         self.lower_bound = lower_bound
@@ -87,7 +96,7 @@ class Measure:
             
         self._variables.append(variable)
     
-    def as_json(self):
+    def to_json(self):
         
         _json = {
             "id": self._format(self.id),
@@ -100,7 +109,7 @@ class Measure:
         }
         
         for variable in self._variables:
-            _json["variables"].append( variable.as_json() )
+            _json["variables"].append( variable.to_json() )
         
         return _json
     
@@ -149,8 +158,8 @@ class Context(Resource):
  
     # -- A --
     
-    def as_json(self, stringify=False, prettify=False):
-        _json = super().as_json()
+    def to_json(self, stringify=False, prettify=False):
+        _json = super().to_json()
         _json["data"]["measures"] = self.dumps()  #override to account for new updates
         
         if stringify:
@@ -197,7 +206,7 @@ class Context(Resource):
     def dumps(self, stringify=False, prettify=False):
         _json = []
         for k in self._measures:
-            _json.append( self._measures[k].as_json() )
+            _json.append( self._measures[k].to_json() )
         
         return _json
         
@@ -226,3 +235,58 @@ class Context(Resource):
     def save(self, *args, **kwargs):
         self.data["measures"] = self.dumps()
         return super().save(*args, **kwargs)
+    
+
+class ContextBuilder(Process):
+    input_specs = { 'network': (Network,), 'flux_data': (FluxData,) }
+    output_specs = { 'context': (Context,) }
+    config_specs = {
+        "maximize_biomass": {"type": bool, "default": False, "Description": "True to also maximize biomass"}
+    }
+    
+    async def task(self):
+        ctx = Context()
+        flux = self.input["flux_data"]
+        net = self.input["network"]
+        targets = flux.get_targets()
+        ubounds = flux.get_upper_bounds()
+        lbounds = flux.get_lower_bounds()
+        scores = flux.get_confidence_scores()
+        
+        i = 0
+        for rxn_id in flux.row_names:
+            rxn = net.get_reaction_by_id(rxn_id)
+            if not rxn:
+                rxn = net.get_reaction_by_ec_number()
+            
+            if not rxn:
+                raise Error("ContextBuilder", "task", f"No reaction found with id or ec_numner {rxn_id}")
+        
+            if ubounds[i] < lbounds[i]:
+                raise Error("ContextBuilder", "task", f"Flux {rxn_id}: the lower bound must be greater than upper bound")
+                
+            if targets[i] < lbounds[i]:
+                raise Error("ContextBuilder", "task", f"Flux {rxn_id}: the target must be greater than lower bound")
+                
+            if targets[i] > ubounds[i]:
+                raise Error("ContextBuilder", "task", f"Flux {rxn_id}: the target must be smaller than upper bound")
+            
+            m = Measure(
+                id = "measure_" + rxn.id,
+                target = float(targets[i]),
+                upper_bound = float(ubounds[i]),
+                lower_bound = float(lbounds[i]),
+                confidence_score = float(scores[i])
+            )
+            
+            v = Variable(
+                coefficient = 1.0,
+                reference_id = rxn.id,
+                reference_type = Variable.REACTION_REFERENCE_TYPE
+            )
+            
+            m.add_variable(v)
+            ctx.add_measure(m)
+            i += 1
+
+        self.output["context"] = ctx

@@ -4,11 +4,12 @@ import unittest
 
 from gws.settings import Settings
 settings = Settings.retrieve()
-settings.use_prod_biota_db(True)
 
 from gena.network import Compound, Reaction, Network
 from gena.context import Context
 from gena.biomodel import Biomodel
+
+from biota.base import DbManager as BiotaDbManager
 
 class TestNetwork(unittest.TestCase):
     
@@ -17,15 +18,14 @@ class TestNetwork(unittest.TestCase):
         Biomodel.drop_table()
         Context.drop_table()
         Network.drop_table()
-        pass
-
+        BiotaDbManager.use_prod_db(True)
+     
     @classmethod
     def tearDownClass(cls):
+        BiotaDbManager.use_prod_db(False)
         Biomodel.drop_table()
         Context.drop_table()
         Network.drop_table()
-        settings.use_prod_biota_db(False)
-        pass
     
     def test_compound(self):
         t = Network()        

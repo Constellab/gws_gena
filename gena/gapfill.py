@@ -28,16 +28,16 @@ class GapFiller(Process):
     The gap filling process consists in the follwing algorithm:
     
     * set `N` = the network
-    * for each iteration `i = 0` to `nb_iterations`
+    * Loop
       * find all the gap compounds in the network `N`
       * set `nb_gaps` = the number of gaps in `N`
-      * if `nb_gaps == 0`, we exit iteration loop
+      * if `nb_gaps == 0`, we exit the Loop
+      * set `nb_filled = 0`
       * for each gap compound, we search for the putative biota reactions in which it is involved
-        * for earch reaction, we loop on all the enzymes realated to the reaction
-          * if `tax_id` parameter is given, we fill the gap with the corresponding reaction only if the enzyme exists at this taxonomy level (i.e. the reaction is added to `N`). The reaction is not added otherwise.
-          * if `tax_id` is not given, we do not check the taxonomy tree, we fill the gap with this reaction and the reaction is added to `N`.
-        * continue
-      * continue
+        * for earch reaction, we loop on all the enzymes related to the reaction
+          * if `tax_id` parameter is given, we fill the gap with the corresponding reaction only if the enzyme exists at this taxonomy level (i.e. the reaction is added to `N`). The reaction is not added otherwise. Set `nb_filled = nb_filled+1`.
+          * if `tax_id` is not given, we do not check the taxonomy tree, we fill the gap with this reaction and the reaction is added to `N`. Set `nb_filled = nb_filled+1`.
+      * if `nb_filled == 0`, we exit the Loop
       
     At the end of the process all the reactions existing in the biota DB able to fill the gaps will the add the the network.
     """
@@ -47,24 +47,23 @@ class GapFiller(Process):
     config_specs = {
         'tax_id': {"type": 'str', "default": '', "description": "The taxonomy id"},
         'biomass_and_medium_gaps_only': {"type": 'bool', "default": False, "description": "True to only fill gaps related to compounds comming from the biomass equation or the medium composition; False otherwise."},
-        'nb_iterations': {"type": 'int', "default": 3, "description": "Number of gap filling iterations"},
     }
-    
+        
     async def task(self):
         Info("Gap filling under progress ...")
         
         input_net = self.input["network"]
         output_net = Network.from_json(input_net.dumps())
-        nb_iter = self.get_param("nb_iterations")
-        self.progress_bar.set_max_value(nb_iter)
         _nb_filled = True
-        for i in range(0,nb_iter):
+        i = 0
+        while True:
+            i += 1
             _nb_filled = self.__fill_gaps(output_net)
-            
+
             if _nb_filled <= 1:
-                message = f"Iteration {i+1}: {_nb_filled} gap filled"
+                message = f"Pass {i+1}: {_nb_filled} gap filled"
             else:
-                message = f"Iteration {i+1}: {_nb_filled} gaps filled"
+                message = f"Pass {i+1}: {_nb_filled} gaps filled"
                 
             self.progress_bar.set_value(i+1, message=message)
             Info(message)
@@ -85,6 +84,7 @@ class GapFiller(Process):
         if tax_id:
             try:
                 tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
+                #Info(f"Fill with {tax.title} ({tax.id}) taxonomy")
             except:
                 raise Error("GapFiller", "__fill_gaps", f"No taxonomy found with taxonomy id {tax_id}")
         else:
@@ -111,25 +111,21 @@ class GapFiller(Process):
                         })
                         continue
 
-                    for biota_r in biota_c.reactions:
+                    for biota_rxn in biota_c.reactions:
                         if tax:
                             OK = False
-                            enzymes = biota_r.enzymes
+                            enzymes = biota_rxn.enzymes
                             for e in enzymes:
                                 enzyme_tax_id = getattr(e, "tax_"+tax.rank)
                                 if enzyme_tax_id == tax.tax_id:
                                     # an enzyme exists in the taxonomy level
                                     OK = True
                                     break
-
-                            if not OK:
-                                #> search in ancestors
-                                pass
                         else:
                             OK = True
 
                         if OK:
-                            rxns = Reaction.from_biota(biota_reaction=biota_r)
+                            rxns = Reaction.from_biota(biota_reaction=biota_rxn)
                             for rxn in rxns:
                                 if not net.exists(rxn):
                                     _nb_filled += 1

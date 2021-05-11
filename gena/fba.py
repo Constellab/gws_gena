@@ -5,6 +5,8 @@
 
 import json
 import os
+import pandas as pd
+from pandas import DataFrame
 
 from gws.json import JSONData
 from gws.typing import Path
@@ -14,25 +16,159 @@ from gws.settings import Settings
 from gws.logger import Error
 
 from gena.biomodel import Biomodel
+from gena.network import Network
+from gena.context import Context
+
+class FluxAnalyzerResult(File):
+    _content = None
     
+    @property
+    def content(self)->dict:
+        if not self._content:
+            self._content = json.loads(self.read())
+        
+        return self._content
+    
+    # -- K --
+    
+    @property
+    def ker_of_identif(self)->dict:
+        return self.content["problem"]["ker_of_identif"]
+    
+    @property
+    def ker_of_intern_stoich(self)->dict:
+        return self.content["problem"]["ker_of_intern_stoich"]
+    
+    # -- P --
+    
+    @property
+    def problem(self)->dict:
+        return self.content["problem"]
+    
+    # -- R --
+    
+    @property
+    def rank_of_identif(self)->dict:
+        return self.content["problem"]["rank_of_identif"]
+    
+    @property
+    def rank_of_intern_stoich(self)->dict:
+        return self.content["problem"]["rank_of_intern_stoich"]
+    
+    # -- S --
+    
+    @property
+    def stoich_matrix(self)->dict:
+        return self.content["problem"]["S"]
+    
+    @property
+    def sv(self)->dict:
+        return self.content["problem"]["sv"]
+    
+    @property
+    def solutions(self)->dict:
+        return self.content["problem"]["solutions"]
+    
+    @property
+    def solver_success(self)->dict:
+        return self.content["problem"]["solver_success"]
+    
+    # -- V --
+    
+    def view__sv_distrib_as_csv(self, only_sucess: bool = True) -> DataFrame:
+        df = DataFrame(
+            self.sv["data"], 
+            index=self.sv["row_names"], 
+            columns=self.sv["col_names"]
+        )
+        
+        if only_sucess:
+            success = self.view__solver_success_as_csv()
+            success_columns = df.columns[success.iloc[0,:]]
+            df = df[ success_columns ]
+            
+        return df
+    
+    def view__sv_ranges_as_csv(self, only_sucess: bool = True) -> DataFrame:
+        df = self.view__sv_distrib_as_csv(only_sucess=only_sucess)
+        
+        df = pd.concat( 
+            [ df.mean(axis=1), df.std(axis=1), df.min(axis=1), df.max(axis=1) ],
+            axis=1 
+        )
+        df.columns = [ "mean", "std", "min", "max" ]
+        return df
+    
+    def view__ker_of_identif_as_csv(self) -> DataFrame:
+        df = DataFrame(
+            self.ker_of_identif["data"], 
+            index=self.ker_of_identif["row_names"], 
+            columns=self.ker_of_identif["col_names"]
+        )
+        return df
+    
+    def view__ker_of_intern_stoich_as_csv(self) -> DataFrame:
+        df = DataFrame(
+            self.ker_of_intern_stoich["data"], 
+            index=self.ker_of_intern_stoich["row_names"], 
+            columns=self.ker_of_intern_stoich["col_names"]
+        )
+        return df
+    
+    def view__solver_success_as_csv(self) -> DataFrame:
+        df = DataFrame(
+            self.solver_success["data"], 
+            index=self.solver_success["row_names"], 
+            columns=self.solver_success["col_names"]
+        )
+        return df == 1.0
+    
+    def view__stoich_matrix_as_csv(self) -> DataFrame:
+        df = DataFrame(
+            self.stoich_matrix["data"], 
+            index=self.stoich_matrix["row_names"], 
+            columns=self.stoich_matrix["col_names"]
+        )
+        return df
+    
+    def view__flux_ranges_as_csv(self, only_sucess: bool = True) -> DataFrame:
+        df = self.view__flux_distrib_as_csv(only_sucess=only_sucess)
+        
+        df = pd.concat( 
+            [ df.mean(axis=1), df.std(axis=1), df.min(axis=1), df.max(axis=1) ],
+            axis=1 
+        )
+        df.columns = [ "mean", "std", "min", "max" ]
+        return df
+    
+    def view__flux_distrib_as_csv(self, only_sucess: bool = True) -> DataFrame:
+        df = DataFrame(
+            self.solutions["data"], 
+            index=self.solutions["row_names"], 
+            columns=self.solutions["col_names"]
+        )
+        
+        if only_sucess:
+            success = self.view__solver_success_as_csv()
+            success_columns = df.columns[success.iloc[0,:]]
+            df = df[ success_columns ]
+            
+        return df
+
 class FluxAnalyzer(Shell):
     
     input_specs = { 'biomodel': (Biomodel,) }
-    output_specs = { 'file': (File,) }
+    output_specs = { 'file': (FluxAnalyzerResult,) }
     config_specs = {
         "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
         "ineq_tol": {"type": float, "default": 1e-6, "Description": "Inequality constraint tolerance"},
-        "least_energy_weight": {"type": float, "default": 0.001, "min": 0, "max": 1, "Description": "The least energy weight. The higher it is, lower will be sum of fluxes"},
+        "least_energy_weight": {"type": float, "default": 1e-6, "min": 0, "max": 1, "Description": "The least energy weight. The higher it is, lower will be sum of fluxes"},
         "use_random_starting_point": {"type": bool, "default": True, "Description": "True to use random initial conditions to explore to flux space, False otherwise. If number_of_randomizations > 1, then this parameter will operate to True."},
-        "number_of_randomizations": {"type": int, "default": 5, "Description": "Number of random initial conditions to use to explore the flux space."}
+        "number_of_randomizations": {"type": int, "default": 100, "Description": "Number of random initial conditions to use to explore the flux space."}
     }
     
-    def after_command(self, stdout: str=None):
-        f = File()
-        f.path = self.output_file
-        
-        self.output["file"] = f
-        self.data["stdout"] = stdout
+    
+    # -- B --
     
     def build_command(self) -> list:
         settings = Settings.retrieve()
@@ -40,23 +176,22 @@ class FluxAnalyzer(Shell):
         bin_file = os.path.join(_dir, "bin/fba/fba")
         
         biomodel = self.input["biomodel"]
-        self.network_file = os.path.join(self.cwd.name,"network.json")
-        self.context_file = os.path.join(self.cwd.name,"context.json")
-        self.config_file = os.path.join(self.cwd.name,"config.json")
-        self.output_file = os.path.join(self.cwd.name,"result.json")
-        
         flat_bio = biomodel.flatten()
-
+        
+        self.network_file = os.path.join(self.cwd.name,"network.json")
         with open(self.network_file, "w") as fp:
             json.dump(flat_bio["network"], fp) 
         
+        self.context_file = os.path.join(self.cwd.name,"context.json")
         with open(self.context_file, "w") as fp:
             json.dump(flat_bio["context"], fp)
-
+        
+        self.config_file = os.path.join(self.cwd.name,"config.json")
         with open(self.config_file, "w") as fp:
             json.dump(self.config.params, fp)
-
-            
+    
+        
+        self.output_file = os.path.join(self.cwd.name,"result.json")
         cmd = [ 
             bin_file, 
             "--run", "fba",
@@ -67,3 +202,29 @@ class FluxAnalyzer(Shell):
         ]
 
         return cmd
+    
+    # -- G --
+    
+    def gather_outputs(self, stdout: str=None):
+        t = self.out_port("file").get_default_resource_type()        
+        file = t()
+        file.path = self.output_file
+        self.output["file"] = file
+        self.data["stdout"] = stdout
+        
+class BiomodelBuilder(Shell):
+    input_specs = { 'network': (Network,), 'context': (Context,)  }
+    output_specs = { 'biomodel': (Biomodel,) }
+    config_specs = {}
+    
+    async def task(self):
+        net = self.input["network"]
+        ctx = self.input["context"]
+        
+        bio = Biomodel()
+        bio.add_network(net)
+        bio.add_context(ctx, related_network=net)
+        bio.save()
+        
+        self.output["biomodel"] = bio
+        

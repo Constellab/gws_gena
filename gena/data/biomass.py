@@ -9,7 +9,7 @@ from typing import List
 from gws.logger import Error
 from gws.model import Process, ResourceSet
 from gws.file import File
-from gws.csv import CSVData, Loader, Dumper, Importer, Exporter
+from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
 
 # ####################################################################
 #
@@ -18,6 +18,37 @@ from gws.csv import CSVData, Loader, Dumper, Importer, Exporter
 # ####################################################################
 
 class BiomassData(CSVData): 
+    """ 
+    Represents biomass data
+        
+    * The first column the a compound name (offical or user-defined name)
+    * The next columns are:
+      * chebi_id: the chebi ids of componds of they are known (each chebi id must be prefixed by the keyword CHEBI:).
+      * biomass: the biomass reaction data (described like a stoichiometric matrix)
+      * other colums: these columns describe the reaction of the intermediate biomass constituents (described like a stoichiometric matrix)
+    
+    For example:
+      
+    ```  
+    -------------------------------------------------------------------
+    component               | chebi_id    | biomass      | protein
+    -------------------------------------------------------------------
+    biomass                 |             | 1            | 
+    protein                 |             | -0,317663551 | 1
+    DNA                     |             | -0,050537383 | 
+    RNA                     |             | -0,025990654 | 
+    Cofactors               |             | -0,021658879 | 
+    Cell wall               |             | -0,115       | 
+    Carbohydrates           |             | -0,202149533 | 
+    Phospholipids           |             | -0,154266667 | 
+    L-alanine zwitterion    | CHEBI:57972 |              | -0,587530055
+    L-argininium(1+)        | CHEBI:32682 |              | -0,104025999
+    L-asparagine zwitterion | CHEBI:58048 |              | -0,47552295
+    L-aspartate(1-)         | CHEBI:29991 |              | -0,610918536
+    L-cysteine zwitterion   | CHEBI:35235 |              | -0,475540207
+    -------------------------------------------------------------------
+    ```
+    """
     
     CHEBI_COLUMN_NAME = "chebi_id"
     BIOMASS_COLUMN_NAME = "biomass"
@@ -59,15 +90,15 @@ class BiomassData(CSVData):
         :param kwargs: Additional parameters passed to the superclass
         :type kwargs: `dict`
         :returns: the parsed data
-        :rtype BiomassData
+        :rtype: BiomassData
         """
         
         data = super()._import(*args, index_col=0, **kwargs)
         if not data.column_exists( chebi_column_name ):
-            raise Error("BiomassData", "task", f"No CheBI ID column found (no column with name '{chebi_column_name}')")
+            raise Error("BiomassData", "_import", f"No CheBI ID column found (no column with name '{chebi_column_name}')")
         
         if not data.column_exists( biomass_column_name ):
-            raise Error("BiomassData", "task", f"No biomass equation found (no column with name '{biomass_column_name}')")
+            raise Error("BiomassData", "_import", f"No biomass equation found (no column with name '{biomass_column_name}')")
         
         data.biomass_column_name = biomass_column_name
         data.chebi_column_name = chebi_column_name
@@ -79,13 +110,13 @@ class BiomassData(CSVData):
 #
 # ####################################################################
     
-class BiomassImporter(Importer):
+class BiomassImporter(CSVImporter):
     input_specs = {'file' : File}
     output_specs = {'data': BiomassData}
     config_specs = {
-        **Importer.config_specs,
-        'chebi_column_name': {"type": 'str', "default": 'chebi_id', "description": "The CheBI ID column name"},
-        'biomass_column_name': {"type": 'str', "default": 'biomass', "description": "The biomass equation column name"},
+        **CSVImporter.config_specs,
+        'chebi_column_name': {"type": 'str', "default": BiomassData.CHEBI_COLUMN_NAME, "description": "The CheBI ID column name"},
+        'biomass_column_name': {"type": 'str', "default": BiomassData.BIOMASS_COLUMN_NAME, "description": "The biomass equation column name"},
     }
 
 # ####################################################################
@@ -94,11 +125,11 @@ class BiomassImporter(Importer):
 #
 # ####################################################################
 
-class BiomassExporter(Exporter):
+class BiomassExporter(CSVExporter):
     input_specs = {'data': BiomassData}
     output_specs = {'file' : File}
     config_specs = {
-        **Exporter.config_specs,
+        **CSVExporter.config_specs,
     }
 
 # ####################################################################
@@ -107,13 +138,13 @@ class BiomassExporter(Exporter):
 #
 # ####################################################################
 
-class BiomassLoader(Loader):
+class BiomassLoader(CSVLoader):
     input_specs = {}
     output_specs = {'data' : BiomassData}
     config_specs = {
-        **Loader.config_specs,
-        'chebi_column_name': {"type": 'str', "default": 'chebi_id', "description": "The CheBI ID column name"},
-        'biomass_column_name': {"type": 'str', "default": 'biomass', "description": "The biomass equation column name"},
+        **CSVLoader.config_specs,
+        'chebi_column_name': {"type": 'str', "default": BiomassData.CHEBI_COLUMN_NAME, "description": "The CheBI ID column name"},
+        'biomass_column_name': {"type": 'str', "default": BiomassData.BIOMASS_COLUMN_NAME, "description": "The biomass equation column name"},
     }
 
 # ####################################################################
@@ -122,9 +153,9 @@ class BiomassLoader(Loader):
 #
 # ####################################################################
 
-class BiomassDumper(Dumper):
+class BiomassDumper(CSVDumper):
     input_specs = {'data' : BiomassData}
     output_specs = {}
     config_specs = {
-        **Dumper.config_specs,
+        **CSVDumper.config_specs,
     }

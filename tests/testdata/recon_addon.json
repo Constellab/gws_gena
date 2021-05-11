@@ -1,0 +1,84 @@
+{
+    "metabolites": [
+        {
+            "id": "CHEBI:167181",
+            "name": "deoxyribonucleotide-(2'-deoxyribose)-deoxyribonucleotide residue(3−)",
+            "compartment":"c"
+        },
+        {
+            "id": "CHEBI:157695",
+            "name": "3'-end deoxyribonucleotide 2,3-dehydro-2,3-deoxyribose phosphate(2−) residue",
+            "compartment":"c"
+        },
+        {
+            "id": "CHEBI:15378",
+            "name": "hydron",
+            "compartment":"c"
+        },
+        {
+            "id": "CHEBI:136412",
+            "name": "5'-end 2'-deoxyribonucleotide(2−) residue",
+            "compartment":"c"
+        },
+        {
+            "id": "CHEBI:155926",
+            "name": "1D-myo-inositol-1-phospho-N-[(R)-2-hydroxy-very-long-chain fatty acyl]-(R)-4-hydroxysphingoid base(1−)",
+            "compartment":"c"
+        },
+        {
+            "id": "CHEBI:57527",
+            "name": "GDP-α-D-mannose(2−)",
+            "compartment":"c"
+        },
+        {
+            "id": "CHEBI:155885",
+            "name": "α-D-mannosyl-(1↔6)-1D-myo-inositol-1-phospho-N-[(R)-2-hydroxy-very-long-chain fatty acyl]-(R)-4-hydroxysphingoid base(1−)",
+            "compartment":"c"
+        },
+        {
+            "id": "CHEBI:58189",
+            "name": "GDP(3−)",
+            "compartment":"c"
+        }
+    ],
+    "reactions": [
+        {
+            "id": "RHEA:66592_4_2_99_18",
+            "name": "",
+            "metabolites": {
+                "CHEBI:167181": -1.0,
+                "CHEBI:157695": 1.0,
+                "CHEBI:15378": 1.0,
+                "CHEBI:136412": 1.0
+            },
+            "comment":{
+                "ec_number": "4.2.99.18",
+                "message": "manually added"
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "id": "RHEA:64596_2_4_1_370",
+            "name": "",
+            "metabolites": {
+                "CHEBI:155926": -1.0,
+                "CHEBI:57527": -1.0,
+                "CHEBI:155885": 1.0,
+                "CHEBI:58189": 1.0,
+                "CHEBI:15378": 1.0
+            },
+            "comment":{
+                "ec_number": "2.4.1.370",
+                "message": "manually added"
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        }
+    ],
+    "compartments":{
+        "c": "cytosol",
+        "e": "extracellular",
+        "n": "nucleus"
+    }
+}

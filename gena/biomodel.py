@@ -212,7 +212,7 @@ class Biomodel(Resource):
         return bm
     
 
-    def flatten(self) -> dict:
+    def flatten(self, remove_factors=False) -> dict:
         _comps = {}
         _mets = []
         _rxns = []
@@ -329,8 +329,26 @@ class Biomodel(Resource):
     def network_contexts(self):
         return self._network_contexts
     
+    @property
+    def number_of_compounds(self):
+        c = 0
+        for k in self.networks:
+            net = self.networks[k]
+            c += len(net.compounds)
+        
+        return c
+    
+    @property
+    def number_of_reactions(self):
+        c = 0
+        for k in self.networks:
+            net = self.networks[k]
+            c += len(net.reactions)
+        
+        return c
+    
     # -- R --
-
+    
     # -- S --
     
     def save(self, *args, **kwargs):

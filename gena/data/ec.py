@@ -9,7 +9,7 @@ from typing import List
 from gws.logger import Error
 from gws.model import Process, ResourceSet
 from gws.file import File
-from gws.csv import CSVData, Loader, Dumper, Importer, Exporter
+from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
 
 # ####################################################################
 #
@@ -18,6 +18,24 @@ from gws.csv import CSVData, Loader, Dumper, Importer, Exporter
 # ####################################################################
 
 class ECData(CSVData):
+    """ 
+    Represents ec number data
+        
+    * The first column the a compound name (offical or user-defined name)
+    * The next columns are:
+      * ec_number: the list of ec numbers
+      
+    For example:
+      
+    ``` 
+    -------------------------------------
+    component           | ec_number  
+    -------------------------------------
+    PNEG_00964          | 1.4.1.2
+    PNEG_02355          | 4.2.1.10
+    -------------------------------------
+    ```
+    """
     
     EC_COLUMN_NAME = "ec_number"
     
@@ -31,7 +49,7 @@ class ECData(CSVData):
     def ec_column_name(self, name):
         self.data['ec_column_name'] = name
     
-    # -- F --
+    # -- G --
     
     def get_ec_numbers(self, rtype='list') -> ('DataFrame', list):
         return self.get_column(self.ec_column_name, rtype)
@@ -49,13 +67,13 @@ class ECData(CSVData):
         :param kwargs: Additional parameters passed to the superclass
         :type kwargs: `dict`
         :returns: the parsed data
-        :rtype ECData
+        :rtype: ECData
         """
         
         data = super()._import(*args, **kwargs)
         
         if not data.column_exists( ec_column_name ):
-            raise Error("ECData", "task", f"No ec numbers found (no column with name '{ec_column_name}')")
+            raise Error("ECData", "_import", f"No ec numbers found (no column with name '{ec_column_name}')")
         
         data.ec_column_name = ec_column_name
         return data
@@ -66,12 +84,12 @@ class ECData(CSVData):
 #
 # ####################################################################
     
-class ECImporter(Importer):
+class ECImporter(CSVImporter):
     input_specs = {'file' : File}
     output_specs = {"data": ECData}
     config_specs = {
-        **Importer.config_specs,
-        'ec_column_name': {"type": 'str', "default": 'ec_number', "description": "The ec number column name"},
+        **CSVImporter.config_specs,
+        'ec_column_name': {"type": 'str', "default": ECData.EC_COLUMN_NAME, "description": "The ec number column name"},
     }
 
 # ####################################################################
@@ -80,11 +98,11 @@ class ECImporter(Importer):
 #
 # ####################################################################
 
-class ECExporter(Exporter):
+class ECExporter(CSVExporter):
     input_specs = {"data": ECData}
     output_specs = {'file' : File}
     config_specs = {
-        **Exporter.config_specs,
+        **CSVExporter.config_specs,
     }
 
 # ####################################################################
@@ -93,12 +111,12 @@ class ECExporter(Exporter):
 #
 # ####################################################################
 
-class ECLoader(Loader):
+class ECLoader(CSVLoader):
     input_specs = {}
     output_specs = {"data" : ECData}
     config_specs = {
-        **Loader.config_specs,
-        'ec_column_name': {"type": 'str', "default": 'ec_number', "description": "The ec number column name"},
+        **CSVLoader.config_specs,
+        'ec_column_name': {"type": 'str', "default": ECData.EC_COLUMN_NAME, "description": "The ec number column name"},
     }
 
 # ####################################################################
@@ -107,9 +125,9 @@ class ECLoader(Loader):
 #
 # ####################################################################
 
-class ECDumper(Dumper):
+class ECDumper(CSVDumper):
     input_specs = {"data" : ECData}
     output_specs = {}
     config_specs = {
-        **Dumper.config_specs,
+        **CSVDumper.config_specs,
     }
