@@ -43,7 +43,7 @@ class FluxChecker(FluxAnalyzer):
         
         biomodel = self.input["biomodel"]
         flat_bio = biomodel.flatten()
-        
+
         # remove cofactors
         # flat_bio = flat_bio.remove_cofactors()
         
@@ -53,11 +53,11 @@ class FluxChecker(FluxAnalyzer):
         
         self.context_file = os.path.join(self.cwd.name,"context.json")
         with open(self.context_file, "w") as fp:
-            json.dump(flat_bio["context"], fp)
-        
-        
+            #json.dump(flat_bio["context"], fp)
+            json.dump({"measures": []}, fp)
+                
         # override config
-        nrnd = min(10000, 10 * biomodel.number_of_reactions)
+        nrnd = min(5000, 10 * biomodel.number_of_reactions)
         self.set_param("least_energy_weight", 1e-6)
         self.set_param("use_random_starting_point", True)
         self.set_param("number_of_randomizations", nrnd)
@@ -76,8 +76,8 @@ class FluxChecker(FluxAnalyzer):
         ]
 
         return cmd
-        
     
+        
 class BiomodelBuilder(Shell):
     input_specs = { 'network': (Network,), 'context': (Context,)  }
     output_specs = { 'biomodel': (Biomodel,) }

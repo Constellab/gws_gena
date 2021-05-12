@@ -34,19 +34,19 @@ class TestFba(unittest.TestCase):
     def test_check(self):
         data_dir = settings.get_dir("gena:testdata_dir")
         
-        file_path = os.path.join(data_dir, "toy_network.json")
+        file_path = os.path.join(data_dir, "ecoli-core.json")
         with open(file_path) as f:
             data = json.load(f)
             net = Network.from_json(data)
         
-        file_path = os.path.join(data_dir, "toy_context.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            ctx = Context.from_json(data)
+        #file_path = os.path.join(data_dir, "toy_context.json")
+        #with open(file_path) as f:
+        #    data = json.load(f)
+        #    ctx = Context.from_json(data)
         
         bio = Biomodel()
         bio.add_network(net)
-        bio.add_context(ctx, related_network=net)
+        #bio.add_context(ctx, related_network=net)
         bio.save()
 
         fba = FluxChecker()
@@ -54,9 +54,15 @@ class TestFba(unittest.TestCase):
         
         def _on_end(*args, **kwargs):
             f = fba.output["file"]
-            #print(f.view__flux_distrib_as_csv())
-            print(f.view__flux_ranges_as_csv())
-            print(f.view__sv_ranges_as_csv())
+            #print(f.view__flux_distrib__as_csv())
+            
+            print("Fluxes:")
+            print("------------")
+            print(f.view__flux_ranges__as_csv())
+            
+            print("SV:")
+            print("------------")
+            print(f.view__sv_ranges__as_csv())
 
         e = fba.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)

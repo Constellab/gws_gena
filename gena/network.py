@@ -1205,6 +1205,11 @@ class Network(Resource):
         """
         
         net = Network()
+        
+        if data.get("data",{}).get("network"):
+            # data is a full json export
+            data = data["data"]["network"]
+        
         net.__build_from_dump(data)
         net.data["network"] = net.dumps()
         return net

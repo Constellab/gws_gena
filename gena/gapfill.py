@@ -64,8 +64,9 @@ class GapFiller(Process):
                 message = f"Pass {i+1}: {_nb_filled} gap filled"
             else:
                 message = f"Pass {i+1}: {_nb_filled} gaps filled"
-                
-            self.progress_bar.set_value(i+1, message=message)
+            
+            if i < self.progress_bar.get_max_value():
+                self.progress_bar.set_value(i+1, message=message)
             Info(message)
             
             if not _nb_filled:

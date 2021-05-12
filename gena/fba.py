@@ -75,7 +75,7 @@ class FluxAnalyzerResult(File):
     
     # -- V --
     
-    def view__sv_distrib_as_csv(self, only_sucess: bool = True) -> DataFrame:
+    def view__sv_distrib__as_csv(self, only_sucess: bool = True) -> DataFrame:
         df = DataFrame(
             self.sv["data"], 
             index=self.sv["row_names"], 
@@ -83,23 +83,33 @@ class FluxAnalyzerResult(File):
         )
         
         if only_sucess:
-            success = self.view__solver_success_as_csv()
+            success = self.view__solver_success__as_csv()
             success_columns = df.columns[success.iloc[0,:]]
             df = df[ success_columns ]
             
         return df
     
-    def view__sv_ranges_as_csv(self, only_sucess: bool = True) -> DataFrame:
-        df = self.view__sv_distrib_as_csv(only_sucess=only_sucess)
-        
+    def view__sv_ranges__as_csv(self, only_sucess: bool = True) -> DataFrame:
+        df = self.view__sv_distrib__as_csv(only_sucess=only_sucess)
+
+        Q1 = df.quantile(q=0.25, axis=1)
+        Q2 = df.quantile(q=0.5, axis=1)
+        Q3 = df.quantile(q=0.75, axis=1)
         df = pd.concat( 
-            [ df.mean(axis=1), df.std(axis=1), df.min(axis=1), df.max(axis=1) ],
+            [ 
+                df.mean(axis=1), 
+                df.std(axis=1), 
+                df.min(axis=1), 
+                df.max(axis=1),
+                Q2, Q3 - Q1, Q1, Q3
+            ],
             axis=1 
         )
-        df.columns = [ "mean", "std", "min", "max" ]
+        df.columns = [ "mean", "std", "min", "max", "Q2", "IQR", "Q1", "Q3" ]
+        df = df.sort_values(by=["std"])
         return df
     
-    def view__ker_of_identif_as_csv(self) -> DataFrame:
+    def view__ker_of_identif__as_csv(self) -> DataFrame:
         df = DataFrame(
             self.ker_of_identif["data"], 
             index=self.ker_of_identif["row_names"], 
@@ -107,7 +117,7 @@ class FluxAnalyzerResult(File):
         )
         return df
     
-    def view__ker_of_intern_stoich_as_csv(self) -> DataFrame:
+    def view__ker_of_intern_stoich__as_csv(self) -> DataFrame:
         df = DataFrame(
             self.ker_of_intern_stoich["data"], 
             index=self.ker_of_intern_stoich["row_names"], 
@@ -115,7 +125,7 @@ class FluxAnalyzerResult(File):
         )
         return df
     
-    def view__solver_success_as_csv(self) -> DataFrame:
+    def view__solver_success__as_csv(self) -> DataFrame:
         df = DataFrame(
             self.solver_success["data"], 
             index=self.solver_success["row_names"], 
@@ -123,7 +133,7 @@ class FluxAnalyzerResult(File):
         )
         return df == 1.0
     
-    def view__stoich_matrix_as_csv(self) -> DataFrame:
+    def view__stoich_matrix__as_csv(self) -> DataFrame:
         df = DataFrame(
             self.stoich_matrix["data"], 
             index=self.stoich_matrix["row_names"], 
@@ -131,17 +141,27 @@ class FluxAnalyzerResult(File):
         )
         return df
     
-    def view__flux_ranges_as_csv(self, only_sucess: bool = True) -> DataFrame:
-        df = self.view__flux_distrib_as_csv(only_sucess=only_sucess)
+    def view__flux_ranges__as_csv(self, only_sucess: bool = True) -> DataFrame:
+        df = self.view__flux_distrib__as_csv(only_sucess=only_sucess)
         
+        Q1 = df.quantile(q=0.25, axis=1)
+        Q2 = df.quantile(q=0.5, axis=1)
+        Q3 = df.quantile(q=0.75, axis=1)
         df = pd.concat( 
-            [ df.mean(axis=1), df.std(axis=1), df.min(axis=1), df.max(axis=1) ],
+            [ 
+                df.mean(axis=1), 
+                df.std(axis=1), 
+                df.min(axis=1), 
+                df.max(axis=1),
+                Q2, Q3 - Q1, Q1, Q3
+            ],
             axis=1 
         )
-        df.columns = [ "mean", "std", "min", "max" ]
+        df.columns = [ "mean", "std", "min", "max", "Q2", "IQR", "Q1", "Q3" ]
+        df = df.sort_values(by=["std"])
         return df
     
-    def view__flux_distrib_as_csv(self, only_sucess: bool = True) -> DataFrame:
+    def view__flux_distrib__as_csv(self, only_sucess: bool = True) -> DataFrame:
         df = DataFrame(
             self.solutions["data"], 
             index=self.solutions["row_names"], 
@@ -149,12 +169,17 @@ class FluxAnalyzerResult(File):
         )
         
         if only_sucess:
-            success = self.view__solver_success_as_csv()
+            success = self.view__solver_success__as_csv()
             success_columns = df.columns[success.iloc[0,:]]
             df = df[ success_columns ]
             
         return df
-
+    
+    def view__feasible_fluxes__as_csv(self, only_sucess: bool = True) -> DataFrame:
+        df = self.view__sv_distrib__as_csv(only_sucess=only_sucess)
+        df = df.mean(axis=1).min()
+        return df
+    
 class FluxAnalyzer(Shell):
     
     input_specs = { 'biomodel': (Biomodel,) }
@@ -166,7 +191,6 @@ class FluxAnalyzer(Shell):
         "use_random_starting_point": {"type": bool, "default": True, "Description": "True to use random initial conditions to explore to flux space, False otherwise. If number_of_randomizations > 1, then this parameter will operate to True."},
         "number_of_randomizations": {"type": int, "default": 100, "Description": "Number of random initial conditions to use to explore the flux space."}
     }
-    
     
     # -- B --
     
@@ -189,8 +213,7 @@ class FluxAnalyzer(Shell):
         self.config_file = os.path.join(self.cwd.name,"config.json")
         with open(self.config_file, "w") as fp:
             json.dump(self.config.params, fp)
-    
-        
+ 
         self.output_file = os.path.join(self.cwd.name,"result.json")
         cmd = [ 
             bin_file, 
@@ -203,6 +226,15 @@ class FluxAnalyzer(Shell):
 
         return cmd
     
+    # -- C --
+    
+    def compute_progress_bar_value(self, stdout_count: int=0, stdout_line: str="") -> tuple:
+        value = stdout_count / self.get_param("number_of_randomizations")
+        message = stdout_line
+        if value and value < self.progress_bar.get_max_value():
+            # prevent blocking the progress bar if the current is not well computed by the user
+            self.progress_bar.set_value(value, message=message)
+            
     # -- G --
     
     def gather_outputs(self, stdout: str=None):
@@ -210,6 +242,8 @@ class FluxAnalyzer(Shell):
         file = t()
         file.path = self.output_file
         self.output["file"] = file
+        
+        
         self.data["stdout"] = stdout
         
 class BiomodelBuilder(Shell):

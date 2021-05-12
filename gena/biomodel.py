@@ -349,6 +349,10 @@ class Biomodel(Resource):
     
     # -- R --
     
+    def remove_all_contexts(self):
+        self._contexts = {}
+        self._network_contexts = {}
+        
     # -- S --
     
     def save(self, *args, **kwargs):
