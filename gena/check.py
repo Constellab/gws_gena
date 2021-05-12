@@ -57,10 +57,10 @@ class FluxChecker(FluxAnalyzer):
             json.dump({"measures": []}, fp)
                 
         # override config
-        nrnd = min(5000, 10 * biomodel.number_of_reactions)
+        #nrnd = min(5000, 10 * biomodel.number_of_reactions)
         self.set_param("least_energy_weight", 1e-6)
         self.set_param("use_random_starting_point", True)
-        self.set_param("number_of_randomizations", nrnd)
+        #self.set_param("number_of_randomizations", nrnd)
         self.config_file = os.path.join(self.cwd.name,"config.json")
         with open(self.config_file, "w") as fp:
             json.dump(self.config.params, fp)
