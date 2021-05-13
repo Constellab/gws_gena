@@ -51,18 +51,19 @@ class TestFba(unittest.TestCase):
 
         fba = FluxChecker()
         fba.input["biomodel"] = bio
+        fba.set_param("number_of_randomizations", 10)
         
         def _on_end(*args, **kwargs):
             f = fba.output["file"]
-            #print(f.view__flux_distrib__as_csv())
+            #print(f.view__flux_distrib__as_table())
             
             print("Fluxes:")
             print("------------")
-            print(f.view__flux_ranges__as_csv())
+            print(f.view__flux_ranges__as_table())
             
             print("SV:")
             print("------------")
-            print(f.view__sv_ranges__as_csv())
+            print(f.view__sv_ranges__as_table())
 
         e = fba.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)
