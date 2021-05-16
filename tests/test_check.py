@@ -35,6 +35,7 @@ class TestFba(unittest.TestCase):
         data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "ecoli-core.json")
+        #file_path = os.path.join(data_dir, "olga", "net.json")
         with open(file_path) as f:
             data = json.load(f)
             net = Network.from_json(data)
@@ -51,7 +52,11 @@ class TestFba(unittest.TestCase):
 
         fba = FluxChecker()
         fba.input["biomodel"] = bio
+        fba.set_param("least_energy_weight", 0)
         fba.set_param("number_of_randomizations", 10)
+        fba.set_param("use_hard_bounds", False)
+        fba.set_param("algorithm", "bfgs")
+        fba.set_param("verbose", False)
         
         def _on_end(*args, **kwargs):
             f = fba.output["file"]

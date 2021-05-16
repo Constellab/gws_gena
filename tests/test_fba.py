@@ -51,13 +51,15 @@ class TestFba(unittest.TestCase):
 
         fba = FluxAnalyzer()
         fba.set_param("least_energy_weight", 0)
-        fba.set_param("number_of_randomizations", 1)
+        fba.set_param("number_of_randomizations", 10)
+        fba.set_param("use_hard_bounds", True)
+        fba.set_param("verbose", True)
         fba.input["biomodel"] = bio
         
         def _on_end(*args, **kwargs):
             f = fba.output["file"]
             print( f.extension )
-            print( f.to_json(read_content=True, prettify=True, stringify=True) )
+            #print( f.to_json(read_content=True, prettify=True, stringify=True) )
             
             file_path = os.path.join(data_dir, "flat_toy_result.json")
             with open(file_path) as fp:
@@ -65,16 +67,16 @@ class TestFba(unittest.TestCase):
                 result_content = f.to_json(read_content=True)["data"]["content"]
                 self.assertEqual( result_content, expected_result_content  )
             
-            #print(f.view__stoich_matrix__as_csv())
-            #print(f.view__solver_success__as_csv())
-            #print(f.view__ker_of_identif__as_csv())
-            #print(f.view__ker_of_intern_stoich__as_csv())
-            #print(f.view__sv_distrib__as_csv())
-            #print(f.view__sv_ranges__as_csv())
-            print(f.view__flux_distrib__as_csv())
-            print(f.view__flux_ranges__as_csv())
+            #print(f.view__stoich_matrix__as_table())
+            #print(f.view__solver_success__as_table())
+            #print(f.view__ker_of_identif__as_table())
+            #print(f.view__ker_of_intern_stoich__as_table())
+            #print(f.view__sv_distrib__as_table())
+            #print(f.view__sv_ranges__as_table())
+            print(f.view__flux_distrib__as_table())
+            print(f.view__flux_ranges__as_table())
             
-            print(f.view__feasible_fluxes__as_csv())
+            print(f.view__feasible_fluxes__as_table())
             
             
         e = fba.create_experiment(study=GTest.study, user=GTest.user)

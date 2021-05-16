@@ -240,9 +240,7 @@ class Context(Resource):
 class ContextBuilder(Process):
     input_specs = { 'network': (Network,), 'flux_data': (FluxData,) }
     output_specs = { 'context': (Context,) }
-    config_specs = {
-        "maximize_biomass": {"type": bool, "default": False, "Description": "True to also maximize biomass"}
-    }
+    config_specs = { }
     
     async def task(self):
         ctx = Context()

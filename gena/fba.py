@@ -183,10 +183,14 @@ class FluxAnalyzerResult(File):
 class FluxAnalyzer(Shell):
     
     input_specs = { 'biomodel': (Biomodel,) }
+    #input_specs = { 'network': (Network,), 'context': (Context,) }
     output_specs = { 'file': (FluxAnalyzerResult,) }
     config_specs = {
         "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
         "ineq_tol": {"type": float, "default": 1e-6, "Description": "Inequality constraint tolerance"},
+        "algorithm": {"type": str, "default": "bfgs", "allow_values": ["bfgs", "lbfgs"], "Description": "Type of optimization algorithm"},
+        "use_hard_bounds": {"type": bool, "default": True, "Description": "True to use hard bounds, Flase otherwise."},
+        "verbose": {"type": bool, "default": False, "Description": "True to verbose, Flase otherwise."},
         "least_energy_weight": {"type": float, "default": 1e-6, "min": 0, "max": 1, "Description": "The least energy weight. The higher it is, lower will be sum of fluxes"},
         "use_random_starting_point": {"type": bool, "default": True, "Description": "True to use random initial conditions to explore to flux space, False otherwise. If number_of_randomizations > 1, then this parameter will operate to True."},
         "number_of_randomizations": {"type": int, "default": 100, "Description": "Number of random initial conditions to use to explore the flux space."}

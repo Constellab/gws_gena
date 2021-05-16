@@ -14,7 +14,7 @@ from gena.file import *
 from gena.recon import DraftRecon
 from gena.gapfill import GapFiller
 
-class ReconProtocol(Protocol):
+class ReconPilot(Protocol):
     
     def __init__(self, *args, user = None, **kwargs):
         

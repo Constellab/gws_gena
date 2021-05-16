@@ -8,7 +8,7 @@ import uuid
 from typing import List
 
 from gws.logger import Error
-from gws.model import Model, Resource
+from gws.model import Model, Resource, Process
 
 from .network import Network, Compound, Reaction
 from .context import Context
@@ -393,3 +393,19 @@ class Biomodel(Resource):
     @staticmethod
     def _unflat(text):
         return text.split(":")
+    
+    
+class BiomodelBuilder(Process):
+    input_specs = { 'network': (Network,), 'context': (Context,) }
+    output_specs = { 'biomodel': (Biomodel,) }
+    config_specs = { }
+    
+    async def task(self):
+        ctx = self.input["context"]
+        net = self.input["network"]
+
+        bio = Biomodel()
+        bio.add_network(net)
+        bio.add_context(ctx, related_network=net)
+
+        self.output["biomodel"] = bio
