@@ -34,8 +34,10 @@ class TestFba(unittest.TestCase):
     def test_check(self):
         data_dir = settings.get_dir("gena:testdata_dir")
         
-        file_path = os.path.join(data_dir, "ecoli-core.json")
-        #file_path = os.path.join(data_dir, "olga", "net.json")
+        #file_name = "ecoli/ecoli-core"
+        file_name = "dist/olga_net"
+        
+        file_path = os.path.join(data_dir, file_name+".json")
         with open(file_path) as f:
             data = json.load(f)
             net = Network.from_json(data)
@@ -52,11 +54,18 @@ class TestFba(unittest.TestCase):
 
         fba = FluxChecker()
         fba.input["biomodel"] = bio
-        fba.set_param("least_energy_weight", 0)
-        fba.set_param("number_of_randomizations", 10)
-        fba.set_param("use_hard_bounds", False)
+        fba.set_param("least_energy_weight", 0.001)
+        
+        if file_name == "ecoli/ecoli-core":
+            fba.set_param("number_of_randomizations", 10)
+            fba.set_param("verbose", False)
+        else:
+            fba.set_param("number_of_randomizations", 2)
+            fba.set_param("verbose", True)
+            
+        fba.set_param("use_hard_bounds", True)
         fba.set_param("algorithm", "bfgs")
-        fba.set_param("verbose", False)
+        
         
         def _on_end(*args, **kwargs):
             f = fba.output["file"]
@@ -65,11 +74,18 @@ class TestFba(unittest.TestCase):
             print("Fluxes:")
             print("------------")
             print(f.view__flux_ranges__as_table())
-            
+            file_path = os.path.join(data_dir, file_name+"_flux.csv")
+            with open(file_path, 'w') as fp:
+                fp.write( f.view__flux_ranges__as_table().to_csv() )
+                
+                
             print("SV:")
             print("------------")
             print(f.view__sv_ranges__as_table())
-
+            file_path = os.path.join(data_dir, file_name+"_sv.csv")
+            with open(file_path, 'w') as fp:
+                fp.write( f.view__sv_ranges__as_table().to_csv() )
+                
         e = fba.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)
         asyncio.run( e.run() )

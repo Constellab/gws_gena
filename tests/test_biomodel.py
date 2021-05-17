@@ -51,5 +51,13 @@ class TestBiomodel(unittest.TestCase):
         #print(_json)
         
         self.assertRaises(Exception, bio.add_network, net)
-        flat = json.dumps(bio.flatten(), indent=4)
-        print(flat)
+        #flat = json.dumps(bio.flatten())
+        #file_path = os.path.join(data_dir, "flat_toy_biomodel.json")
+        #with open(file_path, 'w') as f:
+        #    json.dump(bio.flatten(), f)
+            
+        file_path = os.path.join(data_dir, "flat_toy_biomodel.json")
+        with open(file_path) as f:
+            data = json.load(f)
+            print(data)
+            self.assertEqual(bio.flatten(), data)

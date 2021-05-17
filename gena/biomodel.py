@@ -6,6 +6,7 @@
 import json
 import uuid
 from typing import List
+from copy import deepcopy
 
 from gws.logger import Error
 from gws.model import Model, Resource, Process
@@ -212,7 +213,7 @@ class Biomodel(Resource):
         return bm
     
 
-    def flatten(self, remove_factors=False) -> dict:
+    def flatten(self) -> dict:
         _comps = {}
         _mets = []
         _rxns = []
@@ -233,16 +234,18 @@ class Biomodel(Resource):
                 _comps[c_name] = c_desc
 
             for k in tmp_json["metabolites"]:
-                _met = k.copy()
+                _met = deepcopy(k)
                 _met["id"] = Compound._flatten_id(_met["id"], uname)
                 _met["name"] =  _met["name"]
                 _met["compartment"] =  Compound._flatten_id(_met["compartment"], uname, is_compartment=True)
                 _mets.append( _met )
 
             for k in tmp_json["reactions"]:
-                _rxn = k.copy()
+                _rxn = deepcopy(k)
                 _rxn["id"] = Reaction._flatten_id(_rxn["id"], uname)
                 _rxn["name"] = _rxn["name"]
+                _rxn["lower_bound"] = _rxn["lower_bound"]
+                _rxn["upper_bound"] = _rxn["upper_bound"]
                 
                 _rxn_mets = {}
                 for _met_name in _rxn["metabolites"]:
@@ -257,7 +260,7 @@ class Biomodel(Resource):
             related_network = self._get_related_network(ctx)
             if related_network:
                 uname = __get_network_uname(related_network)
-                _meas = ctx.data["measures"].copy()
+                _meas = deepcopy(ctx.data["measures"])
                 for k in range(0, len(_meas)):
                     for var in _meas[k]["variables"]:
                          var["reference_id"] = Reaction._flatten_id(var["reference_id"], uname)

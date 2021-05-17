@@ -72,7 +72,7 @@ class Measure:
     
     def __init__( self, id: str = None, name: str = "", \
                  target:float = None, confidence_score:float = 1.0, \
-                 lower_bound: float = -1000, upper_bound: float = 1000):
+                 lower_bound: float = -1000.0, upper_bound: float = 1000.0):
         
         if id:
             self.id = id
@@ -179,14 +179,19 @@ class Context(Resource):
     # -- B --
     
     def __build_from_dump(self, data: dict):
+        
+        if "data" in data:
+            # it is a raw export of the model
+            data = data["data"] 
+
         for _meas in data["measures"]:
             measure = Measure( \
                 id = self._format(_meas["id"]), \
                 name = _meas.get("name"), \
                 target = _meas.get("target"), \
                 confidence_score = _meas.get("confidence_score",1.0), \
-                lower_bound = _meas.get("lower_bound",1000), \
-                upper_bound = _meas.get("upper_bound",1000) \
+                lower_bound = _meas.get("lower_bound",-1000.0), \
+                upper_bound = _meas.get("upper_bound",1000.0) \
             )
             
             for _var in _meas["variables"]:

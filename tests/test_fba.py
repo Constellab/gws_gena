@@ -51,7 +51,7 @@ class TestFba(unittest.TestCase):
 
         fba = FluxAnalyzer()
         fba.set_param("least_energy_weight", 0)
-        fba.set_param("number_of_randomizations", 10)
+        fba.set_param("number_of_randomizations", 1)
         fba.set_param("use_hard_bounds", True)
         fba.set_param("verbose", True)
         fba.input["biomodel"] = bio
@@ -59,9 +59,14 @@ class TestFba(unittest.TestCase):
         def _on_end(*args, **kwargs):
             f = fba.output["file"]
             print( f.extension )
-            #print( f.to_json(read_content=True, prettify=True, stringify=True) )
+            print( f.to_json(read_content=True, prettify=True, stringify=True) )
             
             file_path = os.path.join(data_dir, "flat_toy_result.json")
+            
+            #with open(file_path, 'w') as fp:
+            #    result_content = f.to_json(read_content=True)["data"]["content"]
+            #    json.dump(result_content, fp)
+                
             with open(file_path) as fp:
                 expected_result_content = json.load(fp)            
                 result_content = f.to_json(read_content=True)["data"]["content"]

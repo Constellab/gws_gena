@@ -1133,6 +1133,8 @@ class Network(Resource):
                 "enzyme": _rxn.enzyme,
                 "rhea_id": _rxn.rhea_id,
                 "metabolites": _rxn_met,
+                "lower_bound": _rxn.lower_bound,
+                "upper_bound": _rxn.upper_bound
             })
   
         _json = {
@@ -1591,6 +1593,7 @@ class Network(Resource):
         column_names = [
             "id", "equation_str", \
             "enzyme", "ec_number", \
+            "lb", "ub", \
             "enzyme_class", \
             "is_from_gap_filling",
             "comments", \
@@ -1670,6 +1673,7 @@ class Network(Resource):
                 rxn.id, \
                 rxn.to_str(), \
                 enz, ec, \
+                str(rxn.lower_bound), str(rxn.upper_bound), \
                 enzyme_class, \
                 is_from_gap_filling, \
                 "; ".join(comment), \
