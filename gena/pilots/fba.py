@@ -9,6 +9,7 @@ import math
 from gws.logger import Error, Info
 from gws.model import Protocol
 from gws.settings import Settings
+from gws.plug import Source, Sink
 
 from gena.file import *
 from gena.recon import DraftRecon
@@ -21,28 +22,12 @@ class FbaProtocol(Protocol):
         settings = Settings.retrieve()
         data_dir = settings.get_dir("gena:testdata_dir")
         
-        ec_loader = ECLoader()
-        file_path = os.path.join(data_dir, "recon_ec_data.csv")
-        ec_loader.set_param("file_path", file_path)
-        ec_loader.set_param("ec_column_name", "EC Number")
-        
-        file_path = os.path.join(data_dir, "recon_medium.csv")
-        medium_loader = MediumLoader()
-        medium_loader.set_param("file_path", file_path)
-        medium_loader.set_param("chebi_column_name", "Chebi ID")
-        
-        biomass_loader = BiomassLoader()
-        file_path = os.path.join(data_dir, "recon_biomass.csv")
-        biomass_loader.set_param("file_path", file_path)
-        biomass_loader.set_param("biomass_column_name", "Biomass")
-        biomass_loader.set_param("chebi_column_name", "Chebi ID")
-        
+        ec_source = Source()
+        biomass_source = Source()
+        medium_source = Source()
         recon = DraftRecon()
-        #recon.set_param('tax_id', "263815")  #target pneumocyctis
-        
         gapfiller = GapFiller()
-        #gapfiller.set_param('tax_id', "4753")    #fungi 
-        #gapfiller.set_param('tax_id', "2759")    #eukaryota
+        sink = Sink()
         
         processes = {
             "ec_loader": ec_loader,
@@ -53,10 +38,11 @@ class FbaProtocol(Protocol):
         }
         
         connectors = [
-            ec_loader>>"data" | recon<<"ec_data",
-            biomass_loader>>"data" | recon<<"biomass_data",
-            medium_loader>>"data" | recon<<"medium_data",
-            recon>>"network" | gapfiller<<"network"
+            ec_source>>"resource" | recon<<"ec_data",
+            biomass_source>>"data" | recon<<"biomass_data",
+            medium_source>>"data" | recon<<"medium_data",
+            recon>>"network" | gapfiller<<"network",
+            gapfiller>>"network" | "resource"<<sink
         ]
         
         super().__init__(

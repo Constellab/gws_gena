@@ -846,7 +846,7 @@ class Network(Resource):
     _medium = None
     
     _fts_fields = {'title': 2.0, 'description': 1.0}
-    #_table_name = "gena_network"
+    _table_name = "gena_network"
     
     _flattening_delimiter = flattening_delimiter
     _defaultNetwork = None
