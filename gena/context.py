@@ -10,6 +10,8 @@ from typing import List
 from gws.logger import Error
 from gws.model import Resource, Process
 from gws.utils import generate_random_chars, slugify
+from gws.json import JSONImporter, JSONExporter, JSONLoader, JSONDumper
+from gws.file import File
 
 from gena.network import Network
 from gena.data import FluxData
@@ -151,7 +153,7 @@ class Context(Resource):
             self.__build_from_dump(self.data["measures"])
         else:
             self.data = {
-                'title': 'Context',
+                'name': 'Context',
                 'description': '',
                 'measures': None
             }
@@ -293,3 +295,58 @@ class ContextBuilder(Process):
             i += 1
 
         self.output["context"] = ctx
+
+# ####################################################################
+#
+# Importer class
+#
+# ####################################################################
+    
+class ContextImporter(JSONImporter):
+    input_specs = {'file' : File}
+    output_specs = {'data': Context}
+    config_specs = {
+        'file_format': {"type": str, "default": ".json", 'description': "File format"}
+    }
+
+# ####################################################################
+#
+# Exporter class
+#
+# ####################################################################
+
+class ContextExporter(JSONExporter):
+    input_specs = {'data': Context}
+    output_specs = {'file' : File}
+    config_specs = {
+        'file_name': {"type": str, "default": 'network.json', 'description': "Destination file name in the store"},
+        'file_format': {"type": str, "default": ".json", 'description': "File format"},
+    }
+    
+# ####################################################################
+#
+# Loader class
+#
+# ####################################################################
+
+class ContextLoader(JSONLoader):
+    input_specs = {}
+    output_specs = {'data' : Context}
+    config_specs = {
+        'file_path': {"type": str, "default": None, 'description': "Location of the file to import"},
+        'file_format': {"type": str, "default": ".json", 'description': "File format"},
+    }
+    
+# ####################################################################
+#
+# Dumper class
+#
+# ####################################################################
+
+class ContextDumper(JSONDumper):
+    input_specs = {'data' : Context}
+    output_specs = {}
+    config_specs = {
+        'file_path': {"type": str, "default": None, 'description': "Destination of the exported file"},
+        'file_format': {"type": str, "default": ".json", 'description': "File format"},
+    }

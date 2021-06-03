@@ -17,11 +17,11 @@ from .context import Context
 
 # ####################################################################
 #
-# Biomodel class
+# BioModel class
 #
 # ####################################################################
 
-class Biomodel(Resource):
+class BioModel(Resource):
     """
     Class that represents a biomodel.
     
@@ -33,7 +33,7 @@ class Biomodel(Resource):
     _network_contexts = None
     _contexts = None
     
-    _fts_fields = {'title': 2.0, 'description': 1.0}
+    #_fts_fields = {'title': 2.0, 'description': 1.0}
     _table_name = "gena_biomodel"
 
     def __init__( self, *args, **kwargs ):
@@ -47,7 +47,7 @@ class Biomodel(Resource):
             self.__build_from_dump(self.data["biomodel"])
         else:
             self.data = {
-                'title': '',
+                'name': '',
                 'description': '',
                 'networks': None,
                 'contexts': None,
@@ -207,7 +207,7 @@ class Biomodel(Resource):
     
     @classmethod
     def from_json(cls, data: dict):
-        bm = Biomodel()
+        bm = BioModel()
         bm.__build_from_dump(data)
         bm.data["biomodel"] = bm.dumps()
         return bm
@@ -219,7 +219,7 @@ class Biomodel(Resource):
         _rxns = []
 
         def __get_network_uname(net):
-            return (net.title if net.title else "network") + str(net.id)
+            return (net.name if net.name else "network") + str(net.id)
             
         for net in self.networks.values():
             tmp_json = net.data["network"]
@@ -301,39 +301,37 @@ class Biomodel(Resource):
     # -- N --
     
     @property
-    def name(self):
+    def name(self) -> str:
         """ 
-        Get the name of the compartment
+        Get the name of the network
         
-        Alias of :meth:`get_title` 
         :return: The name
         :rtype: `str`
         """
         
-        return self.get_title()
+        return self.data.get("name", "")
     
     @name.setter
     def name(self, name:str):
         """ 
-        Set the name of the compartment.
+        Set the name of the network.
         
-        Alias of :meth:`set_title` 
         :param name: The name
         :type name: `str`
         """
         
-        return self.set_title(name)
+        self.data["name"] = name
     
     @property
-    def networks(self):
+    def networks(self)-> dict:
         return self._networks
     
     @property
-    def network_contexts(self):
+    def network_contexts(self) -> dict:
         return self._network_contexts
     
     @property
-    def number_of_compounds(self):
+    def number_of_compounds(self) -> int:
         c = 0
         for k in self.networks:
             net = self.networks[k]
@@ -342,7 +340,7 @@ class Biomodel(Resource):
         return c
     
     @property
-    def number_of_reactions(self):
+    def number_of_reactions(self) -> int:
         c = 0
         for k in self.networks:
             net = self.networks[k]
@@ -398,17 +396,24 @@ class Biomodel(Resource):
         return text.split(":")
     
     
-class BiomodelBuilder(Process):
-    input_specs = { 'network': (Network,), 'context': (Context,) }
-    output_specs = { 'biomodel': (Biomodel,) }
-    config_specs = { }
+class BioModelBuilder(Process):
+    input_specs = { 'network': (Network,), 'context': (Context, None,) }
+    output_specs = { 'biomodel': (BioModel,) }
+    config_specs = {
+        "use_context": {"type": bool, "default": True, "Description": "Set True to use the context, False otherwise."},
+    }
     
+    def check_before_task(self) -> bool:
+        if self.get_param("use_context"):
+            if not self.input["context"]:
+                return False
+        return True
+
     async def task(self):
-        ctx = self.input["context"]
         net = self.input["network"]
-
-        bio = Biomodel()
+        bio = BioModel()
         bio.add_network(net)
-        bio.add_context(ctx, related_network=net)
-
+        if self.get_param("use_context"):
+            ctx = self.input["context"]
+            bio.add_context(ctx, related_network=net)
         self.output["biomodel"] = bio

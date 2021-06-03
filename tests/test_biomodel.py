@@ -7,15 +7,15 @@ settings = Settings.retrieve()
 
 from gena.network import Network
 from gena.context import Context
-from gena.biomodel import Biomodel
+from gena.biomodel import BioModel
 
 from biota.base import DbManager as BiotaDbManager
 
-class TestBiomodel(unittest.TestCase):
+class TestBioModel(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        Biomodel.drop_table()
+        BioModel.drop_table()
         Context.drop_table()
         Network.drop_table()
         BiotaDbManager.use_prod_db(True)
@@ -23,7 +23,7 @@ class TestBiomodel(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        Biomodel.drop_table()
+        BioModel.drop_table()
         Context.drop_table()
         Network.drop_table()
 
@@ -42,7 +42,7 @@ class TestBiomodel(unittest.TestCase):
             ctx = Context.from_json(data)
             ctx2 = Context.from_json(data)
         
-        bio = Biomodel()
+        bio = BioModel()
         bio.add_network(net)
         bio.add_context(ctx, related_network=net)
         

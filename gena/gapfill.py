@@ -12,7 +12,7 @@ from gws.settings import Settings
 from gws.logger import Error, Info
 
 from gena.network import Network, Compound, Reaction
-from gena.biomodel import Biomodel
+from gena.biomodel import BioModel
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction

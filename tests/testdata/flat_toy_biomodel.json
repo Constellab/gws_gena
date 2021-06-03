@@ -1,1 +1,138 @@
-{"is_flat": true, "network": {"metabolites": [{"id": "glc_D_e", "name": "D-Glucose", "charge": "", "mass": "", "monoisotopic_mass": "", "formula": "", "inchi": "", "compartment": "e", "chebi_id": "", "kegg_id": ""}, {"id": "Network1_gln_L_c", "name": "L-Glutamine", "charge": "", "mass": "", "monoisotopic_mass": "", "formula": "", "inchi": "", "compartment": "Network1_c", "chebi_id": "", "kegg_id": ""}, {"id": "gln_L_e", "name": "L-Glutamine", "charge": "", "mass": "", "monoisotopic_mass": "", "formula": "", "inchi": "", "compartment": "e", "chebi_id": "", "kegg_id": ""}, {"id": "Network1_atp_c", "name": "ATP C10H12N5O13P3", "charge": "", "mass": "", "monoisotopic_mass": "", "formula": "", "inchi": "", "compartment": "Network1_c", "chebi_id": "", "kegg_id": ""}, {"id": "Network1_adp_c", "name": "ADP C10H12N5O10P2", "charge": "", "mass": "", "monoisotopic_mass": "", "formula": "", "inchi": "", "compartment": "Network1_c", "chebi_id": "", "kegg_id": ""}], "reactions": [{"id": "Network1_EX_glc_D_e", "name": "D-Glucose exchange", "enzyme": {}, "rhea_id": "", "metabolites": {"glc_D_e": -1.0}, "lower_bound": -10.0, "upper_bound": 1000.0}, {"id": "Network1_GLNabc", "name": "L-glutamine transport via ABC system", "enzyme": {}, "rhea_id": "", "metabolites": {"Network1_atp_c": -1.0, "gln_L_e": -1.0, "Network1_adp_c": 1.0, "Network1_gln_L_c": 1.0}, "lower_bound": 0.0, "upper_bound": 1000.0}], "compartments": {"Network1_c": "cytosol", "e": "extracellular", "Network1_n": "nucleus"}}, "context": {"measures": [{"id": "M1", "name": "M1", "variables": [{"reference_id": "Network1_R1_ex", "reference_type": "reaction", "coefficient": 1.0}], "lower_bound": 25.0, "upper_bound": 35.0, "target": 30.0, "confidence_score": 1.0}, {"id": "M2", "name": "M2", "variables": [{"reference_id": "Network1_R1_ex", "reference_type": "reaction", "coefficient": 1.0}, {"reference_id": "Network1_R5_ex", "reference_type": "reaction", "coefficient": 2.0}], "lower_bound": 0.5, "upper_bound": 1.0, "target": 0.75, "confidence_score": 1.0}]}}
+{
+    "is_flat": true,
+    "network": {
+        "metabolites": [
+            {
+                "id": "glc_D_e",
+                "name": "D-Glucose",
+                "charge": "",
+                "mass": "",
+                "monoisotopic_mass": "",
+                "formula": "",
+                "inchi": "",
+                "compartment": "e",
+                "chebi_id": "",
+                "kegg_id": ""
+            },
+            {
+                "id": "Network1_gln_L_c",
+                "name": "L-Glutamine",
+                "charge": "",
+                "mass": "",
+                "monoisotopic_mass": "",
+                "formula": "",
+                "inchi": "",
+                "compartment": "Network1_c",
+                "chebi_id": "",
+                "kegg_id": ""
+            },
+            {
+                "id": "gln_L_e",
+                "name": "L-Glutamine",
+                "charge": "",
+                "mass": "",
+                "monoisotopic_mass": "",
+                "formula": "",
+                "inchi": "",
+                "compartment": "e",
+                "chebi_id": "",
+                "kegg_id": ""
+            },
+            {
+                "id": "Network1_atp_c",
+                "name": "ATP C10H12N5O13P3",
+                "charge": "",
+                "mass": "",
+                "monoisotopic_mass": "",
+                "formula": "",
+                "inchi": "",
+                "compartment": "Network1_c",
+                "chebi_id": "",
+                "kegg_id": ""
+            },
+            {
+                "id": "Network1_adp_c",
+                "name": "ADP C10H12N5O10P2",
+                "charge": "",
+                "mass": "",
+                "monoisotopic_mass": "",
+                "formula": "",
+                "inchi": "",
+                "compartment": "Network1_c",
+                "chebi_id": "",
+                "kegg_id": ""
+            }
+        ],
+        "reactions": [
+            {
+                "id": "Network1_EX_glc_D_e",
+                "name": "D-Glucose exchange",
+                "enzyme": {},
+                "rhea_id": "",
+                "metabolites": {
+                    "glc_D_e": -1.0
+                },
+                "lower_bound": -10.0,
+                "upper_bound": 1000.0
+            },
+            {
+                "id": "Network1_GLNabc",
+                "name": "L-glutamine transport via ABC system",
+                "enzyme": {},
+                "rhea_id": "",
+                "metabolites": {
+                    "Network1_atp_c": -1.0,
+                    "gln_L_e": -1.0,
+                    "Network1_adp_c": 1.0,
+                    "Network1_gln_L_c": 1.0
+                },
+                "lower_bound": 0.0,
+                "upper_bound": 1000.0
+            }
+        ],
+        "compartments": {
+            "Network1_c": "cytosol",
+            "e": "extracellular",
+            "Network1_n": "nucleus"
+        }
+    },
+    "context": {
+        "measures": [
+            {
+                "id": "M1",
+                "name": "M1",
+                "variables": [
+                    {
+                        "reference_id": "Network1_R1_ex",
+                        "reference_type": "reaction",
+                        "coefficient": 1.0
+                    }
+                ],
+                "lower_bound": 25.0,
+                "upper_bound": 35.0,
+                "target": 30.0,
+                "confidence_score": 1.0
+            },
+            {
+                "id": "M2",
+                "name": "M2",
+                "variables": [
+                    {
+                        "reference_id": "Network1_R1_ex",
+                        "reference_type": "reaction",
+                        "coefficient": 1.0
+                    },
+                    {
+                        "reference_id": "Network1_R5_ex",
+                        "reference_type": "reaction",
+                        "coefficient": 2.0
+                    }
+                ],
+                "lower_bound": 0.5,
+                "upper_bound": 1.0,
+                "target": 0.75,
+                "confidence_score": 1.0
+            }
+        ]
+    }
+}

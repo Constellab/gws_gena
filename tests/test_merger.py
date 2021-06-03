@@ -12,6 +12,7 @@ settings = Settings.retrieve()
 
 from gena.network import *
 from gena.context import Context
+from gena.biomodel import BioModel
 from gena.recon import DraftRecon
 from gena.gapfill import GapFiller 
 from gena.merge import NetworkMerger
@@ -20,13 +21,13 @@ from gena.proto.recon import ReconProto
 
 from biota.base import DbManager as BiotaDbManager
 
-class TestRecon(unittest.TestCase):
+class TestMerge(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
         tables = ( 
-            Resource, Context, Network, 
-            DraftRecon, ECData, MediumData, File, 
+            Resource, BioModel, Context, Network, NetworkMerger,
+            ECData, MediumData, File, 
             Experiment, Study, User, Activity, 
             ProgressBar, 
         )
@@ -38,48 +39,43 @@ class TestRecon(unittest.TestCase):
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
         tables = ( 
-            Resource, Context, Network, 
-            DraftRecon, ECData, MediumData, File, 
+            Resource, BioModel, Context, Network, NetworkMerger,
+            ECData, MediumData, File, 
             Experiment, Study, User, Activity, 
             ProgressBar, 
         )
         GTest.drop_tables(tables)        
         
-    def test_recon_proto(self):
-        GTest.print("Test ReconProto")
 
+    def test_merger(self):
         data_dir = settings.get_dir("gena:testdata_dir")
+
+        file_path = os.path.join(data_dir, "recon_net.json")
+        net_loader_1 = NetworkLoader()
+        net_loader_1.set_param("file_path", file_path)
+
+        file_path = os.path.join(data_dir, "recon_addon.json")
+        net_loader_2 = NetworkLoader()
+        net_loader_2.set_param("file_path", file_path)
+
+        merger = NetworkMerger()
         
-        file_path = os.path.join(data_dir, "recon_ec_data.csv")
-        ec_file = File(path=file_path)
-        #ec_file.move_to_store()
-
-        file_path = os.path.join(data_dir, "recon_medium.csv")
-        medium_file = File(path=file_path)
-        #medium_file.move_to_store()
-
-        file_path = os.path.join(data_dir, "recon_biomass.csv")
-        biomass_file = File(path=file_path)
-        #biomass_file.move_to_store()
-    
-        proto = ReconProto()
-        proto.input["ec_file"] = ec_file
-        proto.input["biomass_file"] = biomass_file
-        proto.input["medium_file"] = medium_file
-
-        recon = proto.get_draft_recon()
-        recon.set_param('tax_id', "263815")  #target pneumocyctis
-
-        gapfiller = proto.get_gapfiller()
-        gapfiller.set_param('tax_id', "4753")    #fungi 
-        #gapfiller.set_param('tax_id', "2759")    #eukaryota
-        gapfiller.set_param('biomass_and_medium_gaps_only', True)
-
+        proto = Protocol(
+            processes = {
+                "merger": merger,
+                "net_loader_1": net_loader_1,
+                "net_loader_2": net_loader_2
+            },
+            connectors = [
+                net_loader_1>>"data" | merger<<"network_1",
+                net_loader_2>>"data" | merger<<"network_2"
+            ]
+        )
+        
         def _export_network(net, file_name):
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'r') as f:
                 self.assertEqual(net.to_csv(), f.read())
-
             #with open(file_path, 'w') as f:
             #    f.write(net.to_csv())
                 
@@ -92,17 +88,12 @@ class TestRecon(unittest.TestCase):
             with open(file_path, 'w') as f:
                 table = net.render__gaps__as_table()
                 f.write(table.to_csv())
-
+            
         def _on_end(*args, **kwargs):
-            recon_net = proto.output["draft_recon_network"]
-            file_name = "recon"
-            _export_network(recon_net, file_name)
+            net = merger.output['network']
+            file_name = "merger"
+            _export_network(net, file_name)
 
-            gapfill_net = proto.output["gapfiller_network"]
-            file_name = "gapfill"
-            _export_network(gapfill_net, file_name)
-
-        e = proto.create_experiment(user=GTest.user, study=GTest.study)
+        e = proto.create_experiment( study=GTest.study, user=GTest.user )
         e.on_end( _on_end )
         asyncio.run( e.run() )
-        

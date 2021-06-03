@@ -7,7 +7,7 @@ from gws.settings import Settings
 settings = Settings.retrieve()
 
 from gena.network import Network, Compound, Reaction
-from gena.biomodel import Biomodel
+from gena.biomodel import BioModel
 from gena.context import Context, ContextBuilder
 from gena.data import FluxData
 
@@ -20,7 +20,7 @@ class TestContext(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        Biomodel.drop_table()
+        BioModel.drop_table()
         Context.drop_table()
         Network.drop_table()
         GTest.init()
@@ -29,7 +29,7 @@ class TestContext(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        Biomodel.drop_table()
+        BioModel.drop_table()
         Context.drop_table()
         Network.drop_table()
 

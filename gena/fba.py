@@ -15,7 +15,7 @@ from gws.file import File
 from gws.settings import Settings
 from gws.logger import Error
 
-from gena.biomodel import Biomodel
+from gena.biomodel import BioModel
 from gena.network import Network
 from gena.context import Context
 
@@ -75,7 +75,7 @@ class FluxAnalyzerResult(File):
     
     # -- V --
     
-    def view__sv_distrib__as_table(self, only_sucess: bool = True) -> DataFrame:
+    def render__sv_distrib__as_table(self, only_sucess: bool = True) -> DataFrame:
         df = DataFrame(
             self.sv["data"], 
             index=self.sv["row_names"], 
@@ -83,14 +83,14 @@ class FluxAnalyzerResult(File):
         )
         
         if only_sucess:
-            success = self.view__solver_success__as_table()
+            success = self.render__solver_success__as_table()
             success_columns = df.columns[success.iloc[0,:]]
             df = df[ success_columns ]
             
         return df
     
-    def view__sv_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
-        df = self.view__sv_distrib__as_table(only_sucess=only_sucess)
+    def render__sv_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
+        df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
 
         Q1 = df.quantile(q=0.25, axis=1)
         Q2 = df.quantile(q=0.5, axis=1)
@@ -109,7 +109,7 @@ class FluxAnalyzerResult(File):
         df = df.sort_values(by=["std"])
         return df
     
-    def view__ker_of_identif__as_table(self) -> DataFrame:
+    def render__ker_of_identif__as_table(self) -> DataFrame:
         df = DataFrame(
             self.ker_of_identif["data"], 
             index=self.ker_of_identif["row_names"], 
@@ -117,7 +117,7 @@ class FluxAnalyzerResult(File):
         )
         return df
     
-    def view__ker_of_intern_stoich__as_table(self) -> DataFrame:
+    def render__ker_of_intern_stoich__as_table(self) -> DataFrame:
         df = DataFrame(
             self.ker_of_intern_stoich["data"], 
             index=self.ker_of_intern_stoich["row_names"], 
@@ -125,7 +125,7 @@ class FluxAnalyzerResult(File):
         )
         return df
     
-    def view__solver_success__as_table(self) -> DataFrame:
+    def render__solver_success__as_table(self) -> DataFrame:
         df = DataFrame(
             self.solver_success["data"], 
             index=self.solver_success["row_names"], 
@@ -133,7 +133,7 @@ class FluxAnalyzerResult(File):
         )
         return df == 1.0
     
-    def view__stoich_matrix__as_table(self) -> DataFrame:
+    def render__stoich_matrix__as_table(self) -> DataFrame:
         df = DataFrame(
             self.stoich_matrix["data"], 
             index=self.stoich_matrix["row_names"], 
@@ -141,8 +141,8 @@ class FluxAnalyzerResult(File):
         )
         return df
     
-    def view__flux_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
-        df = self.view__flux_distrib__as_table(only_sucess=only_sucess)
+    def render__flux_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
+        df = self.render__flux_distrib__as_table(only_sucess=only_sucess)
         
         Q1 = df.quantile(q=0.25, axis=1)
         Q2 = df.quantile(q=0.5, axis=1)
@@ -161,7 +161,7 @@ class FluxAnalyzerResult(File):
         df = df.sort_values(by=["std"])
         return df
     
-    def view__flux_distrib__as_table(self, only_sucess: bool = True) -> DataFrame:
+    def render__flux_distrib__as_table(self, only_sucess: bool = True) -> DataFrame:
         df = DataFrame(
             self.solutions["data"], 
             index=self.solutions["row_names"], 
@@ -169,20 +169,20 @@ class FluxAnalyzerResult(File):
         )
         
         if only_sucess:
-            success = self.view__solver_success__as_table()
+            success = self.render__solver_success__as_table()
             success_columns = df.columns[success.iloc[0,:]]
             df = df[ success_columns ]
             
         return df
     
-    def view__feasible_fluxes__as_table(self, only_sucess: bool = True) -> DataFrame:
-        df = self.view__sv_distrib__as_table(only_sucess=only_sucess)
+    def render__feasible_fluxes__as_table(self, only_sucess: bool = True) -> DataFrame:
+        df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
         df = df.mean(axis=1).min()
         return df
     
 class FluxAnalyzer(Shell):
     
-    input_specs = { 'biomodel': (Biomodel,) }
+    input_specs = { 'biomodel': (BioModel,) }
     #input_specs = { 'network': (Network,), 'context': (Context,) }
     output_specs = { 'file': (FluxAnalyzerResult,) }
     config_specs = {
@@ -249,20 +249,3 @@ class FluxAnalyzer(Shell):
         
         
         self.data["stdout"] = stdout
-        
-class BiomodelBuilder(Shell):
-    input_specs = { 'network': (Network,), 'context': (Context,)  }
-    output_specs = { 'biomodel': (Biomodel,) }
-    config_specs = {}
-    
-    async def task(self):
-        net = self.input["network"]
-        ctx = self.input["context"]
-        
-        bio = Biomodel()
-        bio.add_network(net)
-        bio.add_context(ctx, related_network=net)
-        bio.save()
-        
-        self.output["biomodel"] = bio
-        

@@ -15,7 +15,7 @@ from gws.settings import Settings
 from gws.logger import Error
 
 from gena.fba import FluxAnalyzer, FluxAnalyzerResult
-from gena.biomodel import Biomodel
+from gena.biomodel import BioModel
 from gena.network import Network
 from gena.context import Context
 
@@ -24,7 +24,7 @@ class FluxCheckerResult(FluxAnalyzerResult):
 
 class FluxChecker(FluxAnalyzer):
     
-    input_specs = { 'biomodel': (Biomodel,) }
+    input_specs = { 'biomodel': (BioModel,) }
     output_specs = { 'file': (FluxCheckerResult,) }
     #config_specs = {
     #    "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
@@ -76,24 +76,6 @@ class FluxChecker(FluxAnalyzer):
         ]
 
         return cmd
-    
-        
-class BiomodelBuilder(Shell):
-    input_specs = { 'network': (Network,), 'context': (Context,)  }
-    output_specs = { 'biomodel': (Biomodel,) }
-    config_specs = {}
-    
-    async def task(self):
-        net = self.input["network"]
-        ctx = self.input["context"]
-        
-        bio = Biomodel()
-        bio.add_network(net)
-        bio.add_context(ctx, related_network=net)
-        bio.save()
-        
-        self.output["biomodel"] = bio
-        
 
 class PhenoChecker(FluxAnalyzer):
     pass

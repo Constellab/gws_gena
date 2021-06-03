@@ -9,7 +9,7 @@ settings = Settings.retrieve()
 
 from gena.network import Network
 from gena.context import Context
-from gena.biomodel import Biomodel
+from gena.biomodel import BioModel
 from gena.fba import FluxAnalyzer, FluxAnalyzerResult
 from gws.unittest import GTest
 
@@ -19,7 +19,11 @@ class TestFba(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        tables = ( Biomodel, Context, Network, Experiment, Study, User, Activity, ProgressBar, FluxAnalyzer, FluxAnalyzerResult, )
+        tables = ( 
+            BioModel, Context, Network, 
+            Experiment, Study, User, Activity, 
+            ProgressBar, FluxAnalyzer, FluxAnalyzerResult, 
+        )
         GTest.drop_tables(tables)
         
         GTest.init()
@@ -28,10 +32,15 @@ class TestFba(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        tables = ( Biomodel, Context, Network, Experiment, Study, User, Activity, ProgressBar, FluxAnalyzer, FluxAnalyzerResult, )
+        tables = ( 
+            BioModel, Context, Network, 
+            Experiment, Study, User, Activity, 
+            ProgressBar, FluxAnalyzer, FluxAnalyzerResult, 
+        )
         GTest.drop_tables(tables)
 
     def test_fba(self):
+        GTest.print("Test FBA")
         data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "toy_network.json")
@@ -44,7 +53,7 @@ class TestFba(unittest.TestCase):
             data = json.load(f)
             ctx = Context.from_json(data)
         
-        bio = Biomodel()
+        bio = BioModel()
         bio.add_network(net)
         bio.add_context(ctx, related_network=net)
         bio.save()
@@ -68,20 +77,20 @@ class TestFba(unittest.TestCase):
             #    json.dump(result_content, fp)
                 
             with open(file_path) as fp:
-                expected_result_content = json.load(fp)            
-                result_content = f.to_json(read_content=True)["data"]["content"]
+                expected_result_content = json.load(fp)          
+                result_content = f.to_json(shallow=False)["data"]["content"]
                 self.assertEqual( result_content, expected_result_content  )
             
-            #print(f.view__stoich_matrix__as_table())
-            #print(f.view__solver_success__as_table())
-            #print(f.view__ker_of_identif__as_table())
-            #print(f.view__ker_of_intern_stoich__as_table())
-            #print(f.view__sv_distrib__as_table())
-            #print(f.view__sv_ranges__as_table())
-            print(f.view__flux_distrib__as_table())
-            print(f.view__flux_ranges__as_table())
+            #print(f.render__stoich_matrix__as_table())
+            #print(f.render__solver_success__as_table())
+            #print(f.render__ker_of_identif__as_table())
+            #print(f.render__ker_of_intern_stoich__as_table())
+            #print(f.render__sv_distrib__as_table())
+            #print(f.render__sv_ranges__as_table())
+            print(f.render__flux_distrib__as_table())
+            print(f.render__flux_ranges__as_table())
             
-            print(f.view__feasible_fluxes__as_table())
+            print(f.render__feasible_fluxes__as_table())
             
             
         e = fba.create_experiment(study=GTest.study, user=GTest.user)

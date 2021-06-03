@@ -16,7 +16,7 @@ from gws.json import *
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction
-from biota.enzyme import Enzyme as BiotaEnzyme
+from biota.enzyme import Enzyme as BiotaEnzyme, EnzymeClass
 from biota.taxonomy import Taxonomy as BiotaTaxo
 
 def slugify_id(_id):
@@ -163,7 +163,7 @@ class Compound:
                 if chebi_id:
                     try:
                         c = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                        name = c.title
+                        name = c.get_name()
                     except:
                         name = chebi_id
                 else:
@@ -508,12 +508,11 @@ class Reaction:
         rxns = []
         #tax_tree = BiotaTaxo._tax_tree
         
-        all_tax = {}
         def __create_rxn(rhea_rxn, network, enzyme):
             if enzyme:
                 
                 e = {
-                    "title": enzyme.title,
+                    "name": enzyme.get_name(),
                     "ec_number": enzyme.ec_number,
                 }
                 
@@ -526,13 +525,13 @@ class Reaction:
                 if tax:
                     e["tax"][tax.rank] = {
                         "tax_id": tax.tax_id,
-                        "title": tax.title
+                        "name": tax.get_name()
                     }
                     
                     for t in tax.ancestors:
                         e["tax"][t.rank] = {
                             "tax_id": t.tax_id,
-                            "title": t.title
+                            "name": t.get_name()
                         }
                     
                 #for f in BiotaTaxo._tax_tree: 
@@ -845,7 +844,7 @@ class Network(Resource):
     _compartments = None
     _medium = None
     
-    _fts_fields = {'title': 2.0, 'description': 1.0}
+    #_fts_fields = {'title': 2.0, 'description': 1.0}
     _table_name = "gena_network"
     
     _flattening_delimiter = flattening_delimiter
@@ -870,7 +869,7 @@ class Network(Resource):
             self.__build_from_dump(self.data["network"])
         else:
             self.data = {
-                'title': 'Network',
+                'name': 'Network',
                 'description': '',
                 'network': None,
                 "tags":{
@@ -1429,24 +1428,22 @@ class Network(Resource):
         """ 
         Get the name of the compartment
         
-        Alias of :meth:`get_title` 
         :return: The name
         :rtype: `str`
         """
         
-        return self.get_title()
+        return self.data.get("name", "")
     
     @name.setter
     def name(self, name:str):
         """ 
         Set the name of the compartment.
         
-        Alias of :meth:`set_title` 
         :param name: The name
         :type name: `str`
         """
         
-        return self.set_title(name)
+        self.data["name"] = name
     
     # -- P --
     
@@ -1471,7 +1468,41 @@ class Network(Resource):
         """
         
         del self.reactions[rxn_id]
-        
+    
+    def render__compound_stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
+        return self.stats["compounds"]
+    
+    def render__compound_stats__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+        _dict = self.stats["compounds"]
+        for comp_id in _dict:
+            _dict[comp_id]["chebi_id"] = self._compounds[comp_id].chebi_id
+        table = DictView.to_table(_dict, columns=["count", "freq", "chebi_id"], stringify=False)
+        table = table.sort_values(by=['freq'], ascending=False)
+        if stringify:
+            return table.to_csv()
+        else:
+            return table
+    
+    def render__gaps__as_json(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+        return self._get_gap_info()
+    
+    def render__gaps__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+        _dict = self._get_gap_info()
+        table = DictView.to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=False)
+        if stringify:
+            return table.to_csv()
+        else:
+            return table
+
+    def render__stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
+        if stringify:
+            if prettify:
+                return json.dumps(self.stats, indent=4)
+            else:
+                return json.dumps(self.stats)
+        else:
+            return self.stats
+    
     # -- S --
     
     @property
@@ -1620,7 +1651,7 @@ class Network(Resource):
                 is_from_gap_filling = True
                 
             if rxn.enzyme:
-                enz = rxn.enzyme.get("title","--") 
+                enz = rxn.enzyme.get("name","--") 
                 ec = rxn.enzyme.get("ec_number","--")
                 
                 deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
@@ -1643,13 +1674,13 @@ class Network(Resource):
                     tax = rxn.enzyme.get("tax")
                     for f in BiotaTaxo._tax_tree: 
                         if f in tax:
-                            tax_cols.append( tax[f]["title"] + " (" + str(tax[f]["tax_id"]) + ")" )
+                            tax_cols.append( tax[f]["name"] + " (" + str(tax[f]["tax_id"]) + ")" )
                         else:
                             tax_cols.append("")
                 
                 if rxn.enzyme.get("ec_number"):
                     try:
-                        enzyme_class = EnsymeClass.get(EnsymeClass.ec_numbner == rxn.enzyme.get("ec_number"))
+                        enzyme_class = EnzymeClass.get(EnzymeClass.ec_numbner == rxn.enzyme.get("ec_number"))
                     except:
                         pass
                 
@@ -1708,7 +1739,7 @@ class Network(Resource):
             if is_partial_ec_number:
                 try:
                     enzyme_class = EnzymeClass.get(EnzymeClass.ec_number == ec)
-                    rxn_row[4] = enzyme_class.title
+                    rxn_row[4] = enzyme_class.get_name()
                 except:
                     pass
             
@@ -1723,44 +1754,7 @@ class Network(Resource):
             return table.to_csv()
         else:
             return table
-        
-    # -- V --
-    
-    def view__compound_stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
-        return self.stats["compounds"]
-    
-    def view__compound_stats__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
-        _dict = self.stats["compounds"]
-        for comp_id in _dict:
-            _dict[comp_id]["chebi_id"] = self._compounds[comp_id].chebi_id
-        table = DictView.to_table(_dict, columns=["count", "freq", "chebi_id"], stringify=False)
-        table = table.sort_values(by=['freq'], ascending=False)
-        if stringify:
-            return table.to_csv()
-        else:
-            return table
-    
-    def view__gaps__as_json(self, stringify=False, **kwargs) -> (str, "DataFrame",):
-        return self._get_gap_info()
-    
-    def view__gaps__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
-        _dict = self._get_gap_info()
-        table = DictView.to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=False)
-        if stringify:
-            return table.to_csv()
-        else:
-            return table
 
-    def view__stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
-        stats = self.stats
-        if stringify:
-            if prettify:
-                return json.dumps(_json, indent=4)
-            else:
-                return json.dumps(_json)
-        else:
-            return _json
-    
 
 # ####################################################################
 #
