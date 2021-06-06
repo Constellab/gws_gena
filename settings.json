@@ -2,21 +2,14 @@
     "name"      : "gena",
     "authors"   : "Gencovery",
     "version"   : "0.1",
-
-    "log_dir"   : "../../logs/",
-    "data_dir"  : "../../data/",
-    "db_name"   : "db.sqlite3",
-    
     "dirs"     :{
         "gena:testdata_dir"    : "./tests/testdata"
     },
-
-    "externs"  : [
-        "gena-cpp"
-    ],
-
-    "dependencies"  : [
-        "biota",
-        "gaia"
-    ]
+    "externs"  : {
+        "gena-cpp": "DEFAULT_ORIGIN"
+    },
+    "dependencies"  : {
+        "biota": "DEFAULT_ORIGIN",
+        "gaia": "DEFAULT_ORIGIN"
+    }
 }
