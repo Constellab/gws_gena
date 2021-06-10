@@ -41,7 +41,7 @@ class TestContext(unittest.TestCase):
             data = json.load(f)
             ctx = Context.from_json(data)
         
-        _json = ctx.dumps(stringify=True, prettify=True)
+        _json = ctx.dumps()
         print(_json)        
         print(ctx.to_json())
 

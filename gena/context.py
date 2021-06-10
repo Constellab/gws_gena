@@ -6,6 +6,7 @@
 import json
 import uuid
 from typing import List
+from pathlib import Path
 
 from gws.logger import Error
 from gws.model import Resource, Process
@@ -210,14 +211,29 @@ class Context(Resource):
         
     # -- D -- 
     
-    def dumps(self, stringify=False, prettify=False):
+    def dumps(self) -> dict:
         _json = []
         for k in self._measures:
             _json.append( self._measures[k].to_json() )
         
         return _json
         
-        
+    # -- E --
+
+    def _export(self, file_path: str, file_format:str = ".json", prettify: bool=False):
+        """ 
+        Export to a give repository
+
+        :param file_path: The destination file path
+        :type file_path: File
+        """
+    
+        with open(file_path, "w") as f:
+            if prettify:
+                json.dump(self.dumps(), f, indent=4)
+            else:
+                json.dump(self.dumps(), f)
+
     # -- F --
     
     @classmethod
@@ -231,6 +247,25 @@ class Context(Resource):
         ctx.data["measures"] = ctx.dumps()
         return ctx
     
+    # -- I --
+
+    @classmethod
+    def _import(cls, file_path: str, file_format:str = ".json") -> 'Context':
+        """ 
+        Import from a repository
+ 
+        :returns: the imported cotnext
+        :rtype: Context
+        """
+
+        file_extension = Path(file_path).suffix
+
+        if file_extension in [".json"] or file_format in [".json"]:
+            with open(file_path, "r") as f:
+                data = json.load(f)
+
+        return cls.from_json(data)
+
     # -- M --
     
     @property

@@ -15,13 +15,16 @@ from gws.file import File
 from gws.settings import Settings
 from gws.logger import Error
 
-from gena.biomodel import BioModel
-from gena.network import Network
-from gena.context import Context
+from .biomodel import BioModel
+from .network import Network
+from .context import Context
+
+from scipy import stats
 
 class FluxAnalyzerResult(File):
     _content = None
-    
+    _default_zero_flux_threshold = 0.01
+
     @property
     def content(self)->dict:
         if not self._content:
@@ -29,6 +32,18 @@ class FluxAnalyzerResult(File):
         
         return self._content
     
+    def compute_zero_flux_threshold(self) -> float:
+        df = self.render__sv_ranges__as_table()
+        m = df["mean"]
+        try:
+            _,p = stats.normaltest(m)
+            if p < 0.05:
+                return 2.0 * m.std()
+            else:
+                return self._default_zero_flux_threshold
+        except:
+            return self._default_zero_flux_threshold
+
     # -- K --
     
     @property
@@ -177,13 +192,12 @@ class FluxAnalyzerResult(File):
     
     def render__feasible_fluxes__as_table(self, only_sucess: bool = True) -> DataFrame:
         df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
-        df = df.mean(axis=1).min()
+        df = df.mean(axis=1)
         return df
     
 class FluxAnalyzer(Shell):
     
     input_specs = { 'biomodel': (BioModel,) }
-    #input_specs = { 'network': (Network,), 'context': (Context,) }
     output_specs = { 'file': (FluxAnalyzerResult,) }
     config_specs = {
         "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
@@ -204,15 +218,15 @@ class FluxAnalyzer(Shell):
         bin_file = os.path.join(_dir, "bin/fba/fba")
         
         biomodel = self.input["biomodel"]
-        flat_bio = biomodel.flatten()
+        self.__flat_bio = biomodel.flatten()
         
         self.network_file = os.path.join(self.cwd.name,"network.json")
         with open(self.network_file, "w") as fp:
-            json.dump(flat_bio["network"], fp) 
+            json.dump(self.__flat_bio["network"], fp) 
         
         self.context_file = os.path.join(self.cwd.name,"context.json")
         with open(self.context_file, "w") as fp:
-            json.dump(flat_bio["context"], fp)
+            json.dump(self.__flat_bio["context"], fp)
         
         self.config_file = os.path.join(self.cwd.name,"config.json")
         with open(self.config_file, "w") as fp:
@@ -246,6 +260,4 @@ class FluxAnalyzer(Shell):
         file = t()
         file.path = self.output_file
         self.output["file"] = file
-        
-        
         self.data["stdout"] = stdout

@@ -370,6 +370,7 @@ class Reaction:
     enzyme: dict = None
     
     _tax_ids = []
+    _estimate: dict = None
     _substrates: dict = None
     _products: dict = None
     _flattening_delimiter = flattening_delimiter
@@ -399,6 +400,7 @@ class Reaction:
             
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
+        self._estimate = {}
         self._substrates = {}
         self._products = {}
         
@@ -464,6 +466,12 @@ class Reaction:
             "compound": comp,
             "stoichiometry": abs(float(stoich))
         }
+
+    # -- E --
+
+    @property
+    def estimate(self) -> dict:
+        return self._estimate
 
     # -- F --
     
@@ -771,6 +779,18 @@ class Reaction:
     
     # -- S --
     
+    def set_estimate(self, estimate: dict):
+        if not "value" in estimate:
+            Error("Reaction", "set_estimate", "No value in estimate data")
+
+        if not "lower_bound" in estimate:
+            Error("Reaction", "set_estimate", "No lower_bound in estimate data")
+
+        if not "upper_bound" in estimate:
+            Error("Reaction", "set_estimate", "No upper_bound in estimate data")
+
+        self._estimate = estimate
+
     @property
     def substrates(self) -> dict:
         """
@@ -1011,6 +1031,9 @@ class Network(Resource):
                 rhea_id=val.get("rhea_id","")\
             )
             
+            if val.get("estimate"):
+                rxn.set_estimate(val.get("estimate"))
+
             for comp_id in val[ckey]:
                 comp = added_comps[comp_id]
                 
@@ -1133,7 +1156,8 @@ class Network(Resource):
                 "rhea_id": _rxn.rhea_id,
                 "metabolites": _rxn_met,
                 "lower_bound": _rxn.lower_bound,
-                "upper_bound": _rxn.upper_bound
+                "upper_bound": _rxn.upper_bound,
+                "estimate": _rxn.estimate
             })
   
         _json = {

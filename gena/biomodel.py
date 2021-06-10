@@ -14,7 +14,6 @@ from gws.model import Model, Resource, Process
 from .network import Network, Compound, Reaction
 from .context import Context
 
-
 # ####################################################################
 #
 # BioModel class
@@ -127,7 +126,7 @@ class BioModel(Resource):
             
         for val in data.get("networks",[]):
             net = Network.get(Network.uri == val["uri"])
-            self.add_network(ctx)
+            self.add_network(net)
         
         net_ctx = data.get("network_contexts",[])
         for net_ctx in data.get("network_contexts",[]):
@@ -220,7 +219,9 @@ class BioModel(Resource):
 
         def __get_network_uname(net):
             return (net.name if net.name else "network") + str(net.id)
-            
+
+        _mapping = {} 
+        _rev_mapping = {} 
         for net in self.networks.values():
             tmp_json = net.data["network"]
             if not net.is_saved():
@@ -242,11 +243,22 @@ class BioModel(Resource):
 
             for k in tmp_json["reactions"]:
                 _rxn = deepcopy(k)
+                _original_rxn_id = _rxn["id"]
                 _rxn["id"] = Reaction._flatten_id(_rxn["id"], uname)
                 _rxn["name"] = _rxn["name"]
                 _rxn["lower_bound"] = _rxn["lower_bound"]
                 _rxn["upper_bound"] = _rxn["upper_bound"]
                 
+                _mapping[ _rxn["id"] ] = {
+                     "network_name": net.name,
+                     "reaction_id": _original_rxn_id
+                }
+
+                if not net.name in _rev_mapping:
+                    _rev_mapping[net.name] = {}
+
+                _rev_mapping[net.name][_original_rxn_id] = _rxn["id"]
+
                 _rxn_mets = {}
                 for _met_name in _rxn["metabolites"]:
                     _flat_met_name = Compound._flatten_id(_met_name, uname)
@@ -274,7 +286,9 @@ class BioModel(Resource):
             },
             "context": {
                 "measures": _meas
-            }
+            },
+            "mapping": _mapping,
+            "reverse_mapping": _rev_mapping
         }
 
         return _json
@@ -295,7 +309,7 @@ class BioModel(Resource):
                 ctx = self.network_contexts[net_uri]
                 return ctx
         
-        return Nones
+        return None
 
         
     # -- N --

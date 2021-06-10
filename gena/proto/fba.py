@@ -17,6 +17,7 @@ from gena.network import NetworkImporter
 from gena.context import ContextImporter
 from gena.biomodel import BioModel, BioModelBuilder
 from gena.fba import FluxAnalyzer
+from gena.annotator import BioModelAnnotator
 
 class FluxAnalyzerProto(Protocol):
     
@@ -35,6 +36,8 @@ class FluxAnalyzerProto(Protocol):
         context_source = Source()
         context_importer = ContextImporter()
 
+        biomodel_annotator = BioModelAnnotator()
+
         processes = {
             "network_fifo": network_fifo,
             "network_source": network_source,
@@ -43,14 +46,22 @@ class FluxAnalyzerProto(Protocol):
             "context_source": context_source,
             "context_importer": context_importer,
             "biomodel_builder": biomodel_builder,
-            "flux_analyzer": flux_analyzer
+            "flux_analyzer": flux_analyzer,
+            "biomodel_annotator": biomodel_annotator
         }
 
         connectors = [
             network_source>>"resource" | network_fifo<<"resource_1",
             network_importer>>"data" | network_fifo<<"resource_2",
             (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
-            biomodel_builder>>"biomodel" | flux_analyzer<<"biomodel"
+
+            context_source>>"resource" | context_fifo<<"resource_1",
+            context_importer>>"data" | context_fifo<<"resource_2",
+            (context_fifo>>"resource").pipe(biomodel_builder<<"context", lazy=True),
+
+            biomodel_builder>>"biomodel" | flux_analyzer<<"biomodel",
+            biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
+            flux_analyzer>>"file" | biomodel_annotator<<"flux_analyzer_result"
         ]
         
         interfaces = {
@@ -59,7 +70,8 @@ class FluxAnalyzerProto(Protocol):
         }
 
         outerfaces = {
-            "flux_analyzer_file": flux_analyzer>>"file"
+            "flux_analyzer_file": flux_analyzer>>"file",
+            "annotated_biomodel": biomodel_annotator>>"biomodel"
         }
 
         super().__init__(
@@ -78,5 +90,8 @@ class FluxAnalyzerProto(Protocol):
     def get_biomodel_builder(self) -> BioModelBuilder:
         return self._processes["biomodel_builder"]
 
-    def get_flux_analyzer(self) -> FluxChecker:
+    def get_flux_analyzer(self) -> FluxAnalyzer:
         return self._processes["flux_analyzer"]
+
+    def get_biomodel_annotator(self) -> BioModelAnnotator:
+        return self._processes["biomodel_annotator"]
