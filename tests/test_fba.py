@@ -86,7 +86,7 @@ class TestFba(unittest.TestCase):
             #print(f.render__sv_ranges__as_table())
             print(f.render__flux_distrib__as_table())
             print(f.render__flux_ranges__as_table())
-            print(f.render__feasible_fluxes__as_table())
+            #print(f.render__feasible_fluxes__as_table())
 
             bio = proto.output["annotated_biomodel"]
             print(bio.dumps(expand=True))

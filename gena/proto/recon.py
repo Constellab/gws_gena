@@ -20,88 +20,90 @@ from gena.gapfill import GapFiller
 class ReconProto(Protocol):
     
     def __init__(self, *args, user = None, **kwargs):
-        # fifo2      
-        ec_fifo = FIFO2()
-        biomass_fifo = FIFO2()
-        medium_fifo = FIFO2()
-        # source
-        ec_source = Source()
-        biomass_source = Source()
-        medium_source = Source()
-        # importer
-        ec_importer = ECImporter()
-        ec_importer.set_param("ec_column_name", "EC Number")
-        medium_importer = MediumImporter()
-        medium_importer.set_param("chebi_column_name", "Chebi ID")
-        biomass_importer = BiomassImporter()
-        biomass_importer.set_param("biomass_column_name", "Biomass")
-        biomass_importer.set_param("chebi_column_name", "Chebi ID")
-        # other procs
-        recon = DraftRecon()
-        gapfiller = GapFiller()
-        sink = Sink()
-        
-        processes = {
-            # fifo2
-            "ec_fifo": ec_fifo,
-            "biomass_fifo": biomass_fifo,
-            "medium_fifo": medium_fifo,
+        super().__init__(*args, user=user, **kwargs)
+        if not self.is_built:
+            # fifo2      
+            ec_fifo = FIFO2()
+            biomass_fifo = FIFO2()
+            medium_fifo = FIFO2()
             # source
-            "ec_source": ec_source,
-            "medium_source": medium_source,
-            "biomass_source": biomass_source,
+            ec_source = Source()
+            biomass_source = Source()
+            medium_source = Source()
             # importer
-            "ec_importer": ec_importer,
-            "medium_importer": medium_importer,
-            "biomass_importer": biomass_importer,
+            ec_importer = ECImporter()
+            ec_importer.set_param("ec_column_name", "EC Number")
+            medium_importer = MediumImporter()
+            medium_importer.set_param("chebi_column_name", "Chebi ID")
+            biomass_importer = BiomassImporter()
+            biomass_importer.set_param("biomass_column_name", "Biomass")
+            biomass_importer.set_param("chebi_column_name", "Chebi ID")
             # other procs
-            "draft_recon": recon,
-            "gapfiller": gapfiller,
-            "sink": sink
-        }
-        
-        connectors = [
-            ec_source>>"resource" | ec_fifo<<"resource_1",
-            ec_importer>>"data" | ec_fifo<<"resource_2",
-            (ec_fifo>>"resource").pipe(recon<<"ec_data", lazy=True),
+            recon = DraftRecon()
+            gapfiller = GapFiller()
+            sink = Sink()
+            
+            processes = {
+                # fifo2
+                "ec_fifo": ec_fifo,
+                "biomass_fifo": biomass_fifo,
+                "medium_fifo": medium_fifo,
+                # source
+                "ec_source": ec_source,
+                "medium_source": medium_source,
+                "biomass_source": biomass_source,
+                # importer
+                "ec_importer": ec_importer,
+                "medium_importer": medium_importer,
+                "biomass_importer": biomass_importer,
+                # other procs
+                "draft_recon": recon,
+                "gapfiller": gapfiller,
+                "sink": sink
+            }
+            
+            connectors = [
+                ec_source>>"resource" | ec_fifo<<"resource_1",
+                ec_importer>>"data" | ec_fifo<<"resource_2",
+                (ec_fifo>>"resource").pipe(recon<<"ec_data", lazy=True),
 
-            biomass_source>>"resource" | biomass_fifo<<"resource_1",
-            biomass_importer>>"data" | biomass_fifo<<"resource_2",
-            (biomass_fifo>>"resource").pipe(recon<<"biomass_data", lazy=True),
+                biomass_source>>"resource" | biomass_fifo<<"resource_1",
+                biomass_importer>>"data" | biomass_fifo<<"resource_2",
+                (biomass_fifo>>"resource").pipe(recon<<"biomass_data", lazy=True),
 
-            medium_source>>"resource" | medium_fifo<<"resource_1",
-            medium_importer>>"data" | medium_fifo<<"resource_2",
-            (medium_fifo>>"resource").pipe(recon<<"medium_data", lazy=True),
+                medium_source>>"resource" | medium_fifo<<"resource_1",
+                medium_importer>>"data" | medium_fifo<<"resource_2",
+                (medium_fifo>>"resource").pipe(recon<<"medium_data", lazy=True),
 
-            recon>>"network" | gapfiller<<"network",
-            gapfiller>>"network" | sink<<"resource"
-        ]
-        
-        interfaces = {
-            # ec
-            "ec_data": ec_fifo<<"resource_1",
-            "ec_file": ec_importer<<"file",
-            # biomass
-            "biomass_data": biomass_fifo<<"resource_1",
-            "biomass_file": biomass_importer<<"file",
-            # medium
-            "medium_data": medium_fifo<<"resource_1",
-            "medium_file": medium_importer<<"file"
-        }
+                recon>>"network" | gapfiller<<"network",
+                gapfiller>>"network" | sink<<"resource"
+            ]
+            
+            interfaces = {
+                # ec
+                "ec_data": ec_fifo<<"resource_1",
+                "ec_file": ec_importer<<"file",
+                # biomass
+                "biomass_data": biomass_fifo<<"resource_1",
+                "biomass_file": biomass_importer<<"file",
+                # medium
+                "medium_data": medium_fifo<<"resource_1",
+                "medium_file": medium_importer<<"file"
+            }
 
-        outerfaces = {
-            "draft_recon_network": recon>>"network",
-            "gapfiller_network": gapfiller>>"network"
-        }
+            outerfaces = {
+                "draft_recon_network": recon>>"network",
+                "gapfiller_network": gapfiller>>"network"
+            }
 
-        super().__init__(
-            processes = processes,
-            connectors = connectors,
-            interfaces = interfaces,
-            outerfaces = outerfaces,
-            user = user,
-            **kwargs
-        )
+            self._build(
+                processes = processes,
+                connectors = connectors,
+                interfaces = interfaces,
+                outerfaces = outerfaces,
+                user = user,
+                **kwargs
+            )
 
     # importers
     def get_ec_importer(self) -> ECImporter:

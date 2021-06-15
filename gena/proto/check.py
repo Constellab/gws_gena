@@ -17,50 +17,53 @@ from gena.network import NetworkImporter
 from gena.biomodel import BioModel, BioModelBuilder
 from gena.check import FluxChecker
 
+
 class FluxCheckerProto(Protocol):
     
     def __init__(self, *args, user = None, **kwargs): 
-        biomodel_builder = BioModelBuilder()
-        biomodel_builder.set_param("use_context", False)
-        flux_checker = FluxChecker()
-        flux_checker.set_param("least_energy_weight", 0.001)
+        super().__init__(*args, user=user, **kwargs)
+        if not self.is_built:
+            biomodel_builder = BioModelBuilder()
+            biomodel_builder.set_param("use_context", False)
+            flux_checker = FluxChecker()
+            flux_checker.set_param("least_energy_weight", 0.001)
 
-        network_fifo = FIFO2()
-        network_source = Source()
-        network_importer = NetworkImporter()
+            network_fifo = FIFO2()
+            network_source = Source()
+            network_importer = NetworkImporter()
 
-        processes = {
-            "network_fifo": network_fifo,
-            "network_source": network_source,
-            "network_importer": network_importer,
-            "biomodel_builder": biomodel_builder,
-            "flux_checker": flux_checker
-        }
+            processes = {
+                "network_fifo": network_fifo,
+                "network_source": network_source,
+                "network_importer": network_importer,
+                "biomodel_builder": biomodel_builder,
+                "flux_checker": flux_checker
+            }
 
-        connectors = [
-            network_source>>"resource" | network_fifo<<"resource_1",
-            network_importer>>"data" | network_fifo<<"resource_2",
-            (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
-            biomodel_builder>>"biomodel" | flux_checker<<"biomodel"
-        ]
-        
-        interfaces = {
-            "network_file": network_importer<<"file"
-            #"biomodel_builder_context": biomodel_builder<<"context"
-        }
+            connectors = [
+                network_source>>"resource" | network_fifo<<"resource_1",
+                network_importer>>"data" | network_fifo<<"resource_2",
+                (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
+                biomodel_builder>>"biomodel" | flux_checker<<"biomodel"
+            ]
+            
+            interfaces = {
+                "network_file": network_importer<<"file"
+                #"biomodel_builder_context": biomodel_builder<<"context"
+            }
 
-        outerfaces = {
-            "flux_checker_file": flux_checker>>"file"
-        }
+            outerfaces = {
+                "flux_checker_file": flux_checker>>"file"
+            }
 
-        super().__init__(
-            processes = processes,
-            connectors = connectors,
-            interfaces = interfaces,
-            outerfaces = outerfaces,
-            user = user,
-            **kwargs
-        )
+            self._build(
+                processes = processes,
+                connectors = connectors,
+                interfaces = interfaces,
+                outerfaces = outerfaces,
+                user = user,
+                **kwargs
+            )
 
     # process
     def get_network_importer(self) -> NetworkImporter:

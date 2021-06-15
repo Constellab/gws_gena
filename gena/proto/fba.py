@@ -22,66 +22,68 @@ from gena.annotator import BioModelAnnotator
 class FluxAnalyzerProto(Protocol):
     
     def __init__(self, *args, user = None, **kwargs): 
-        biomodel_builder = BioModelBuilder()
-        biomodel_builder.set_param("use_context", True)
-        
-        flux_analyzer = FluxAnalyzer()
-        flux_analyzer.set_param("least_energy_weight", 0.001)
-        
-        network_fifo = FIFO2()
-        network_source = Source()
-        network_importer = NetworkImporter()
+        super().__init__(*args, user=user, **kwargs)
+        if not self.is_built:
+            biomodel_builder = BioModelBuilder()
+            biomodel_builder.set_param("use_context", True)
 
-        context_fifo = FIFO2()
-        context_source = Source()
-        context_importer = ContextImporter()
+            flux_analyzer = FluxAnalyzer()
+            flux_analyzer.set_param("least_energy_weight", 0.001)
+            
+            network_fifo = FIFO2()
+            network_source = Source()
+            network_importer = NetworkImporter()
 
-        biomodel_annotator = BioModelAnnotator()
+            context_fifo = FIFO2()
+            context_source = Source()
+            context_importer = ContextImporter()
 
-        processes = {
-            "network_fifo": network_fifo,
-            "network_source": network_source,
-            "network_importer": network_importer,
-            "context_fifo": context_fifo,
-            "context_source": context_source,
-            "context_importer": context_importer,
-            "biomodel_builder": biomodel_builder,
-            "flux_analyzer": flux_analyzer,
-            "biomodel_annotator": biomodel_annotator
-        }
+            biomodel_annotator = BioModelAnnotator()
 
-        connectors = [
-            network_source>>"resource" | network_fifo<<"resource_1",
-            network_importer>>"data" | network_fifo<<"resource_2",
-            (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
+            processes = {
+                "network_fifo": network_fifo,
+                "network_source": network_source,
+                "network_importer": network_importer,
+                "context_fifo": context_fifo,
+                "context_source": context_source,
+                "context_importer": context_importer,
+                "biomodel_builder": biomodel_builder,
+                "flux_analyzer": flux_analyzer,
+                "biomodel_annotator": biomodel_annotator
+            }
 
-            context_source>>"resource" | context_fifo<<"resource_1",
-            context_importer>>"data" | context_fifo<<"resource_2",
-            (context_fifo>>"resource").pipe(biomodel_builder<<"context", lazy=True),
+            connectors = [
+                network_source>>"resource" | network_fifo<<"resource_1",
+                network_importer>>"data" | network_fifo<<"resource_2",
+                (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
 
-            biomodel_builder>>"biomodel" | flux_analyzer<<"biomodel",
-            biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
-            flux_analyzer>>"file" | biomodel_annotator<<"flux_analyzer_result"
-        ]
-        
-        interfaces = {
-            "network_file": network_importer<<"file",
-            "context_file": context_importer<<"file"
-        }
+                context_source>>"resource" | context_fifo<<"resource_1",
+                context_importer>>"data" | context_fifo<<"resource_2",
+                (context_fifo>>"resource").pipe(biomodel_builder<<"context", lazy=True),
 
-        outerfaces = {
-            "flux_analyzer_file": flux_analyzer>>"file",
-            "annotated_biomodel": biomodel_annotator>>"biomodel"
-        }
+                biomodel_builder>>"biomodel" | flux_analyzer<<"biomodel",
+                biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
+                flux_analyzer>>"file" | biomodel_annotator<<"flux_analyzer_result"
+            ]
+            
+            interfaces = {
+                "network_file": network_importer<<"file",
+                "context_file": context_importer<<"file"
+            }
 
-        super().__init__(
-            processes = processes,
-            connectors = connectors,
-            interfaces = interfaces,
-            outerfaces = outerfaces,
-            user = user,
-            **kwargs
-        )
+            outerfaces = {
+                "flux_analyzer_file": flux_analyzer>>"file",
+                "annotated_biomodel": biomodel_annotator>>"biomodel"
+            }
+
+            self._build(
+                processes = processes,
+                connectors = connectors,
+                interfaces = interfaces,
+                outerfaces = outerfaces,
+                user = user,
+                **kwargs
+            )
 
     # process
     def get_network_importer(self) -> NetworkImporter:

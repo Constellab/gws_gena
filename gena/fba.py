@@ -190,10 +190,10 @@ class FluxAnalyzerResult(File):
             
         return df
     
-    def render__feasible_fluxes__as_table(self, only_sucess: bool = True) -> DataFrame:
-        df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
-        df = df.mean(axis=1)
-        return df
+    # def render__feasible_fluxes__as_table(self, only_sucess: bool = True) -> DataFrame:
+    #     df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
+    #     df = df.mean(axis=1)
+    #     return df
     
 class FluxAnalyzer(Shell):
     
