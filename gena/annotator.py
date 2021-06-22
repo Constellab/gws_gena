@@ -7,8 +7,12 @@ import json
 import math
 
 from gws.model import Process
-from .fba import BioModel
-from .fba import FluxAnalyzerResult
+from .biomodel import BioModel
+
+
+from .base_fba import AbstractFBAResult
+from .fba import FBAResult
+from .fast_fba import FastFBAResult
 
 # ####################################################################
 #
@@ -17,16 +21,14 @@ from .fba import FluxAnalyzerResult
 # ####################################################################
 
 class BioModelAnnotator(Process):
-    input_specs = { 'biomodel': (BioModel,), 'flux_analyzer_result': (FluxAnalyzerResult,) }
+    input_specs = { 'biomodel': (BioModel,), 'fba_result': (AbstractFBAResult,) }
     output_specs = { 'biomodel': (BioModel,) }
 
     async def task(self):
         input_biomodel = self.input["biomodel"]
         flat_bio = input_biomodel.flatten()
         flux_rev_mapping = flat_bio["reverse_mapping"]
-        flux_analyzer_result = self.input["flux_analyzer_result"]
-
-        print(flux_rev_mapping)
+        fba_result = self.input["fba_result"]
 
         annotated_bio = BioModel()
         for k in input_biomodel.networks:
@@ -35,16 +37,12 @@ class BioModelAnnotator(Process):
             for rnx_id in net.reactions:
                 rxn = net.reactions[rnx_id]
                 net_name = net.name
-                
-                fluxes = flux_analyzer_result.render__flux_ranges__as_table()
                 flat_id = flux_rev_mapping[net_name][rnx_id]
-
-                val = fluxes.loc[flat_id, "mean"]
-                std = fluxes.loc[flat_id, "std"]
+                fluxes = fba_result.render__fluxes__as_table()
                 rxn.set_estimate({
-                    "value": val,
-                    "lower_bound": (val if math.isnan(std) else val-std),
-                    "upper_bound": (val if math.isnan(std) else val+std)
+                    "value": fluxes.loc[flat_id, "value"],
+                    "lower_bound": fluxes.loc[flat_id, "lower_bound"],
+                    "upper_bound": fluxes.loc[flat_id, "upper_bound"],
                 })
 
             net.save()

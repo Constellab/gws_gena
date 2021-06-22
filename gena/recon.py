@@ -38,12 +38,10 @@ class DraftRecon(Process):
     }
     
     async def task(self):
-        Info("Reconstruction under progress ...")
         net = self._create_network()
         self._create_biomass_equation(net)
         self._create_culture_medium(net)
         self.output["network"] = net
-        Info("Reconstruction done.")
      
     def _create_network(self):
         ec_data = self.input['ec_data']

@@ -63,8 +63,7 @@ class TestFba(unittest.TestCase):
             file_path = os.path.join(data_dir, file_name+"_flux.csv")
             with open(file_path, 'w') as fp:
                 fp.write( f.render__flux_ranges__as_table().to_csv() )
-                
-                
+
             print("SV:")
             print("------------")
             print(f.render__sv_ranges__as_table())

@@ -49,9 +49,7 @@ class GapFiller(Process):
         'biomass_and_medium_gaps_only': {"type": 'bool', "default": False, "description": "True to only fill gaps related to compounds comming from the biomass equation or the medium composition; False otherwise."},
     }
         
-    async def task(self):
-        Info("Gap filling under progress ...")
-        
+    async def task(self):        
         input_net = self.input["network"]
         output_net = Network.from_json(input_net.dumps())
         _nb_filled = True
@@ -73,8 +71,6 @@ class GapFiller(Process):
                 break 
                 
         self.output["network"] = output_net
-        
-        Info("Gap filling done.")
 
     def __fill_gaps(self, net):
         _nb_filled = 0

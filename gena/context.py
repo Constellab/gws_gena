@@ -5,7 +5,7 @@
 
 import json
 import uuid
-from typing import List
+from typing import List, Dict
 from pathlib import Path
 
 from gws.logger import Error
@@ -60,7 +60,10 @@ class Variable:
 # ####################################################################
 
 class Measure:
-    
+    """
+    Measure class
+    """
+
     id: str = None
     name: str = None
     
@@ -141,8 +144,11 @@ class Measure:
 # ####################################################################
 
 class Context(Resource):
-    
-    _measures: List[Measure] = None
+    """
+    Context class
+    """
+
+    _measures: Dict[str, Measure] = None
     _flattening_delim = ":"
     
     def __init__( self, *args, **kwargs ):
@@ -234,14 +240,24 @@ class Context(Resource):
             else:
                 json.dump(self.dumps(), f)
 
-    # -- F --
+    # -- G --
     
+    def get_measure_ids(self) -> List[str]:
+        _ids = []
+        for k in self._measures:
+            m = self._measures[k]
+            _ids.append(m.id)
+        
+        return _ids
+
+    # -- F --
+
     @classmethod
-    def _format(cls, id):
+    def _format(cls, id) -> str:
         return id.replace(cls._flattening_delim,"_")
     
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: dict) -> 'Context':
         ctx = Context()
         ctx.__build_from_dump(data)
         ctx.data["measures"] = ctx.dumps()
@@ -270,7 +286,7 @@ class Context(Resource):
     
     @property
     def measures(self):
-        return self.data["measures"]
+        return self._measures
                            
     # -- S --
     

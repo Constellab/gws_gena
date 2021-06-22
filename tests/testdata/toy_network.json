@@ -1,54 +1,55 @@
 {
     "id": "toy",
+    "name": "toy_cell",
     "metabolites": [
         {
-            "id": "X1",
+            "id": "X1_c",
             "name": "X1",
             "compartment":"c"
         },
         {
-            "id": "X2",
+            "id": "X2_c",
             "name": "X2",
             "compartment":"c"
         },
         {
-            "id": "X3",
+            "id": "X3_c",
             "name": "X3",
             "compartment":"c"
         },
         {
-            "id": "X4",
+            "id": "X4_c",
             "name": "X4",
             "compartment":"c"
         },
         {
-            "id": "X5",
+            "id": "X5_c",
             "name": "X5",
             "compartment":"c"
         },
         {
-            "id": "X1_ex",
-            "name": "X1_ex",
+            "id": "X1_e",
+            "name": "X1_e",
             "compartment":"e"
         },
         {
-            "id": "X2_ex",
-            "name": "X2_ex",
+            "id": "X2_e",
+            "name": "X2_e",
             "compartment":"e"
         },
         {
-            "id": "X4_ex",
-            "name": "X4_ex",
+            "id": "X4_e",
+            "name": "X4_e",
             "compartment":"e"
         },
         {
-            "id": "X5_ex",
-            "name": "X5_ex",
+            "id": "X5_e",
+            "name": "X5_e",
             "compartment":"e"
         },
         {
-            "id": "XB",
-            "name": "XB",
+            "id": "XB_b",
+            "name": "XB_b",
             "compartment":"b"
         }
     ],
@@ -57,9 +58,9 @@
             "id": "R1",
             "name": "R1",
             "metabolites": {
-                "X1": -1.0,
-                "X2": 1.0,
-                "X3": 1.0
+                "X1_c": -1.0,
+                "X2_c": 1.0,
+                "X3_c": 1.0
             },
             "lower_bound": -1000.0,
             "upper_bound": 1000.0
@@ -68,8 +69,8 @@
             "id": "R2",
             "name": "R2",
             "metabolites": {
-                "X4": -1.0,
-                "X3": 1.0
+                "X4_c": -1.0,
+                "X3_c": 1.0
             },
             "lower_bound": -1000.0,
             "upper_bound": 1000.0
@@ -78,9 +79,9 @@
             "id": "RB",
             "name": "RB",
             "metabolites": {
-                "X3": -1.0,
-                "X5": -2.0,
-                "XB": 3.0
+                "X3_c": -1.0,
+                "X5_c": -2.0,
+                "XB_b": 3.0
             },
             "lower_bound": -1000.0,
             "upper_bound": 1000.0
@@ -89,8 +90,8 @@
             "id": "R1_ex",
             "name": "R1_ex",
             "metabolites": {
-                "X1_ex": -1.0,
-                "X1": 1.0
+                "X1_e": -1.0,
+                "X1_c": 1.0
             },
             "lower_bound": -1000.0,
             "upper_bound": 1000.0
@@ -99,8 +100,8 @@
             "id": "R2_ex",
             "name": "R2_ex",
             "metabolites": {
-                "X2": -1.0,
-                "X2_ex": 1.0
+                "X2_c": -1.0,
+                "X2_e": 1.0
             },
             "lower_bound": -1000.0,
             "upper_bound": 1000.0
@@ -109,8 +110,8 @@
             "id": "R4_ex",
             "name": "R4_ex",
             "metabolites": {
-                "X4_ex": -1.0,
-                "X4": 1.0
+                "X4_e": -1.0,
+                "X4_c": 1.0
             },
             "lower_bound": -1000.0,
             "upper_bound": 1000.0
@@ -119,8 +120,8 @@
             "id": "R5_ex",
             "name": "R5_ex",
             "metabolites": {
-                "X5_ex": -1.0,
-                "X5": 1.0
+                "X5_e": -1.0,
+                "X5_c": 1.0
             },
             "lower_bound": -1000.0,
             "upper_bound": 1000.0

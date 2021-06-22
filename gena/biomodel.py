@@ -12,7 +12,7 @@ from gws.logger import Error
 from gws.model import Model, Resource, Process
 
 from .network import Network, Compound, Reaction
-from .context import Context
+from .context import Context, Variable
 
 # ####################################################################
 #
@@ -72,7 +72,7 @@ class BioModel(Resource):
             network.save()
             
         if network.uri in self.networks:
-            raise Error("Network", "add_network", f"Network id {name} duplicate")
+            raise Error("Network", "add_network", f"Network uri '{network.uri }'' duplicated")
             
         self.networks[network.uri] = network
         
@@ -113,7 +113,17 @@ class BioModel(Resource):
             if not related_network.uri in self.networks:
                 raise Error("Network", "add_context", f"The related networks is not found")
             
-        
+            # ckeck that the context is consistent with the related network 
+            reaction_ids = related_network.get_reaction_ids()
+            for k in ctx.measures:
+                measure = ctx.measures[k]
+                for v in measure.variables:
+                    if v.reference_type == Variable.REACTION_REFERENCE_TYPE:
+                        if not v.reference_id in reaction_ids:
+                            raise Error("BioModel", "add_context", f"The reaction '{v.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
+                    else:
+                        raise Error("BioModel", "add_context", f"Invalid reference type '{v.reference_type}' for the context measure '{measure.id}'")
+
             self.network_contexts[related_network.uri] = ctx
     
     # -- B --
@@ -164,22 +174,22 @@ class BioModel(Resource):
         
         self.data["description"] = ""
     
-    def dumps(self, stringify=False, prettify=False, expand=False) -> dict:
+    def dumps(self, stringify=False, prettify=False, shallow=True) -> dict:
         _net_json = []
         _ctx_json = []
         _net_ctx_json = []
         
         for _net in self.networks.values():
-            if expand:
-                _net_json.append( _net.to_json() )
-            else:
+            if shallow:
                 _net_json.append( {"uri": _net.uri} )
+            else:
+                _net_json.append( _net.to_json() )
             
         for _ctx in self.contexts.values():
-            if expand:
-                _ctx_json.append( _ctx.to_json() )
-            else:
+            if shallow:
                 _ctx_json.append( {"uri": _ctx.uri} )
+            else:
+                _ctx_json.append( _ctx.to_json() )
         
         for _net_uri in self.network_contexts:
             _ctx = self.network_contexts[_net_uri]
@@ -212,13 +222,13 @@ class BioModel(Resource):
         return bm
     
 
-    def flatten(self) -> dict:
+    def flatten(self, as_biomodel=False) -> dict:
         _comps = {}
         _mets = []
         _rxns = []
 
         def __get_network_uname(net):
-            return (net.name if net.name else "network") + str(net.id)
+            return ( net.name if net.name else "Network_"+str(net.uri) )
 
         _mapping = {} 
         _rev_mapping = {} 
@@ -228,7 +238,6 @@ class BioModel(Resource):
                 net.save()
             
             uname = __get_network_uname(net)
-            
             for k in tmp_json["compartments"]:
                 c_name = Compound._flatten_id(k, uname, is_compartment=True)
                 c_desc = tmp_json["compartments"][k]
@@ -237,7 +246,7 @@ class BioModel(Resource):
             for k in tmp_json["metabolites"]:
                 _met = deepcopy(k)
                 _met["id"] = Compound._flatten_id(_met["id"], uname)
-                _met["name"] =  _met["name"]
+                #_met["name"] =  _met["name"]
                 _met["compartment"] =  Compound._flatten_id(_met["compartment"], uname, is_compartment=True)
                 _mets.append( _met )
 
@@ -245,10 +254,10 @@ class BioModel(Resource):
                 _rxn = deepcopy(k)
                 _original_rxn_id = _rxn["id"]
                 _rxn["id"] = Reaction._flatten_id(_rxn["id"], uname)
-                _rxn["name"] = _rxn["name"]
+                #_rxn["name"] = _rxn["name"]
                 _rxn["lower_bound"] = _rxn["lower_bound"]
                 _rxn["upper_bound"] = _rxn["upper_bound"]
-                
+
                 _mapping[ _rxn["id"] ] = {
                      "network_name": net.name,
                      "reaction_id": _original_rxn_id
@@ -260,9 +269,10 @@ class BioModel(Resource):
                 _rev_mapping[net.name][_original_rxn_id] = _rxn["id"]
 
                 _rxn_mets = {}
-                for _met_name in _rxn["metabolites"]:
-                    _flat_met_name = Compound._flatten_id(_met_name, uname)
-                    _rxn_mets[_flat_met_name] = _rxn["metabolites"][_met_name]
+                for _met_id in _rxn["metabolites"]:
+                    _flat_met_id = Compound._flatten_id(_met_id, uname)
+                    stoich = _rxn["metabolites"][_met_id]
+                    _rxn_mets[_flat_met_id] = stoich
 
                 _rxn["metabolites"] = _rxn_mets                
                 _rxns.append( _rxn )
@@ -276,7 +286,7 @@ class BioModel(Resource):
                 for k in range(0, len(_meas)):
                     for var in _meas[k]["variables"]:
                          var["reference_id"] = Reaction._flatten_id(var["reference_id"], uname)
-        
+
         _json = {
             "is_flat": True,
             "network": {
@@ -291,7 +301,15 @@ class BioModel(Resource):
             "reverse_mapping": _rev_mapping
         }
 
-        return _json
+        if as_biomodel:
+            net = Network.from_json(_json["network"])
+            ctx = Context.from_json(_json["context"])
+            bio = FlatBioModel()
+
+            bio.add_network(net, related_context=ctx)
+            return bio
+        else:
+            return _json
     
     # -- G --
     
@@ -311,7 +329,6 @@ class BioModel(Resource):
         
         return None
 
-        
     # -- N --
     
     @property
@@ -376,7 +393,7 @@ class BioModel(Resource):
     
     # -- T --
     
-    def to_json(self, stringify=False, prettify=False, expand=False, **kwargs):
+    def to_json(self, stringify=False, prettify=False, shallow=True, **kwargs):
         """
         Returns a JSON string or dictionnary representation of the model.
         
@@ -384,8 +401,8 @@ class BioModel(Resource):
         :type stringify: bool
         :param prettify: If True, indent the JSON string. Defaults to False.
         :type prettify: bool
-        :param expand: If True, the  content of the biomodel is expanded. False otherwise.
-        :type expand: bool
+        :param shallow: If True, the content of the biomodel is returned.
+        :type shallow: bool
         :param kwargs: Theses parameters are passed to the super class
         :type kwargs: keyword arguments
         :return: The representation
@@ -393,7 +410,7 @@ class BioModel(Resource):
         """
         
         _json = super().to_json(**kwargs)
-        _json["data"]["biomodel"] = self.dumps(expand=expand) #override to account for new updates
+        _json["data"]["biomodel"] = self.dumps(shallow=shallow) #override to account for new updates
         
         if stringify:
             if prettify:
@@ -409,7 +426,11 @@ class BioModel(Resource):
     def _unflat(text):
         return text.split(":")
     
-    
+class FlatBioModel(BioModel):
+    @property
+    def flat_network(self) -> Network:
+        return list(self.networks.values())[0]
+
 class BioModelBuilder(Process):
     input_specs = { 'network': (Network,), 'context': (Context, None,) }
     output_specs = { 'biomodel': (BioModel,) }
@@ -431,3 +452,12 @@ class BioModelBuilder(Process):
             ctx = self.input["context"]
             bio.add_context(ctx, related_network=net)
         self.output["biomodel"] = bio
+
+class BioModelFlattener(Process):
+    input_specs = { 'biomodel': (BioModel,), }
+    output_specs = { 'flat_biomodel': (FlatBioModel,) }
+    config_specs = {}
+    
+    async def task(self):
+        bio = self.input["biomodel"]
+        self.output["flat_biomodel"] = bio.flatten(as_biomodel=True)

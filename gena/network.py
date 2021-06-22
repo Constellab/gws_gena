@@ -5,8 +5,10 @@
 
 import json
 import uuid
-from typing import List
+from typing import List, Dict
 from pathlib import Path
+from pandas import DataFrame
+import numpy as np
 
 from gws.logger import Error
 from gws.model import Model, Resource, ResourceSet
@@ -149,14 +151,31 @@ class Compound:
         
         if not compartment:
             compartment = Compound.COMPARTMENT_CYTOSOL
-            
-        if not compartment in self.VALID_COMPARTMENTS:
-            raise Error("gena.network.Compound", "__init__", "Invalid compartment")  
-        
+
+        if len(compartment) == 1:
+            if not compartment in self.VALID_COMPARTMENTS:
+                raise Error("gena.network.Compound", "__init__", f"Invalid compartment '{compartment}'")
+            compartment_suffix = compartment
+        else:
+            compartment_suffix = compartment.split("_")[-1]
+            if not compartment_suffix in self.VALID_COMPARTMENTS:
+                raise Error("gena.network.Compound", "__init__", f"Invalid compartment '{compartment}'")
+
         self.compartment = compartment   
-    
+
         if id:
             self.id = slugify_id(id)
+
+            is_compartment_found = False
+            for c in self.VALID_COMPARTMENTS:
+                if self.id.endswith("_" + c):
+                    is_compartment_found = True
+            
+            if not is_compartment_found:
+                raise Error("Compound", "__init__", f"Invalid compound id '{self.id}'. No compartment suffix found")
+            
+            #if not is_compartment_found:
+            #    self.id = slugify_id(self.id + "_" + compartment_suffix)
         else:
             # try to use chebi compound name if possible
             if not name:
@@ -168,8 +187,7 @@ class Compound:
                         name = chebi_id
                 else:
                     raise Error("gena.network.Compound", "__init__", "Please provide at least a valid compound id, name or chebi_id")
-                    
-                
+
             self.id = slugify_id(name + "_" + compartment)
         
         if not name:
@@ -210,7 +228,7 @@ class Compound:
         :type id: `str`
         :param ctx_name: The name of the (metabolic, biological, network) context
         :type ctx_name: `str`
-        :param is_compartment: True if it is a compartement id, Otherwise it is a compound id
+        :param is_compartment: True if it is a compartment id, Otherwise it is a compound id
         :type is_compartment: `bool`
         :return: The flattened id
         :rtype: `str`
@@ -218,14 +236,14 @@ class Compound:
         
         delim = cls._flattening_delimiter
         skip_list = [ cls.COMPARTMENT_EXTRACELL ]
-        for c in skip_list:
-            if id.endswith("_" + c) or (is_compartment and id == c):
+        for compart in skip_list:
+            if id.endswith("_" + compart) or (is_compartment and id == compart):
                 return id
 
         return slugify_id(ctx_name + delim + id.replace(delim,"_"))
      
     @classmethod
-    def from_biota(cls, biota_compound=None, chebi_id=None, kegg_id=None, compartment=None, network=None) -> 'Compound':
+    def from_biota(cls, id=None, name=None, biota_compound=None, chebi_id=None, kegg_id=None, compartment=None, network=None) -> 'Compound':
         """
         Create a network compound from a ChEBI of Kegg id
         
@@ -260,8 +278,11 @@ class Compound:
             
         if compartment is None:
             compartment = Compound.COMPARTMENT_CYTOSOL
-            
-        c = cls(name=comp.name, compartment=compartment, network=network)
+        
+        if not name:
+            name = comp.name
+
+        c = cls(id=id, name=name, compartment=compartment, network=network)
         c.chebi_id = comp.chebi_id
         c.kegg_id = comp.kegg_id
         c.charge = comp.charge
@@ -281,7 +302,9 @@ class Compound:
         :rtype: `bool`
         """
         
-        return self.compartment != self.COMPARTMENT_EXTRACELL and self.compartment != self.COMPARTMENT_BIOMASS 
+        compartment_suffix = self.compartment.split("_")[-1]
+        
+        return compartment_suffix != self.COMPARTMENT_EXTRACELL and compartment_suffix != self.COMPARTMENT_BIOMASS 
 
     def is_cofactor(self)->bool:
         """
@@ -827,9 +850,9 @@ class Reaction:
                 _left.append( f"({stoich}) {comp.id}" )
         
         for k in self._products:
-            sub = self._products[k]
-            comp = sub["compound"]
-            stoich = sub["stoichiometry"]
+            prod = self._products[k]
+            comp = prod["compound"]
+            stoich = prod["stoichiometry"]
             if only_ids:
                 _id = comp.chebi_id if comp.chebi_id else comp.id
                 _right.append( f"({stoich}) {_id}" )
@@ -889,7 +912,7 @@ class Network(Resource):
             self.__build_from_dump(self.data["network"])
         else:
             self.data = {
-                'name': 'Network',
+                'name': 'Network_' + self.uri,
                 'description': '',
                 'network': None,
                 "tags":{
@@ -926,7 +949,7 @@ class Network(Resource):
             raise NoCompartmentFound("Network", "add_compound", "No compartment defined for the compound")
         
         if not comp.compartment in self._compartments:
-            self.compartment[comp.compartment] = comp.compartment
+            self.compartments[comp.compartment] = comp.compartment
         
         comp.network = self
         self.compounds[comp.id] = comp
@@ -998,14 +1021,20 @@ class Network(Resource):
             
             if chebi_id:
                 try:
-                    comp = Compound.from_biota(chebi_id=chebi_id, )
+                    comp = Compound.from_biota(
+                        id=val["id"].replace(delim,"_"), \
+                        name=val.get("name",""), \
+                        chebi_id=chebi_id,
+                        compartment=compart,
+                        network=self
+                    )
                 except:
                     pass
                  
             if not comp:   
                 comp = Compound(
                     id=val["id"].replace(delim,"_"), \
-                    name=val["name"], \
+                    name=val.get("name",""), \
                     network=self, \
                     compartment=compart,\
                     charge = val.get("charge",""),\
@@ -1018,7 +1047,7 @@ class Network(Resource):
                 )
             
             added_comps[id] = comp
-            
+
         for val in data["reactions"]:
             rxn = Reaction(
                 id=val["id"].replace(delim,"_"), \
@@ -1042,16 +1071,24 @@ class Network(Resource):
                     comps = self.get_compounds_by_chebi_id(comp_id)
                     # select the compound in the good compartment
                     for c in comps:
-                        if c.compartement == comp.compartement:
+                        if c.compartment == comp.compartment:
                             break
-                             
+                
+                #print(comp_id)
+                #print("--" + str(comp))
+                #print("--" + comp.id)
+                #print("--" + comp.name)
+                #print("--" + comp.compartment)
+
                 stoich = val[ckey][comp_id]
                 if stoich < 0:
                     rxn.add_substrate( comp, stoich )
                 elif stoich > 0:
                     rxn.add_product( comp, stoich )
-        
-        self.data["name"] = data.get("name","Network").replace(delim,"_")
+
+            #print(rxn.to_str())
+
+        self.data["name"] = data.get( "name", "Network_"+self.uri ).replace(delim,"_")
         self.data["description"] = data.get("description","")
         
         if data.get("tags"):
@@ -1063,7 +1100,7 @@ class Network(Resource):
         return Network.from_json( self.to_json()["data"]["network"] )
         
     @property
-    def compartments(self):
+    def compartments(self) -> Dict[str, str]:
         """
         Returns the list of compartments
         
@@ -1082,7 +1119,7 @@ class Network(Resource):
         self._compartments = vals
     
     @property
-    def compounds(self) -> dict:
+    def compounds(self) -> Dict[str, Compound]:
         """
         Returns the list of compounds
         
@@ -1091,6 +1128,37 @@ class Network(Resource):
         
         return self._compounds
     
+    def create_stoichiometric_matrix(self) -> DataFrame:
+        rxn_ids = list(self.reactions.keys())
+        comp_ids = list(self.compounds.keys())
+        S = DataFrame(
+            index = comp_ids,
+            columns = rxn_ids,
+            data = np.zeros((len(comp_ids),len(rxn_ids)))
+        )
+
+        for rxn_id in self.reactions:
+            rxn = self.reactions[rxn_id]
+            for comp_id in rxn._substrates:
+                val = rxn._substrates[comp_id]["stoichiometry"]
+                S.at[comp_id, rxn_id] = -val
+
+            for comp_id in rxn._products:
+                val = rxn._products[comp_id]["stoichiometry"]
+                S.at[comp_id, rxn_id] = val
+
+        return S
+        
+    def create_intracell_stoichiometric_matrix(self) -> DataFrame:
+        S = self.create_stoichiometric_matrix()
+        names = list(self.get_intracell_compounds().keys())
+        return S.loc[names, :]
+
+    def create_extracell_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
+        S = self.create_stoichiometric_matrix()
+        names = list(self.get_extracell_compounds(include_biomass=include_biomass).keys())
+        return S.loc[names, :]
+
     # -- D --
 
     @property
@@ -1161,6 +1229,7 @@ class Network(Resource):
             })
   
         _json = {
+            "name": self.name,
             "metabolites": _met_json,
             "reactions": _rxn_json,
             "compartments": self.compartments,
@@ -1268,6 +1337,12 @@ class Network(Resource):
         
         return self.data["tags"]["compounds"]
     
+    def get_compound_ids(self) -> List[str]:
+        return [ _id for _id in self._compounds ]
+
+    def get_reaction_ids(self) -> List[str]:
+        return [ _id for _id in self._reactions ]
+
     def get_reaction_tag(self, rxn_id: str, tag_name: str = None):
         """
         Get a reaction tag value a compound id and a tag name.
@@ -1408,8 +1483,94 @@ class Network(Resource):
                 return self.reactions[k]
             
         return None
+
+    def get_biomass_compound(self) -> Compound:
+        """ 
+        Get the biomass compounds if it exists
+        
+        :returns: The biomass compounds
+        :rtype: `gena.network.Compound`
+        """
+
+        for name in self.compounds:
+            name_lower = name.lower()
+            if name_lower.endswith("_b") or name_lower == "biomass":
+                return self.compounds[name]
+        
+        return None
+
+    def get_extracell_compounds(self, include_biomass=True) -> Dict[str, Compound]:
+        """
+        Get the extracellular compounds
+        
+        :returns: The list of extracellular compounds
+        :rtype: List[`gena.network.Compound`]
+        """
+        comps = {}
+
+        for name in self.compounds:
+            if self.is_extracell(name):
+                comps[name] = self.compounds[name]
+
+        return comps
+
+    def get_intracell_compounds(self) -> Dict[str, Compound]:
+        """ 
+        Get the extracellular compounds
+        
+        :returns: The list of extracellular compounds
+        :rtype: List[`gena.network.Compound`]
+        """
+        comps = {}
+
+        for name in self.compounds:
+            if self.is_intracell(name):
+                comps[name] = self.compounds[name]
+
+        return comps
     
+    def get_reaction_bounds(self) -> DataFrame:
+        """
+        Get the reaction bounds `[lb, ub]`
+
+        :return: The reaction bounds
+        :rtype: `DataFrame`
+        """
+
+        bounds = DataFrame(
+            index = self.get_reaction_ids(),
+            columns = ["lb", "ub"],
+            data = np.zeros((len(self.reactions),2))
+        )
+
+        for k in self.reactions:
+            rxn: Reaction = self.reactions[k]
+            bounds.loc[k,:] = [ rxn.lower_bound, rxn.upper_bound ] 
+        
+        return bounds
+
+    def get_number_of_reactions(self) -> int:
+        return len(self.reactions)
+
+    def get_number_of_compounds(self) -> int:
+        return len(self.compounds)
+
     # -- I --
+
+    @classmethod
+    def is_intracell(cls, name: str):
+        name_lower = name.lower()
+        return name_lower.endswith("_c") or name_lower.endswith("_n")
+
+    @classmethod
+    def is_extracell(cls, name: str, include_biomass=True):
+        name_lower = name.lower()
+        if name_lower.endswith("_e"):
+                return True
+        elif name_lower.endswith("_b") or name_lower == "biomass":
+            return include_biomass
+
+        return False
 
     @classmethod
     def _import(cls, file_path: str, file_format:str = None) -> 'Network':
@@ -1474,7 +1635,7 @@ class Network(Resource):
     # -- R --
     
     @property
-    def reactions(self) -> dict:
+    def reactions(self) -> Dict[str, Reaction]:
         """
         Returns the list of reactions
         
@@ -1771,8 +1932,7 @@ class Network(Resource):
             table.append(rxn_row)
             
         # export
-        import pandas
-        table = pandas.DataFrame(table, columns=column_names)
+        table = DataFrame(table, columns=column_names)
         table = table.sort_values(by=['ec_number'])
         if stringify:
             return table.to_csv()

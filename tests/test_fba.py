@@ -13,8 +13,8 @@ settings = Settings.retrieve()
 from gena.network import Network
 from gena.context import Context
 from gena.biomodel import BioModel
-from gena.fba import FluxAnalyzer, FluxAnalyzerResult
-from gena.proto.fba import FluxAnalyzerProto
+from gena.fba import FBA, FBAResult
+from gena.fba_proto import FBAProto
 
 from biota.base import DbManager as BiotaDbManager
 
@@ -25,7 +25,7 @@ class TestFba(unittest.TestCase):
         tables = ( 
             BioModel, Context, Network, 
             Experiment, Study, User, Activity, 
-            ProgressBar, FluxAnalyzer, FluxAnalyzerResult, 
+            ProgressBar, FBA, FBAResult, 
         )
         GTest.drop_tables(tables)
         
@@ -38,15 +38,15 @@ class TestFba(unittest.TestCase):
         tables = ( 
             BioModel, Context, Network, 
             Experiment, Study, User, Activity, 
-            ProgressBar, FluxAnalyzer, FluxAnalyzerResult, 
+            ProgressBar, FBA, FBAResult, 
         )
         GTest.drop_tables(tables)
 
     def test_fba(self):
-        GTest.print("Test FluxAnalyzerProto")
+        GTest.print("Test FBAProto")
         data_dir = settings.get_dir("gena:testdata_dir")
 
-        proto = FluxAnalyzerProto()
+        proto = FBAProto()
         
         file_path = os.path.join(data_dir, "toy_network.json")
         network_file = File(path=file_path)
@@ -56,21 +56,20 @@ class TestFba(unittest.TestCase):
         proto.input["network_file"] = network_file
         proto.input["context_file"] = ctx_file
 
-        fba = proto.get_flux_analyzer()
+        fba = proto.get_fba()
         fba.set_param("least_energy_weight", 0)
         fba.set_param("number_of_randomizations", 1)
         fba.set_param("use_hard_bounds", True)
         fba.set_param("verbose", True)
 
         def _on_end(*args, **kwargs):
-            f = proto.output["flux_analyzer_file"]
-            print( f.extension )
-            print( f.to_json(read_content=True, prettify=True, stringify=True) )
+            f = proto.output["fba_file"]
+            #print( f.path )
+            #print( f.to_json(shallow=False, prettify=True, stringify=True) )
             
-            file_path = os.path.join(data_dir, "flat_toy_result.json")
-            
+            file_path = os.path.join(data_dir, "toy_flat_result.json")
             #with open(file_path, 'w') as fp:
-            #    result_content = f.to_json(read_content=True)["data"]["content"]
+            #    result_content = f.to_json(shallow=False)["data"]["content"]
             #    json.dump(result_content, fp)
                 
             with open(file_path) as fp:
@@ -84,12 +83,14 @@ class TestFba(unittest.TestCase):
             #print(f.render__ker_of_intern_stoich__as_table())
             #print(f.render__sv_distrib__as_table())
             #print(f.render__sv_ranges__as_table())
-            print(f.render__flux_distrib__as_table())
-            print(f.render__flux_ranges__as_table())
+            #print(f.render__flux_distrib__as_table())
+            #print(f.render__flux_ranges__as_table())
             #print(f.render__feasible_fluxes__as_table())
 
+            print(f.render__fluxes__as_table())
+            
             bio = proto.output["annotated_biomodel"]
-            print(bio.dumps(expand=True))
+            print(bio.dumps(shallow=False))
         
         e = proto.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)

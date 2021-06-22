@@ -16,14 +16,13 @@ from gws.file import File
 from gws.settings import Settings
 from gws.logger import Error
 
-from .base_fba import AbstractFBAResult
 from .biomodel import BioModel, FlatBioModel
 from .network import Network
 from .context import Context
 
 from scipy import stats
 
-class FBAResult(File, AbstractFBAResult):
+class FluxAnalyzerResult(File):
     _content = None
     _default_zero_flux_threshold = 0.01
 
@@ -107,13 +106,7 @@ class FBAResult(File, AbstractFBAResult):
             df = df[ success_columns ]
             
         return df
-
-    def render__sv__as_table(self, only_sucess: bool = True) -> DataFrame:
-        df = self.render__sv_ranges__as_table(only_sucess = True)
-        df = df[:, ["mean"]]
-        df.columns = ["value"]
-        return df
-
+    
     def render__sv_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
         df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
 
@@ -131,7 +124,7 @@ class FBAResult(File, AbstractFBAResult):
             axis=1 
         )
         df.columns = [ "mean", "std", "min", "max", "Q2", "IQR", "Q1", "Q3" ]
-        #df = df.sort_values(by=["std"])
+        df = df.sort_values(by=["std"])
         return df
     
     def render__ker_of_identif__as_table(self) -> DataFrame:
@@ -166,21 +159,6 @@ class FBAResult(File, AbstractFBAResult):
         )
         return df
     
-    def render__fluxes__as_table(self) -> DataFrame:
-        fluxes:DataFrame = self.render__flux_ranges__as_table()
-        val:DataFrame = fluxes.loc[:, ["mean"]]
-        std:DataFrame = fluxes.loc[:, ["std"]].fillna(0)
-        val.columns = ["data"]
-        std.columns = ["data"]
-
-        lb = val.sub(std, axis=1)
-        ub = val.add(std, axis=1)
-
-        df = pd.concat([val, lb, ub], axis=1)
-        df.columns = ["value", "lower_bound", "upper_bound"]
-
-        return df
-
     def render__flux_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
         df = self.render__flux_distrib__as_table(only_sucess=only_sucess)
         
@@ -198,7 +176,7 @@ class FBAResult(File, AbstractFBAResult):
             axis=1 
         )
         df.columns = [ "mean", "std", "min", "max", "Q2", "IQR", "Q1", "Q3" ]
-        #df = df.sort_values(by=["std"])
+        df = df.sort_values(by=["std"])
         return df
     
     def render__flux_distrib__as_table(self, only_sucess: bool = True) -> DataFrame:
@@ -220,10 +198,10 @@ class FBAResult(File, AbstractFBAResult):
     #     df = df.mean(axis=1)
     #     return df
 
-class FBA(Shell):
+class FluxAnalyzer(Shell):
     
     input_specs = { 'biomodel': (BioModel,) }
-    output_specs = { 'file': (FBAResult,) }
+    output_specs = { 'file': (FluxAnalyzerResult,) }
     config_specs = {
         "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
         "ineq_tol": {"type": float, "default": 1e-6, "Description": "Inequality constraint tolerance"},

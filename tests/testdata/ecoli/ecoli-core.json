@@ -1,4 +1,5 @@
 {
+"name": "ecoli",
 "metabolites": [
 {
 "id": "glc__D_e",
