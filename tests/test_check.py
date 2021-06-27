@@ -21,12 +21,8 @@ class TestFba(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        tables = ( 
-            BioModel, Context, Network, Protocol,
-            Experiment, Study, User, Activity, 
-            ProgressBar, FluxChecker, FluxCheckerResult, 
-        )
-        GTest.drop_tables(tables)
+        GTest.drop_tables()
+        GTest.create_tables()
         GTest.init()
         BiotaDbManager.use_prod_db(True)
 
@@ -34,12 +30,7 @@ class TestFba(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        tables = ( 
-            BioModel, Context, Network, Protocol,
-            Experiment, Study, User, Activity, 
-            ProgressBar, FluxChecker, FluxCheckerResult, 
-        )
-        GTest.drop_tables(tables)
+        GTest.drop_tables()
 
     def test_checker_proto(self):
         GTest.print("Test FluxCheckerProto")

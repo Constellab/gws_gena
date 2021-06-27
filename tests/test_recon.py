@@ -24,26 +24,15 @@ class TestRecon(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        tables = ( 
-            Resource, Context, Network, 
-            DraftRecon, ECData, MediumData, File, 
-            Experiment, Study, User, Activity, 
-            ProgressBar, 
-        )
-        GTest.drop_tables(tables)
+        GTest.drop_tables()
+        GTest.create_tables()
         GTest.init()
         BiotaDbManager.use_prod_db(True)
 
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        tables = ( 
-            Resource, Context, Network, 
-            DraftRecon, ECData, MediumData, File, 
-            Experiment, Study, User, Activity, 
-            ProgressBar, 
-        )
-        GTest.drop_tables(tables)        
+        GTest.drop_tables()
         
     def test_recon_proto(self):
         GTest.print("Test ReconProto")

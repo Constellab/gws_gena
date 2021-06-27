@@ -16,17 +16,15 @@ class TestNetwork(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        BioModel.drop_table()
-        Context.drop_table()
-        Network.drop_table()
+        GTest.drop_tables()
+        GTest.create_tables()
+        GTest.init()
         BiotaDbManager.use_prod_db(True)
      
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        BioModel.drop_table()
-        Context.drop_table()
-        Network.drop_table()
+        GTest.drop_tables()
     
     def test_compound(self):
         t = Network()        
