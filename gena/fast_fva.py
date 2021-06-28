@@ -14,7 +14,7 @@ from scipy.optimize import OptimizeResult as SciPyOptimizeResult
 import numpy as np
 
 from gws.model import Resource, Process
-from gws.logger import Error
+from gws.logger import Error, Info, Progress
 
 from .base_fba import AbstractFBAResult
 from .fast_fba import FastFBA, OptimizeResult
@@ -104,8 +104,10 @@ class FastFVA(Process):
         xmin = np.zeros(x0.shape)
         xmax = np.zeros(x0.shape)
         
+        step = max(1, int(n/10)) # plot only 10 iterations on screen
         for i in range(0,n):
-            print(f" flux {i+1}/{n} ...")
+            if (i % step) == 0:
+                Progress(f" flux {i+1}/{n} ...")
             self.progress_bar.set_value(i, message=f" flux {i+1}/{n} ...")
 
             cf = DataFrame(data=np.zeros(c.shape), index=c.index)
@@ -122,7 +124,7 @@ class FastFVA(Process):
                     cf, A_eq, b_eq, bounds, 
                     least_energy=least_energy,
                     method=method,
-                    x0 = x0
+                    x0 = None
                 )
                 xmin[i] = res_fva.x[i]
 
@@ -132,7 +134,7 @@ class FastFVA(Process):
                     cf, A_eq, b_eq, bounds, 
                     least_energy=least_energy,
                     method=method,
-                    x0 = x0
+                    x0 = None
                 )
                 xmax[i] = res_fva.x[i]
 

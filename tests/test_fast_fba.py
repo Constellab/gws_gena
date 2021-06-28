@@ -64,23 +64,28 @@ class TestFba(unittest.TestCase):
         data_dir = settings.get_dir("gena:testdata_dir")
 
         proto = FastFBAProto()
+        model = "ecoli"
         
-        # file_path = os.path.join(data_dir, "ecoli/ecoli-core.json")
-        # network_file = File(path=file_path)
-        # file_path = os.path.join(data_dir, "ecoli/ecoli-core_context.json")
-        # ctx_file = File(path=file_path)
-
-        file_path = os.path.join(data_dir, "olga/olga.json")
-        network_file = File(path=file_path)
-        file_path = os.path.join(data_dir, "olga/olga_context.json")
-        ctx_file = File(path=file_path)
+        if model == 'ecoli':
+            file_path = os.path.join(data_dir, "ecoli/ecoli-core.json")
+            network_file = File(path=file_path)
+            file_path = os.path.join(data_dir, "ecoli/ecoli-core_context.json")
+            ctx_file = File(path=file_path)
+        else:
+            file_path = os.path.join(data_dir, "olga/olga.json")
+            network_file = File(path=file_path)
+            file_path = os.path.join(data_dir, "olga/olga_context.json")
+            ctx_file = File(path=file_path)
 
         proto.input["network_file"] = network_file
         proto.input["context_file"] = ctx_file
 
         fba = proto.get_fba()
         fba.set_param('least_energy', False)
-        #fba.set_param('fluxes_to_maximize', ["biomass:0.0"])
+        # if model == 'ecoli':
+        #     fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+        # else:
+        #     fba.set_param('fluxes_to_maximize', ["olga_Biomass:1.0"])
 
         def _on_end(*args, **kwargs):
             result = proto.output["fba_result"]
@@ -88,8 +93,15 @@ class TestFba(unittest.TestCase):
             fluxes = result.render__fluxes__as_table()
             print(fluxes)
             print(result.render__sv__as_table())
-            print(fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:])
-   
+ 
+            if model == 'ecoli':
+                print(fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:])
+            else:
+                print(fluxes.loc[["olga_Biomass"],:])
+
+            bio = proto.output["annotated_biomodel"]
+            print(bio.to_json())
+
         e = proto.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)
         asyncio.run( e.run() )

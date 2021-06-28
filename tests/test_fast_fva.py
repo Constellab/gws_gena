@@ -22,28 +22,17 @@ class TestFba(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        tables = ( 
-            BioModel, Context, Network, File,
-            Experiment, Study, User, Activity, 
-            ProgressBar, FastFVA, FastFVAProto, 
-        )
-        GTest.drop_tables(tables)
-        
+        GTest.drop_tables()
+        GTest.create_tables()
         GTest.init()
         BiotaDbManager.use_prod_db(True)
 
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        tables = ( 
-            BioModel, Context, Network, File,
-            Experiment, Study, User, Activity, 
-            ProgressBar, FastFVA, FastFVAProto, 
-        )
-        GTest.drop_tables(tables)
+        GTest.drop_tables()
 
     def test_small_fva(self):
-        return
         GTest.print("Test FastFVAProto: Small metwork")
         data_dir = settings.get_dir("gena:testdata_dir")
 
@@ -109,6 +98,9 @@ class TestFba(unittest.TestCase):
                 print(fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:])
             else:
                 print(fluxes.loc[["olga_Biomass"],:])
+
+            bio = proto.output["annotated_biomodel"]
+            print(bio.to_json())
    
         e = proto.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)

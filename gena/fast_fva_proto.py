@@ -48,7 +48,7 @@ class FastFVAProto(Protocol):
                 "context_importer": context_importer,
                 "biomodel_builder": biomodel_builder,
                 "fva": fva,
-                #"biomodel_annotator": biomodel_annotator
+                "biomodel_annotator": biomodel_annotator
             }
 
             connectors = [
@@ -61,8 +61,8 @@ class FastFVAProto(Protocol):
                 (context_fifo>>"resource").pipe(biomodel_builder<<"context", lazy=True),
 
                 biomodel_builder>>"biomodel" | fva<<"biomodel",
-                #biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
-                #fva>>"result" | biomodel_annotator<<"fva_result",
+                biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
+                fva>>"result" | biomodel_annotator<<"fba_result",
             ]
             
             interfaces = {
@@ -72,7 +72,7 @@ class FastFVAProto(Protocol):
 
             outerfaces = {
                 "fva_result": fva>>"result",
-                #"annotated_biomodel": biomodel_annotator>>"biomodel"
+                "annotated_biomodel": biomodel_annotator>>"biomodel"
             }
 
             self._build(
