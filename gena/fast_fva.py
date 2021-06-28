@@ -93,8 +93,12 @@ class FastFVA(Process):
             method=method
         )
 
-        self.progress_bar.add_message(message=f"Peforming variability analysis around the optimal value using solver {method} ...")
+        self.progress_bar.add_message(message=res.message)
+        if res.status != 0:
+            raise Error("FastFVA", "task", res.message)
 
+        self.progress_bar.add_message(message=f"Peforming variability analysis around the optimal value using solver {method} ...")
+ 
         x0 = res.x
         n = x0.shape[0]
         xmin = np.zeros(x0.shape)
@@ -131,7 +135,6 @@ class FastFVA(Process):
                     x0 = x0
                 )
                 xmax[i] = res_fva.x[i]
-
 
         res.xmin = xmin
         res.xmax = xmax

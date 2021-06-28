@@ -15,7 +15,7 @@ import numpy as np
 import cvxpy as cp
 
 from gws.model import Resource, Process
-from gws.logger import Error
+from gws.logger import Error, Info
 
 from .base_fba import AbstractFBAResult
 from .biomodel import BioModel, FlatBioModel
@@ -143,8 +143,9 @@ class FastFBA(Process):
         )
         #res: OptimizeResult = self.solve_cvxpy( c, A_eq, b_eq, bounds, least_energy=least_energy )
 
-        self.progress_bar.set_value(95, message="Gather results ...")
-
+        self.progress_bar.set_value(90, message=res.message)
+        Info("FastFBA", "task", res.message)
+        
         result = FastFBAResult(optimize_result = res)
         self.output["result"] = result
 
@@ -333,8 +334,9 @@ class FastFBA(Process):
                 x0=x0,
             )
 
-            n = int(res.x.shape[0] / 2)
-            res.x = res.x[:n] - res.x[n:]
+            if res.status == 0:
+                n = int(res.x.shape[0] / 2)
+                res.x = res.x[:n] - res.x[n:]
         else:
             res = linprog(
                 c,
@@ -344,4 +346,5 @@ class FastFBA(Process):
                 method=method,
                 x0=x0
             )
+
         return OptimizeResult(res, x_names, con_names)

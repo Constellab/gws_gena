@@ -33,6 +33,7 @@ class TestFba(unittest.TestCase):
         GTest.drop_tables()
 
     def test_small_fba(self):
+        return
         GTest.print("Test FastFBAProto: Small metwork")
         data_dir = settings.get_dir("gena:testdata_dir")
 
@@ -64,15 +65,15 @@ class TestFba(unittest.TestCase):
 
         proto = FastFBAProto()
         
-        file_path = os.path.join(data_dir, "ecoli/ecoli-core.json")
-        network_file = File(path=file_path)
-        file_path = os.path.join(data_dir, "ecoli/ecoli-core_context.json")
-        ctx_file = File(path=file_path)
-
-        # file_path = os.path.join(data_dir, "dist/olga.json")
+        # file_path = os.path.join(data_dir, "ecoli/ecoli-core.json")
         # network_file = File(path=file_path)
-        # file_path = os.path.join(data_dir, "dist/olga_context.json")
+        # file_path = os.path.join(data_dir, "ecoli/ecoli-core_context.json")
         # ctx_file = File(path=file_path)
+
+        file_path = os.path.join(data_dir, "olga/olga.json")
+        network_file = File(path=file_path)
+        file_path = os.path.join(data_dir, "olga/olga_context.json")
+        ctx_file = File(path=file_path)
 
         proto.input["network_file"] = network_file
         proto.input["context_file"] = ctx_file

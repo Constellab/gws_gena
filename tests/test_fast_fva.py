@@ -22,15 +22,25 @@ class TestFba(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        GTest.drop_tables()
-        GTest.create_tables()
+        tables = ( 
+            BioModel, Context, Network, File,
+            Experiment, Study, User, Activity, 
+            ProgressBar, FastFVA, FastFVAProto, 
+        )
+        GTest.drop_tables(tables)
+        
         GTest.init()
         BiotaDbManager.use_prod_db(True)
 
     @classmethod
     def tearDownClass(cls):
         BiotaDbManager.use_prod_db(False)
-        GTest.drop_tables()
+        tables = ( 
+            BioModel, Context, Network, File,
+            Experiment, Study, User, Activity, 
+            ProgressBar, FastFVA, FastFVAProto, 
+        )
+        GTest.drop_tables(tables)
 
     def test_small_fva(self):
         return
