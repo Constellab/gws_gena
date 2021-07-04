@@ -86,7 +86,7 @@ class TestContext(unittest.TestCase):
                 }
             ]
             
-            self.assertEqual(ctx.measures, expected_measures)
+            self.assertEqual(ctx.dumps(), expected_measures)
             
         e = builder.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)

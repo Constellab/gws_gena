@@ -7,6 +7,10 @@ import os
 import subprocess
 import shutil
 
+"""
+Pre-installation script executed before server installation
+"""
+
 __cdir__ = os.path.dirname(os.path.abspath(__file__))
 EXTERNS = os.path.join(__cdir__, "../../../externs")
 

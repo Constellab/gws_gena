@@ -37,7 +37,6 @@ class FastFVAResult(AbstractFBAResult):
 
     def render__fluxes__as_table(self) -> DataFrame:
         res: OptimizeResult = self.kv_store['optimize_result']
-
         val = DataFrame(data=res.x, index=res.x_names, columns=["value"])
         lb = DataFrame(data=res.xmin, index=res.x_names, columns=["lower_bound"])
         ub = DataFrame(data=res.xmax, index=res.x_names, columns=["upper_bound"])
@@ -48,14 +47,11 @@ class FastFVAResult(AbstractFBAResult):
         df = DataFrame(data=res.con, index=res.con_names, columns=["value"])
         return df
 
-
 class FastFVA(Process):
     """
     FastFVA class
 
-    The fast flux variability analyzer. 
-    It is based on the work of [1] using the revised simplex optimization algorithm during variability analysis.
-
+    Performs flux variability analysis based on the work of [1].
 
     [1] Steinn Gudmundsson & Ines Thiele, Computationally efficient flux variability analysis, 
         BMC Bioinformatics, volume 11, Article number: 489 (2010),
@@ -66,8 +62,8 @@ class FastFVA(Process):
     output_specs = { 'result': (FastFVAResult,) }
     config_specs = {
         "least_energy": {"type": bool, "default": True, "Description": "Search for minimal flux values satisfying the problem"},
-        "fluxes_to_maximize": {"type": list, "default": [], "Description": "The fluxes to maximize"},
-        "fluxes_to_minimize": {"type": list, "default": [], "Description": "The fluxes to minimize"},
+        "fluxes_to_maximize": {"type": list, "default": [], "Description": "The list of fluxes to maximize"},
+        "fluxes_to_minimize": {"type": list, "default": [], "Description": "The list of fluxes to minimize"},
         "solver": {"type": str, "default": "highs", "allowed_values": ["highs-ds", "highs-ipm", "highs", "interior-point"], "Description": "The optimization solver"}
     }
 
@@ -119,7 +115,6 @@ class FastFVA(Process):
             else:
                 # min
                 cf.iloc[i,0] = 1
-
                 res_fva = FastFBA.solve_scipy( 
                     cf, A_eq, b_eq, bounds, 
                     least_energy=least_energy,
@@ -128,7 +123,7 @@ class FastFVA(Process):
                 )
                 xmin[i] = res_fva.x[i]
 
-                #max
+                # max
                 cf.iloc[i,0] = -1
                 res_fva = FastFBA.solve_scipy( 
                     cf, A_eq, b_eq, bounds, 

@@ -63,7 +63,7 @@ class TestFba(unittest.TestCase):
         data_dir = settings.get_dir("gena:testdata_dir")
 
         proto = FastFVAProto()
-        model = 'olga'
+        model = 'ecoli'
 
         if model == 'ecoli':
             file_path = os.path.join(data_dir, "ecoli/ecoli-core.json")

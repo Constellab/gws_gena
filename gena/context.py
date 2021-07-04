@@ -33,9 +33,10 @@ class Variable:
     reference_type = None #reaction | ...
     
     REACTION_REFERENCE_TYPE = "reaction"
-    _allowed_ref_types = [ REACTION_REFERENCE_TYPE ]
+    METABOLITE_REFERENCE_TYPE = "metabolite"
+    _allowed_ref_types = [ REACTION_REFERENCE_TYPE, METABOLITE_REFERENCE_TYPE ]
     
-    def __init__( self, coefficient: float, reference_id: str, reference_type: str = "reaction"):
+    def __init__( self, coefficient: float, reference_id: str, reference_type: str = "metabolite"):
         
         if not reference_type in self._allowed_ref_types:
             raise Error("gena.context.Variable", "__init__", "Invalid reference_type")
@@ -310,25 +311,28 @@ class ContextBuilder(Process):
         scores = flux.get_confidence_scores()
         
         i = 0
-        for rxn_id in flux.row_names:
-            rxn = net.get_reaction_by_id(rxn_id)
-            if not rxn:
-                rxn = net.get_reaction_by_ec_number()
-            
-            if not rxn:
-                raise Error("ContextBuilder", "task", f"No reaction found with id or ec_numner {rxn_id}")
+        for ref_id in flux.row_names:
+            ref = net.get_reaction_by_id(ref_id)
+            ref_type = Variable.REACTION_REFERENCE_TYPE
+
+            #if not ref:
+            #    ref = net.get_compound_by_id(ref_id)
+            #    ref_type = Variable.METABOLITE_REFERENCE_TYPE
+
+            if not ref:
+                raise Error("ContextBuilder", "task", f"No reference reaction found with id {ref_id}")
         
             if ubounds[i] < lbounds[i]:
-                raise Error("ContextBuilder", "task", f"Flux {rxn_id}: the lower bound must be greater than upper bound")
+                raise Error("ContextBuilder", "task", f"Flux {ref_id}: the lower bound must be greater than upper bound")
                 
             if targets[i] < lbounds[i]:
-                raise Error("ContextBuilder", "task", f"Flux {rxn_id}: the target must be greater than lower bound")
+                raise Error("ContextBuilder", "task", f"Flux {ref_id}: the target must be greater than lower bound")
                 
             if targets[i] > ubounds[i]:
-                raise Error("ContextBuilder", "task", f"Flux {rxn_id}: the target must be smaller than upper bound")
+                raise Error("ContextBuilder", "task", f"Flux {ref_id}: the target must be smaller than upper bound")
             
             m = Measure(
-                id = "measure_" + rxn.id,
+                id = "measure_" + ref_id,
                 target = float(targets[i]),
                 upper_bound = float(ubounds[i]),
                 lower_bound = float(lbounds[i]),
@@ -337,8 +341,8 @@ class ContextBuilder(Process):
             
             v = Variable(
                 coefficient = 1.0,
-                reference_id = rxn.id,
-                reference_type = Variable.REACTION_REFERENCE_TYPE
+                reference_id = ref_id,
+                reference_type = ref_type
             )
             
             m.add_variable(v)

@@ -34,37 +34,55 @@ class TestFba(unittest.TestCase):
 
     def test_small_fba(self):
         return
-        GTest.print("Test FastFBAProto: Small metwork")
         data_dir = settings.get_dir("gena:testdata_dir")
 
-        proto = FastFBAProto()
-        file_path = os.path.join(data_dir, "toy_network.json")
-        network_file = File(path=file_path)
-        file_path = os.path.join(data_dir, "toy_context.json")
-        ctx_file = File(path=file_path)
+        def run_fba(context):
+            proto = FastFBAProto()
+            file_path = os.path.join(data_dir, "toy_network.json")
+            try:
+                network_file = File.get(File.path == file_path)
+            except:
+                network_file = File(path=file_path)
+            proto.input["network_file"] = network_file
 
-        proto.input["network_file"] = network_file
-        proto.input["context_file"] = ctx_file
+            if context:
+                file_path = os.path.join(data_dir, "toy_context.json")
+            else:
+                file_path = os.path.join(data_dir, "toy_context_empty.json")
+            
+            try:
+                ctx_file = File.get(File.path == file_path)
+            except:
+                ctx_file = File(path=file_path)
 
-        fba = proto.get_fba()
-        fba.set_param('least_energy', False)
-        #fba.set_param('fluxes_to_maximize', ["Network_RB"])
+            proto.input["context_file"] = ctx_file
 
-        def _on_end(*args, **kwargs):
-            result = proto.output["fba_result"]
-            print(result.render__fluxes__as_table())
-            print(result.render__sv__as_table())
-   
-        e = proto.create_experiment(study=GTest.study, user=GTest.user)
-        e.on_end(_on_end)
-        asyncio.run( e.run() )
+            fba = proto.get_fba()
+            fba.set_param('least_energy', False)
+            #fba.set_param('fluxes_to_maximize', ["Network_RB"])
+
+            def _on_end(*args, **kwargs):
+                result = proto.output["fba_result"]
+                print(result.render__fluxes__as_table())
+                print(result.render__sv__as_table())
+    
+            e = proto.create_experiment(study=GTest.study, user=GTest.user)
+            e.on_end(_on_end)
+            asyncio.run( e.run() )
+
+        
+        GTest.print("Test FastFBAProto: Small metwork (With context)")
+        run_fba(context=True)
+
+        GTest.print("Test FastFBAProto: Small metwork (Without context)")
+        run_fba(context=False)
 
     def test_large_fba(self):
         GTest.print("Test FBAProto: Medium or large metwork (typically Ecoli)")
         data_dir = settings.get_dir("gena:testdata_dir")
 
         proto = FastFBAProto()
-        model = "ecoli"
+        model = "olga"
         
         if model == 'ecoli':
             file_path = os.path.join(data_dir, "ecoli/ecoli-core.json")

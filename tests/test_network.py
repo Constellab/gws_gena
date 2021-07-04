@@ -3,6 +3,7 @@ import os, json
 import unittest
 from pandas import DataFrame
 
+from gws.unittest import GTest
 from gws.settings import Settings
 settings = Settings.retrieve()
 

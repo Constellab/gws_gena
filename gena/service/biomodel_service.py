@@ -147,6 +147,8 @@ class BioModelService:
                 if ref_type == Variable.REACTION_REFERENCE_TYPE:
                     rxn_id = ref_id
                     C.at[meas_id, rxn_id] = coef
+                else:
+                    raise Error("BioModelService", "create_observation_matrices", "Variables of type metabolite/compound are not supported in context")
         
         return {
             "C": C,

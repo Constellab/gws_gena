@@ -94,6 +94,7 @@ class FastFBA(Process):
 
     Then, the problem is reshaped as follows:
 
+
              [ S_{int} |  0      ]           [  0  ]
              [ --------|------   ]           [ --- ]
     A_{eq} = [   C     | -Id_{C} ], b_{eq} = [  0  ]
@@ -198,14 +199,16 @@ class FastFBA(Process):
         A_eq_left = pd.concat([S_int, C, Y_zeros], axis=0) #vert_concat
         A_eq_right = pd.concat([S_zeros, _Id_C, Id_Y], axis=0) #vert_concat
         A_eq = pd.concat([A_eq_left, A_eq_right], axis=1) #horz_concat
-
+        
         b_zero_1 = DataFrame(data=np.zeros((S_int.shape[0], 1,)))
         b_zero_2 = DataFrame(data=np.zeros((C.shape[0], 1,)))
         b_zero_1.columns = y_b.columns
         b_zero_2.columns = y_b.columns
         b_eq = pd.concat([b_zero_1, b_zero_2, y_b], axis=0) #vert_concat
         b_eq.index = A_eq.index
- 
+
+        print(A_eq)
+        
         lb = pd.concat([v_lb, y_lb], axis=0) #vert_concat
         lb.index = A_eq.columns
         ub = pd.concat([v_ub, y_ub], axis=0) #vert_concat
