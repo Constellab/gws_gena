@@ -13,7 +13,7 @@ from gena.network import Network
 from gena.context import Context
 from gena.biomodel import BioModel
 from gena.check import FluxChecker, FluxCheckerResult
-from gena.proto.check import FluxCheckerProto
+from gena.check_proto import FluxCheckerProto
 
 from biota.base import DbManager as BiotaDbManager
 

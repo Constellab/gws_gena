@@ -2,6 +2,8 @@
 import asyncio
 import os, json
 import unittest
+import pandas
+import numpy
 
 from gws.model import *
 from gws.settings import Settings
@@ -69,29 +71,28 @@ class TestFba(unittest.TestCase):
             e.on_end(_on_end)
             asyncio.run( e.run() )
 
-        
         GTest.print("Test FastFBAProto: Small metwork (With context)")
         run_fba(context=True)
-
         GTest.print("Test FastFBAProto: Small metwork (Without context)")
         run_fba(context=False)
 
     def test_large_fba(self):
         GTest.print("Test FBAProto: Medium or large metwork (typically Ecoli)")
         data_dir = settings.get_dir("gena:testdata_dir")
-
         proto = FastFBAProto()
-        model = "olga"
+        model = "ecoli"
         
         if model == 'ecoli':
-            file_path = os.path.join(data_dir, "ecoli/ecoli-core.json")
+            data_dir = os.path.join(data_dir, "ecoli")
+            file_path = os.path.join(data_dir, "ecoli-core.json")
             network_file = File(path=file_path)
-            file_path = os.path.join(data_dir, "ecoli/ecoli-core_context.json")
+            file_path = os.path.join(data_dir, "ecoli-core_context.json")
             ctx_file = File(path=file_path)
         else:
-            file_path = os.path.join(data_dir, "olga/olga.json")
+            data_dir = os.path.join(data_dir, "olga")
+            file_path = os.path.join(data_dir, "olga.json")
             network_file = File(path=file_path)
-            file_path = os.path.join(data_dir, "olga/olga_context.json")
+            file_path = os.path.join(data_dir, "olga_context.json")
             ctx_file = File(path=file_path)
 
         proto.input["network_file"] = network_file
@@ -106,12 +107,31 @@ class TestFba(unittest.TestCase):
 
         def _on_end(*args, **kwargs):
             result = proto.output["fba_result"]
-            
             fluxes = result.render__fluxes__as_table()
+            sv = result.render__sv__as_table()
             print(fluxes)
-            print(result.render__sv__as_table())
- 
+            print(sv)
+
+            result_dir = os.path.join(data_dir, 'fast_fba')
+            # if not os.path.exists(result_dir):
+            #     os.makedirs(result_dir)
+            
+            # file_path = os.path.join(result_dir,"flux.csv")
+            # with open(file_path, 'w') as fp:
+            #     fp.write( fluxes.to_csv() )
+            
+            # file_path = os.path.join(result_dir,"sv.csv")
+            # with open(file_path, 'w') as fp:
+            #     fp.write( sv.to_csv() )
+
             if model == 'ecoli':
+                table = fluxes.to_numpy()
+                file_path = os.path.join(result_dir,"flux.csv")
+                expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
+                table = numpy.array(table, dtype=float)
+                expected_table = numpy.array(expected_table, dtype=float)
+                self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-03).all() )
+
                 print(fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:])
             else:
                 print(fluxes.loc[["olga_Biomass"],:])

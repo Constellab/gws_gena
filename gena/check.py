@@ -14,15 +14,15 @@ from gws.file import File
 from gws.settings import Settings
 from gws.logger import Error
 
-from gena.fba import FluxAnalyzer, FluxAnalyzerResult
+from gena.fba import FBA, FBAResult
 from gena.biomodel import BioModel
 from gena.network import Network
 from gena.context import Context
 
-class FluxCheckerResult(FluxAnalyzerResult):
+class FluxCheckerResult(FBAResult):
     pass
 
-class FluxChecker(FluxAnalyzer):
+class FluxChecker(FBA):
     
     input_specs = { 'biomodel': (BioModel,) }
     output_specs = { 'file': (FluxCheckerResult,) }
@@ -77,5 +77,5 @@ class FluxChecker(FluxAnalyzer):
 
         return cmd
 
-class PhenoChecker(FluxAnalyzer):
+class PhenoChecker(FBA):
     pass
