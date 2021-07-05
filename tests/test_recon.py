@@ -13,10 +13,10 @@ settings = Settings.retrieve()
 from gena.network import *
 from gena.context import Context
 from gena.recon import DraftRecon
-from gena.gapfill import GapFiller 
+from gena.gap_fill import GapFiller 
 from gena.merge import NetworkMerger
 from gena.data import *
-from gena.proto.recon import ReconProto
+from gena.recon_proto import ReconProto
 
 from biota.base import DbManager as BiotaDbManager
 
@@ -66,12 +66,13 @@ class TestRecon(unittest.TestCase):
 
         def _export_network(net, file_name):
             file_path = os.path.join(data_dir, file_name+"_net.csv")
-            with open(file_path, 'r') as f:
-                self.assertEqual(net.to_csv(), f.read())
 
             #with open(file_path, 'w') as f:
             #    f.write(net.to_csv())
-                
+
+            with open(file_path, 'r') as f:
+                self.assertEqual(net.to_csv(), f.read())
+
             file_path = os.path.join(data_dir, file_name+"_stats.csv")
             with open(file_path, 'w') as f:
                 table = net.render__compound_stats__as_table()

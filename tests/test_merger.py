@@ -36,6 +36,8 @@ class TestMerge(unittest.TestCase):
         GTest.drop_tables()
 
     def test_merger(self):
+        GTest.print("Test Merger")
+
         data_dir = settings.get_dir("gena:testdata_dir")
 
         file_path = os.path.join(data_dir, "recon_net.json")

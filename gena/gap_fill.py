@@ -81,7 +81,6 @@ class GapFiller(Process):
         if tax_id:
             try:
                 tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
-                #Info(f"Fill with {tax.title} ({tax.id}) taxonomy")
             except:
                 raise Error("GapFiller", "__fill_gaps", f"No taxonomy found with taxonomy id {tax_id}")
         else:
@@ -100,7 +99,7 @@ class GapFiller(Process):
                 if not comp.chebi_id in Compound.COFACTORS:
                     try:
                         biota_c = BiotaCompound.get(BiotaCompound.chebi_id == comp.chebi_id)
-                    except Exception as err:
+                    except Exception as _:
                         net.set_compound_tag(comp.id, {
                             "id": comp.id,
                             "is_chebi_not_found": True,

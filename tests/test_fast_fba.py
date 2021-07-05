@@ -33,7 +33,6 @@ class TestFba(unittest.TestCase):
         GTest.drop_tables()
 
     def test_small_fba(self):
-        return
         data_dir = settings.get_dir("gena:testdata_dir")
 
         def run_fba(context):

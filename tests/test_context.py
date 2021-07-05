@@ -31,6 +31,8 @@ class TestContext(unittest.TestCase):
         GTest.drop_tables()
 
     def test_context(self):
+        GTest.print("Test Context")
+
         data_dir = settings.get_dir("gena:testdata_dir")
         file_path = os.path.join(data_dir, "toy_context.json")
         
@@ -48,6 +50,8 @@ class TestContext(unittest.TestCase):
         
         
     def test_context_builder(self):
+        GTest.print("Test Context Builder")
+
         data_dir = settings.get_dir("gena:testdata_dir")
         
         # flux

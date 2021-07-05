@@ -28,6 +28,8 @@ class TestNetwork(unittest.TestCase):
         GTest.drop_tables()
     
     def test_compound(self):
+        GTest.print("Test Compound")
+
         t = Network()        
         comp1 = Compound(name="gluc", network=t, compartment=Compound.COMPARTMENT_CYTOSOL, chebi_id="CHEBI:17234")
         
@@ -55,6 +57,8 @@ class TestNetwork(unittest.TestCase):
         print(S)
         
     def test_reaction(self):
+        GTest.print("Test Reaction")
+
         t = Network()
   
         rxn1 = Reaction(id="my-reaction")
@@ -101,7 +105,9 @@ class TestNetwork(unittest.TestCase):
         
         print(net.to_json(prettify = True, stringify = True))
 
-    def test_import(self):
+    def test_network_import(self):
+        GTest.print("Test Network Import")
+
         data_dir = settings.get_dir("gena:testdata_dir")
         file_path = os.path.join(data_dir, "small_net.json")
         

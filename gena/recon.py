@@ -79,7 +79,6 @@ class DraftRecon(Process):
         return net
     
     def _create_biomass_equation(self, net):
-        rxns = []
         biomass_comps = self._create_biomass_compounds(net)
         self._create_biomass_rxns(net, biomass_comps)
     
@@ -89,7 +88,7 @@ class DraftRecon(Process):
             return
         
         row_names = medium_data.row_names
-        col_names = medium_data.column_names
+        #col_names = medium_data.column_names
         chebi_ids = medium_data.get_chebi_ids()
 
         i = 0
@@ -118,10 +117,10 @@ class DraftRecon(Process):
             return
         
         col_names = biomass_data.column_names
-        chebi_ids = biomass_data.get_chebi_ids()
+        #chebi_ids = biomass_data.get_chebi_ids()
         
         chebi_col_name = biomass_data.chebi_column_name
-        biomass_col_name = biomass_data.biomass_column_name
+        #biomass_col_name = biomass_data.biomass_column_name
         
         for col_name in col_names:
             if col_name == chebi_col_name:

@@ -11,7 +11,6 @@ from .biomodel import BioModel
 
 
 from .base_fba import AbstractFBAResult
-from .fba import FBAResult
 from .fast_fba import FastFBAResult
 
 # ####################################################################

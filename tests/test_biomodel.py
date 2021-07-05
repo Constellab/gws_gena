@@ -5,6 +5,7 @@ from pandas import DataFrame
 import pandas as pd
 
 from gws.settings import Settings
+from gws.unittest import GTest
 settings = Settings.retrieve()
 
 from gena.network import Network
@@ -49,6 +50,8 @@ class TestBioModel(unittest.TestCase):
     #     #print(net.dumps()["reactions"])
 
     def test_small_biomodel(self):
+        GTest.print("Test BioModel")
+
         data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "small_net.json")
@@ -129,6 +132,8 @@ class TestBioModel(unittest.TestCase):
         self.assertTrue(problem["B"].equals(expected_B))
 
     def test_toy_biomodel(self):
+        GTest.print("Test Toy BioModel")
+
         data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "toy_network.json")

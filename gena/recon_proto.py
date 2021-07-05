@@ -15,7 +15,7 @@ from gws.io import Interface, Outerface
 
 from gena.data import ECImporter, MediumImporter, BiomassImporter
 from gena.recon import DraftRecon
-from gena.gapfill import GapFiller
+from gena.gap_fill import GapFiller
 
 class ReconProto(Protocol):
     
