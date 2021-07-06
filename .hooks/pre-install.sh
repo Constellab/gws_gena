@@ -19,6 +19,10 @@ done
 point="fba"
 gena_dir="/lab/gws/externs/gena-cpp"
 
+if [ ! -d "${gena_dir}" ]; then
+    mkdir -p $gena_dir
+fi
+
 cd $gena_dir
 bazel build gena:${point}
 
