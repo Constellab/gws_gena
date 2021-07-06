@@ -12,18 +12,20 @@ bash "/lab/.gws/bricks/gaia/.hooks/pre-install.sh"
 
 point="fba"
 gena_dir="/lab/.gws/externs/gena-cpp"
-
 if [ ! -d "${gena_dir}" ]; then
     mkdir -p $gena_dir
 fi
-
-cd $gena_dir
-bazel build gena:${point}
 
 out_dir="/lab/.gws/bricks/gena/bin/fba"
 if [ ! -d "${out_dir}" ]; then
     mkdir -p $out_dir
 fi
 
-cp "${gena_dir}/bazel-bin/gena/${point}" "${out_dir}/${point}"
-chmod a+x ${out_dir}/${point}
+# skip if already compiled
+if [ ! -f "${out_dir}/${point}" ]; then
+    cd $gena_dir
+    bazel build gena:${point}
+
+    cp "${gena_dir}/bazel-bin/gena/${point}" "${out_dir}/${point}"
+    chmod a+x ${out_dir}/${point}
+fi
