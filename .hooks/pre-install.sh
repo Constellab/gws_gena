@@ -6,15 +6,9 @@
 
 # Pre-installation script executed before server installation
 
-dlib_build_dir="/lab/.gws/externs/dlib-cpp/build"
-ready_file="$dlib_build_dir/READY"
-
-n=1
-while [ ! -f "$ready_file" ]; do
-    echo "$n - Dlib build is not ready. Sleep 10 secs ..."
-    sleep 10
-    n=$(( $n + 1 ))
-done
+# ensure gaia is ready!
+python3 "/lab/gws/bricks/gaia/.hooks/pre-install.py"
+bash "/lab/gws/bricks/gaia/.hooks/pre-install.sh"
 
 point="fba"
 gena_dir="/lab/gws/externs/gena-cpp"
