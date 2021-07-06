@@ -7,11 +7,11 @@
 # Pre-installation script executed before server installation
 
 dlib_build_dir="/lab/.gws/externs/dlib-cpp/build"
-in_progress_file="$dlib_build_dir/IN_PROGRESS"
+ready_file="$dlib_build_dir/READY"
 
 n=1
-while [ -f "$in_progress_file" ] && [ $n -le 30 ]; do
-    echo "$n - Dlib build is in progress. Sleep 10 secs ..."
+while [ ! -f "$ready_file" ]; do
+    echo "$n - Dlib build is not ready. Sleep 10 secs ..."
     sleep 10
     n=$(( $n + 1 ))
 done
