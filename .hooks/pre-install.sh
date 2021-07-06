@@ -22,7 +22,7 @@ gena_dir="/lab/gws/externs/gena-cpp"
 cd $gena_dir
 bazel build gena:${point}
 
-out_dir="/lab/gws/bricks/gena/bin/fba/"
+out_dir="/lab/gws/bricks/gena/bin/fba"
 if [ ! -d "${out_dir}" ]; then
     mkdir -p $out_dir
 fi
