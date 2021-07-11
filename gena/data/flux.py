@@ -7,7 +7,6 @@ import json
 from typing import List
 
 from gws.logger import Error
-from gws.model import Process, ResourceSet
 from gws.file import File
 from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
 

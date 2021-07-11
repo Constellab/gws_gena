@@ -1,42 +1,42 @@
 {
     "metabolites": [
         {
-            "id": "CHEBI:167181",
+            "id": "CHEBI:167181_c",
             "name": "deoxyribonucleotide-(2'-deoxyribose)-deoxyribonucleotide residue(3−)",
             "compartment":"c"
         },
         {
-            "id": "CHEBI:157695",
+            "id": "CHEBI:157695_c",
             "name": "3'-end deoxyribonucleotide 2,3-dehydro-2,3-deoxyribose phosphate(2−) residue",
             "compartment":"c"
         },
         {
-            "id": "CHEBI:15378",
+            "id": "CHEBI:15378_c",
             "name": "hydron",
             "compartment":"c"
         },
         {
-            "id": "CHEBI:136412",
+            "id": "CHEBI:136412_c",
             "name": "5'-end 2'-deoxyribonucleotide(2−) residue",
             "compartment":"c"
         },
         {
-            "id": "CHEBI:155926",
+            "id": "CHEBI:155926_c",
             "name": "1D-myo-inositol-1-phospho-N-[(R)-2-hydroxy-very-long-chain fatty acyl]-(R)-4-hydroxysphingoid base(1−)",
             "compartment":"c"
         },
         {
-            "id": "CHEBI:57527",
+            "id": "CHEBI:57527_c",
             "name": "GDP-α-D-mannose(2−)",
             "compartment":"c"
         },
         {
-            "id": "CHEBI:155885",
+            "id": "CHEBI:155885_c",
             "name": "α-D-mannosyl-(1↔6)-1D-myo-inositol-1-phospho-N-[(R)-2-hydroxy-very-long-chain fatty acyl]-(R)-4-hydroxysphingoid base(1−)",
             "compartment":"c"
         },
         {
-            "id": "CHEBI:58189",
+            "id": "CHEBI:58189_c",
             "name": "GDP(3−)",
             "compartment":"c"
         }
@@ -46,10 +46,10 @@
             "id": "RHEA:66592_4_2_99_18",
             "name": "",
             "metabolites": {
-                "CHEBI:167181": -1.0,
-                "CHEBI:157695": 1.0,
-                "CHEBI:15378": 1.0,
-                "CHEBI:136412": 1.0
+                "CHEBI:167181_c": -1.0,
+                "CHEBI:157695_c": 1.0,
+                "CHEBI:15378_c": 1.0,
+                "CHEBI:136412_c": 1.0
             },
             "comment":{
                 "ec_number": "4.2.99.18",
@@ -62,11 +62,11 @@
             "id": "RHEA:64596_2_4_1_370",
             "name": "",
             "metabolites": {
-                "CHEBI:155926": -1.0,
-                "CHEBI:57527": -1.0,
-                "CHEBI:155885": 1.0,
-                "CHEBI:58189": 1.0,
-                "CHEBI:15378": 1.0
+                "CHEBI:155926_c": -1.0,
+                "CHEBI:57527_c": -1.0,
+                "CHEBI:155885_c": 1.0,
+                "CHEBI:58189_c": 1.0,
+                "CHEBI:15378_c": 1.0
             },
             "comment":{
                 "ec_number": "2.4.1.370",

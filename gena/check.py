@@ -14,16 +14,15 @@ from gws.file import File
 from gws.settings import Settings
 from gws.logger import Error
 
-from gena.fba import FBA, FBAResult
-from gena.biomodel import BioModel
-from gena.network import Network
-from gena.context import Context
+from .fba import FBA, FBAResult
+from .biomodel import BioModel
+from .network import Network
+from .context import Context
 
 class FluxCheckerResult(FBAResult):
     pass
 
 class FluxChecker(FBA):
-    
     input_specs = { 'biomodel': (BioModel,) }
     output_specs = { 'file': (FluxCheckerResult,) }
     #config_specs = {
@@ -40,7 +39,6 @@ class FluxChecker(FBA):
         settings = Settings.retrieve()
         _dir = settings.get_dependency_dir("gena")
         bin_file = os.path.join(_dir, "bin/fba/fba")
-        
         biomodel = self.input["biomodel"]
         flat_bio = biomodel.flatten()
 
@@ -50,12 +48,11 @@ class FluxChecker(FBA):
         self.network_file = os.path.join(self.cwd.name,"network.json")
         with open(self.network_file, "w") as fp:
             json.dump(flat_bio["network"], fp) 
-        
         self.context_file = os.path.join(self.cwd.name,"context.json")
         with open(self.context_file, "w") as fp:
             #json.dump(flat_bio["context"], fp)
             json.dump({"measures": []}, fp)
-                
+
         # override config
         #nrnd = min(5000, 10 * biomodel.number_of_reactions)
         self.set_param("least_energy_weight", 1e-6)
@@ -74,7 +71,6 @@ class FluxChecker(FBA):
             "--config", self.config_file,
             "--out", self.output_file
         ]
-
         return cmd
 
 class PhenoChecker(FBA):

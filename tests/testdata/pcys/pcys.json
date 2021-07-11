@@ -4,7 +4,7 @@
         "name": "Network",
         "description": "",
         "network": {
-            "name": "olga",
+            "name": "pcys",
             "metabolites": [
                 {
                     "id": "acetyl_CoA_4_c",

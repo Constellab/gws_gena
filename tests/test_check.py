@@ -3,7 +3,6 @@ import asyncio
 import os, json
 import unittest
 
-from gws.model import *
 from gws.settings import Settings
 from gws.unittest import GTest
 from gws.file import File
@@ -36,7 +35,7 @@ class TestFba(unittest.TestCase):
         GTest.print("Test FluxCheckerProto")
         
         data_dir = settings.get_dir("gena:testdata_dir")
-        file_name = "ecoli/ecoli-core"
+        file_name = "ecoli/ecoli"
         #file_name = "dist/olga_net"
 
         file_path = os.path.join(data_dir, file_name+".json")

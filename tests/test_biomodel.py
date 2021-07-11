@@ -71,7 +71,7 @@ class TestBioModel(unittest.TestCase):
         bio.add_context(ctx, related_network=net)
         
         # export as json
-        _json = bio.dumps(expand=True, prettify=True, stringify=True)
+        _json = bio.dumps(shallow=False, prettify=True, stringify=True)
         #print(_json)
         
         self.assertRaises(Exception, bio.add_network, net)
@@ -91,26 +91,26 @@ class TestBioModel(unittest.TestCase):
 
         print(problem["S"])
         expected_S = DataFrame({
-            'Network1_EX_glc_D_e': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-            'Network1_GLNabc': [0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0],
-            'Network1_biomass': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+            'small_cell_EX_glc_D_e': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
+            'small_cell_GLNabc': [0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0],
+            'small_cell_biomass': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
         }, index=[
             "glc_D_e", 
-            "Network1_gln_L_c", 
+            "small_cell_gln_L_c", 
             "gln_L_e", 
-            "Network1_atp_c", 
-            "Network1_adp_c", 
-            "Network1_adp_n", 
-            "Network1_biomass_b"
+            "small_cell_atp_c", 
+            "small_cell_adp_c", 
+            "small_cell_adp_n", 
+            "small_cell_biomass_b"
             ]
         )
         self.assertTrue(problem["S"].equals(expected_S))
         
         print(problem["C"])
         expected_C = DataFrame({
-            'Network1_EX_glc_D_e': [1.0, 1.0], 
-            'Network1_GLNabc': [0.0, 2.0],
-            'Network1_biomass': [0.0, 0.0],
+            'small_cell_EX_glc_D_e': [1.0, 1.0], 
+            'small_cell_GLNabc': [0.0, 2.0],
+            'small_cell_biomass': [0.0, 0.0],
         }, index=[
             "Measure_1", 
             "Measure_2"
@@ -118,7 +118,7 @@ class TestBioModel(unittest.TestCase):
         )
         self.assertTrue(problem["C"].equals(expected_C))
 
-        print(problem["B"])
+        print(problem["b"])
         expected_B = DataFrame({
             'target': [30.0, 0.75], 
             'lb': [25.0, 0.5],
@@ -129,7 +129,7 @@ class TestBioModel(unittest.TestCase):
             "Measure_2"
             ]
         )
-        self.assertTrue(problem["B"].equals(expected_B))
+        self.assertTrue(problem["b"].equals(expected_B))
 
     def test_toy_biomodel(self):
         GTest.print("Test Toy BioModel")
@@ -162,21 +162,19 @@ class TestBioModel(unittest.TestCase):
         print('--- C ---')
         print(problem["C"])
 
-        print('--- B ---')
-        print(problem["B"])
+        print('--- b ---')
+        print(problem["b"])
 
         print('--- S_intra ---')        
-        Si = BioModelService.extract_intracell_stoichiometric_matrix(problem["S"])
+        Si = BioModelService.create_steady_stoichiometric_matrix(flat_bio)
+        #Si = BioModelService.extract_intracell_stoichiometric_matrix(problem["S"])
         print(Si)
 
         print('--- S_extra ---')
-        Se = BioModelService.extract_extracell_stoichiometric_matrix(problem["S"])
+        Se = BioModelService.create_non_steady_stoichiometric_matrix(flat_bio)
+        #Se = BioModelService.extract_extracell_stoichiometric_matrix(problem["S"])
         print(Se)
 
-        print('--- S_intra ---')
-        Si = BioModelService.extract_intracell_stoichiometric_matrix(problem["S"])
-        print(Si)
-        
         print('--- Ker(S_intra) ---')
         K = BioModelService.compute_nullspace(Si)
         print(K)

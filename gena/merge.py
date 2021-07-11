@@ -5,7 +5,7 @@
 
 import math
 from gws.logger import Error, Info
-from gws.model import Process
+from gws.process import Process
 from gena.network import Network, Compound, Reaction, ReactionDuplicate, CompoundDuplicate
 from gena.data import ECData, BiomassData, MediumData
 
@@ -23,7 +23,6 @@ class NetworkMerger(Process):
     async def task(self):
         net = self.input['network_1'].copy()
         rnx_set = self.input['network_2'].copy()
-        
         for comp_id in rnx_set.compounds:
             cmp = rnx_set.compounds[comp_id]
             cmp.network = None
@@ -31,7 +30,6 @@ class NetworkMerger(Process):
         for rxn_id in rnx_set.reactions:
             rxn = rnx_set.reactions[rxn_id]
             rxn.network = None
-            
             try:
                 net.add_reaction(rxn)
             except:

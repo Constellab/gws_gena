@@ -11,7 +11,7 @@ from pandas import DataFrame
 import numpy as np
 
 from gws.logger import Error
-from gws.model import Model, Resource, ResourceSet
+from gws.resource import Resource
 from gws.utils import generate_random_chars, slugify
 from gws.view import DictView
 from gws.json import *
@@ -101,7 +101,18 @@ class Compound:
     COMPARTMENT_NUCLEUS    = "n"
     COMPARTMENT_BIOMASS    = "b"
     COMPARTMENT_EXTRACELL  = "e"
-    VALID_COMPARTMENTS     = ["c","n","b","e"]
+    COMPARTMENT_MITOCHONDRION = "m"
+    COMPARTMENT_SINK = "s"
+
+    #VALID_COMPARTMENTS     = ["c","n","b","e"]
+    COMPARTMENTS = {
+        "c": {"name": "cytosol", "is_steady": True},
+        "n": {"name": "nucleus", "is_steady": True},
+        "m": {"name": "mitochondrion", "is_steady": True},
+        "b": {"name": "biomass", "is_steady": False},
+        "e": {"name": "extracellular", "is_steady": False},
+        "s": {"name": "sink", "is_steady": False},
+    }
     COFACTORS = {
         "CHEBI:15378": "hydron",
         "CHEBI:15377": "water",
@@ -153,12 +164,12 @@ class Compound:
             compartment = Compound.COMPARTMENT_CYTOSOL
 
         if len(compartment) == 1:
-            if not compartment in self.VALID_COMPARTMENTS:
+            if not compartment in self.COMPARTMENTS.keys():
                 raise Error("gena.network.Compound", "__init__", f"Invalid compartment '{compartment}'")
             compartment_suffix = compartment
         else:
             compartment_suffix = compartment.split("_")[-1]
-            if not compartment_suffix in self.VALID_COMPARTMENTS:
+            if not compartment_suffix in self.COMPARTMENTS.keys():
                 raise Error("gena.network.Compound", "__init__", f"Invalid compartment '{compartment}'")
 
         self.compartment = compartment   
@@ -167,7 +178,7 @@ class Compound:
             self.id = slugify_id(id)
 
             is_compartment_found = False
-            for c in self.VALID_COMPARTMENTS:
+            for c in self.COMPARTMENTS.keys():
                 if self.id.endswith("_" + c):
                     is_compartment_found = True
             
@@ -303,9 +314,23 @@ class Compound:
         """
         
         compartment_suffix = self.compartment.split("_")[-1]
-        
-        return compartment_suffix != self.COMPARTMENT_EXTRACELL and compartment_suffix != self.COMPARTMENT_BIOMASS 
+        return  compartment_suffix != self.COMPARTMENT_EXTRACELL and \
+                compartment_suffix != self.COMPARTMENT_BIOMASS and \
+                compartment_suffix != self.COMPARTMENT_SINK
 
+    @property
+    def is_steady(self)->bool:
+        """
+        Test if the compound is at steady state (is intracellular)
+        
+        :return: True if the compound is steady, False otherwise
+        :rtype: `bool`
+        """
+
+        compartment_suffix = self.compartment.split("_")[-1]
+        return self.COMPARTMENTS[compartment_suffix]["is_steady"]
+
+    @property
     def is_cofactor(self)->bool:
         """
         Test if the compound is a factor
@@ -1149,14 +1174,16 @@ class Network(Resource):
 
         return S
         
-    def create_intracell_stoichiometric_matrix(self) -> DataFrame:
+    #def create_intracell_stoichiometric_matrix(self) -> DataFrame:
+    def create_steady_stoichiometric_matrix(self) -> DataFrame:
         S = self.create_stoichiometric_matrix()
-        names = list(self.get_intracell_compounds().keys())
+        names = list(self.get_steady_compounds().keys())
         return S.loc[names, :]
 
-    def create_extracell_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
+    #def create_extracell_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
+    def create_non_steady_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
         S = self.create_stoichiometric_matrix()
-        names = list(self.get_extracell_compounds(include_biomass=include_biomass).keys())
+        names = list(self.get_non_steady_compounds().keys())
         return S.loc[names, :]
 
     # -- D --
@@ -1465,7 +1492,7 @@ class Network(Resource):
         for k in _info:
             if not _info[k]["is_product"] or not _info[k]["is_substrate"]:
                 comp = self._compounds[k]
-                if comp.is_intracellular:
+                if comp.is_steady:
                     _info[k]["is_gap"] = True
                     
         return _info
@@ -1499,36 +1526,88 @@ class Network(Resource):
         
         return None
 
-    def get_extracell_compounds(self, include_biomass=True) -> Dict[str, Compound]:
+    def get_compounds_by_compartments(self, compartment_list:List[str] = None) -> Dict[str, Compound]:
         """
-        Get the extracellular compounds
+        Get the compounds in a compartments
         
-        :returns: The list of extracellular compounds
+        :returns: The list of compounds
         :rtype: List[`gena.network.Compound`]
         """
         comps = {}
 
         for name in self.compounds:
-            if self.is_extracell(name):
+            comp = self.compounds[name]
+            if comp.compartment in compartment_list:
                 comps[name] = self.compounds[name]
 
         return comps
 
-    def get_intracell_compounds(self) -> Dict[str, Compound]:
-        """ 
-        Get the extracellular compounds
+    # def get_extracell_compounds(self, include_biomass=True) -> Dict[str, Compound]:
+    #     """
+    #     Get the extracellular compounds
         
-        :returns: The list of extracellular compounds
-        :rtype: List[`gena.network.Compound`]
-        """
-        comps = {}
+    #     :returns: The list of extracellular compounds
+    #     :rtype: List[`gena.network.Compound`]
+    #     """
+    #     comps = {}
 
-        for name in self.compounds:
-            if self.is_intracell(name):
-                comps[name] = self.compounds[name]
+    #     for name in self.compounds:
+    #         #if self.is_extracell(name):
+    #         comp = self.compounds[name]
+    #         if not comp.is_intracellular:
+    #             comps[name] = self.compounds[name]
 
-        return comps
+    #     return comps
+
+    # def get_intracell_compounds(self) -> Dict[str, Compound]:
+    #     """ 
+    #     Get the extracellular compounds
+        
+    #     :returns: The list of extracellular compounds
+    #     :rtype: List[`gena.network.Compound`]
+    #     """
+    #     comps = {}
+
+    #     for name in self.compounds:
+    #         #if self.is_intracell(name):
+    #         comp = self.compounds[name]
+    #         if comp.is_intracellular:
+    #             comps[name] = self.compounds[name]
+
+    #     return comps
     
+    def get_steady_compounds(self) -> Dict[str, Compound]:
+        """ 
+        Get the steady compounds
+        
+        :returns: The list of steady compounds
+        :rtype: List[`gena.network.Compound`]
+        """
+        comps = {}
+
+        for name in self.compounds:
+            comp = self.compounds[name]
+            if comp.is_steady:
+                comps[name] = self.compounds[name]
+
+        return comps
+
+    def get_non_steady_compounds(self) -> Dict[str, Compound]:
+        """ 
+        Get the non-steady compounds
+        
+        :returns: The list of non-steady compounds
+        :rtype: List[`gena.network.Compound`]
+        """
+        comps = {}
+
+        for name in self.compounds:
+            comp = self.compounds[name]
+            if not comp.is_steady:
+                comps[name] = self.compounds[name]
+
+        return comps
+
     def get_reaction_bounds(self) -> DataFrame:
         """
         Get the reaction bounds `[lb, ub]`
@@ -1557,20 +1636,20 @@ class Network(Resource):
 
     # -- I --
 
-    @classmethod
-    def is_intracell(cls, name: str):
-        name_lower = name.lower()
-        return name_lower.endswith("_c") or name_lower.endswith("_n")
+    # @classmethod
+    # def is_intracell(cls, name: str):
+    #     name_lower = name.lower()
+    #     return name_lower.endswith("_c") or name_lower.endswith("_n")
 
-    @classmethod
-    def is_extracell(cls, name: str, include_biomass=True):
-        name_lower = name.lower()
-        if name_lower.endswith("_e"):
-                return True
-        elif name_lower.endswith("_b") or name_lower == "biomass":
-            return include_biomass
+    # @classmethod
+    # def is_extracell(cls, name: str, include_biomass=True):
+    #     name_lower = name.lower()
+    #     if name_lower.endswith("_e"):
+    #             return True
+    #     elif name_lower.endswith("_b") or name_lower == "biomass":
+    #         return include_biomass
 
-        return False
+    #     return False
 
     @classmethod
     def _import(cls, file_path: str, file_format:str = None) -> 'Network':
@@ -1673,11 +1752,16 @@ class Network(Resource):
     
     def render__gaps__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
         _dict = self._get_gap_info()
-        table = DictView.to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=False)
-        if stringify:
-            return table.to_csv()
-        else:
-            return table
+        return DictView.to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=stringify)
+
+    def render__total_flux__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+        total_flux = 0
+        for k in self.reactions:
+            rxn = self.reactions[k]
+            if rxn._estimate:
+                total_flux += abs(rxn.estimate["value"])
+        
+        return DictView.to_table( {"0": [ total_flux ]}, columns=["total_flux"], stringify=stringify)
 
     def render__stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
         if stringify:

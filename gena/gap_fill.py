@@ -7,17 +7,17 @@ import json
 import os
 import copy
 
-from gws.model import Process
+from gws.process import Process
 from gws.settings import Settings
 from gws.logger import Error, Info
-
-from gena.network import Network, Compound, Reaction
-from gena.biomodel import BioModel
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction
 from biota.enzyme import Enzyme as BiotaEnzyme
 from biota.taxonomy import Taxonomy as BiotaTaxo
+
+from .network import Network, Compound, Reaction
+from .biomodel import BioModel
 
 class GapFiller(Process):
     """
@@ -66,7 +66,7 @@ class GapFiller(Process):
             if i < self.progress_bar.get_max_value():
                 self.progress_bar.set_value(i+1, message=message)
             Info(message)
-            
+
             if not _nb_filled:
                 break 
                 
@@ -77,7 +77,6 @@ class GapFiller(Process):
         _gap_info = net._get_gap_info()
         tax_id = self.get_param("tax_id")
         biomass_and_medium_gaps_only = self.get_param("biomass_and_medium_gaps_only")
-        
         if tax_id:
             try:
                 tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)

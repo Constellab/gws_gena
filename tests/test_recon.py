@@ -4,7 +4,6 @@ import unittest
 import asyncio
 
 from gws.settings import Settings
-from gws.model import *
 from gws.unittest import GTest
 from gws.file import File
 

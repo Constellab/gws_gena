@@ -7,19 +7,23 @@ import json
 import os
 import copy
 
-from gws.model import Process
+from gws.process import Process
+from gws.resource import Resource
 from gws.settings import Settings
 from gws.logger import Error, Info
 
-from gena.network import Network
+from .network import Network
 
-class GapChecker(Process):
+class Gaps(Resource):
+    pass
+
+class GapFinder(Process):
     """
     GapChecker class.
     """
     
     input_specs = { 'network': (Network,) }
-    output_specs = { 'network': (Network,) }
+    output_specs = { 'network': (Gaps,) }
     config_specs = { }
         
     async def task(self):        

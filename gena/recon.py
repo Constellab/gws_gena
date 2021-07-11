@@ -5,9 +5,10 @@
 
 import math
 from gws.logger import Error, Info
-from gws.model import Process
-from gena.network import Network, Compound, Reaction, ReactionDuplicate, CompoundDuplicate
-from gena.data import ECData, BiomassData, MediumData
+from gws.process import Process
+
+from .network import Network, Compound, Reaction, ReactionDuplicate, CompoundDuplicate
+from .data import ECData, BiomassData, MediumData
 
 class DraftRecon(Process):
     """
@@ -46,14 +47,12 @@ class DraftRecon(Process):
     def _create_network(self):
         ec_data = self.input['ec_data']
         ec_list = ec_data.get_ec_numbers(rtype="list")
-        
         net = Network()
         tax_id = self.get_param('tax_id')
         
         for ec in ec_list:
             ec = str(ec).strip()
             is_incomplete_ec = ("-" in ec)
-            
             if is_incomplete_ec:
                 net.set_reaction_tag(ec, {
                     "ec_number": ec,
@@ -90,7 +89,6 @@ class DraftRecon(Process):
         row_names = medium_data.row_names
         #col_names = medium_data.column_names
         chebi_ids = medium_data.get_chebi_ids()
-
         i = 0
         for chebi_id in chebi_ids:    
             name = row_names[i]
@@ -115,27 +113,19 @@ class DraftRecon(Process):
         biomass_data = self.input['biomass_data']
         if not biomass_data:
             return
-        
         col_names = biomass_data.column_names
-        #chebi_ids = biomass_data.get_chebi_ids()
-        
-        chebi_col_name = biomass_data.chebi_column_name
-        #biomass_col_name = biomass_data.biomass_column_name
-        
+        chebi_col_name = biomass_data.chebi_column_name        
         for col_name in col_names:
             if col_name == chebi_col_name:
-                continue
-                
+                continue  
             rxn = Reaction(id=col_name, direction="R", lower_bound = 0.0)
             coefs = biomass_data.get_column(col_name)
             error_message = "The reaction is empty"
-            
             for i in range(0,len(coefs)):
                 if isinstance(coefs[i], str):
                     coefs[i] = coefs[i].strip()
                     if not coefs[i]:
                         continue
-                
                     try:
                         stoich = float(coefs[i])
                     except:
@@ -143,16 +133,13 @@ class DraftRecon(Process):
                         break
                 else:
                     if math.isnan(coefs[i]):
-                        continue
-                        
+                        continue 
                     stoich = coefs[i]
-                
                 comp = biomass_comps[i]
                 if stoich > 0:
                     rxn.add_product(comp, stoich)
                 else:
                     rxn.add_substrate(comp, stoich)
-            
             if not rxn.is_empty:
                 net.add_reaction(rxn)
             else:
@@ -171,7 +158,6 @@ class DraftRecon(Process):
         row_names = biomass_data.row_names
         chebi_ids = biomass_data.get_chebi_ids()
         biomass_col_name = biomass_data.biomass_column_name
-        
         _comps = []
         i = 0
         for chebi_id in chebi_ids:
@@ -181,20 +167,16 @@ class DraftRecon(Process):
                 _comps.append(comp)
             else:
                 comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
-                _comps.append(comp)
-                
+                _comps.append(comp)  
             i += 1
-       
         if not net.exists(comp):
             net.add_compound(comp)
-        
         return _comps
     
     @staticmethod
     def _retrieve_or_create_comp(net, chebi_id, name, compartment):
         if not isinstance(chebi_id, str):
-            chebi_id = str(chebi_id)
-                
+            chebi_id = str(chebi_id)    
         chebi_id = chebi_id.upper()
         if "CHEBI" not in chebi_id:
             comp = Compound(name=name, compartment=compartment)
@@ -202,20 +184,16 @@ class DraftRecon(Process):
             comps = net.get_compounds_by_chebi_id(chebi_id, compartment=compartment)  
             if not comps:
                 try:
-                    comp = Compound.from_biota(chebi_id = chebi_id, compartment=compartment)
-                    
+                    comp = Compound.from_biota(chebi_id = chebi_id, compartment=compartment) 
                 except:
                     #invalid chebi_id
                     comp = Compound(name=name, compartment=compartment) 
             else:
                 comp = comps[0]
-        
         if not net.exists(comp):
             net.add_compound(comp)
-            
         net.set_compound_tag(comp.id, {
             "id": comp.id,
             "is_in_biomass_or_medium": True
         })
-            
         return comp

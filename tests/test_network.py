@@ -149,7 +149,7 @@ class TestNetwork(unittest.TestCase):
         self.assertTrue(S.equals(expected_S))
         
 
-        Si = net.create_intracell_stoichiometric_matrix()
+        Si = net.create_steady_stoichiometric_matrix()
         print("--> S_intra")
         print(Si)
         expected_Si = DataFrame({
@@ -159,7 +159,7 @@ class TestNetwork(unittest.TestCase):
         }, index=["gln_L_c", "atp_c", "adp_c", "adp_n"])
         self.assertTrue(Si.equals(expected_Si))
         
-        Se = net.create_extracell_stoichiometric_matrix()
+        Se = net.create_non_steady_stoichiometric_matrix()
         print("--> S_extra")
         print(Se)
         expected_Se = DataFrame({

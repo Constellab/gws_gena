@@ -7,11 +7,11 @@ import os
 import math
 
 from gws.logger import Error, Info
-from gws.model import Protocol, Process
+from gws.protocol import Protocol
+from gws.process import Process
 from gws.settings import Settings
 from gws.plug import Source, Sink, FIFO2
 from gws.io import Interface, Outerface
-#from gws.file import *
 
 from gena.data import ECImporter, MediumImporter, BiomassImporter
 from gena.recon import DraftRecon
@@ -42,7 +42,6 @@ class ReconProto(Protocol):
             recon = DraftRecon()
             gapfiller = GapFiller()
             sink = Sink()
-            
             processes = {
                 # fifo2
                 "ec_fifo": ec_fifo,
@@ -61,24 +60,19 @@ class ReconProto(Protocol):
                 "gapfiller": gapfiller,
                 "sink": sink
             }
-            
             connectors = [
                 ec_source>>"resource" | ec_fifo<<"resource_1",
                 ec_importer>>"data" | ec_fifo<<"resource_2",
                 (ec_fifo>>"resource").pipe(recon<<"ec_data", lazy=True),
-
                 biomass_source>>"resource" | biomass_fifo<<"resource_1",
                 biomass_importer>>"data" | biomass_fifo<<"resource_2",
                 (biomass_fifo>>"resource").pipe(recon<<"biomass_data", lazy=True),
-
                 medium_source>>"resource" | medium_fifo<<"resource_1",
                 medium_importer>>"data" | medium_fifo<<"resource_2",
                 (medium_fifo>>"resource").pipe(recon<<"medium_data", lazy=True),
-
                 recon>>"network" | gapfiller<<"network",
                 gapfiller>>"network" | sink<<"resource"
             ]
-            
             interfaces = {
                 # ec
                 "ec_data": ec_fifo<<"resource_1",
@@ -90,12 +84,10 @@ class ReconProto(Protocol):
                 "medium_data": medium_fifo<<"resource_1",
                 "medium_file": medium_importer<<"file"
             }
-
             outerfaces = {
                 "draft_recon_network": recon>>"network",
                 "gapfiller_network": gapfiller>>"network"
             }
-
             self._build(
                 processes = processes,
                 connectors = connectors,

@@ -7,17 +7,17 @@ import os
 import math
 
 from gws.logger import Error, Info
-from gws.model import Protocol
+from gws.protocol import Protocol
 from gws.settings import Settings
 from gws.plug import Source, Sink, FIFO2
 from gws.io import Interface, Outerface
 from gws.file import *
 
-from gena.network import NetworkImporter
-from gena.context import ContextImporter
-from gena.biomodel import BioModel, BioModelBuilder
-from gena.fast_fba import FastFBA
-from gena.annotator import BioModelAnnotator
+from .network import NetworkImporter
+from .context import ContextImporter
+from .biomodel import BioModel, BioModelBuilder
+from .fast_fba import FastFBA
+from .annotator import BioModelAnnotator
 
 class FastFBAProto(Protocol):
     
@@ -26,19 +26,14 @@ class FastFBAProto(Protocol):
         if not self.is_built:
             biomodel_builder = BioModelBuilder()
             biomodel_builder.set_param("use_context", True)
-
             fba = FastFBA()
-
             network_fifo = FIFO2()
             network_source = Source()
             network_importer = NetworkImporter()
-
             context_fifo = FIFO2()
             context_source = Source()
             context_importer = ContextImporter()
-
             biomodel_annotator = BioModelAnnotator()
-
             processes = {
                 "network_fifo": network_fifo,
                 "network_source": network_source,
@@ -50,31 +45,25 @@ class FastFBAProto(Protocol):
                 "fba": fba,
                 "biomodel_annotator": biomodel_annotator
             }
-
             connectors = [
                 network_source>>"resource" | network_fifo<<"resource_1",
                 network_importer>>"data" | network_fifo<<"resource_2",
                 (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
-
                 context_source>>"resource" | context_fifo<<"resource_1",
                 context_importer>>"data" | context_fifo<<"resource_2",
                 (context_fifo>>"resource").pipe(biomodel_builder<<"context", lazy=True),
-
                 biomodel_builder>>"biomodel" | fba<<"biomodel",
                 biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
                 fba>>"result" | biomodel_annotator<<"fba_result",
             ]
-            
             interfaces = {
                 "network_file": network_importer<<"file",
                 "context_file": context_importer<<"file"
             }
-
             outerfaces = {
                 "fba_result": fba>>"result",
                 "annotated_biomodel": biomodel_annotator>>"biomodel"
             }
-
             self._build(
                 processes = processes,
                 connectors = connectors,

@@ -6,10 +6,9 @@
 import json
 import math
 
-from gws.model import Process
+from gws.process import Process
+
 from .biomodel import BioModel
-
-
 from .base_fba import AbstractFBAResult
 from .fast_fba import FastFBAResult
 

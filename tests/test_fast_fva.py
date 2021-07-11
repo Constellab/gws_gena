@@ -5,7 +5,6 @@ import unittest
 import pandas
 import numpy
 
-from gws.model import *
 from gws.settings import Settings
 from gws.file import File
 from gws.unittest import GTest
@@ -65,19 +64,19 @@ class TestFba(unittest.TestCase):
         data_dir = settings.get_dir("gena:testdata_dir")
 
         proto = FastFVAProto()
-        model = 'ecoli'
+        organism = 'ecoli'
 
-        if model == 'ecoli':
-            data_dir = os.path.join(data_dir, "ecoli")
-            file_path = os.path.join(data_dir, "ecoli-core.json")
-            network_file = File(path=file_path)
-            file_path = os.path.join(data_dir, "ecoli-core_context.json")
-            ctx_file = File(path=file_path)
-        else:
-            data_dir = os.path.join(data_dir, "olga")
-            file_path = os.path.join(data_dir, "olga.json")
-            network_file = File(path=file_path)
-            file_path = os.path.join(data_dir, "olga_context.json")
+        organism_dir = os.path.join(data_dir, organism)
+        file_path = os.path.join(organism_dir, f"{organism}.json")
+        try:
+            network_file = File.get(File.path == file_path)
+        except:
+            network_file = File(path=file_path)                
+        
+        file_path = os.path.join(organism_dir, f"{organism}_context.json")
+        try:
+            ctx_file = File.get(File.path == file_path)
+        except:
             ctx_file = File(path=file_path)
 
         proto.input["network_file"] = network_file
@@ -85,10 +84,10 @@ class TestFba(unittest.TestCase):
         fba = proto.get_fva()
         fba.set_param('least_energy', False)
 
-        if model == 'ecoli':
+        if organism == 'ecoli':
             fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
         else:
-            fba.set_param('fluxes_to_maximize', ["olga_Biomass:1.0"])
+            fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
         def _on_end(*args, **kwargs):
             result = proto.output["fva_result"]
@@ -97,7 +96,7 @@ class TestFba(unittest.TestCase):
             print(fluxes)
             print(sv)
 
-            result_dir = os.path.join(data_dir, 'fast_fva')
+            result_dir = os.path.join(organism_dir, 'fast_fva')
             # if not os.path.exists(result_dir):
             #     os.makedirs(result_dir)
             
@@ -109,7 +108,7 @@ class TestFba(unittest.TestCase):
             # with open(file_path, 'w') as fp:
             #     fp.write( sv.to_csv() )
 
-            if model == 'ecoli':
+            if organism == 'ecoli':
                 table = fluxes.to_numpy()
                 file_path = os.path.join(result_dir,"flux.csv")
                 expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()

@@ -7,16 +7,15 @@ import os
 import math
 
 from gws.logger import Error, Info
-from gws.model import Protocol
+from gws.protocol import Protocol
 from gws.settings import Settings
 from gws.plug import Source, Sink, FIFO2
 from gws.io import Interface, Outerface
 from gws.file import *
 
-from gena.network import NetworkImporter
-from gena.biomodel import BioModel, BioModelBuilder
-from gena.check import FluxChecker
-
+from .network import NetworkImporter
+from .biomodel import BioModel, BioModelBuilder
+from .check import FluxChecker
 
 class FluxCheckerProto(Protocol):
     
@@ -27,11 +26,9 @@ class FluxCheckerProto(Protocol):
             biomodel_builder.set_param("use_context", False)
             flux_checker = FluxChecker()
             flux_checker.set_param("least_energy_weight", 0.001)
-
             network_fifo = FIFO2()
             network_source = Source()
             network_importer = NetworkImporter()
-
             processes = {
                 "network_fifo": network_fifo,
                 "network_source": network_source,
@@ -39,23 +36,18 @@ class FluxCheckerProto(Protocol):
                 "biomodel_builder": biomodel_builder,
                 "flux_checker": flux_checker
             }
-
             connectors = [
                 network_source>>"resource" | network_fifo<<"resource_1",
                 network_importer>>"data" | network_fifo<<"resource_2",
                 (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
                 biomodel_builder>>"biomodel" | flux_checker<<"biomodel"
             ]
-            
             interfaces = {
                 "network_file": network_importer<<"file"
-                #"biomodel_builder_context": biomodel_builder<<"context"
             }
-
             outerfaces = {
                 "flux_checker_file": flux_checker>>"file"
             }
-
             self._build(
                 processes = processes,
                 connectors = connectors,

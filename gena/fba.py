@@ -8,8 +8,9 @@ import os
 import pandas as pd
 from pandas import DataFrame
 import pandas as pd
+from scipy import stats
 
-from gws.model import Resource
+from gws.resource import Resource
 from gws.typing import Path
 from gws.shell import Shell
 from gws.file import File
@@ -21,8 +22,6 @@ from .biomodel import BioModel, FlatBioModel
 from .network import Network
 from .context import Context
 
-from scipy import stats
-
 class FBAResult(File, AbstractFBAResult):
     _content = None
     _default_zero_flux_threshold = 0.01
@@ -31,9 +30,6 @@ class FBAResult(File, AbstractFBAResult):
     def content(self)->dict:
         if not self._content:
             self._content = json.loads(self.read())
-        
-        print(self._content)
-        
         return self._content
     
     def compute_zero_flux_threshold(self) -> float:
@@ -100,12 +96,10 @@ class FBAResult(File, AbstractFBAResult):
             index=self.sv["row_names"], 
             columns=self.sv["col_names"]
         )
-        
         if only_sucess:
             success = self.render__solver_success__as_table()
             success_columns = df.columns[success.iloc[0,:]]
             df = df[ success_columns ]
-            
         return df
 
     def render__sv__as_table(self, only_sucess: bool = True) -> DataFrame:
@@ -116,7 +110,6 @@ class FBAResult(File, AbstractFBAResult):
 
     def render__sv_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
         df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
-
         Q1 = df.quantile(q=0.25, axis=1)
         Q2 = df.quantile(q=0.5, axis=1)
         Q3 = df.quantile(q=0.75, axis=1)
@@ -172,18 +165,14 @@ class FBAResult(File, AbstractFBAResult):
         std:DataFrame = fluxes.loc[:, ["std"]].fillna(0)
         val.columns = ["data"]
         std.columns = ["data"]
-
         lb = val.sub(std, axis=1)
         ub = val.add(std, axis=1)
-
         df = pd.concat([val, lb, ub], axis=1)
         df.columns = ["value", "lower_bound", "upper_bound"]
-
         return df
 
     def render__flux_ranges__as_table(self, only_sucess: bool = True) -> DataFrame:
         df = self.render__flux_distrib__as_table(only_sucess=only_sucess)
-        
         Q1 = df.quantile(q=0.25, axis=1)
         Q2 = df.quantile(q=0.5, axis=1)
         Q3 = df.quantile(q=0.75, axis=1)
@@ -207,18 +196,12 @@ class FBAResult(File, AbstractFBAResult):
             index=self.solutions["row_names"], 
             columns=self.solutions["col_names"]
         )
-        
         if only_sucess:
             success = self.render__solver_success__as_table()
             success_columns = df.columns[success.iloc[0,:]]
             df = df[ success_columns ]
-            
         return df
-    
-    # def render__feasible_fluxes__as_table(self, only_sucess: bool = True) -> DataFrame:
-    #     df = self.render__sv_distrib__as_table(only_sucess=only_sucess)
-    #     df = df.mean(axis=1)
-    #     return df
+  
 
 class FBA(Shell):
     
@@ -241,10 +224,8 @@ class FBA(Shell):
         settings = Settings.retrieve()
         _dir = settings.get_dependency_dir("gena")
         bin_file = os.path.join(_dir, "bin/fba/fba")
-        
         biomodel = self.input["biomodel"]
         self.__flat_bio = biomodel.flatten()
-        
         self.network_file = os.path.join(self.cwd.name,"network.json")
         with open(self.network_file, "w") as fp:
             json.dump(self.__flat_bio["network"], fp) 
@@ -266,7 +247,6 @@ class FBA(Shell):
             "--config", self.config_file,
             "--out", self.output_file
         ]
-
         return cmd
     
     # -- C --

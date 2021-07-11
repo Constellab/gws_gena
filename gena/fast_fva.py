@@ -11,20 +11,19 @@ from typing import List
 from pandas import DataFrame
 from scipy.optimize import linprog
 from scipy.optimize import OptimizeResult as SciPyOptimizeResult
+from scipy import stats
 import numpy as np
 
-from gws.model import Resource, Process
+from gws.resource import Resource
+from gws.process import Process
 from gws.logger import Error, Info, Progress
 
 from .base_fba import AbstractFBAResult
 from .fast_fba import FastFBA, OptimizeResult
-
 from .biomodel import BioModel, FlatBioModel
 from .network import Network
 from .context import Context
 from .service.biomodel_service import BioModelService
-
-from scipy import stats
 
 class FastFVAResult(AbstractFBAResult):
     """
@@ -41,10 +40,10 @@ class FastFVAResult(AbstractFBAResult):
         lb = DataFrame(data=res.xmin, index=res.x_names, columns=["lower_bound"])
         ub = DataFrame(data=res.xmax, index=res.x_names, columns=["upper_bound"])
         return pd.concat([val, lb, ub], axis=1)
-
+    
     def render__sv__as_table(self) -> DataFrame:
         res: OptimizeResult = self.kv_store['optimize_result']
-        df = DataFrame(data=res.con, index=res.con_names, columns=["value"])
+        df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
         return df
 
 class FastFVA(Process):
@@ -82,24 +81,20 @@ class FastFVA(Process):
         )
 
         self.progress_bar.add_message(message=f"Starting optimization with solver '{method}' ...")
-
         res: OptimizeResult = FastFBA.solve_scipy( 
             c, A_eq, b_eq, bounds, 
             least_energy=least_energy,
             method=method
         )
-
         self.progress_bar.add_message(message=res.message)
         if res.status != 0:
             raise Error("FastFVA", "task", res.message)
 
         self.progress_bar.add_message(message=f"Peforming variability analysis around the optimal value using solver {method} ...")
- 
         x0 = res.x
         n = x0.shape[0]
         xmin = np.zeros(x0.shape)
         xmax = np.zeros(x0.shape)
-        
         step = max(1, int(n/10)) # plot only 10 iterations on screen
         for i in range(0,n):
             if (i % step) == 0:
@@ -107,7 +102,6 @@ class FastFVA(Process):
             self.progress_bar.set_value(i, message=f" flux {i+1}/{n} ...")
 
             cf = DataFrame(data=np.zeros(c.shape), index=c.index)
-
             is_minmax = (c.index[i] in fluxes_to_maximize) or (c.index[i] in fluxes_to_minimize)
             if is_minmax:
                 xmin[i] = res.x[i]
@@ -135,6 +129,5 @@ class FastFVA(Process):
 
         res.xmin = xmin
         res.xmax = xmax
-
         result = FastFVAResult(optimize_result=res)
         self.output["result"] = result

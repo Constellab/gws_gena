@@ -3,7 +3,6 @@ import asyncio
 import os, json
 import unittest
 
-from gws.model import *
 from gws.settings import Settings
 from gws.file import File
 from gws.unittest import GTest
@@ -54,13 +53,14 @@ class TestFba(unittest.TestCase):
 
         def _on_end(*args, **kwargs):
             f = proto.output["fba_file"]
-            #print( f.path )
-            #print( f.to_json(shallow=False, prettify=True, stringify=True) )
-            
-            file_path = os.path.join(data_dir, "toy_flat_result.json")
-            #with open(file_path, 'w') as fp:
-            #    result_content = f.to_json(shallow=False)["data"]["content"]
-            #    json.dump(result_content, fp)
+            result_dir = os.path.join(data_dir, 'toy', 'fba')
+            if not os.path.exists(result_dir):
+                os.makedirs(result_dir)
+
+            file_path = os.path.join(result_dir, "result.json")
+            # with open(file_path, 'w') as fp:
+            #     result_content = f.to_json(shallow=False)["data"]["content"]
+            #     json.dump(result_content, fp)
                 
             with open(file_path) as fp:
                 expected_result_content = json.load(fp)          
@@ -77,10 +77,11 @@ class TestFba(unittest.TestCase):
             #print(f.render__flux_ranges__as_table())
             #print(f.render__feasible_fluxes__as_table())
 
-            print(f.render__fluxes__as_table())
-            
             bio = proto.output["annotated_biomodel"]
-            print(bio.dumps(shallow=False))
+            net = list(bio.networks.values())[0]
+            tflux = net.render__total_flux__as_table()
+            print(tflux)
+            #print(bio.dumps(shallow=False))
         
         e = proto.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)
