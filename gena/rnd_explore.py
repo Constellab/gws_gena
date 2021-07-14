@@ -19,12 +19,12 @@ from .biomodel import BioModel
 from .network import Network
 from .context import Context
 
-class FluxCheckerResult(FBAResult):
+class RndExplorerResult(FBAResult):
     pass
 
-class FluxChecker(FBA):
+class RndExplorer(FBA):
     input_specs = { 'biomodel': (BioModel,) }
-    output_specs = { 'file': (FluxCheckerResult,) }
+    output_specs = { 'file': (RndExplorerResult,) }
     #config_specs = {
     #    "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
     #    "ineq_tol": {"type": float, "default": 1e-6, "Description": "Inequality constraint tolerance"},
@@ -72,6 +72,4 @@ class FluxChecker(FBA):
             "--out", self.output_file
         ]
         return cmd
-
-class PhenoChecker(FBA):
-    pass
+        

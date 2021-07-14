@@ -791,6 +791,14 @@ class Reaction:
 
         return rxns
 
+    # -- G --
+
+    def get_pathways(self):
+        if self.enzyme.get("pathway"):
+            return self.enzyme.get("pathway")
+
+        return {}
+
     # -- I --
     
     @property
@@ -1466,36 +1474,13 @@ class Network(Resource):
             if rxn.ec_number == ec_number:
                 return rxn
 
-    def _get_gap_info(self)->dict:
+    def _get_gap_info(self, gap_only=False)->dict:
         """
         Get gap information
         """
         
-        _info = {}
-        for k in self._compounds:
-            _info[k] = {
-                "is_substrate": False,
-                "is_product": False,
-                "is_gap": False
-            }
-            
-        for k in self._reactions:
-            rxn = self._reactions[k]
-            for c_id in rxn._substrates:
-                comp = rxn._substrates[c_id]["compound"]
-                _info[comp.id]["is_substrate"] = True
-                
-            for c_id in rxn._products:
-                comp = rxn._products[c_id]["compound"]
-                _info[comp.id]["is_product"] = True
-        
-        for k in _info:
-            if not _info[k]["is_product"] or not _info[k]["is_substrate"]:
-                comp = self._compounds[k]
-                if comp.is_steady:
-                    _info[k]["is_gap"] = True
-                    
-        return _info
+        from gena.gap_find import GapFinder
+        return GapFinder.extract_gaps(self)
     
     def get_biomass_reaction(self) -> Reaction:
         """ 
@@ -1508,7 +1493,6 @@ class Network(Resource):
         for k in self.reactions:
             if "biomass" in k.lower():
                 return self.reactions[k]
-            
         return None
 
     def get_biomass_compound(self) -> Compound:
@@ -1523,7 +1507,6 @@ class Network(Resource):
             name_lower = name.lower()
             if name_lower.endswith("_b") or name_lower == "biomass":
                 return self.compounds[name]
-        
         return None
 
     def get_compounds_by_compartments(self, compartment_list:List[str] = None) -> Dict[str, Compound]:
@@ -1533,49 +1516,14 @@ class Network(Resource):
         :returns: The list of compounds
         :rtype: List[`gena.network.Compound`]
         """
-        comps = {}
 
+        comps = {}
         for name in self.compounds:
             comp = self.compounds[name]
             if comp.compartment in compartment_list:
                 comps[name] = self.compounds[name]
-
         return comps
 
-    # def get_extracell_compounds(self, include_biomass=True) -> Dict[str, Compound]:
-    #     """
-    #     Get the extracellular compounds
-        
-    #     :returns: The list of extracellular compounds
-    #     :rtype: List[`gena.network.Compound`]
-    #     """
-    #     comps = {}
-
-    #     for name in self.compounds:
-    #         #if self.is_extracell(name):
-    #         comp = self.compounds[name]
-    #         if not comp.is_intracellular:
-    #             comps[name] = self.compounds[name]
-
-    #     return comps
-
-    # def get_intracell_compounds(self) -> Dict[str, Compound]:
-    #     """ 
-    #     Get the extracellular compounds
-        
-    #     :returns: The list of extracellular compounds
-    #     :rtype: List[`gena.network.Compound`]
-    #     """
-    #     comps = {}
-
-    #     for name in self.compounds:
-    #         #if self.is_intracell(name):
-    #         comp = self.compounds[name]
-    #         if comp.is_intracellular:
-    #             comps[name] = self.compounds[name]
-
-    #     return comps
-    
     def get_steady_compounds(self) -> Dict[str, Compound]:
         """ 
         Get the steady compounds
@@ -1583,13 +1531,12 @@ class Network(Resource):
         :returns: The list of steady compounds
         :rtype: List[`gena.network.Compound`]
         """
-        comps = {}
 
+        comps = {}
         for name in self.compounds:
             comp = self.compounds[name]
             if comp.is_steady:
                 comps[name] = self.compounds[name]
-
         return comps
 
     def get_non_steady_compounds(self) -> Dict[str, Compound]:
@@ -1599,13 +1546,12 @@ class Network(Resource):
         :returns: The list of non-steady compounds
         :rtype: List[`gena.network.Compound`]
         """
-        comps = {}
 
+        comps = {}
         for name in self.compounds:
             comp = self.compounds[name]
             if not comp.is_steady:
                 comps[name] = self.compounds[name]
-
         return comps
 
     def get_reaction_bounds(self) -> DataFrame:
@@ -1621,11 +1567,9 @@ class Network(Resource):
             columns = ["lb", "ub"],
             data = np.zeros((len(self.reactions),2))
         )
-
         for k in self.reactions:
             rxn: Reaction = self.reactions[k]
             bounds.loc[k,:] = [ rxn.lower_bound, rxn.upper_bound ] 
-        
         return bounds
 
     def get_number_of_reactions(self) -> int:
@@ -1635,21 +1579,6 @@ class Network(Resource):
         return len(self.compounds)
 
     # -- I --
-
-    # @classmethod
-    # def is_intracell(cls, name: str):
-    #     name_lower = name.lower()
-    #     return name_lower.endswith("_c") or name_lower.endswith("_n")
-
-    # @classmethod
-    # def is_extracell(cls, name: str, include_biomass=True):
-    #     name_lower = name.lower()
-    #     if name_lower.endswith("_e"):
-    #             return True
-    #     elif name_lower.endswith("_b") or name_lower == "biomass":
-    #         return include_biomass
-
-    #     return False
 
     @classmethod
     def _import(cls, file_path: str, file_format:str = None) -> 'Network':
@@ -1663,14 +1592,12 @@ class Network(Resource):
         """
 
         file_extension = Path(file_path).suffix
-        
         if file_extension in [".json"] or file_format == ".json":
             with open(file_path, 'r') as fp:
                 try:
                     _json = json.load(fp)
                 except Exception as err:
-                    raise Error("Network","_import", f"Cannot load JSON file {file_path}. Error: {err}")
-                    
+                    raise Error("Network","_import", f"Cannot load JSON file {file_path}. Error: {err}")  
                 if _json.get("reactions"):
                     # is a raw network data
                     net = cls.from_json(_json)
@@ -1679,10 +1606,8 @@ class Network(Resource):
                     net = cls.from_json(_json["data"]["network"])
                 else:
                     raise Error("Network","_import","Invalid network data")
-        
         else:
             raise Error("Network","_import","Invalid file format")
-            
         return net
     
     # -- N --
@@ -1760,7 +1685,6 @@ class Network(Resource):
             rxn = self.reactions[k]
             if rxn._estimate:
                 total_flux += abs(rxn.estimate["value"])
-        
         return DictView.to_table( {"0": [ total_flux ]}, columns=["total_flux"], stringify=stringify)
 
     def render__stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
@@ -1778,31 +1702,25 @@ class Network(Resource):
     def stats(self) -> dict:
         if self._stats:
             return self._stats
-        
         stats = {
             "compound_count": len(self.compounds),
             "reaction_count": len(self.reactions),
             "compounds": {},
             "reactions": {}
         }
-        
         for comp_id in self.compounds:
             stats["compounds"][comp_id] = {
                 "count": 0
-            }
-            
+            } 
         for rxn_id in self.reactions:
             rxn = self.reactions[rxn_id]
             for comp_id in rxn.products:
                 stats["compounds"][comp_id]["count"] += 1
-            
             for comp_id in rxn.substrates:
                 stats["compounds"][comp_id]["count"] += 1
-        
         if stats["compound_count"]:
             for comp_id in self.compounds:
                 stats["compounds"][comp_id]["freq"] = stats["compounds"][comp_id]["count"] / stats["compound_count"]
-        
         self._stats = stats
         return stats
   
@@ -1817,20 +1735,16 @@ class Network(Resource):
     
     def set_reaction_tag(self, tag_id, tag: dict):
         if not isinstance(tag, dict):
-            raise Error("Network", "add_tag", "The tag must be a dictionary")
-            
+            raise Error("Network", "add_tag", "The tag must be a dictionary")  
         if not tag_id in self.data["tags"]["reactions"]:
             self.data["tags"]["reactions"][tag_id] = {}
-
         self.data["tags"]["reactions"][tag_id].update(tag)
 
     def set_compound_tag(self, tag_id, tag: dict):
         if not isinstance(tag, dict):
             raise Error("Network", "add_tag", "The tag must be a dictionary")
-            
         if not tag_id in self.data["tags"]["compounds"]:
             self.data["tags"]["compounds"][tag_id] = {}
-
         self.data["tags"]["compounds"][tag_id].update(tag)
         
     # -- T --
@@ -1851,7 +1765,6 @@ class Network(Resource):
         
         _json = super().to_json(**kwargs)
         _json["data"]["network"] = self.dumps() #override to account for new updates
-        
         if stringify:
             if prettify:
                 return json.dumps(_json, indent=4)
@@ -1901,12 +1814,10 @@ class Network(Resource):
             *BiotaTaxo._tax_tree, \
             "brenda_pathway", "kegg_pathway", "metacyc_pathway"
         ]
-        
         table = []
         rxn_count = 1
         for k in self.reactions:
             rxn = self.reactions[k]
-            
             enz = ""
             ec = ""
             comment = []
@@ -1914,19 +1825,15 @@ class Network(Resource):
             is_from_gap_filling = False
             pathway_cols = ["", "", ""]
             tax_cols = [""] * len(BiotaTaxo._tax_tree)
-            
             flag = self.get_reaction_tag(rxn.id, "is_from_gap_filling")
             if flag:
                 is_from_gap_filling = True
-                
             if rxn.enzyme:
                 enz = rxn.enzyme.get("name","--") 
                 ec = rxn.enzyme.get("ec_number","--")
-                
                 deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
                      comment.append(deprecated_enz["ec_number"] + " (" + deprecated_enz["reason"] + ")")
-
                 if rxn.enzyme.get("pathway"):
                     pathway_cols = []
                     bkms = ['brenda', 'kegg', 'metacyc']
@@ -1936,8 +1843,7 @@ class Network(Resource):
                             if pw.get(db):
                                 pathway_cols.append( pw[db]["name"] + " (" + (pw[db]["id"] if pw[db]["id"] else "--") + ")" )
                             else:
-                                pathway_cols.append("")
-                            
+                                pathway_cols.append("")         
                 if rxn.enzyme.get("tax"):
                     tax_cols = []
                     tax = rxn.enzyme.get("tax")
@@ -1946,29 +1852,23 @@ class Network(Resource):
                             tax_cols.append( tax[f]["name"] + " (" + str(tax[f]["tax_id"]) + ")" )
                         else:
                             tax_cols.append("")
-                
                 if rxn.enzyme.get("ec_number"):
                     try:
                         enzyme_class = EnzymeClass.get(EnzymeClass.ec_numbner == rxn.enzyme.get("ec_number"))
                     except:
                         pass
-                
             subs = []
             for m in rxn.substrates:
                 c = rxn.substrates[m]["compound"]
                 subs.append( c.name + " (" + c.chebi_id + ")" )
-                
             prods = []
             for m in rxn.products:
                 c = rxn.products[m]["compound"]
                 prods.append( c.name + " (" + c.chebi_id + ")" )
-            
             if not subs:
                 subs = ["*"]
-            
             if not prods:
                 prods = ["*"]
-            
             rxn_row = [
                 rxn.id, \
                 rxn.to_str(), \
@@ -1982,17 +1882,15 @@ class Network(Resource):
                 *tax_cols, \
                 *pathway_cols
             ]
-            
             rxn_count += 1
             table.append(rxn_row)
         
         # add the errored ec numbers
         from biota.enzyme import EnzymeClass
-        
+
         tags = self.get_reaction_tags()
         #errors = self.data.get("logs",{}).get("reactions")
         #tags = self.get_reaction_tag()
-        
         for k in tags:
             t = tags[k]
             ec = t.get("ec_number")
@@ -2000,18 +1898,15 @@ class Network(Resource):
             error = t.get("error")
             if not ec:
                 continue
-            
             rxn_row = [""] * len(column_names)
             rxn_row[3] = ec      # ec number
             rxn_row[6] = error   # comment
-            
             if is_partial_ec_number:
                 try:
                     enzyme_class = EnzymeClass.get(EnzymeClass.ec_number == ec)
                     rxn_row[4] = enzyme_class.get_name()
                 except:
                     pass
-            
             rxn_count += 1
             table.append(rxn_row)
             

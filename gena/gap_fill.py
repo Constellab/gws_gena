@@ -84,9 +84,10 @@ class GapFiller(Process):
                 raise Error("GapFiller", "__fill_gaps", f"No taxonomy found with taxonomy id {tax_id}")
         else:
             tax = None
-            
-        for k in _gap_info:
-            if _gap_info[k]["is_gap"]:
+        
+        _comp_gap_info = _gap_info["compounds"]
+        for k in _comp_gap_info:
+            if _comp_gap_info[k]["is_gap"]:
                 comp = net._compounds[k]
 
                 if biomass_and_medium_gaps_only:

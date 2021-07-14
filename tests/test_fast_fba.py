@@ -34,7 +34,6 @@ class TestFba(unittest.TestCase):
         GTest.drop_tables()
 
     def test_toy_fba(self):
-        return
         data_dir = settings.get_dir("gena:testdata_dir")
 
         def run_fba(context, solver="highs", least_energy=False):

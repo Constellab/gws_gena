@@ -1,0 +1,161 @@
+,name,nb_reactions,nb_gaps,gap_ratio
+rn00340,Histidine metabolism,5,4,0.8
+rn00030; rn00480; rn01110; rn01120,Pentose phosphate pathway; Glutathione metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,4,0,0.0
+rn00230; rn01110,Purine metabolism; Biosynthesis of secondary metabolites,9,4,0.4444444444444444
+rn00510,N-Glycan biosynthesis,12,4,0.3333333333333333
+rn00561,Glycerolipid metabolism,3,2,0.6666666666666666
+rn00510; rn00513,N-Glycan biosynthesis; Various types of N-glycan biosynthesis,11,3,0.2727272727272727
+rn00280; rn01110,"Valine, leucine and isoleucine degradation; Biosynthesis of secondary metabolites",1,0,0.0
+rn00564,Glycerophospholipid metabolism,12,9,0.75
+rn00600,Sphingolipid metabolism,7,7,1.0
+rn00620,Pyruvate metabolism,5,5,1.0
+rn00920; rn01120,Sulfur metabolism; Microbial metabolism in diverse environments,4,2,0.5
+rn00240,Pyrimidine metabolism,33,8,0.24242424242424243
+rn00140,Steroid hormone biosynthesis,5,5,1.0
+rn00100; rn01110,Steroid biosynthesis; Biosynthesis of secondary metabolites,13,12,0.9230769230769231
+rn01040,Biosynthesis of unsaturated fatty acids,5,5,1.0
+rn00680; rn01120; rn00010; rn00030; rn00051; rn01110,Methane metabolism; Microbial metabolism in diverse environments; Glycolysis / Gluconeogenesis; Pentose phosphate pathway; Fructose and mannose metabolism; Biosynthesis of secondary metabolites,1,0,0.0
+rn00010,Glycolysis / Gluconeogenesis,3,2,0.6666666666666666
+rn00040; rn00052; rn00500; rn00520; rn00561; rn01110,Pentose and glucuronate interconversions; Galactose metabolism; Starch and sucrose metabolism; Amino sugar and nucleotide sugar metabolism; Glycerolipid metabolism; Biosynthesis of secondary metabolites,2,0,0.0
+rn00520,Amino sugar and nucleotide sugar metabolism,8,6,0.75
+rn00790,Folate biosynthesis,11,11,1.0
+rn00130; rn01110,Ubiquinone and other terpenoid-quinone biosynthesis; Biosynthesis of secondary metabolites,30,24,0.8
+rn00860; rn01110,Porphyrin and chlorophyll metabolism; Biosynthesis of secondary metabolites,7,3,0.42857142857142855
+rn00010; rn01110; rn01120,Glycolysis / Gluconeogenesis; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,11,8,0.7272727272727273
+rn00270,Cysteine and methionine metabolism,8,7,0.875
+rn00100,Steroid biosynthesis,2,2,1.0
+rn00983,Drug metabolism - other enzymes,5,3,0.6
+rn00480,Glutathione metabolism,12,8,0.6666666666666666
+rn00500; rn01110,Starch and sucrose metabolism; Biosynthesis of secondary metabolites,2,0,0.0
+rn01110; rn01120,Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,4,2,0.5
+rn00620; rn00640,Pyruvate metabolism; Propanoate metabolism,1,1,1.0
+rn00770; rn01110,Pantothenate and CoA biosynthesis; Biosynthesis of secondary metabolites,2,2,1.0
+rn00940; rn01110,Phenylpropanoid biosynthesis; Biosynthesis of secondary metabolites,4,4,1.0
+rn00340; rn01110,Histidine metabolism; Biosynthesis of secondary metabolites,2,2,1.0
+rn00400; rn01110,"Phenylalanine, tyrosine and tryptophan biosynthesis; Biosynthesis of secondary metabolites",11,8,0.7272727272727273
+rn00260; rn00270; rn00300; rn01110; rn01120,"Glycine, serine and threonine metabolism; Cysteine and methionine metabolism; Lysine biosynthesis; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments",2,2,1.0
+rn00740,Riboflavin metabolism,2,2,1.0
+rn00071; rn00280; rn00310; rn00362; rn00380; rn00620; rn00630; rn00640; rn00650; rn00900; rn01110; rn01120,"Fatty acid degradation; Valine, leucine and isoleucine degradation; Lysine degradation; Benzoate degradation; Tryptophan metabolism; Pyruvate metabolism; Glyoxylate and dicarboxylate metabolism; Propanoate metabolism; Butanoate metabolism; Terpenoid backbone biosynthesis; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments",1,1,1.0
+rn00270; rn00680; rn01120,Cysteine and methionine metabolism; Methane metabolism; Microbial metabolism in diverse environments,1,0,0.0
+rn00480; rn01120,Glutathione metabolism; Microbial metabolism in diverse environments,1,0,0.0
+rn00630; rn01120,Glyoxylate and dicarboxylate metabolism; Microbial metabolism in diverse environments,1,1,1.0
+rn00051,Fructose and mannose metabolism,5,4,0.8
+rn00564; rn01110,Glycerophospholipid metabolism; Biosynthesis of secondary metabolites,6,5,0.8333333333333334
+rn00380,Tryptophan metabolism,7,3,0.42857142857142855
+rn00910,Nitrogen metabolism,2,1,0.5
+rn00330,Arginine and proline metabolism,3,2,0.6666666666666666
+rn00350,Tyrosine metabolism,1,1,1.0
+rn01120,Microbial metabolism in diverse environments,4,3,0.75
+rn00100; rn00909; rn01110,Steroid biosynthesis; Sesquiterpenoid and triterpenoid biosynthesis; Biosynthesis of secondary metabolites,1,1,1.0
+rn00061,Fatty acid biosynthesis,5,4,0.8
+rn00591,Linoleic acid metabolism,3,3,1.0
+rn00860,Porphyrin and chlorophyll metabolism,4,3,0.75
+rn00230,Purine metabolism,26,15,0.5769230769230769
+rn00010; rn00710; rn01110; rn01120,Glycolysis / Gluconeogenesis; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,2,2,1.0
+rn00010; rn00030; rn01120,Glycolysis / Gluconeogenesis; Pentose phosphate pathway; Microbial metabolism in diverse environments,1,0,0.0
+rn00010; rn00620,Glycolysis / Gluconeogenesis; Pyruvate metabolism,3,3,1.0
+rn00680; rn01120,Methane metabolism; Microbial metabolism in diverse environments,4,3,0.75
+rn00620; rn00650; rn01110; rn01120,Pyruvate metabolism; Butanoate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,4,4,1.0
+rn00290; rn01110,"Valine, leucine and isoleucine biosynthesis; Biosynthesis of secondary metabolites",4,2,0.5
+rn00250; rn00430,"Alanine, aspartate and glutamate metabolism; Taurine and hypotaurine metabolism",2,0,0.0
+rn00750; rn01120,Vitamin B6 metabolism; Microbial metabolism in diverse environments,2,0,0.0
+rn00630; rn01110,Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites,7,4,0.5714285714285714
+rn00670; rn00790,One carbon pool by folate; Folate biosynthesis,1,1,1.0
+rn00670; rn01120,One carbon pool by folate; Microbial metabolism in diverse environments,2,0,0.0
+rn00330; rn01110,Arginine and proline metabolism; Biosynthesis of secondary metabolites,3,3,1.0
+rn00760,Nicotinate and nicotinamide metabolism,7,6,0.8571428571428571
+rn00910; rn01120,Nitrogen metabolism; Microbial metabolism in diverse environments,1,1,1.0
+rn00450,Selenocompound metabolism,7,2,0.2857142857142857
+rn00900; rn01110,Terpenoid backbone biosynthesis; Biosynthesis of secondary metabolites,11,6,0.5454545454545454
+rn00240; rn00670,Pyrimidine metabolism; One carbon pool by folate,2,1,0.5
+rn00310,Lysine degradation,9,2,0.2222222222222222
+rn00670,One carbon pool by folate,3,1,0.3333333333333333
+rn00230; rn00670; rn01110,Purine metabolism; One carbon pool by folate; Biosynthesis of secondary metabolites,1,1,1.0
+rn00670; rn00970,One carbon pool by folate; Aminoacyl-tRNA biosynthesis,1,1,1.0
+rn00240; rn00250,"Pyrimidine metabolism; Alanine, aspartate and glutamate metabolism",1,1,1.0
+rn00710; rn01120; rn00030; rn01110,Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments; Pentose phosphate pathway; Biosynthesis of secondary metabolites,2,2,1.0
+rn00362; rn01120,Benzoate degradation; Microbial metabolism in diverse environments,1,1,1.0
+rn00260; rn01120,"Glycine, serine and threonine metabolism; Microbial metabolism in diverse environments",1,1,1.0
+rn00260; rn00860; rn01110,"Glycine, serine and threonine metabolism; Porphyrin and chlorophyll metabolism; Biosynthesis of secondary metabolites",1,0,0.0
+rn00561; rn00564; rn01110,Glycerolipid metabolism; Glycerophospholipid metabolism; Biosynthesis of secondary metabolites,1,1,1.0
+rn00300; rn01110,Lysine biosynthesis; Biosynthesis of secondary metabolites,1,1,1.0
+rn00630; rn01110; rn01120,Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,2,0,0.0
+rn00280; rn00650; rn00900; rn01110,"Valine, leucine and isoleucine degradation; Butanoate metabolism; Terpenoid backbone biosynthesis; Biosynthesis of secondary metabolites",1,0,0.0
+rn00640,Propanoate metabolism,4,1,0.25
+rn00514,Other types of O-glycan biosynthesis,2,2,1.0
+rn00500,Starch and sucrose metabolism,5,4,0.8
+rn00563,Glycosylphosphatidylinositol (GPI)-anchor biosynthesis,2,1,0.5
+rn00603,Glycosphingolipid biosynthesis - globo and isoglobo series,1,1,1.0
+rn00601,Glycosphingolipid biosynthesis - lacto and neolacto series,2,2,1.0
+rn00230; rn00250; rn01110,"Purine metabolism; Alanine, aspartate and glutamate metabolism; Biosynthesis of secondary metabolites",1,1,1.0
+rn00100; rn00906; rn00909; rn01110,Steroid biosynthesis; Carotenoid biosynthesis; Sesquiterpenoid and triterpenoid biosynthesis; Biosynthesis of secondary metabolites,2,0,0.0
+rn00550; rn00900; rn01110,Peptidoglycan biosynthesis; Terpenoid backbone biosynthesis; Biosynthesis of secondary metabolites,1,0,0.0
+rn00906; rn01110,Carotenoid biosynthesis; Biosynthesis of secondary metabolites,1,1,1.0
+rn00540,Lipopolysaccharide biosynthesis,3,3,1.0
+rn00270; rn01110,Cysteine and methionine metabolism; Biosynthesis of secondary metabolites,1,0,0.0
+rn00860; rn01110; rn01120,Porphyrin and chlorophyll metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,3,0,0.0
+rn00908; rn01110,Zeatin biosynthesis; Biosynthesis of secondary metabolites,2,2,1.0
+rn00740; rn01110,Riboflavin metabolism; Biosynthesis of secondary metabolites,4,1,0.25
+rn00250,"Alanine, aspartate and glutamate metabolism",1,0,0.0
+rn00250; rn00520,"Alanine, aspartate and glutamate metabolism; Amino sugar and nucleotide sugar metabolism",1,0,0.0
+rn01110,Biosynthesis of secondary metabolites,3,2,0.6666666666666666
+rn00750,Vitamin B6 metabolism,4,3,0.75
+rn00052,Galactose metabolism,5,3,0.6
+rn00562,Inositol phosphate metabolism,19,9,0.47368421052631576
+rn00230; rn00920; rn01120,Purine metabolism; Sulfur metabolism; Microbial metabolism in diverse environments,1,1,1.0
+rn00770,Pantothenate and CoA biosynthesis,16,5,0.3125
+rn00260; rn01110; rn01120,"Glycine, serine and threonine metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments",1,1,1.0
+rn00620; rn01120,Pyruvate metabolism; Microbial metabolism in diverse environments,7,0,0.0
+rn00040,Pentose and glucuronate interconversions,6,5,0.8333333333333334
+rn00051; rn00520,Fructose and mannose metabolism; Amino sugar and nucleotide sugar metabolism,1,0,0.0
+rn00053; rn01120,Ascorbate and aldarate metabolism; Microbial metabolism in diverse environments,1,1,1.0
+rn00010; rn00520,Glycolysis / Gluconeogenesis; Amino sugar and nucleotide sugar metabolism,1,0,0.0
+rn00051; rn01120,Fructose and mannose metabolism; Microbial metabolism in diverse environments,3,2,0.6666666666666666
+rn00730,Thiamine metabolism,5,4,0.8
+rn00030; rn00230; rn01110; rn01120,Pentose phosphate pathway; Purine metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,1,1.0
+rn00500; rn00520,Starch and sucrose metabolism; Amino sugar and nucleotide sugar metabolism,1,1,1.0
+rn00500; rn00520; rn01110,Starch and sucrose metabolism; Amino sugar and nucleotide sugar metabolism; Biosynthesis of secondary metabolites,1,0,0.0
+rn00785,Lipoic acid metabolism,1,1,1.0
+rn00562; rn00564,Inositol phosphate metabolism; Glycerophospholipid metabolism,1,0,0.0
+rn00440,Phosphonate and phosphinate metabolism,3,3,1.0
+rn00030; rn01110; rn01120,Pentose phosphate pathway; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,0,0.0
+rn00592; rn01110,alpha-Linolenic acid metabolism; Biosynthesis of secondary metabolites,5,5,1.0
+rn00361; rn01120,Chlorocyclohexane and chlorobenzene degradation; Microbial metabolism in diverse environments,1,1,1.0
+rn00960; rn01110,"Tropane, piperidine and pyridine alkaloid biosynthesis; Biosynthesis of secondary metabolites",1,1,1.0
+rn00062; rn01040,Fatty acid elongation; Biosynthesis of unsaturated fatty acids,1,0,0.0
+rn00410; rn00640,beta-Alanine metabolism; Propanoate metabolism,1,1,1.0
+rn00562; rn00521; rn01110,Inositol phosphate metabolism; Streptomycin biosynthesis; Biosynthesis of secondary metabolites,1,0,0.0
+rn00260; rn00680; rn01110; rn01120,"Glycine, serine and threonine metabolism; Methane metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments",5,2,0.4
+rn00565,Ether lipid metabolism,7,6,0.8571428571428571
+rn00627; rn01120,Aminobenzoate degradation; Microbial metabolism in diverse environments,3,3,1.0
+rn00590,Arachidonic acid metabolism,1,1,1.0
+rn00270; rn00630,Cysteine and methionine metabolism; Glyoxylate and dicarboxylate metabolism,1,1,1.0
+rn00740; rn00790; rn01110,Riboflavin metabolism; Folate biosynthesis; Biosynthesis of secondary metabolites,1,1,1.0
+rn00240; rn00500; rn01110,Pyrimidine metabolism; Starch and sucrose metabolism; Biosynthesis of secondary metabolites,5,0,0.0
+rn00660,C5-Branched dibasic acid metabolism,3,1,0.3333333333333333
+rn00620; rn00680; rn00710; rn01120,Pyruvate metabolism; Methane metabolism; Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments,1,0,0.0
+rn00010; rn00620; rn01110; rn01120,Glycolysis / Gluconeogenesis; Pyruvate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,0,0.0
+rn00460; rn01110,Cyanoamino acid metabolism; Biosynthesis of secondary metabolites,1,1,1.0
+rn00710; rn01120,Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments,1,1,1.0
+rn00280; rn00650,"Valine, leucine and isoleucine degradation; Butanoate metabolism",1,1,1.0
+rn00260; rn01110,"Glycine, serine and threonine metabolism; Biosynthesis of secondary metabolites",1,0,0.0
+rn00909; rn01110,Sesquiterpenoid and triterpenoid biosynthesis; Biosynthesis of secondary metabolites,1,1,1.0
+rn00250; rn01110,"Alanine, aspartate and glutamate metabolism; Biosynthesis of secondary metabolites",2,1,0.5
+rn00230; rn00250,"Purine metabolism; Alanine, aspartate and glutamate metabolism",3,2,0.6666666666666666
+rn00250; rn00471,"Alanine, aspartate and glutamate metabolism; D-Glutamine and D-glutamate metabolism",2,0,0.0
+rn00300; rn01110; rn01120,Lysine biosynthesis; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,1,1.0
+rn00030; rn00040; rn00710; rn01110; rn01120,Pentose phosphate pathway; Pentose and glucuronate interconversions; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,0,0.0
+rn00350; rn01120,Tyrosine metabolism; Microbial metabolism in diverse environments,1,1,1.0
+rn00010; rn00051; rn00562; rn00710; rn01110; rn01120,Glycolysis / Gluconeogenesis; Fructose and mannose metabolism; Inositol phosphate metabolism; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,1,1.0
+rn00010; rn00052; rn00520; rn01110; rn01120,Glycolysis / Gluconeogenesis; Galactose metabolism; Amino sugar and nucleotide sugar metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,4,3,0.75
+rn00010; rn00260; rn00680; rn01110; rn01120,"Glycolysis / Gluconeogenesis; Glycine, serine and threonine metabolism; Methane metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments",1,1,1.0
+rn00521; rn00562; rn01110,Streptomycin biosynthesis; Inositol phosphate metabolism; Biosynthesis of secondary metabolites,1,0,0.0
+rn00626; rn01120,Naphthalene degradation; Microbial metabolism in diverse environments,1,1,1.0
+rn00970,Aminoacyl-tRNA biosynthesis,21,16,0.7619047619047619
+rn00860; rn00970; rn01110; rn01120,Porphyrin and chlorophyll metabolism; Aminoacyl-tRNA biosynthesis; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,0,0.0
+rn00630; rn00680; rn01120,Glyoxylate and dicarboxylate metabolism; Methane metabolism; Microbial metabolism in diverse environments,1,1,1.0
+rn00410; rn00770; rn01110,beta-Alanine metabolism; Pantothenate and CoA biosynthesis; Biosynthesis of secondary metabolites,1,1,1.0
+rn00471; rn00550,D-Glutamine and D-glutamate metabolism; Peptidoglycan biosynthesis,1,1,1.0
+rn00780,Biotin metabolism,1,0,0.0
+rn00250; rn00910; rn01120,"Alanine, aspartate and glutamate metabolism; Nitrogen metabolism; Microbial metabolism in diverse environments",1,0,0.0
+rn00061; rn00620; rn00640; rn01110; rn01120,Fatty acid biosynthesis; Pyruvate metabolism; Propanoate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments,1,0,0.0
