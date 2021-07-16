@@ -35,20 +35,17 @@ class TestFba(unittest.TestCase):
 
     def test_toy_fba(self):
         data_dir = settings.get_dir("gena:testdata_dir")
-
-        def run_fba(context, solver="highs", least_energy=False):
+        def run_fba(context, solver="highs"):
             proto = FastFBAProto()
             file_path = os.path.join(data_dir, "toy_network.json")
             try:
                 network_file = File.get(File.path == file_path)
             except:
                 network_file = File(path=file_path)
-
             if context:
                 file_path = os.path.join(data_dir, "toy_context.json")
             else:
                 file_path = os.path.join(data_dir, "toy_context_empty.json")
-            
             try:
                 ctx_file = File.get(File.path == file_path)
             except:
@@ -56,9 +53,7 @@ class TestFba(unittest.TestCase):
 
             proto.input["network_file"] = network_file
             proto.input["context_file"] = ctx_file
-
             fba = proto.get_fba()
-            fba.set_param('least_energy', least_energy)
             #fba.set_param('fluxes_to_maximize', ["Network_RB"])
             fba.set_param("solver", solver)
 
@@ -70,14 +65,9 @@ class TestFba(unittest.TestCase):
                 print(sv)
 
                 if context:
-                    if least_energy:
-                        result_dir = os.path.join(data_dir, 'toy', 'fast_fba', solver, "least_energy")
-                    else:
-                        result_dir = os.path.join(data_dir, 'toy', 'fast_fba', solver, "normal")
-
+                    result_dir = os.path.join(data_dir, 'toy', 'fast_fba', solver)
                     if not os.path.exists(result_dir):
                         os.makedirs(result_dir)
-
                     # #write test results in files
                     # file_path = os.path.join(result_dir,"sv.csv")
                     # with open(file_path, 'w') as fp:
@@ -92,7 +82,6 @@ class TestFba(unittest.TestCase):
                     table = numpy.array(table, dtype=float)
                     expected_table = numpy.array(expected_table, dtype=float)
                     self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-02).all() )
-                
                 bio = proto.output["annotated_biomodel"]
                 net = list(bio.networks.values())[0]
                 tflux = net.render__total_flux__as_table()
@@ -105,34 +94,22 @@ class TestFba(unittest.TestCase):
         GTest.print("Test FastFBAProto: Small network (toy + context + linprog)")
         run_fba(context=True,solver="highs")
 
-        GTest.print("Test FastFBAProto: Small network (toy + context + linprog + least energy)")
-        run_fba(context=True,solver="highs", least_energy=True)
-
         GTest.print("Test FastFBAProto: Small network (toy + context + quad)")
         run_fba(context=True,solver="quad") 
-
-        GTest.print("Test FastFBAProto: Small network (toy + context + quad + least energy)")
-        run_fba(context=True,solver="quad", least_energy=True)  
 
         GTest.print("Test FastFBAProto: Small network (toy + no context)")
         run_fba(context=False)
 
-        GTest.print("Test FastFBAProto: Small network (toy + no context + quad + least energy)")
-        run_fba(context=False, solver="quad", least_energy=True)
-
     def test_large_fba(self):
         data_dir = settings.get_dir("gena:testdata_dir")
-        
-        def run_fba(organism, solver="highs", least_energy=False):
+        def run_fba(organism, solver="highs"):
             proto = FastFBAProto()
             organism_dir = os.path.join(data_dir, organism)
-
             file_path = os.path.join(organism_dir, f"{organism}.json")
             try:
                 network_file = File.get(File.path == file_path)
             except:
                 network_file = File(path=file_path)                
-            
             file_path = os.path.join(organism_dir, f"{organism}_context.json")
             try:
                 ctx_file = File.get(File.path == file_path)
@@ -141,11 +118,8 @@ class TestFba(unittest.TestCase):
 
             proto.input["network_file"] = network_file
             proto.input["context_file"] = ctx_file
-
             fba = proto.get_fba()
-            fba.set_param('least_energy', least_energy)
             fba.set_param('solver', solver)
-
             if organism == 'ecoli':
                 fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
                 #fba.set_param('fluxes_to_minimize', [".*K$"])
@@ -158,12 +132,7 @@ class TestFba(unittest.TestCase):
                 sv = result.render__sv__as_table()
                 print(fluxes)
                 print(sv)
-
-                if least_energy:
-                    result_dir = os.path.join(organism_dir, 'fast_fba', solver, "least_energy")
-                else:
-                    result_dir = os.path.join(organism_dir, 'fast_fba', solver, "normal")
-                
+                result_dir = os.path.join(organism_dir, 'fast_fba', solver)
                 if organism == 'ecoli':
                     # if not os.path.exists(result_dir):
                     #     os.makedirs(result_dir)
@@ -182,11 +151,9 @@ class TestFba(unittest.TestCase):
                     table = numpy.array(table, dtype=float)
                     expected_table = numpy.array(expected_table, dtype=float)
                     self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-01).all() )
-
                     print(fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:])
                 else:
                     print(fluxes.loc[["pcys_Biomass"],:])
-
                 bio = proto.output["annotated_biomodel"]
                 net = list(bio.networks.values())[0]
                 tflux = net.render__total_flux__as_table()
@@ -200,13 +167,7 @@ class TestFba(unittest.TestCase):
         #for k in ["pcys"]:
         #for k in ["ecoli"]:
             GTest.print(f"Test FBAProto: Medium- or large-size network ({k} + linprog)")
-            run_fba(organism=k, solver="highs", least_energy=False)
-
-            GTest.print(f"Test FBAProto: Medium- or large-size network ({k} + linprog + least_energy)")
-            run_fba(organism=k, solver="highs", least_energy=True)
+            run_fba(organism=k, solver="highs")
 
             GTest.print(f"Test FBAProto: Medium- or large-size network ({k} + quad)")
-            run_fba(organism=k, solver="quad", least_energy=False)
-
-            GTest.print(f"Test FBAProto: Medium- or large-size network ({k} + quad + least_energy)")
-            run_fba(organism=k, solver="quad", least_energy=True)
+            run_fba(organism=k, solver="quad")

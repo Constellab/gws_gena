@@ -1,0 +1,562 @@
+# Gencovery software - All rights reserved
+# This software is the exclusive property of Gencovery SAS. 
+# The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
+# About us: https://gencovery.com
+
+from gws.logger import Error
+from gws.utils import slugify
+from gws.json import *
+
+from biota.compound import Compound as BiotaCompound
+from biota.reaction import Reaction as BiotaReaction
+from biota.enzyme import Enzyme as BiotaEnzyme
+from biota.taxonomy import Taxonomy as BiotaTaxo
+
+from .compound import Compound
+
+def slugify_id(_id):
+    return slugify(_id, snakefy=True, to_lower=False)
+    
+flattening_delimiter = ":"
+
+
+# ####################################################################
+#
+# Error classes
+#
+# ####################################################################
+
+class SubstrateDuplicate(Error): 
+    pass
+
+class ProductDuplicate(Error): 
+    pass
+
+
+# ####################################################################
+#
+# Reaction class
+#
+# ####################################################################
+
+class Reaction:   
+    """
+    Class that represents a network reaction. 
+    
+    Network reactions are proxy of biota reaction (i.e. Rhea compounds). 
+    They a used to build reconstructed digital twins. 
+
+    :property id: The id of the reaction
+    :type id: `str`
+    :property name: The name of the reaction
+    :type name: `str`
+    :property network: The network of the reaction
+    :type network: `gena.network.Network`
+    :property direction: The direction of the reaction. Bidirectional (B), Left direction (L), Righ direction (R)
+    :type direction: `str`
+    :property lower_bound: The lower bound of the reaction flux (metabolic flux)
+    :type lower_bound: `float`
+    :property upper_bound: The upper bound of the reaction flux (metabolic flux)
+    :type upper_bound: `float`
+    :property rhea_id: The corresponding Rhea if of the reaction
+    :type rhea_id: `str`
+    :property enzyme: The details on the enzyme that regulates the reaction
+    :type enzyme: `dict`
+    """
+    
+    id: str = None
+    name: str = None
+    network: 'Network' = None
+    direction: str = "B"
+    lower_bound: float = -1000.0
+    upper_bound: float = 1000.0
+    rhea_id: str = None
+    enzyme: dict = None
+    
+    _tax_ids = []
+    _estimate: dict = None
+    _substrates: dict = None
+    _products: dict = None
+    _flattening_delimiter = flattening_delimiter
+    
+    def __init__(self, id: str="", name: str = "", network: 'Network' = None, \
+                 direction: str= "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0, \
+                 enzyme: dict={}, rhea_id=""):  
+        
+        if id:
+            self.id = slugify_id(id)
+        else:
+            self.id = slugify_id(name)
+        
+        self.name = name
+        self.enzyme = enzyme
+        
+        if not self.id:
+            if self.enzyme:
+                self.id = self.enzyme.get("ec_number","")
+                self.name = self.id
+        
+        if not self.id:
+            raise Error("gena.reaction.Reaction", "__init__", "At least a valid reaction id or name is reaction")
+            
+        if direction in ["B", "L", "R"]:
+            self.direction = direction
+            
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self._estimate = {}
+        self._substrates = {}
+        self._products = {}
+        
+        if network:
+            self.add_to_network(network)
+        
+        self.rhea_id = rhea_id
+        
+    # -- A --
+
+    def add_to_network(self, net: 'Network'):  
+        """
+        Adds the reaction to a newtork
+        
+        :param net: The network
+        :type net: `gena.network.Network`
+        """
+        
+        net.add_reaction(self)
+    
+    def add_substrate( self, comp: Compound, stoich: float ):
+        """
+        Adds a substrate to the reaction
+        
+        :param comp: The compound to add as substrate
+        :type comp: `gena.compound.Compound`
+        :param stoich: The stoichiometry of the compound in the reaction
+        :type stoich: `int`
+        """
+        
+        if comp.id in self._substrates:
+            raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate", f"Substrate duplicate (id= {comp.id})")
+        
+        # add the compound to the reaction network
+        if self.network:
+            if not comp.id in self.network.compounds:
+                self.network.add_compound(comp)
+
+        self._substrates[comp.id] = {
+            "compound": comp,
+            "stoichiometry": abs(float(stoich))
+        }
+    
+    def add_product( self, comp: Compound, stoich: float ):
+        """
+        Adds a product to the reaction
+        
+        :param comp: The compound to add as product
+        :type comp: `gena.compound.Compound`
+        :param stoich: The stoichiometry of the compound in the reaction
+        :type stoich: `int`
+        """
+        
+        if comp.id in self._products:
+            raise ProductDuplicate("gena.reaction.Reaction", "add_substrate", "Product duplicate (id= {comp.id})")
+        
+        # add the compound to the reaction network
+        if self.network:
+            if not comp.id in self.network.compounds:
+                self.network.add_compound(comp)
+                
+        self._products[comp.id] = {
+            "compound": comp,
+            "stoichiometry": abs(float(stoich))
+        }
+
+    # -- C --
+
+    @classmethod
+    def create_sink_reaction(self, related_compound: Compound = None, lower_bound: float = -1000.0, upper_bound: float = 1000.0) -> 'Reaction':        
+        if not isinstance(related_compound, Compound):
+            raise Error("Reaction", "create_sink_reaction", "A compound is required")
+        name = "rxn_" + related_compound.id + "_sink"
+        network = related_compound.network
+        rxn = Reaction(
+            name = name,
+            network = network,
+            direction = "B",
+            lower_bound = lower_bound,
+            upper_bound = upper_bound
+        )
+        sink_comp = Compound.create_sink_compound(related_compound=related_compound)
+        rxn.add_substrate(related_compound, stoich=-1.0)
+        rxn.add_product(sink_comp, stoich=1.0)
+        return rxn
+
+    # -- E --
+
+    @property
+    def estimate(self) -> dict:
+        return self._estimate
+
+    # -- F --
+    
+    @classmethod
+    def _flatten_id(cls, id:str , ctx_name:str) -> str:
+        """
+        Flattens a reaction id
+        
+        :param id: The id
+        :type id: `str`
+        :param ctx_name: The name of the (metabolic, biological, network) context
+        :type ctx_name: `str`
+        :return: The flattened id
+        :rtype: `str`
+        """
+        
+        delim = cls._flattening_delimiter
+        return slugify_id(ctx_name + delim + id.replace(delim,"_"))
+        
+    @classmethod
+    def from_biota(cls, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up', network=None) -> 'Reaction':
+        """
+        Create a biota reaction from a Rhea id or an EC number.
+        
+        :param biota_reaction: The biota reaction to use. If not provided, the rhea_id or ec_number are used to fetch the corresponding reaction from the biota db.
+        :type biota_reaction: `biota.compound.Compound`
+        :param rhea_id: The Rhea id of the reaction. If given, the other parameters are not considered
+        :rtype rhea_id: `str`
+        :param ec_number: The EC number of the enzyme related to the reaction. If given, all the Rhea reactions associated with this enzyme are retrieved for the biota DB
+        :rtype ec_number: `str`
+        :param tax_id: The taxonomy ID of the target organism. If given, the enzymes are fetched in the corresponding taxonomy. If the taxonomy ID is not valid, no reaction is built.  
+        :rtype tax_id: `str`
+        :param tax_search_method: The taxonomy search method (Defaults to `bottom_up`). 
+            * `none`: the algorithm will only search at the given taxonomy level
+            * `bottom_up`: the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found
+        :rtype tax_search_method: `none` or `bottom_up`
+        :param network: The network to which the reaction is added. If the reaction already exists, an exception is raised.
+        :return: The network reaction
+        :rtype: `gena.reaction.Reaction`
+        """
+        
+        rxns = []
+        #tax_tree = BiotaTaxo._tax_tree
+        
+        def __create_rxn(rhea_rxn, network, enzyme):
+            if enzyme:
+                e = {
+                    "name": enzyme.get_name(),
+                    "ec_number": enzyme.ec_number,
+                }
+                e["tax"] = {}
+                try:
+                    tax = BiotaTaxo.get(BiotaTaxo.tax_id == enzyme.tax_id)
+                except:
+                    tax = None
+                if tax:
+                    e["tax"][tax.rank] = {
+                        "tax_id": tax.tax_id,
+                        "name": tax.get_name()
+                    }
+                    for t in tax.ancestors:
+                        e["tax"][t.rank] = {
+                            "tax_id": t.tax_id,
+                            "name": t.get_name()
+                        }
+                #for f in BiotaTaxo._tax_tree: 
+                #    e[f] = getattr(enzyme, "tax_"+f)
+                    
+                if enzyme.related_deprecated_enzyme:
+                    e["related_deprecated_enzyme"] = {
+                        "ec_number": enzyme.related_deprecated_enzyme.ec_number,
+                        "reason": enzyme.related_deprecated_enzyme.data["reason"],
+                    }
+                pwy = enzyme.pathway
+                if pwy:
+                    e["pathway"] = pwy.data   
+            else:
+                e = {} 
+            rxn = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number, 
+                      network=network, 
+                      direction=rhea_rxn.direction,
+                      enzyme=e)
+            eqn = rhea_rxn.data["equation"]
+            for chebi_id in eqn["substrates"]:
+                stoich =  eqn["substrates"][chebi_id]
+                biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+                c = Compound(name=biota_comp.name, compartment=Compound.COMPARTMENT_CYTOSOL)
+                c.chebi_id = biota_comp.chebi_id
+                c.kegg_id = biota_comp.kegg_id
+                c.charge = biota_comp.charge
+                c.formula = biota_comp.formula
+                c.mass = biota_comp.mass
+                c.monoisotopic_mass = biota_comp.monoisotopic_mass
+                rxn.add_substrate(c, stoich)
+            for chebi_id in eqn["products"]:
+                stoich = eqn["products"][chebi_id]
+                biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+                c = Compound(name=biota_comp.name, compartment=Compound.COMPARTMENT_CYTOSOL)
+                c.chebi_id = biota_comp.chebi_id
+                c.kegg_id = biota_comp.kegg_id
+                c.charge = biota_comp.charge
+                c.formula = biota_comp.formula
+                c.mass = biota_comp.mass
+                c.monoisotopic_mass = biota_comp.monoisotopic_mass
+                rxn.add_product(c, stoich)
+            return rxn
+        
+        if biota_reaction:
+            rhea_rxn = biota_reaction
+            _added_rxns = []
+            for e in rhea_rxn.enzymes:
+                if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                    continue
+                _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                try:
+                    rxns.append( __create_rxn(rhea_rxn, network, e) )
+                except:
+                    pass
+            return rxns
+        elif rhea_id:
+            tax = None
+            Q = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
+            if not Q:
+                raise Error("gena.reaction.Reaction", "from_biota", f"No reaction found with rhea id {rhea_id}")
+            _added_rxns = []
+            for rhea_rxn in Q:
+                for e in rhea_rxn.enzymes:
+                    if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                        continue
+                    _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                    try:
+                        rxns.append( __create_rxn(rhea_rxn, network, e) )
+                    except:
+                        pass
+            return rxns
+        elif ec_number:
+            tax = None
+            e = None
+            if tax_id:
+                try:
+                    tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
+                except:
+                    raise Error("Reaction", "from_biota", f"No taxonomy found with tax_id {tax_id}") 
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
+                if not Q:
+                    if tax_search_method == 'bottom_up':
+                        found_Q = []
+                        Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
+
+                        #-> for each ec: we select the best enzyme
+                        #is_best_enzyme_found_for_this_ec = False
+                        #for e in Q:
+                        #    for t in tax.ancestors:
+                        #        if t.rank == "no rank":
+                        #            continue
+                        #        if getattr(e, "tax_"+t.rank) == t.tax_id:
+                        #            found_Q.append(e)
+                        #            is_best_enzyme_found_for_this_ec = True
+                        #            break  #-> stop at this taxonomy rank
+                        
+                        tab = {}
+                        for e in Q:
+                            if not e.ec_number in tab:
+                                tab[e.ec_number] = []  
+                            tab[e.ec_number].append(e)
+                        for t in tax.ancestors:
+                            is_found = False
+                            for ec in tab:
+                                e_group = tab[ec]
+                                for e in e_group:
+                                    if t.rank == "no rank":
+                                        continue
+                                    if getattr(e, "tax_"+t.rank) == t.tax_id:
+                                        found_Q.append(e)
+                                        is_found = True
+                                        break  #-> stop at this taxonomy rank
+                                if is_found:
+                                    del tab[ec]
+                                    break
+                        # add remaining enzyme
+                        for ec in tab:
+                            e_group = tab[ec]
+                            for e in e_group:
+                                found_Q.append(e)
+                                break 
+                        if found_Q:
+                            Q = found_Q
+                if not Q:
+                    raise Error("gena.reaction.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")  
+                _added_rxns = []
+                messages = []
+                for e in Q:
+                    if not e.reactions:
+                        messages.append(f"No rhea found for {e.ec_number}")              
+                    for rhea_rxn in e.reactions:
+                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                            continue
+                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                        try:
+                            rxns.append( __create_rxn(rhea_rxn, network, e) )
+                        except:
+                            # reaction duplicate
+                            # skip error!
+                            pass
+                if not rxns:
+                    messages.append(f"No new reactions found with ec number {ec_number}")
+                    raise Error("gena.reaction.Reaction", "from_biota", ", ".join(messages))  
+            else:
+                #Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
+                if not Q:
+                    raise Error("gena.reaction.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")
+                _added_rxns = []
+                messages = []
+                for e in Q:
+                    if not e.reactions:
+                        messages.append(f"No rhea found for {e.ec_number}")
+                    for rhea_rxn in e.reactions:
+                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                            continue
+                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                        try:
+                            rxns.append( __create_rxn(rhea_rxn, network, e) ) 
+                        except:
+                            pass
+                if not rxns:
+                    messages.append(f"No new reactions found with ec number {ec_number}")
+                    raise Error("gena.reaction.Reaction", "from_biota",  ", ".join(messages))
+        else:
+            raise Error("gena.reaction.Reaction", "from_biota", "Invalid arguments")
+        return rxns
+
+    # -- G --
+
+    def get_pathways(self):
+        if self.enzyme.get("pathway"):
+            return self.enzyme.get("pathway")
+
+        return {}
+
+    # -- I --
+    
+    @property
+    def is_empty(self):
+        return not bool(self._substrates) and not bool(self._products)
+        
+    # -- P --
+    
+    @property
+    def products(self) -> str:
+        """
+        Returns the products of the reaction
+        
+        :return: The list of products as {key,value} dictionnary
+        :rtype: `dict`
+        """
+        
+        return self._products
+    
+    # -- R --
+    
+    def get_related_biota_reaction(self):
+        """
+        Get the biota reaction that is related to this network reaction
+        
+        :return: The biota compound corresponding to the rhea id. Returns `None` is no biota reaction is found
+        :rtype: `bioa.reaction.Reaction`, `None`
+        """
+        
+        try:
+            return BiotaReaction.get(BiotaReaction.rhea_id == self.rhea_id)
+        except:
+            return None
+    
+    # -- S --
+    
+    def set_estimate(self, estimate: dict):
+        if not "value" in estimate:
+            Error("Reaction", "set_estimate", "No value in estimate data")
+
+        if not "lower_bound" in estimate:
+            Error("Reaction", "set_estimate", "No lower_bound in estimate data")
+
+        if not "upper_bound" in estimate:
+            Error("Reaction", "set_estimate", "No upper_bound in estimate data")
+
+        self._estimate = estimate
+
+    @property
+    def substrates(self) -> dict:
+        """
+        Returns the substrates of the reaction
+        
+        :return: The list of substrates as {key,value} dictionnary
+        :rtype: `dict`
+        """
+        
+        return self._substrates
+    
+    # -- T --
+    
+    def to_str(self, only_ids=False) -> str:
+        """
+        Returns a string representation of the reaction
+        
+        :return: The string
+        :rtype: `str`
+        """
+        
+        _left = []
+        _right = []
+        _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
+        
+        for k in self._substrates:
+            sub = self._substrates[k]
+            comp = sub["compound"]
+            stoich = sub["stoichiometry"]
+            if only_ids:
+                _id = comp.chebi_id if comp.chebi_id else comp.id
+                _left.append( f"({stoich}) {_id}" )
+            else:
+                _left.append( f"({stoich}) {comp.id}" )
+        
+        for k in self._products:
+            prod = self._products[k]
+            comp = prod["compound"]
+            stoich = prod["stoichiometry"]
+            if only_ids:
+                _id = comp.chebi_id if comp.chebi_id else comp.id
+                _right.append( f"({stoich}) {_id}" )
+            else:
+                _right.append( f"({stoich}) {comp.id}" )
+        
+        if not _left:
+            _left = ["*"]
+            
+        if not _right:
+            _right = ["*"]
+            
+        _str = " + ".join(_left) + _dir[self.direction].replace("E", self.enzyme.get("ec_number","")) + " + ".join(_right)
+        #_str = _str + " " + str(self.enzyme)
+        return _str
+
+# class SinkReaction(Reaction):
+
+#     def __init__(self, related_compound: Compound = None, lower_bound: float = -1000.0, upper_bound: float = 1000.0):        
+#         if not isinstance(related_compound, Compound):
+#             raise Error("SinkReaction", "__init__", "A compound is required")
+#         name = "rxn_" + related_compound.name + "_sink"
+#         network = related_compound.network
+#         super().__init__(
+#             name = name,
+#             network = network,
+#             direction = "B",
+#             lower_bound = lower_bound,
+#             upper_bound = upper_bound
+#         )
+#         sink_comp = SinkCompound(related_compound=related_compound)
+#         self.add_substrate(related_compound, stoich=1)
+#         self.add_product(sink_comp, stoich=1)
+
+#     @classmethod
+#     def from_biota(cls, *args, **kwargs):
+#         raise Error("SinkReaction", "from_biota", "Not allowed")

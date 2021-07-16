@@ -60,7 +60,6 @@ class FastFVA(Process):
     input_specs = { 'biomodel': (BioModel,) }
     output_specs = { 'result': (FastFVAResult,) }
     config_specs = {
-        "least_energy": {"type": bool, "default": True, "Description": "Search for minimal flux values satisfying the problem"},
         "fluxes_to_maximize": {"type": list, "default": [], "Description": "The list of fluxes to maximize"},
         "fluxes_to_minimize": {"type": list, "default": [], "Description": "The list of fluxes to minimize"},
         "solver": {"type": str, "default": "highs", "allowed_values": ["highs-ds", "highs-ipm", "highs", "interior-point"], "Description": "The optimization solver"}
@@ -70,7 +69,6 @@ class FastFVA(Process):
         self.progress_bar.add_message(message="Creating problem ...")
         bio = self.input["biomodel"]
         method = self.get_param("solver")
-        least_energy = self.get_param("least_energy")
         fluxes_to_maximize = self.get_param("fluxes_to_maximize")
         fluxes_to_minimize = self.get_param("fluxes_to_minimize")
 
@@ -83,7 +81,6 @@ class FastFVA(Process):
         self.progress_bar.add_message(message=f"Starting optimization with solver '{method}' ...")
         res: OptimizeResult = FastFBA.solve_scipy( 
             c, A_eq, b_eq, bounds, 
-            least_energy=least_energy,
             method=method
         )
         self.progress_bar.add_message(message=res.message)
@@ -111,7 +108,6 @@ class FastFVA(Process):
                 cf.iloc[i,0] = 1
                 res_fva = FastFBA.solve_scipy( 
                     cf, A_eq, b_eq, bounds, 
-                    least_energy=least_energy,
                     method=method,
                     x0 = None
                 )
@@ -121,7 +117,6 @@ class FastFVA(Process):
                 cf.iloc[i,0] = -1
                 res_fva = FastFBA.solve_scipy( 
                     cf, A_eq, b_eq, bounds, 
-                    least_energy=least_energy,
                     method=method,
                     x0 = None
                 )

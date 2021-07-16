@@ -99,29 +99,38 @@ class GapFinder(Process):
         for k in net.compounds:
             compounds[k] = {
                 "name": "",
-                "is_substrate": False,
-                "is_product": False,
+                "is_substrate": 0,
+                "is_product": 0,
                 "is_gap": False,
             }
-
+ 
         for k in net.reactions:
             rxn = net.reactions[k]
             for c_id in rxn._substrates:
                 comp = rxn._substrates[c_id]["compound"]
                 compounds[c_id]["name"] = comp.name
-                compounds[comp.id]["is_substrate"] = True
+                compounds[c_id]["is_substrate"] += 1
             for c_id in rxn.products:
                 comp = rxn.products[c_id]["compound"]
                 compounds[c_id]["name"] = comp.name
-                compounds[comp.id]["is_product"] = True
+                compounds[c_id]["is_product"] += 1
 
         # collect gaps
         for k in compounds: 
-            compounds[k]["is_gap"] = False    
-            if not compounds[k]["is_product"] or not compounds[k]["is_substrate"]:
+            if compounds[k]["is_product"] and compounds[k]["is_substrate"]:
+                is_gap = False
+            elif compounds[k]["is_product"] > 1:
+                is_gap = False #is linked to more than 1 reactions
+            elif compounds[k]["is_substrate"] > 1:
+                is_gap = False #is linked to more than 1 reactions
+            else:
+                is_gap = True
+
+            if  is_gap:
                 comp = net.compounds[k]
                 if comp.is_steady:
                     compounds[k]["is_gap"] = True
+
         for k in net.reactions:
             rxn = net.reactions[k]
             reactions[k] = {

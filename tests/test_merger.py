@@ -37,17 +37,14 @@ class TestMerge(unittest.TestCase):
 
     def test_merger(self):
         GTest.print("Test Merger")
-
         data_dir = settings.get_dir("gena:testdata_dir")
-
-        file_path = os.path.join(data_dir, "recon_net.json")
+        file_path = os.path.join(data_dir, "recon", "recon_net.json")
         net_loader_1 = NetworkLoader()
         net_loader_1.set_param("file_path", file_path)
 
-        file_path = os.path.join(data_dir, "recon_addon.json")
+        file_path = os.path.join(data_dir, "merger", "addon.json")
         net_loader_2 = NetworkLoader()
         net_loader_2.set_param("file_path", file_path)
-
         merger = NetworkMerger()
         
         proto = Protocol(
@@ -62,20 +59,26 @@ class TestMerge(unittest.TestCase):
             ]
         )
         
+        result_dir = os.path.join(data_dir, "merge")
         def _export_network(net, file_name):
-            file_path = os.path.join(data_dir, file_name+"_net.csv")
-            #with open(file_path, 'w') as f:
+            # file_path = os.path.join(result_dir, file_name+"_net.csv")
+            # with open(file_path, 'w') as f:
             #    f.write(net.to_csv())
 
+            # file_path = os.path.join(result_dir, file_name+"_net.json")
+            # with open(file_path, 'w') as f:
+            #     json.dump(net.to_json(), f)
+
+            file_path = os.path.join(result_dir, file_name+"_net.csv")
             with open(file_path, 'r') as f:
                 self.assertEqual(net.to_csv(), f.read())
 
-            file_path = os.path.join(data_dir, file_name+"_stats.csv")
+            file_path = os.path.join(result_dir, file_name+"_stats.csv")
             with open(file_path, 'w') as f:
                 table = net.render__compound_stats__as_table()
                 f.write(table.to_csv())
             
-            file_path = os.path.join(data_dir, file_name+"_gaps.csv")
+            file_path = os.path.join(result_dir, file_name+"_gaps.csv")
             with open(file_path, 'w') as f:
                 table = net.render__gaps__as_table()
                 f.write(table.to_csv())

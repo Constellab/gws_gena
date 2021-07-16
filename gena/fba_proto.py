@@ -27,7 +27,7 @@ class FBAProto(Protocol):
             biomodel_builder = BioModelBuilder()
             biomodel_builder.set_param("use_context", True)
             fba = FBA()
-            fba.set_param("least_energy_weight", 0.001)
+            fba.set_param("least_energy_weight", 0.0)
             network_fifo = FIFO2()
             network_source = Source()
             network_importer = NetworkImporter()

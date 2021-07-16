@@ -35,9 +35,8 @@ class TestRecon(unittest.TestCase):
         
     def test_recon_proto(self):
         GTest.print("Test ReconProto")
-
         data_dir = settings.get_dir("gena:testdata_dir")
-        
+        data_dir = os.path.join(data_dir, "recon")
         file_path = os.path.join(data_dir, "recon_ec_data.csv")
         ec_file = File(path=file_path)
         #ec_file.move_to_store()
@@ -54,21 +53,26 @@ class TestRecon(unittest.TestCase):
         proto.input["ec_file"] = ec_file
         proto.input["biomass_file"] = biomass_file
         proto.input["medium_file"] = medium_file
-
         recon = proto.get_draft_recon()
-        recon.set_param('tax_id', "263815")  #target pneumocyctis
+        recon.set_param('tax_id', "263815")  #pcystis murina
 
         gapfiller = proto.get_gapfiller()
-        gapfiller.set_param('tax_id', "4753")    #fungi 
+        gapfiller.set_param('tax_id', "4753")    #pcystis 
+        #gapfiller.set_param('tax_id', "4751")    #fungi
         #gapfiller.set_param('tax_id', "2759")    #eukaryota
         gapfiller.set_param('biomass_and_medium_gaps_only', True)
+        gapfiller.set_param('add_sink_reactions', True)
 
         def _export_network(net, file_name):
+            # file_path = os.path.join(data_dir, file_name+"_net.csv")
+            # with open(file_path, 'w') as f:
+            #     f.write(net.to_csv())
+
+            # file_path = os.path.join(data_dir, file_name+"_net.json")
+            # with open(file_path, 'w') as f:
+            #     json.dump(net.to_json(), f)
+
             file_path = os.path.join(data_dir, file_name+"_net.csv")
-
-            #with open(file_path, 'w') as f:
-            #    f.write(net.to_csv())
-
             with open(file_path, 'r') as f:
                 self.assertEqual(net.to_csv(), f.read())
 

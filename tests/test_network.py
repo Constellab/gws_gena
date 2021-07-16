@@ -7,7 +7,9 @@ from gws.unittest import GTest
 from gws.settings import Settings
 settings = Settings.retrieve()
 
-from gena.network import Compound, Reaction, Network
+from gena.compound import Compound
+from gena.reaction import Reaction
+from gena.network import Network
 from gena.context import Context
 from gena.biomodel import BioModel
 
@@ -95,19 +97,20 @@ class TestNetwork(unittest.TestCase):
             print(rxn.id)
             print(rxn)
         
-        
         print("--->")
         net = Network()
         rxns = Reaction.from_biota(ec_number="1.4.1.3", network=net, tax_id="42068", tax_search_method="bottom_up") 
         for rxn in rxns:
             print(rxn.id)
             print(rxn)
-        
         print(net.to_json(prettify = True, stringify = True))
+
+        print("--->")
+        sink_rxn = Reaction.create_sink_reaction(related_compound=comp4)
+        print(sink_rxn.to_str())
 
     def test_network_import(self):
         GTest.print("Test Network Import")
-
         data_dir = settings.get_dir("gena:testdata_dir")
         file_path = os.path.join(data_dir, "small_net.json")
         

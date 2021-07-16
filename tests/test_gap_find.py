@@ -8,11 +8,11 @@ from gws.settings import Settings
 from gws.file import File
 settings = Settings.retrieve()
 
-from gena.network import Compound, Reaction, Network
-from gena.context import Context
+from gena.compound import Compound 
+from gena.reaction import Reaction 
+from gena.network import Network from gena.context import Context
 from gena.biomodel import BioModel
 from gena.gap_find import GapFinder
-
 from biota.base import DbManager as BiotaDbManager
 
 class TestGapFinder(unittest.TestCase):
