@@ -134,10 +134,10 @@ class Network(Resource):
             for _id in comp.alt_chebi_ids:
                 self.__set_of_chebi_ids[comp.compartment][_id] = comp.id
         
-        if comp.inchikey:
-            if not comp.compartment in self.__set_of_chebi_ids:
-                self.__set_of_chebi_ids[comp.compartment] = {}
-            self.__set_of_inchikeys[comp.compartment][comp.inchikey] = comp.id
+        #if comp.inchikey:
+        #    if not comp.compartment in self.__set_of_chebi_ids:
+        #        self.__set_of_chebi_ids[comp.compartment] = {}
+        #    self.__set_of_inchikeys[comp.compartment][comp.inchikey] = comp.id
         
     def add_reaction(self, rxn: Reaction):
         """
@@ -290,7 +290,7 @@ class Network(Resource):
                 comp = added_comps[comp_id]  
                 # search according to compound ids
                 if re.match(r"CHEBI\:\d+$", comp_id):
-                    comps = self.get_compounds_by_chebi_id(comp_id)
+                    comps = self.get_compound_by_chebi_id(comp_id)
                     # select the compound in the good compartment
                     for c in comps:
                         if c.compartment == comp.compartment:
