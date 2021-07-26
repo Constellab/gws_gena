@@ -6,9 +6,9 @@
 import json
 from typing import List
 
-from gws.logger import Error
 from gws.file import File
 from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
+from gws.exception.bad_request_exception import BadRequestException
 
 # ####################################################################
 #
@@ -73,7 +73,7 @@ class MediumData(CSVData):
         data = super()._import(*args, index_col=0, **kwargs)
         
         if not data.column_exists( chebi_column_name ):
-            raise Error("MediumData", "_import", f"No chebi ids found (no column with name '{chebi_column_name}')")
+            raise BadRequestException(f"Cannot import MediumData. No chebi ids found (no column with name '{chebi_column_name}')")
         
         data.chebi_column_name = chebi_column_name
         return data

@@ -9,7 +9,8 @@ import copy
 
 from gws.process import Process
 from gws.settings import Settings
-from gws.logger import Error, Info
+from gws.logger import Logger
+from gws.exception.bad_request_exception import BadRequestException
 
 from biota.compound import Compound as BiotaCompound
 from biota.reaction import Reaction as BiotaReaction
@@ -20,6 +21,8 @@ from .compound import Compound
 from .reaction import Reaction
 from .network import Network
 from .biomodel import BioModel
+
+from .helper.sink_helper import SinkHelper
 
 class GapFiller(Process):
     """
@@ -47,9 +50,11 @@ class GapFiller(Process):
     input_specs = { 'network': (Network,) }
     output_specs = { 'network': (Network,) }
     config_specs = {
-        'tax_id': {"type": 'str', "default": '', "description": "The taxonomy id"},
+        'tax_id': {"type": 'str', "default": '', "description": "The taxonomy id used to fill gaps"},
         'biomass_and_medium_gaps_only': {"type": 'bool', "default": False, "description": "True to only fill gaps related to compounds comming from the biomass equation or the medium composition; False otherwise."},
-        'add_sink_reactions': {"type": 'bool', "default": False, "description": "True add sink reactions to unresolved dead-end compounds. False otherwise"},
+        'add_sink_reactions': {"type": 'bool', "default": False, "description": "True to add sink reactions to unresolved dead-end compounds. False otherwise"},
+        'skip_cofactors': {"type": 'bool', "default": True, "description": "True to skip gaps related to dead-end cofactors. False otherwise"},
+        'fill_each_gap_once': {"type": 'bool', "default": False, "description": "True to fill each gap with only one putative reaction. False otherwise"},
     }
         
     async def task(self):        
@@ -59,48 +64,55 @@ class GapFiller(Process):
         i = 0
         while True:
             i += 1
-            Info(f"Doing pass {i} ...")
-            _nb_filled = self.__fill_gaps(output_net)
+            Logger.progress(f"Doing pass {i} ...")
+            _nb_filled = self.__fill_gaps_with_tax(output_net)
             if _nb_filled <= 1:
                 message = f"Pass {i} done: {_nb_filled} gap filled."
             else:
                 message = f"Pass {i} done: {_nb_filled} gaps filled."
             if i < self.progress_bar.get_max_value():
                 self.progress_bar.set_value(i+1, message=message)
-            Info(message)
+            Logger.progress(message)
             if not _nb_filled:
                 break    
         add_sink_reactions = self.get_param("add_sink_reactions")
         if add_sink_reactions:
-            Info(f"Adding sink reactions ...")
-            _nb_filled = self.__fill_gaps_with_sinks(output_net)
-            Info(f"Done: {_nb_filled} gaps filled with sink reactions.")
+            Logger.progress(f"Adding sink reactions ...")
+            tf = self.get_param("biomass_and_medium_gaps_only")
+            _nb_filled = SinkHelper.fill_gaps_with_sinks(output_net, biomass_and_medium_gaps_only=tf)
+            Logger.progress(f"Done: {_nb_filled} gaps filled with sink reactions.")
         self.output["network"] = output_net
 
-    def __fill_gaps(self, net):
+    def __fill_gaps_with_tax(self, net):
         _nb_filled = 0
         _gap_info = net._get_gap_info()
         tax_id = self.get_param("tax_id")
         biomass_and_medium_gaps_only = self.get_param("biomass_and_medium_gaps_only")
+        skip_cofactors = self.get_param("skip_cofactors")
+        fill_each_gap_once = self.get_param("fill_each_gap_once")
+
         if tax_id:
             try:
                 tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
             except:
-                raise Error("GapFiller", "__fill_gaps", f"No taxonomy found with taxonomy id {tax_id}")
+                raise BadRequestException(f"No taxonomy found with taxonomy id {tax_id}")
         else:
             tax = None
         for k in _gap_info["compounds"]:
-            if _gap_info["compounds"][k]["is_gap"]:
+            is_gap = _gap_info["compounds"][k]["is_gap"]
+            is_orphan = _gap_info["compounds"][k]["is_orphan"]
+            if is_gap and not is_orphan:   # do not deal with orphans
                 comp: Compound = net._compounds[k]
                 if comp.is_sink:
-                    raise Error("GapFiller", "__fill_gaps", "Coherence check. A sink reaction compound should not be a gap compound.")
+                    raise BadRequestException("Coherence check. A sink reaction compound should not be a gap compound.")
 
                 if biomass_and_medium_gaps_only:
                     is_in_biomass_or_medium = net.get_compound_tag(comp.id, "is_in_biomass_or_medium")
                     if not is_in_biomass_or_medium:
                         # skip this compound
                         continue
-                if not comp.is_cofactor:
+
+                if not skip_cofactors or not comp.is_cofactor:
                     try:
                         biota_c = BiotaCompound.get(BiotaCompound.chebi_id == comp.chebi_id)
                     except Exception as _:
@@ -112,18 +124,25 @@ class GapFiller(Process):
                         continue
                     for biota_rxn in biota_c.reactions:
                         if tax:
-                            is_rxn_found_in_biota = False
+                            is_rxn_OK = False
                             enzymes = biota_rxn.enzymes
                             for e in enzymes:
                                 enzyme_tax_id = getattr(e, "tax_"+tax.rank)
                                 if enzyme_tax_id == tax.tax_id:
                                     # an enzyme exists in the taxonomy level
-                                    is_rxn_found_in_biota = True
+                                    is_rxn_OK = True
                                     break
                         else:
-                            is_rxn_found_in_biota = True
-                        if is_rxn_found_in_biota:
+                            is_rxn_OK = True
+                        
+                        _is_filled_once = False
+                        if is_rxn_OK:
                             rxns = Reaction.from_biota(biota_reaction=biota_rxn)
+                            
+                            # ...
+                            # ... @ToDo : check compound id
+                            # ...
+
                             for rxn in rxns:
                                 if not net.exists(rxn): # an existing reaction may be given by biota
                                     net.add_reaction(rxn)
@@ -132,6 +151,11 @@ class GapFiller(Process):
                                         "is_from_gap_filling": True
                                     })
                                     _nb_filled += 1
+                                    _is_filled_once = True
+                                    break #> select only one reaction
+                        
+                        if fill_each_gap_once and _is_filled_once:
+                            break
         return _nb_filled 
 
     def __fill_gaps_with_sinks(self, net):
@@ -139,10 +163,12 @@ class GapFiller(Process):
         _nb_filled = 0
         biomass_and_medium_gaps_only = self.get_param("biomass_and_medium_gaps_only")
         for k in _gap_info["compounds"]:
-            if _gap_info["compounds"][k]["is_gap"]:
+            is_gap = _gap_info["compounds"][k]["is_gap"]
+            is_orphan = _gap_info["compounds"][k]["is_orphan"]
+            if is_gap and not is_orphan:   # do not deal with orphans
                 comp: Compound = net._compounds[k]
                 if comp.is_sink:
-                    raise Error("GapFiller", "__fill_gaps", "Coherence check. A sink reaction compound should not be a gap compound.")
+                    raise BadRequestException("Coherence check. A sink reaction compound should not be a gap compound.")
                 if biomass_and_medium_gaps_only:
                     is_in_biomass_or_medium = net.get_compound_tag(comp.id, "is_in_biomass_or_medium")
                     if not is_in_biomass_or_medium:

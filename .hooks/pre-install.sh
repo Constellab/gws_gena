@@ -7,16 +7,16 @@
 # Pre-installation script executed before server installation
 
 # ensure gaia is ready!
-python3 "/lab/.gws/bricks/gaia/.hooks/pre-install.py"
-bash "/lab/.gws/bricks/gaia/.hooks/pre-install.sh"
+python3 "/lab/.core/bricks/gaia/.hooks/pre-install.py"
+bash "/lab/.core/bricks/gaia/.hooks/pre-install.sh"
 
 point="fba"
-gena_dir="/lab/.gws/externs/gena-cpp"
+gena_dir="/lab/.core/externs/gena-cpp"
 if [ ! -d "${gena_dir}" ]; then
     mkdir -p $gena_dir
 fi
 
-out_dir="/lab/.gws/bricks/gena/bin/fba"
+out_dir="/lab/.core/bricks/gena/bin/fba"
 if [ ! -d "${out_dir}" ]; then
     mkdir -p $out_dir
 fi

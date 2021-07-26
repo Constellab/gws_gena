@@ -6,7 +6,6 @@
 import os
 import math
 
-from gws.logger import Error, Info
 from gws.protocol import Protocol
 from gws.process import Process
 from gws.settings import Settings

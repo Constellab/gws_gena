@@ -17,7 +17,8 @@ import cvxpy as cp
 import re
 
 from gws.process import Process
-from gws.logger import Error, Info
+from gws.logger import Logger
+from gws.exception.bad_request_exception import BadRequestException
 
 from .base_fba import AbstractFBAResult
 from .biomodel import BioModel, FlatBioModel
@@ -25,6 +26,7 @@ from .network import Network
 from .context import Context
 from .compound import Compound
 from .service.biomodel_service import BioModelService
+from .helper.sink_helper import SinkHelper
 
 class OptimizeResult:
     """
@@ -116,7 +118,8 @@ class FastFBA(Process):
     config_specs = {
         "fluxes_to_maximize": {"type": list, "default": [], "Description": "The fluxes to maximize"},
         "fluxes_to_minimize": {"type": list, "default": [], "Description": "The fluxes to minimize"},
-        "solver": {"type": str, "default": "highs", "allowed_values": ["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], "Description": "The optimization solver"}
+        "solver": {"type": str, "default": "highs", "allowed_values": ["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], "Description": "The optimization solver"},
+        "fill_gaps_with_sinks": {"type": bool, "default": True, "Description": ""}
     }
 
     async def task(self):
@@ -125,13 +128,14 @@ class FastFBA(Process):
         method = self.get_param("solver")
         fluxes_to_maximize = self.get_param("fluxes_to_maximize")
         fluxes_to_minimize = self.get_param("fluxes_to_minimize")
-
+        fill_gaps_with_sinks = self.get_param("fill_gaps_with_sinks")
         c, A_eq, b_eq, bounds = self.build_problem(
             bio, 
             fluxes_to_maximize=fluxes_to_maximize, 
-            fluxes_to_minimize=fluxes_to_minimize
+            fluxes_to_minimize=fluxes_to_minimize,
+            fill_gaps_with_sinks=fill_gaps_with_sinks
         )
-
+        
         self.progress_bar.set_value(2, message=f"Starting optimization with solver '{method}' ...")
         if self.get_param("solver") == "quad":
             res: OptimizeResult = self.solve_cvxpy( 
@@ -143,21 +147,23 @@ class FastFBA(Process):
                 method=method
             )
         self.progress_bar.set_value(90, message=res.message)
-        Info("FastFBA", "task", res.message)
         result = FastFBAResult(optimize_result = res)
         self.output["result"] = result
 
     # -- B --
 
     @classmethod
-    def build_problem( cls, bio, *, fluxes_to_maximize = [], fluxes_to_minimize = []):
+    def build_problem( cls, bio, *, fluxes_to_maximize = [], fluxes_to_minimize = [], fill_gaps_with_sinks=True):
         flat_bio: FlatBioModel = bio.flatten(as_biomodel=True)
         flat_net: Network = flat_bio.flat_network
-
+        if fill_gaps_with_sinks:
+            SinkHelper.fill_gaps_with_sinks(flat_net)
+        
         # reshape problem
         obsv_matrix = BioModelService.create_observation_matrices(flat_bio)
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
+
         S_int = BioModelService.create_steady_stoichiometric_matrix(flat_bio)
         Y_names = [ "v_"+name for name in C.index ]
         S_zeros = DataFrame( 
@@ -206,6 +212,12 @@ class FastFBA(Process):
         lb.index = A_eq.columns
         ub = pd.concat([v_ub, y_ub], axis=0) #vert_concat
         ub.index = A_eq.columns
+
+        with open("lb.csv", "w") as fp:
+            fp.write(lb.to_csv())
+        with open("ub.csv", "w") as fp:
+            fp.write(ub.to_csv())
+        
         lb_numpy = lb.to_numpy()
         ub_numpy = ub.to_numpy()
         bounds = []
@@ -239,7 +251,7 @@ class FastFBA(Process):
                 if biomass_rxn:
                     expanded_fluxes_to_minmax.append( biomass_rxn.id + ":" + weight )
                 else:
-                    raise Error("FastFBA", "__expand_fluxes_by_names", f"Reaction to minimize not found with id '{k}'")
+                    raise BadRequestException(f"Reaction to minimize not found with id '{k}'")
             else:
                 #is_reg = re.match(r"[^0-9a-zA-Z_\-]", rxn_name)
                 #if is_reg:
@@ -251,7 +263,7 @@ class FastFBA(Process):
                     if rxn_name in list_of_rxn_names:
                         expanded_fluxes_to_minmax.append( rxn_name+":"+weight )
                     else:
-                        raise Error("FastFBA", "__expand_fluxes_by_names", f"Reaction to maximize not found with id '{k}'")
+                        raise BadRequestException(f"Reaction to maximize not found with id '{k}'")
         return list(set(expanded_fluxes_to_minmax))
 
     # -- S --
@@ -260,6 +272,12 @@ class FastFBA(Process):
     def solve_cvxpy( c, A_eq, b_eq, bounds):
         x_names = A_eq.columns
         con_names = A_eq.index
+
+        with open("A_eq.csv", "w") as fp:
+            fp.write(A_eq.to_csv())
+        with open("b_eq.csv", "w") as fp:
+            fp.write(b_eq.to_csv())
+
         A_eq = A_eq.to_numpy()
         b_eq = b_eq.to_numpy()
         n = A_eq.shape[0]
@@ -271,51 +289,30 @@ class FastFBA(Process):
         for b in bounds:
             lb.append(b[0])
             ub.append(b[1])
-
         lb = np.ndarray((m,), buffer=np.array(lb))
         ub = np.ndarray((m,), buffer=np.array(ub))
-
-        # if least_energy:
-        #     flux_order = 10
-        #     P = np.zeros((m, m))
-        #     for i in range(0,m):
-        #         if c[i] == 0.0:
-        #             P[i][i] = 1/(m * flux_order**2)
-        #     # p = np.zeros((m,1))
-        #     # for i in range(0,m):
-        #     #     if c[i] == 0.0:
-        #     #         p[i] = 1/m
-        #     prob = cp.Problem(
-        #         cp.Minimize( (1/2)*cp.quad_form(x, P) + c.T@x ),
-        #         [A_eq @ x == b_eq, x >= lb, x <= ub]
-        #     )
-        # else:
-        #     prob = cp.Problem(
-        #         cp.Minimize(c.T@x), 
-        #         [A_eq @ x == b_eq, x >= lb, x <= ub]
-        #     )
 
         has_sink = False
         P = np.zeros((m, m))
         for i in range(0,m):
             rxn_name = c.index[i]
-            is_sink_rxn = rxn_name.endswith("_"+Compound.COMPARTMENT_SINK)
+            is_sink_rxn = rxn_name.endswith("_sink")
             if is_sink_rxn:
                 P[i][i] = 1.0
                 has_sink = True
 
         c = c.to_numpy()
         if has_sink:
-                prob = cp.Problem(
-                    cp.Minimize( (1/2)*cp.quad_form(x, P) + c.T@x ),
-                    [A_eq @ x == b_eq, x >= lb, x <= ub]
-                )
+            prob = cp.Problem(
+                cp.Minimize( (1/2)*cp.quad_form(x, P) + c.T@x ),
+                [A_eq @ x == b_eq, x >= lb, x <= ub]
+            )
         else:
             prob = cp.Problem(
                 cp.Minimize(c.T@x), 
                 [A_eq @ x == b_eq, x >= lb, x <= ub]
             )
-        prob.solve()
+        prob.solve(max_iter=50000)
 
         res = dict(
             x = x.value,
@@ -329,92 +326,60 @@ class FastFBA(Process):
             success = prob.status == "optimal",
             status = prob.status
         )
+        Logger.progress(f"Optimization status: {prob.status}")
         return OptimizeResult(res)
-
 
     @staticmethod
     def solve_scipy( c, A_eq, b_eq, bounds, *, method="interior-point") -> OptimizeResult:
         x_names = A_eq.columns
         con_names = A_eq.index
-        # if least_energy:
-        #     # extend the problem 
-        #     #1) add a set of flux to explcitely account for forward/backward fluxes
-        #     #2) to set all flux values > 0
-        #     #3) update vector c to mimize all flux values (excepted thoses given in the config)
-        #     A_eq = pd.concat([A_eq, -A_eq], axis=1)
-        #     c = pd.concat([c, -c], axis=0)
-        #     new_bounds = []
-        #     for b in bounds:
-        #         lb = 0
-        #         ub = b[1]
-        #         new_bounds.append((lb, ub))
-        #     for b in bounds:
-        #         lb = 0
-        #         ub = b[1]
-        #         new_bounds.append((lb, ub))
-        #     bounds = new_bounds
-        #     m = c.shape[0]
-        #     for i in range(0, c.shape[1]):
-        #         if c.iat[i,0] == 0.0:
-        #             c.iat[i,0] = 1/m  #scaling to balance these weights with fluxes to maxize/minimize
-        #     res = linprog(
-        #         c,
-        #         A_eq=A_eq.to_numpy(),
-        #         b_eq=b_eq.to_numpy(),
-        #         bounds=bounds,
-        #         method=method,
-        #     )
-        #     if res.status == 0:
-        #         n = int(res.x.shape[0] / 2)
-        #         res.x = res.x[:n] - res.x[n:]
-        # else:
-        #     res = linprog(
-        #         c,
-        #         A_eq=A_eq.to_numpy(),
-        #         b_eq=b_eq.to_numpy(),
-        #         bounds=bounds,
-        #         method=method,
-        #     )
-
         has_sink = False
         for rxn_name in c.index:
-            if rxn_name.endswith("_"+Compound.COMPARTMENT_SINK):
+            if rxn_name.endswith("_sink"):
                 has_sink = True
                 break
-
+        
         if has_sink:
             sink_idx = []
+            none_sink_idx = []
             sink_names = []
             extended_bounds = []
             m = A_eq.shape[1]
             for i in range(0,m):
                 rxn_name = c.index[i]
-                is_sink_rxn = rxn_name.endswith("_"+Compound.COMPARTMENT_SINK)
+                is_sink_rxn = rxn_name.endswith("_sink")
                 bnd = bounds[i]
                 if is_sink_rxn:
                     sink_idx.append(i)
                     sink_names.append(rxn_name)
                     c.loc[rxn_name, 0] = 1.0
-                    ub = bnd[1]
-                    extended_bounds.append((0, ub))
+                    extended_bounds.append((0, bnd[1]))
+                    #extended_bounds.append(bnd)
                 else:
+                    none_sink_idx.append(i)
                     extended_bounds.append(bnd)
-
-            A_sink = A_eq.loc[:, sink_idx]
+                    
+            A_sink = A_eq.loc[:, sink_names]
             c_sink = c.loc[sink_names, 0] #DataFrame(data=np.ones((len(sink_idx), 1,)))
             A_eq = pd.concat([A_eq, -A_sink], axis=1)
             c = pd.concat([c, c_sink], axis=0)
             extended_bounds = [ *extended_bounds, *[extended_bounds[k] for k in sink_idx] ]
+            
+            with open("A_eq.csv", "w") as fp:
+                fp.write(A_eq.to_csv())
+            with open("b_eq.csv", "w") as fp:
+                fp.write(b_eq.to_csv())
 
             res = linprog(
                 c,
                 A_eq=A_eq.to_numpy(),
                 b_eq=b_eq.to_numpy(),
-                bounds=bounds,
+                bounds=extended_bounds,
                 method=method
             )
             if res.status == 0:
-                res.x = res.x[sink_idx] - res.x[m:]
+                res.x[sink_idx] = res.x[sink_idx] - res.x[m:] #compute sink balance
+                res.x = res.x[:m]
         else:
             res = linprog(
                 c,
@@ -436,6 +401,7 @@ class FastFBA(Process):
             success = res.success,
             status = res.status
         )
+        Logger.progress(res["message"])
         return OptimizeResult(res)
 
     # -- U --
@@ -448,24 +414,16 @@ class FastFBA(Process):
             weight = float(tab[1] if len(tab) == 2 else 1.0)
             weight = abs(weight) if direction == "min" else -abs(weight)
             if math.isnan(weight) or weight == 0:
-                raise Error("FastFBA", "build_problem", f"Invalid weight value '{tab[1]}'")
+                raise BadRequestException(f"Invalid weight value '{tab[1]}'")
             if rxn_name == "biomass":
                 biomass_rxn = flat_net.get_biomass_reaction()
                 if biomass_rxn and (biomass_rxn.id in c.index):
                     c.loc[ biomass_rxn.id, 0 ] = weight
                 else:
-                    raise Error("FastFBA", "build_problem", f"Reaction to minimize not found with id '{k}'")
+                    raise BadRequestException(f"Reaction to minimize not found with id '{k}'")
             else:
                 if (rxn_name in flat_net.reactions) and (rxn_name in c.index):
                     c.loc[rxn_name, 0] = weight
                 else:
-                    raise Error("FastFBA", "build_problem", f"Reaction to maximize not found with id '{k}'")
+                    raise BadRequestException(f"Reaction to maximize not found with id '{k}'")
         return c
-
-    # @classmethod
-    # def __upgrade_c_with_sink_fluxes_to_min(cls, c, flat_net):
-    #     for k in flat_net.reactions:
-    #         rxn = flat_net.reactions[k]
-    #         if rxn.is_sink:
-    #             c.loc[k, 0] = 1.0
-    #     return c

@@ -6,7 +6,6 @@
 import os
 import math
 
-from gws.logger import Error, Info
 from gws.protocol import Protocol
 from gws.settings import Settings
 from gws.plug import Source, Sink, FIFO2
@@ -27,7 +26,6 @@ class FBAProto(Protocol):
             biomodel_builder = BioModelBuilder()
             biomodel_builder.set_param("use_context", True)
             fba = FBA()
-            fba.set_param("least_energy_weight", 0.0)
             network_fifo = FIFO2()
             network_source = Source()
             network_importer = NetworkImporter()

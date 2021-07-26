@@ -16,7 +16,8 @@ import numpy as np
 
 from gws.resource import Resource
 from gws.process import Process
-from gws.logger import Error, Info, Progress
+from gws.logger import Progress
+from gws.exception.bad_request_exception import BadRequestException
 
 from .base_fba import AbstractFBAResult
 from .fast_fba import FastFBA, OptimizeResult
@@ -85,9 +86,9 @@ class FastFVA(Process):
         )
         self.progress_bar.add_message(message=res.message)
         if res.status != 0:
-            raise Error("FastFVA", "task", res.message)
+            raise BadRequestException(f"Convergence error. Optimization message: '{res.message}'")
 
-        self.progress_bar.add_message(message=f"Peforming variability analysis around the optimal value using solver {method} ...")
+        self.progress_bar.add_message(message=f"Peforming variability analysis around the optimal value using solver '{method}' ...")
         x0 = res.x
         n = x0.shape[0]
         xmin = np.zeros(x0.shape)
@@ -108,8 +109,7 @@ class FastFVA(Process):
                 cf.iloc[i,0] = 1
                 res_fva = FastFBA.solve_scipy( 
                     cf, A_eq, b_eq, bounds, 
-                    method=method,
-                    x0 = None
+                    method=method
                 )
                 xmin[i] = res_fva.x[i]
 
@@ -117,8 +117,7 @@ class FastFVA(Process):
                 cf.iloc[i,0] = -1
                 res_fva = FastFBA.solve_scipy( 
                     cf, A_eq, b_eq, bounds, 
-                    method=method,
-                    x0 = None
+                    method=method
                 )
                 xmax[i] = res_fva.x[i]
 

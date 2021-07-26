@@ -133,9 +133,9 @@ class TestBioModel(unittest.TestCase):
 
     def test_toy_biomodel(self):
         GTest.print("Test Toy BioModel")
-
         data_dir = settings.get_dir("gena:testdata_dir")
-        
+        data_dir = os.path.join(data_dir, "toy")
+
         file_path = os.path.join(data_dir, "toy_network.json")
         with open(file_path) as f:
             data = json.load(f)

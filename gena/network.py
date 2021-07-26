@@ -3,13 +3,14 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import re
 import json
 from typing import List, Dict
 from pathlib import Path
 from pandas import DataFrame
 import numpy as np
 
-from gws.logger import Error
+from gws.exception.bad_request_exception import BadRequestException
 from gws.resource import Resource
 from gws.utils import slugify
 from gws.view import DictView
@@ -29,13 +30,13 @@ flattening_delimiter = ":"
 #
 # ####################################################################
 
-class NoCompartmentFound(Error): 
+class NoCompartmentFound(BadRequestException): 
     pass
 
-class CompoundDuplicate(Error): 
+class CompoundDuplicate(BadRequestException): 
     pass
 
-class ReactionDuplicate(Error): 
+class ReactionDuplicate(BadRequestException): 
     pass
 
 # ####################################################################
@@ -59,7 +60,7 @@ class Network(Resource):
     #_fts_fields = {'title': 2.0, 'description': 1.0}
     _table_name = "gena_network"
     
-    _flattening_delimiter = flattening_delimiter
+    #FLATTENING_DELIMITER = Compound.FLATTENING_DELIMITER
     _defaultNetwork = None
     _stats = None
     _cofactor_freq_threshold = 0.7
@@ -70,13 +71,17 @@ class Network(Resource):
         self._compounds = {}
         self._reactions = {}
         self._compartments = {
-            "e": "extracellular",
-            "c": "cytosol",
-            "n": "nucleus",
-            "b": "biomass"
+            # "e": "extracellular",
+            # "c": "cytosol",
+            # "n": "nucleus",
+            # "b": "biomass"
         }
         self._medium = {}
         
+        self.__set_of_chebi_ids = {}
+        self.__set_of_ec_numbers = {}
+        self.__set_of_rhea_ids = {}
+
         if self.data:
             self.__build_from_dump(self.data["network"])
         else:
@@ -91,12 +96,9 @@ class Network(Resource):
             }
         
         self._stats = {}
-        
-        # only used for the reconstruction
-        # self.data["errors"] = []
-        
+   
     # -- A --
-        
+    
     def add_compound(self, comp: Compound):
         """
         Adds a compound 
@@ -106,23 +108,36 @@ class Network(Resource):
         """
         
         if not isinstance(comp, Compound):
-            raise Error("Network", "add_compound", "The compound must an instance of Compound")
+            raise BadRequestException("The compound must an instance of Compound")
         
         if comp.network and comp.network != self:
-            raise Error("Network", "add_compound", "The compound is already in another network")
+            raise BadRequestException("The compound is already in another network")
         
         if comp.id in self._compounds:
-            raise CompoundDuplicate("Network", "add_compound", f"Compound id {comp.id} duplicate")
+            raise CompoundDuplicate(f"Compound id {comp.id} duplicate")
         
         if not comp.compartment:
-            raise NoCompartmentFound("Network", "add_compound", "No compartment defined for the compound")
+            raise NoCompartmentFound("No compartment defined for the compound")
         
         if not comp.compartment in self._compartments:
-            self.compartments[comp.compartment] = comp.compartment
+            suffix = comp.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
+            self.compartments[comp.compartment] = Compound.COMPARTMENTS[suffix]["name"]
         
         comp.network = self
         self.compounds[comp.id] = comp
         self._stats = {}
+
+        if comp.chebi_id:
+            if not comp.compartment in self.__set_of_chebi_ids:
+                self.__set_of_chebi_ids[comp.compartment] = {}
+            self.__set_of_chebi_ids[comp.compartment][comp.chebi_id] = comp.id
+            for _id in comp.alt_chebi_ids:
+                self.__set_of_chebi_ids[comp.compartment][_id] = comp.id
+        
+        if comp.inchikey:
+            if not comp.compartment in self.__set_of_chebi_ids:
+                self.__set_of_chebi_ids[comp.compartment] = {}
+            self.__set_of_inchikeys[comp.compartment][comp.inchikey] = comp.id
         
     def add_reaction(self, rxn: Reaction):
         """
@@ -133,76 +148,114 @@ class Network(Resource):
         """
         
         if not isinstance(rxn, Reaction):
-            raise Error("Network", "add_reaction", "The reaction must an instance of Reaction")
+            raise BadRequestException("The reaction must an instance of Reaction")
         
         if rxn.network:
-            raise Error("Network", "add_reaction", "The reaction is already in a network")
+            raise BadRequestException("The reaction is already in a network")
         
         if rxn.id in self.reactions:
-            raise ReactionDuplicate("Network", "add_reaction", f"Reaction id {rxn.id} duplicate")
+            raise ReactionDuplicate(f"Reaction id {rxn.id} duplicate")
         
         # add reaction compounds to the network
-        for k in rxn.substrates:            
+        for k in rxn.substrates.copy():            
             sub = rxn.substrates[k]
             comp = sub["compound"]
-            if not comp.id in self.compounds:
-                self.add_compound(comp)
-        
-        for k in rxn.products:
+            stoich = sub["stoichiometry"]
+            if not self.exists(comp):
+                if comp.chebi_id:
+                    existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
+                    if existing_comp:
+                        # the compound already exists
+                        # ... use the existing compound
+                        rxn.add_substrate(existing_comp, stoich)
+                        rxn.remove_substrate(existing_comp)
+                    else:
+                        self.add_compound(comp)
+                else:
+                    self.add_compound(comp)
+            
+        for k in rxn.products.copy():
             prod = rxn.products[k]
             comp = prod["compound"]
-            if not comp.id in self.compounds:
-                self.add_compound(comp)
+            stoich = sub["stoichiometry"]
+            if not self.exists(comp):
+                if comp.chebi_id:
+                    existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
+                    if existing_comp:
+                        # the compound already exists
+                        # ... use the existing compound
+                        rxn.add_product(existing_comp, stoich)
+                        rxn.remove_product(existing_comp)
+                    else:
+                        self.add_compound(comp)
+                else:
+                    self.add_compound(comp)
                 
         # add the reaction
         rxn.network = self
         self.reactions[rxn.id] = rxn
         self._stats = {}
+
+        if rxn.rhea_id:
+            self.__set_of_rhea_ids[rxn.rhea_id] = rxn.id
+        if rxn.enzyme:
+            ec = rxn.enzyme.get("ec_number")
+            if ec:
+                self.__set_of_ec_numbers[ec] = rxn.id
               
     # -- B --
-    
+
     def __build_from_dump(self, data):
         """
         Create a network from a dump
         """
         
         if not data.get("compartments"):
-            raise Error("Network", "__build_from_dump", f"Invalid network dump")
-            
-        delim = self._flattening_delimiter
+            raise BadRequestException("Invalid network dump")
+
         self.compartments = data["compartments"]
         ckey = "compounds" if "compounds" in data else "metabolites"
-        
+
         added_comps = {}
         for val in data[ckey]:
             compart = val["compartment"]
-            
             if not compart in self.compartments:
-                raise Error("Network", "__build_from_dump", f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
-            
-            chebi_id = ""
-            comp = None
+                raise BadRequestException(f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
+   
+            chebi_id = val.get("chebi_id", "")
+            inchikey = val.get("inchikey", "")
+            # if re.match(r"CHEBI\:\d+$", val["id"]):
+            #     chebi_id = val["id"]
 
-            id = val["id"]
-            chebi_id = val.get("chebi_id","")
-            if "CHEBI:" in id:
-                chebi_id = id
-            
-            if chebi_id:
+            is_BIGG_data_format = ("annotation" in val)
+            alt_chebi_ids = []
+            if not chebi_id and not inchikey and is_BIGG_data_format:
+                annotation = val["annotation"]
+                alt_chebi_ids = annotation.get("chebi",[])
+                inchikey = annotation.get("inchi_key", [""])[0]
+                if alt_chebi_ids:
+                    chebi_id = alt_chebi_ids.pop(0)
+
+            _id = val["id"] #.replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
+            comp = None
+            if chebi_id or inchikey:
                 try:
                     comp = Compound.from_biota(
-                        id=val["id"].replace(delim,"_"), \
+                        id=_id, \
                         name=val.get("name",""), \
                         chebi_id=chebi_id,
+                        inchikey=inchikey, \
                         compartment=compart,
                         network=self
                     )
-                except:
+                    if alt_chebi_ids:
+                        comp.alt_chebi_ids = alt_chebi_ids
+                except:   
                     pass
-                 
-            if not comp:   
+            
+            if comp is None:
                 comp = Compound(
-                    id=val["id"].replace(delim,"_"), \
+                    id=_id, \
                     name=val.get("name",""), \
                     network=self, \
                     compartment=compart,\
@@ -211,15 +264,16 @@ class Network(Resource):
                     monoisotopic_mass = val.get("monoisotopic_mass",""),\
                     formula = val.get("formula",""),\
                     inchi = val.get("inchi",""),\
-                    chebi_id = val.get("chebi_id",""),\
+                    inchikey = val.get("inchikey",""),\
+                    chebi_id = chebi_id,\
+                    alt_chebi_ids = alt_chebi_ids,\
                     kegg_id = val.get("kegg_id","")\
                 )
-            
-            added_comps[id] = comp
+            added_comps[_id] = comp
 
         for val in data["reactions"]:
             rxn = Reaction(
-                id=val["id"].replace(delim,"_"), \
+                id=val["id"], #.replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER),\
                 name=val.get("name"), \
                 network=self, \
                 lower_bound=val.get("lower_bound", Reaction.lower_bound), \
@@ -233,21 +287,14 @@ class Network(Resource):
                 rxn.set_estimate(val.get("estimate"))
 
             for comp_id in val[ckey]:
-                comp = added_comps[comp_id]
-                
+                comp = added_comps[comp_id]  
                 # search according to compound ids
-                if "CHEBI:" in comp_id:
+                if re.match(r"CHEBI\:\d+$", comp_id):
                     comps = self.get_compounds_by_chebi_id(comp_id)
                     # select the compound in the good compartment
                     for c in comps:
                         if c.compartment == comp.compartment:
                             break
-                
-                #print(comp_id)
-                #print("--" + str(comp))
-                #print("--" + comp.id)
-                #print("--" + comp.name)
-                #print("--" + comp.compartment)
 
                 stoich = val[ckey][comp_id]
                 if stoich < 0:
@@ -255,11 +302,8 @@ class Network(Resource):
                 elif stoich > 0:
                     rxn.add_product( comp, stoich )
 
-            #print(rxn.to_str())
-
-        self.data["name"] = data.get( "name", "Network_"+self.uri ).replace(delim,"_")
+        self.data["name"] = data.get( "name", "Network_"+self.uri ) #.replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
         self.data["description"] = data.get("description","")
-        
         if data.get("tags"):
             self.data["tags"] = data.get("tags")
         
@@ -433,7 +477,7 @@ class Network(Resource):
         if isinstance(elt, Compound):
             return elt.id in self.compounds
             
-        raise Error("Network", "exists", "Invalid element. The element must be an instance of gws.gena.Compound or gws.gena.Reaction")
+        raise BadRequestException("Invalid element. The element must be an instance of gws.gena.Compound or gws.gena.Reaction")
     
     # -- E --
     
@@ -446,7 +490,6 @@ class Network(Resource):
         """
         
         file_extension = Path(file_path).suffix
-        
         with open(file_path, 'r') as fp:
             if file_extension in [".json"] or file_format == ".json":
                 data = self.to_json()
@@ -454,7 +497,7 @@ class Network(Resource):
             elif file_extension in [".csv", ".txt", ".tsv"] or file_format in [".csv", ".txt", ".tsv"]:
                 fp.write(self.to_csv())
             else:
-                raise Error("Network","_export","Invalid file format")
+                raise BadRequestException("Invalid file format")
             
     # -- F --
     
@@ -554,7 +597,7 @@ class Network(Resource):
         
         return self._compounds.get(comp_id)
     
-    def get_compounds_by_chebi_id(self, chebi_id: str, compartment: str=None)->Compound:
+    def get_compound_by_chebi_id(self, chebi_id: str, compartment: str=None)->Compound:
         """
         Get a compound by its chebi id and compartment.
         
@@ -565,23 +608,33 @@ class Network(Resource):
         :return: The compound or `None` if the compond is not found
         :rtype: `gena.network.Compound` or `None`
         """
-        
+
         if isinstance(chebi_id, float) or isinstance(chebi_id, int):
             chebi_id = f"CHEBI:{chebi_id}"
         
         if "CHEBI" not in chebi_id:
             chebi_id = f"CHEBI:{chebi_id}"
         
-        _list = []
-        for chebi_id in self._compounds:
-            comp = self._compounds[chebi_id]
-            if comp.chebi_id == chebi_id:
-                if compartment is None:
-                    _list.append(comp)
-                elif comp.compartment == compartment:
-                    _list.append(comp)
+        if not compartment in self.__set_of_chebi_ids:
+            return None
         
-        return _list
+        c_id = self.__set_of_chebi_ids[compartment].get(chebi_id)
+        if c_id:
+            return self._compounds[c_id]
+        else:
+            return None
+
+        # _list = []
+        # for _id in self._compounds:
+        #     comp: Compound = self._compounds[_id]
+        #     OK = ( comp.chebi_id == chebi_id ) or \
+        #          ( chebi_id in comp.alt_chebi_ids )
+        #     if OK:
+        #         if compartment is None:
+        #             _list.append(comp)
+        #         elif comp.compartment == compartment:
+        #             _list.append(comp)
+        # return _list
     
     def get_reaction_by_id(self, rxn_id: str)->Reaction:
         """
@@ -605,10 +658,32 @@ class Network(Resource):
         :rtype: `gena.network.Reaction` or `None`
         """
         
-        for k in self._reactions:
-            rxn = self._reactions[k]
-            if rxn.ec_number == ec_number:
-                return rxn
+        r_id = self.__set_of_ec_numbers.get(ec_number)
+        if r_id:
+            return self._reactions[r_id]
+        else:
+            return None
+
+        # for k in self._reactions:
+        #     rxn = self._reactions[k]
+        #     if rxn.ec_number == ec_number:
+        #         return rxn
+
+    def get_reaction_by_rhea_id(self, rhea_id: str)->Reaction:
+        """
+        Get a reaction by its rhea id.
+        
+        :param rhea_id: The rhea id of the reaction
+        :type rhea_id: `str`
+        :return: The reaction or `None` if the reaction is not found
+        :rtype: `gena.network.Reaction` or `None`
+        """
+        
+        r_id = self.__set_of_rhea_ids.get(rhea_id)
+        if r_id:
+            return self._reactions[r_id]
+        else:
+            return None
 
     def _get_gap_info(self, gap_only=False)->dict:
         """
@@ -714,6 +789,14 @@ class Network(Resource):
     def get_number_of_compounds(self) -> int:
         return len(self.compounds)
 
+    # -- H --
+
+    def has_sink(self) -> bool:
+        for k in self.compounds:
+            comp: Compound = self.compounds[k]
+            if comp.is_sink:
+                return True
+                
     # -- I --
 
     @classmethod
@@ -733,7 +816,7 @@ class Network(Resource):
                 try:
                     _json = json.load(fp)
                 except Exception as err:
-                    raise Error("Network","_import", f"Cannot load JSON file {file_path}. Error: {err}")  
+                    raise BadRequestException(f"Cannot load JSON file {file_path}. Error: {err}")  
                 if _json.get("reactions"):
                     # is a raw network data
                     net = cls.from_json(_json)
@@ -741,9 +824,9 @@ class Network(Resource):
                     # is gws resource
                     net = cls.from_json(_json["data"]["network"])
                 else:
-                    raise Error("Network","_import","Invalid network data")
+                    raise BadRequestException("Invalid network data")
         else:
-            raise Error("Network","_import","Invalid file format")
+            raise BadRequestException("Invalid file format")
         return net
     
     # -- N --
@@ -871,14 +954,14 @@ class Network(Resource):
     
     def set_reaction_tag(self, tag_id, tag: dict):
         if not isinstance(tag, dict):
-            raise Error("Network", "add_tag", "The tag must be a dictionary")  
+            raise BadRequestException("The tag must be a dictionary")  
         if not tag_id in self.data["tags"]["reactions"]:
             self.data["tags"]["reactions"][tag_id] = {}
         self.data["tags"]["reactions"][tag_id].update(tag)
 
     def set_compound_tag(self, tag_id, tag: dict):
         if not isinstance(tag, dict):
-            raise Error("Network", "add_tag", "The tag must be a dictionary")
+            raise BadRequestException("The tag must be a dictionary")
         if not tag_id in self.data["tags"]["compounds"]:
             self.data["tags"]["compounds"][tag_id] = {}
         self.data["tags"]["compounds"][tag_id].update(tag)

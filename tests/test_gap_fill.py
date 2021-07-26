@@ -32,36 +32,49 @@ class TestGapFinder(unittest.TestCase):
     
     def test_gap_finder(self):
         GTest.print("Test GapFiller")
-        organism = "pcys"
-        data_dir = settings.get_dir("gena:testdata_dir")
-        file_path = os.path.join(data_dir, "pcys", f"{organism}.json")
-        with open(file_path, 'r') as fp:
-            json_data = json.load(fp)
-        net = Network.from_json(json_data)
+        def _gap_fill(organism):
+            data_dir = settings.get_dir("gena:testdata_dir")
+            file_path = os.path.join(data_dir, organism, f"{organism}.json")
+            with open(file_path, 'r') as fp:
+                json_data = json.load(fp)
+            net = Network.from_json(json_data)
 
-        nb_gaps = 0
-        info = net._get_gap_info()
-        for k in info["compounds"]:
-            if info["compounds"][k]["is_gap"]:
-                nb_gaps += 1
-        print(f"Total number of gaps: {nb_gaps} over {len(info['compounds'])} compounds")
+            nb_gaps = 0
+            info = net._get_gap_info()
+            for k in info["compounds"]:
+                if info["compounds"][k]["is_gap"]:
+                    nb_gaps += 1
+            print(f"Total number of gaps: {nb_gaps} over {len(info['compounds'])} compounds")
 
-        gapfiller = GapFiller()
-        #gapfiller.set_param('tax_id', "4753")    #fungi 
-        gapfiller.set_param('tax_id', "4751")    #fungi
-        gapfiller.set_param('add_sink_reactions', True)
-        gapfiller.input["network"] = net
+            gapfiller = GapFiller()
+            if organism == "pcys":
+                gapfiller.set_param('tax_id', "4751")    #fungi
+            else:
+                gapfiller.set_param('tax_id', "562")    #ecoli
+                #gapfiller.set_param('tax_id', "2")    #bacteria
 
-        def _on_end(*args, **kwargs):
-            result = gapfiller.output["network"]
-            result_dir = os.path.join(data_dir, 'gap_fill')
-            if not os.path.exists(result_dir):
-                os.makedirs(result_dir)
-            file_path = os.path.join(result_dir, f"{organism}.json")
-            with open(file_path, 'w') as fp:
-                json.dump(result.to_json(), fp)
+            gapfiller.set_param('add_sink_reactions', True)
+            gapfiller.input["network"] = net
 
-        e = gapfiller.create_experiment(user=GTest.user, study=GTest.study)
-        e.on_end(_on_end)
-        asyncio.run( e.run() )
+            def _on_end(*args, **kwargs):
+                result = gapfiller.output["network"]
+                result_dir = os.path.join(data_dir, 'gap_fill')
+                if not os.path.exists(result_dir):
+                    os.makedirs(result_dir)
+                
+                file_path = os.path.join(result_dir, f"{organism}.json")
+                with open(file_path, 'w') as fp:
+                    json.dump(result.to_json(), fp)
+
+                # file_path = os.path.join(result_dir, f"{organism}.json")
+                # with open(file_path, 'r') as fp:
+                #     expected_json = json.load(fp)
+                #     self.assertEquals(result.to_json(), expected_json)
+
+            e = gapfiller.create_experiment(user=GTest.user, study=GTest.study)
+            e.on_end(_on_end)
+            asyncio.run( e.run() )
+
+        #_gap_fill("pcys")
+        _gap_fill("ecoli_gap")
 

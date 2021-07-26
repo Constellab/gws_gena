@@ -42,7 +42,7 @@ class TestMerge(unittest.TestCase):
         net_loader_1 = NetworkLoader()
         net_loader_1.set_param("file_path", file_path)
 
-        file_path = os.path.join(data_dir, "merger", "addon.json")
+        file_path = os.path.join(data_dir, "merge", "addon.json")
         net_loader_2 = NetworkLoader()
         net_loader_2.set_param("file_path", file_path)
         merger = NetworkMerger()

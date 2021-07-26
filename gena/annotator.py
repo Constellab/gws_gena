@@ -5,6 +5,7 @@
 
 import json
 import math
+from copy import deepcopy
 
 from gws.process import Process
 
@@ -27,11 +28,9 @@ class BioModelAnnotator(Process):
         flat_bio = input_biomodel.flatten()
         flux_rev_mapping = flat_bio["reverse_mapping"]
         fba_result = self.input["fba_result"]
-
         annotated_bio = BioModel()
         for k in input_biomodel.networks:
-            net = input_biomodel.networks[k].copy()
-
+            net = deepcopy(input_biomodel.networks[k])
             for rnx_id in net.reactions:
                 rxn = net.reactions[rnx_id]
                 net_name = net.name
@@ -42,8 +41,6 @@ class BioModelAnnotator(Process):
                     "lower_bound": fluxes.loc[flat_id, "lower_bound"],
                     "upper_bound": fluxes.loc[flat_id, "upper_bound"],
                 })
-
             net.save()
             annotated_bio.add_network(net)
-
         self.output["biomodel"] = annotated_bio

@@ -4,7 +4,6 @@
 # About us: https://gencovery.com
 
 import math
-from gws.logger import Error, Info
 from gws.process import Process
 from gena.network import Network, Compound, Reaction, ReactionDuplicate, CompoundDuplicate
 from gena.data import ECData, BiomassData, MediumData

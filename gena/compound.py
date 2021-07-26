@@ -3,9 +3,10 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import re
 from typing import List
 
-from gws.logger import Error
+from gws.exception.bad_request_exception import BadRequestException
 from gws.utils import slugify
 from gws.json import *
 
@@ -14,8 +15,6 @@ from biota.compound import Compound as BiotaCompound
 def slugify_id(_id):
     return slugify(_id, snakefy=True, to_lower=False)
     
-flattening_delimiter = ":"
-
 # ####################################################################
 #
 # Compound class
@@ -53,18 +52,23 @@ class Compound:
     :type kegg_id: `str`
     """
     
-    id = None
-    name = None
+    id = ""
+    name = ""
     network = None
     charge = None
     mass = None
     monoisotopic_mass = None
-    formula = None
-    inchi = None
-    compartment = None
-    chebi_id = None
-    kegg_id = None
+    formula = ""
+    inchi = ""
+    compartment = ""
+    chebi_id = ""
+    alt_chebi_ids: List = None
+    kegg_id = ""
+    inchikey = ""
     
+    FLATTENING_DELIMITER = "_"
+    COMPARTMENT_DELIMITER = "_"
+
     COMPARTMENT_CYTOSOL    = "c"
     COMPARTMENT_NUCLEUS    = "n"
     COMPARTMENT_MITOCHONDRION = "m"
@@ -121,24 +125,33 @@ class Compound:
         "CHEBI:29034": "iron_3",
     }
     
-    _flattening_delimiter = flattening_delimiter
+    
     
     def __init__(self, id="", name="", compartment=None, \
                  network:'Network'=None, formula="", \
                  charge="", mass="", monoisotopic_mass="", inchi="", \
-                 chebi_id="", kegg_id=""):  
+                 inchikey="", chebi_id="", alt_chebi_ids: List=None, kegg_id=""):  
         
+        if chebi_id is None:
+            chebi_id = ""
+        if inchikey is None:
+            inchikey = ""
+        if not isinstance(chebi_id, str):
+            raise BadRequestException("The chebi_id must be a string")
+        if not isinstance(inchikey, str):
+            raise BadRequestException("The inchikey must be a string")
+
         if not compartment:
             compartment = Compound.COMPARTMENT_CYTOSOL
 
         if len(compartment) == 1:
             if not compartment in self.COMPARTMENTS.keys():
-                raise Error("gena.compound.Compound", "__init__", f"Invalid compartment '{compartment}'")
+                raise BadRequestException(f"Invalid compartment '{compartment}'")
             compartment_suffix = compartment
         else:
-            compartment_suffix = compartment.split("_")[-1]
+            compartment_suffix = compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
             if not compartment_suffix in self.COMPARTMENTS.keys():
-                raise Error("gena.compound.Compound", "__init__", f"Invalid compartment '{compartment}'")
+                raise BadRequestException(f"Invalid compartment '{compartment}'")
 
         self.compartment = compartment   
 
@@ -146,28 +159,36 @@ class Compound:
             self.id = slugify_id(id)
             is_compartment_found = False
             for c in self.COMPARTMENTS.keys():
-                if self.id.endswith("_" + c):
+                if self.id.endswith(Compound.COMPARTMENT_DELIMITER + c):
                     is_compartment_found = True
             if not is_compartment_found:
-                raise Error("Compound", "__init__", f"Invalid compound id '{self.id}'. No compartment suffix found.")
+                raise BadRequestException(f"Invalid compound id '{self.id}'. No compartment suffix found.")
             #if not is_compartment_found:
-            #    self.id = slugify_id(self.id + "_" + compartment_suffix)
+            #    self.id = slugify_id(self.id + Compound.COMPARTMENT_DELIMITER + compartment_suffix)
             
-            # if not self.id.endswith("_" + self.compartment):
-            #     raise Error("Compound", "__init__", f"Invalid compound id '{self.id}'. The id suffix must be {self.compartment}.")
+            if not self.id.endswith(Compound.COMPARTMENT_DELIMITER + compartment_suffix):
+                raise BadRequestException(f"Invalid compound id '{self.id}'. The id suffix must be {compartment_suffix}.")
         else:
-            # try to use chebi compound name if possible
+            # try to use inchikey or chebi compound name if possible
             if not name:
-                if chebi_id:
+                if inchikey:
+                    try:
+                        c = BiotaCompound.get(BiotaCompound.inchikey == inchikey)
+                        name = c.get_name()
+                        is_found = True
+                    except:
+                        is_found = False
+                
+                if not is_found and chebi_id:
                     try:
                         c = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
                         name = c.get_name()
                     except:
                         name = chebi_id
                 else:
-                    raise Error("gena.compound.Compound", "__init__", "Please provide at least a valid compound id, name or chebi_id")
+                    raise BadRequestException("Please provide at least a valid compound id, name or chebi_id")
 
-            self.id = slugify_id(name + "_" + compartment)
+            self.id = slugify_id(name + Compound.COMPARTMENT_DELIMITER + compartment)
         
         if not name:
             name = self.id
@@ -180,10 +201,12 @@ class Compound:
         self.mass = mass
         self.monoisotopic_mass = monoisotopic_mass
         self.formula = formula
-        self.inchi = inchi        
+        self.inchi = inchi
+        self.inchikey = inchikey
         self.chebi_id = chebi_id
         self.kegg_id = kegg_id
-        
+        self.alt_chebi_ids = (alt_chebi_ids if alt_chebi_ids else [])
+
     # -- A --
 
     def add_to_network(self, net: 'Network'):  
@@ -200,14 +223,16 @@ class Compound:
 
     @classmethod
     def create_sink_compound(cls, related_compound: 'Compound') -> 'Compound':
-        if related_compound.compartment.endswith("_" + Compound.COMPARTMENT_SINK):
-            raise Error("Compound", "create_sink_compound", "Cannot add a sink reaction to another sink reaction")
-        name = related_compound.name
-        network = related_compound.network
+        if related_compound.compartment.endswith(Compound.COMPARTMENT_DELIMITER + Compound.COMPARTMENT_SINK):
+            raise BadRequestException("Cannot add a sink reaction to another sink reaction")
+
         return Compound(
-            name=name,
+            id=related_compound.id + "_s",
+            name=related_compound.name,
             compartment=Compound.COMPARTMENT_SINK,
-            network=network
+            chebi_id=related_compound.chebi_id,
+            inchikey=related_compound.inchikey,
+            network=related_compound.network
         )
 
     # -- F --
@@ -227,15 +252,15 @@ class Compound:
         :rtype: `str`
         """
         
-        delim = cls._flattening_delimiter
+        flat_delim = Compound.FLATTENING_DELIMITER
         skip_list = [ cls.COMPARTMENT_EXTRACELL ]
         for compart in skip_list:
-            if id.endswith("_" + compart) or (is_compartment and id == compart):
+            if id.endswith(Compound.COMPARTMENT_DELIMITER + compart) or (is_compartment and id == compart):
                 return id
-        return slugify_id(ctx_name + delim + id.replace(delim,"_"))
+        return slugify_id(ctx_name + flat_delim + id.replace(flat_delim,Compound.COMPARTMENT_DELIMITER))
      
     @classmethod
-    def from_biota(cls, id=None, name=None, biota_compound=None, chebi_id=None, kegg_id=None, compartment=None, network=None) -> 'Compound':
+    def from_biota(cls, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="", compartment="", network=None) -> 'Compound':
         """
         Create a network compound from a ChEBI of Kegg id
         
@@ -250,34 +275,49 @@ class Compound:
         """
         
         if not biota_compound:
-            try:
-                if chebi_id:
-                    if isinstance(chebi_id, float) or isinstance(chebi_id, int):
-                        chebi_id = f"CHEBI:{chebi_id}"
+            if inchikey:
+                try:
+                    biota_compound = BiotaCompound.get(BiotaCompound.inchikey == inchikey)
+                except:
+                    pass
+            
+            if not biota_compound and chebi_id:
+                if isinstance(chebi_id, float) or isinstance(chebi_id, int):
+                    chebi_id = f"CHEBI:{chebi_id}"
+                if re.match(r"CHEBI\:\d+$", chebi_id): # not in chebi_id:
+                    chebi_id = chebi_id
+                try:
+                    biota_compound = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
+                except:
+                    pass
+            
+            if not biota_compound and kegg_id:
+                try:
+                    biota_compound = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
+                except:
+                    pass
+        
+        if not biota_compound:
+            raise BadRequestException(f"Cannot find compound (inchikey={inchikey}, chebi_id={chebi_id}, kegg_id={kegg_id})")
 
-                    if "CHEBI" not in chebi_id:
-                        chebi_id = f"CHEBI:{chebi_id}"
-
-                    comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                elif kegg_id:
-                    comp = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
-                else:
-                    raise Error("gena.compound.Compound", "from_biota", "Invalid arguments")
-            except:
-                raise Error("gena.compound.Compound", "from_biota", "Chebi compound not found")
-        else:
-            comp = biota_compound
-        if compartment is None:
+        if not compartment:
             compartment = Compound.COMPARTMENT_CYTOSOL
         if not name:
-            name = comp.name
-        c = cls(id=id, name=name, compartment=compartment, network=network)
-        c.chebi_id = comp.chebi_id
-        c.kegg_id = comp.kegg_id
-        c.charge = comp.charge
-        c.formula = comp.formula
-        c.mass = comp.mass
-        c.monoisotopic_mass = comp.monoisotopic_mass
+            name = biota_compound.name
+        
+        c = Compound(
+            id=id, 
+            name=name, 
+            compartment=compartment, 
+            network=network
+        )
+        c.chebi_id = biota_compound.chebi_id
+        c.kegg_id = biota_compound.kegg_id
+        c.inchikey = biota_compound.inchikey
+        c.charge = biota_compound.charge
+        c.formula = biota_compound.formula
+        c.mass = biota_compound.mass
+        c.monoisotopic_mass = biota_compound.monoisotopic_mass
         return c
 
     # -- I --
@@ -291,7 +331,7 @@ class Compound:
         :rtype: `bool`
         """
         
-        compartment_suffix = self.compartment.split("_")[-1]
+        compartment_suffix = self.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
         return  compartment_suffix != self.COMPARTMENT_EXTRACELL and \
                 compartment_suffix != self.COMPARTMENT_BIOMASS and \
                 compartment_suffix != self.COMPARTMENT_SINK
@@ -305,7 +345,7 @@ class Compound:
         :rtype: `bool`
         """
 
-        compartment_suffix = self.compartment.split("_")[-1]
+        compartment_suffix = self.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
         return compartment_suffix == Compound.COMPARTMENT_BIOMASS
 
     @property
@@ -317,7 +357,7 @@ class Compound:
         :rtype: `bool`
         """
 
-        compartment_suffix = self.compartment.split("_")[-1]
+        compartment_suffix = self.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
         return compartment_suffix == Compound.COMPARTMENT_SINK
 
     @property
@@ -329,7 +369,7 @@ class Compound:
         :rtype: `bool`
         """
 
-        compartment_suffix = self.compartment.split("_")[-1]
+        compartment_suffix = self.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
         return self.COMPARTMENTS[compartment_suffix]["is_steady"]
 
     @property
@@ -378,20 +418,3 @@ class Compound:
             return comp.reactions
         except:
             return None
-
-# class SinkCompound(Compound):
-    
-#     def __init__(self, related_compound: Compound = None):
-#         if isinstance(related_compound, SinkCompound):
-#             raise Error("SinkCompound", "__init__", "Cannot add a sink reaction to another sink reaction")
-#         name = related_compound.name
-#         network = related_compound.network
-#         super().__init__(
-#             name=name,
-#             compartment=Compound.COMPARTMENT_SINK,
-#             network=network
-#         )
-
-#     @classmethod
-#     def from_biota(cls, *args, **kwargs):
-#         raise Error("SinkReaction", "from_biota", "Not allowed")

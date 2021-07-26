@@ -32,8 +32,8 @@ class TestContext(unittest.TestCase):
 
     def test_context(self):
         GTest.print("Test Context")
-
         data_dir = settings.get_dir("gena:testdata_dir")
+        data_dir = os.path.join(data_dir, "toy")
         file_path = os.path.join(data_dir, "toy_context.json")
         
         with open(file_path) as f:
@@ -51,8 +51,8 @@ class TestContext(unittest.TestCase):
         
     def test_context_builder(self):
         GTest.print("Test Context Builder")
-
         data_dir = settings.get_dir("gena:testdata_dir")
+        data_dir = os.path.join(data_dir, "toy")
         
         # flux
         file_path = os.path.join(data_dir, "toy_flux_data.csv")

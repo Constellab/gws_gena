@@ -6,9 +6,9 @@
 import json
 from typing import List
 
-from gws.logger import Error
 from gws.file import File
 from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
+from gws.exception.bad_request_exception import BadRequestException
 
 # ####################################################################
 #
@@ -99,16 +99,16 @@ class FluxData(CSVData):
         data = super()._import(*args, index_col=0, **kwargs)
 
         if not data.column_exists( target_column_name ):
-            raise Error("FluxData", "_import", f"No target found (no column with name '{target_column_name}')")
+            raise BadRequestException(f"Cannot import FluxData. No target found (no column with name '{target_column_name}')")
             
         if not data.column_exists( upper_bound_column_name ):
-            raise Error("FluxData", "_import", f"No upper bound found (no column with name '{upper_bound_column_name}')")
+            raise BadRequestException(f"Cannot import FluxData. No upper bound found (no column with name '{upper_bound_column_name}')")
             
         if not data.column_exists( lower_bound_column_name ):
-            raise Error("FluxData", "_import", f"No lower bound found (no column with name '{lower_bound_column_name}')")
+            raise BadRequestException(f"Cannot import FluxData. No lower bound found (no column with name '{lower_bound_column_name}')")
             
         if not data.column_exists( confidence_score_column_name ):
-            raise Error("FluxData", "_import", f"No confidence score found (no column with name '{confidence_score_column_name}')")
+            raise BadRequestException(f"Cannot import FluxData. No confidence score found (no column with name '{confidence_score_column_name}')")
         
         data.target_column_name = target_column_name
         data.upper_bound_column_name = upper_bound_column_name

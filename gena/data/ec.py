@@ -6,9 +6,9 @@
 import json
 from typing import List
 
-from gws.logger import Error
 from gws.file import File
 from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
+from gws.exception.bad_request_exception import BadRequestException
 
 # ####################################################################
 #
@@ -72,7 +72,7 @@ class ECData(CSVData):
         data = super()._import(*args, **kwargs)
         
         if not data.column_exists( ec_column_name ):
-            raise Error("ECData", "_import", f"No ec numbers found (no column with name '{ec_column_name}')")
+            raise BadRequestException(f"Cannot import CSVData. No ec numbers found (no column with name '{ec_column_name}')")
         
         data.ec_column_name = ec_column_name
         return data

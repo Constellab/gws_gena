@@ -8,7 +8,9 @@ from scipy.linalg import null_space
 from pandas import DataFrame
 from typing import Dict
 
-from gws.logger import Error
+from gws.exception.bad_request_exception import BadRequestException
+from ..biomodel import FlatBioModel
+from ..context import Variable
 
 # ####################################################################
 #
@@ -19,7 +21,7 @@ from gws.logger import Error
 class BioModelService:
     
     @classmethod
-    def create_fba_problem(cls, flat_biomodel: 'FlatBioModel') -> Dict[str, DataFrame]:
+    def create_fba_problem(cls, flat_biomodel: FlatBioModel) -> Dict[str, DataFrame]:
         """
         Creates a FBA problem using a biomdel object
 
@@ -39,7 +41,7 @@ class BioModelService:
         }
     
     @classmethod
-    def create_stoichiometric_matrix(cls, flat_biomodel: 'FlatBioModel') -> DataFrame:
+    def create_stoichiometric_matrix(cls, flat_biomodel: FlatBioModel) -> DataFrame:
         """
         Creates the full stoichiometric matrix using a biomodel object
 
@@ -49,15 +51,13 @@ class BioModelService:
         :rtype: `DataFrame`
         """
 
-        from gena.biomodel import FlatBioModel
         if not isinstance(flat_biomodel, FlatBioModel):
-            raise Error("BioModelService", "create_observation_matrices", "A flat model is required")
-        
+            raise BadRequestException("Cannot create the stoichiometric matrix. A flat model is required")
         flat_net = next(iter(flat_biomodel.networks.values()))
         return flat_net.create_stoichiometric_matrix()
 
     @classmethod
-    def create_steady_stoichiometric_matrix(cls, flat_biomodel: 'FlatBioModel') -> DataFrame:
+    def create_steady_stoichiometric_matrix(cls, flat_biomodel: FlatBioModel) -> DataFrame:
         """
         Creates the steady stoichiometric matrix using a biomodel object
 
@@ -67,15 +67,13 @@ class BioModelService:
         :rtype: `DataFrame`
         """
 
-        from gena.biomodel import FlatBioModel
         if not isinstance(flat_biomodel, FlatBioModel):
-            raise Error("BioModelService", "create_observation_matrices", "A flat model is required")
-        
+            raise BadRequestException("Cannot create the observation matrices. A flat model is required")
         flat_net = next(iter(flat_biomodel.networks.values()))
         return flat_net.create_steady_stoichiometric_matrix()
 
     @classmethod
-    def create_non_steady_stoichiometric_matrix(cls, flat_biomodel: 'FlatBioModel') -> DataFrame:
+    def create_non_steady_stoichiometric_matrix(cls, flat_biomodel: FlatBioModel) -> DataFrame:
         """
         Creates the non_steady stoichiometric matrix using a biomodel object
 
@@ -85,15 +83,13 @@ class BioModelService:
         :rtype: `DataFrame`
         """
 
-        from gena.biomodel import FlatBioModel
         if not isinstance(flat_biomodel, FlatBioModel):
-            raise Error("BioModelService", "create_observation_matrices", "A flat model is required")
-        
+            raise ErBadRequestExceptionror("A flat model is required")
         flat_net = next(iter(flat_biomodel.networks.values()))
         return flat_net.create_non_steady_stoichiometric_matrix()
 
     @classmethod
-    def create_observation_matrices(cls, flat_biomodel: 'FlatBioModel') -> Dict[str, DataFrame]:
+    def create_observation_matrices(cls, flat_biomodel: FlatBioModel) -> Dict[str, DataFrame]:
         """
         Creates the observation matrices (i.e. such as C * y = b, where b is measurement vector)
 
@@ -103,99 +99,44 @@ class BioModelService:
         :rtype: Dict[`str`, `DataFrame`]
         """
 
-        from gena.biomodel import FlatBioModel
-        from gena.context import Variable
-        
         if not isinstance(flat_biomodel, FlatBioModel):
-            raise Error("BioModelService", "create_observation_matrices", "A flat model is required")
-        
+            raise BadRequestException("A flat model is required")
         flat_net = next(iter(flat_biomodel.networks.values()))
         flat_ctx = next(iter(flat_biomodel.contexts.values()))
-
         rxn_ids = list(flat_net.reactions.keys())
         measure_ids = flat_ctx.get_measure_ids()
-
         C = DataFrame(
             index = measure_ids,
             columns = rxn_ids,
             data = np.zeros((len(measure_ids),len(rxn_ids)))
         )
-
         b = DataFrame(
             index = measure_ids,
             columns = ["target", "lb", "ub", "confidence_score"],
             data = np.zeros((len(measure_ids),4))
         )
-
         for k in flat_ctx.measures:
             measure = flat_ctx.measures[k]
             meas_id = measure.id
-
             b.loc[meas_id, :] = [
                 measure.target, 
                 measure.lower_bound, 
                 measure.upper_bound,
                 measure.confidence_score
             ]
-
             for v in measure.variables:
                 ref_id = v.reference_id
                 ref_type = v.reference_type
                 coef = v.coefficient
-
                 if ref_type == Variable.REACTION_REFERENCE_TYPE:
                     rxn_id = ref_id
                     C.at[meas_id, rxn_id] = coef
                 else:
-                    raise Error("BioModelService", "create_observation_matrices", "Variables of type metabolite/compound are not supported in context")
-        
+                    raise BadRequestException("Variables of type metabolite/compound are not supported in context")
         return {
             "C": C,
             "b": b
         }
-        #return C, b
-
-    # @classmethod
-    # def extract_steady_stoichiometric_matrix(cls, S_full: DataFrame) -> DataFrame:
-    #     """
-    #     Extracts the steady stoichiometric matrix
-
-    #     :param S_full: A full stoichiometric matrix
-    #     :type S_full: `DataFrame`
-    #     :returns: The steady stoichiometric matrix
-    #     :rtype: `DataFrame`
-    #     """
-
-    #     from gena.network import Network
-        
-    #     comp_names = S_full.index
-    #     selected_comp_names = []
-    #     for name in comp_names:
-    #         if Network.is_intracell(name):
-    #             selected_comp_names.append(name)
-                
-    #     return S_full.loc[selected_comp_names, :]
-
-    # @classmethod
-    # def extract_non_steady_stoichiometric_matrix(cls, S_full: DataFrame) -> DataFrame:
-    #     """
-    #     Extracts the non-steady stoichiometric matrix
-
-    #     :param S_full: A full stoichiometric matrix
-    #     :type S_full: `DataFrame`
-    #     :returns: The non-steady stoichiometric matrix
-    #     :rtype: `DataFrame`
-    #     """
-
-    #     from gena.network import Network
-
-    #     comp_names = S_full.index
-    #     selected_comp_names = []
-    #     for name in comp_names:
-    #         if Network.is_extracell(name, include_biomass=include_biomass):
-    #             selected_comp_names.append(name)
-                
-    #     return S_full.loc[selected_comp_names, :]
 
     @classmethod
     def compute_nullspace(cls, A: DataFrame) -> DataFrame:

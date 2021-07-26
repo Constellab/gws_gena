@@ -12,7 +12,6 @@ from gws.typing import Path
 from gws.shell import Shell
 from gws.file import File
 from gws.settings import Settings
-from gws.logger import Error
 
 from .fba import FBA, FBAResult
 from .biomodel import BioModel

@@ -8,7 +8,7 @@ import uuid
 from typing import List, Dict
 from pathlib import Path
 
-from gws.logger import Error
+from gws.exception.bad_request_exception import BadRequestException
 from gws.resource import Resource
 from gws.process import Process
 from gws.utils import generate_random_chars, slugify
@@ -37,7 +37,7 @@ class Variable:
     
     def __init__( self, coefficient: float, reference_id: str, reference_type: str = "metabolite"):
         if not reference_type in self._allowed_ref_types:
-            raise Error("gena.context.Variable", "__init__", "Invalid reference_type")
+            raise BadRequestException("Invalid reference_type")
         self.coefficient = coefficient
         self.reference_id = reference_id
         self.reference_type = reference_type
@@ -90,7 +90,7 @@ class Measure:
     
     def add_variable(self, variable: Variable):
         if not isinstance(variable, Variable):
-            raise Error("gena.context.Measure", "add_variable", "The variable must an instance of Variable")
+            raise BadRequestException("The variable must an instance of Variable")
         self._variables.append(variable)
     
     def to_json(self):
@@ -166,7 +166,7 @@ class Context(Resource):
     
     def add_measure(self, measure: Measure):
         if measure.id in self._measures:
-            raise Error("gena.context.Context", "add_measure", "Measure duplicate")
+            raise BadRequestException("Measure duplicate")
         self._measures[measure.id] = measure
 
     # -- B --
@@ -294,16 +294,16 @@ class ContextBuilder(Process):
             #    ref_type = Variable.METABOLITE_REFERENCE_TYPE
 
             if not ref:
-                raise Error("ContextBuilder", "task", f"No reference reaction found with id {ref_id}")
+                raise BadRequestException(f"No reference reaction found with id {ref_id}")
         
             if ubounds[i] < lbounds[i]:
-                raise Error("ContextBuilder", "task", f"Flux {ref_id}: the lower bound must be greater than upper bound")
+                raise BadRequestException(f"Flux {ref_id}: the lower bound must be greater than upper bound")
                 
             if targets[i] < lbounds[i]:
-                raise Error("ContextBuilder", "task", f"Flux {ref_id}: the target must be greater than lower bound")
+                raise BadRequestException(f"Flux {ref_id}: the target must be greater than lower bound")
                 
             if targets[i] > ubounds[i]:
-                raise Error("ContextBuilder", "task", f"Flux {ref_id}: the target must be smaller than upper bound")
+                raise BadRequestException(f"Flux {ref_id}: the target must be smaller than upper bound")
             
             m = Measure(
                 id = "measure_" + ref_id,

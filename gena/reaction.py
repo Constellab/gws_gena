@@ -3,7 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws.logger import Error
+from gws.exception.bad_request_exception import BadRequestException
 from gws.utils import slugify
 from gws.json import *
 
@@ -26,10 +26,10 @@ flattening_delimiter = ":"
 #
 # ####################################################################
 
-class SubstrateDuplicate(Error): 
+class SubstrateDuplicate(BadRequestException): 
     pass
 
-class ProductDuplicate(Error): 
+class ProductDuplicate(BadRequestException): 
     pass
 
 
@@ -64,13 +64,13 @@ class Reaction:
     :type enzyme: `dict`
     """
     
-    id: str = None
-    name: str = None
+    id: str = ""
+    name: str = ""
     network: 'Network' = None
     direction: str = "B"
     lower_bound: float = -1000.0
     upper_bound: float = 1000.0
-    rhea_id: str = None
+    rhea_id: str = ""
     enzyme: dict = None
     
     _tax_ids = []
@@ -97,7 +97,7 @@ class Reaction:
                 self.name = self.id
         
         if not self.id:
-            raise Error("gena.reaction.Reaction", "__init__", "At least a valid reaction id or name is reaction")
+            raise BadRequestException("At least a valid reaction id or name is reaction")
             
         if direction in ["B", "L", "R"]:
             self.direction = direction
@@ -124,7 +124,7 @@ class Reaction:
         """
         
         net.add_reaction(self)
-    
+
     def add_substrate( self, comp: Compound, stoich: float ):
         """
         Adds a substrate to the reaction
@@ -176,8 +176,8 @@ class Reaction:
     @classmethod
     def create_sink_reaction(self, related_compound: Compound = None, lower_bound: float = -1000.0, upper_bound: float = 1000.0) -> 'Reaction':        
         if not isinstance(related_compound, Compound):
-            raise Error("Reaction", "create_sink_reaction", "A compound is required")
-        name = "rxn_" + related_compound.id + "_sink"
+            raise BadRequestException("A compound is required")
+        name = related_compound.id + "_sink"
         network = related_compound.network
         rxn = Reaction(
             name = name,
@@ -238,8 +238,7 @@ class Reaction:
         """
         
         rxns = []
-        #tax_tree = BiotaTaxo._tax_tree
-        
+
         def __create_rxn(rhea_rxn, network, enzyme):
             if enzyme:
                 e = {
@@ -260,10 +259,7 @@ class Reaction:
                         e["tax"][t.rank] = {
                             "tax_id": t.tax_id,
                             "name": t.get_name()
-                        }
-                #for f in BiotaTaxo._tax_tree: 
-                #    e[f] = getattr(enzyme, "tax_"+f)
-                    
+                        }  
                 if enzyme.related_deprecated_enzyme:
                     e["related_deprecated_enzyme"] = {
                         "ec_number": enzyme.related_deprecated_enzyme.ec_number,
@@ -319,7 +315,7 @@ class Reaction:
             tax = None
             Q = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
             if not Q:
-                raise Error("gena.reaction.Reaction", "from_biota", f"No reaction found with rhea id {rhea_id}")
+                raise BadRequestException(f"No reaction found with rhea id {rhea_id}")
             _added_rxns = []
             for rhea_rxn in Q:
                 for e in rhea_rxn.enzymes:
@@ -338,24 +334,12 @@ class Reaction:
                 try:
                     tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
                 except:
-                    raise Error("Reaction", "from_biota", f"No taxonomy found with tax_id {tax_id}") 
+                    raise BadRequestException(f"No taxonomy found with tax_id {tax_id}") 
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
                 if not Q:
                     if tax_search_method == 'bottom_up':
                         found_Q = []
                         Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
-
-                        #-> for each ec: we select the best enzyme
-                        #is_best_enzyme_found_for_this_ec = False
-                        #for e in Q:
-                        #    for t in tax.ancestors:
-                        #        if t.rank == "no rank":
-                        #            continue
-                        #        if getattr(e, "tax_"+t.rank) == t.tax_id:
-                        #            found_Q.append(e)
-                        #            is_best_enzyme_found_for_this_ec = True
-                        #            break  #-> stop at this taxonomy rank
-                        
                         tab = {}
                         for e in Q:
                             if not e.ec_number in tab:
@@ -384,12 +368,12 @@ class Reaction:
                         if found_Q:
                             Q = found_Q
                 if not Q:
-                    raise Error("gena.reaction.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")  
+                    raise BadRequestException(f"No enzyme found with ec number {ec_number}")  
                 _added_rxns = []
-                messages = []
+                #messages = []
                 for e in Q:
-                    if not e.reactions:
-                        messages.append(f"No rhea found for {e.ec_number}")              
+                    # if not e.reactions:
+                    #     messages.append(f"No rhea found for {e.ec_number}")              
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
@@ -401,18 +385,18 @@ class Reaction:
                             # skip error!
                             pass
                 if not rxns:
-                    messages.append(f"No new reactions found with ec number {ec_number}")
-                    raise Error("gena.reaction.Reaction", "from_biota", ", ".join(messages))  
+                    #messages.append(f"No new reactions found with ec number {ec_number}")
+                    raise BadRequestException(f"No new reactions found with ec number {ec_number}")  
             else:
                 #Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
                 if not Q:
-                    raise Error("gena.reaction.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")
+                    raise BadRequestException("gena.reaction.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
-                messages = []
+                # messages = []
                 for e in Q:
-                    if not e.reactions:
-                        messages.append(f"No rhea found for {e.ec_number}")
+                    # if not e.reactions:
+                    #     messages.append(f"No rhea found for {e.ec_number}")
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
@@ -422,10 +406,10 @@ class Reaction:
                         except:
                             pass
                 if not rxns:
-                    messages.append(f"No new reactions found with ec number {ec_number}")
-                    raise Error("gena.reaction.Reaction", "from_biota",  ", ".join(messages))
+                    # messages.append(f"No new reactions found with ec number {ec_number}")
+                    raise BadRequestException(f"No new reactions found with ec number {ec_number}")
         else:
-            raise Error("gena.reaction.Reaction", "from_biota", "Invalid arguments")
+            raise BadRequestException("gena.reaction.Reaction", "from_biota", "Invalid arguments")
         return rxns
 
     # -- G --
@@ -457,6 +441,34 @@ class Reaction:
     
     # -- R --
     
+    def remove_substrate( self, comp: Compound ):
+        """
+        Removes a substrate to the reaction
+        
+        :param comp: The compound to remove
+        :type comp: `gena.compound.Compound`
+        """
+        
+        if not comp.id in self._substrates:
+            raise BadRequestException(f"Substrate (id= {comp.id}) does not exist")
+        
+        # remove the compound to the reaction network
+        del self._substrates[comp.id]
+    
+    def remove_product( self, comp: Compound ):
+        """
+        Remove a product to the reaction
+        
+        :param comp: The compound to remove
+        :type comp: `gena.compound.Compound`
+        """
+        
+        if not comp.id in self._products:
+            raise BadRequestException(f"Product (id= {comp.id}) does not exist")
+        
+        # remove the compound to the reaction network
+        del self._products[comp.id]
+
     def get_related_biota_reaction(self):
         """
         Get the biota reaction that is related to this network reaction
@@ -474,13 +486,13 @@ class Reaction:
     
     def set_estimate(self, estimate: dict):
         if not "value" in estimate:
-            Error("Reaction", "set_estimate", "No value in estimate data")
+            BadRequestException("No value in estimate data")
 
         if not "lower_bound" in estimate:
-            Error("Reaction", "set_estimate", "No lower_bound in estimate data")
+            BadRequestException("No lower_bound in estimate data")
 
         if not "upper_bound" in estimate:
-            Error("Reaction", "set_estimate", "No upper_bound in estimate data")
+            BadRequestException("No upper_bound in estimate data")
 
         self._estimate = estimate
 
@@ -538,25 +550,3 @@ class Reaction:
         _str = " + ".join(_left) + _dir[self.direction].replace("E", self.enzyme.get("ec_number","")) + " + ".join(_right)
         #_str = _str + " " + str(self.enzyme)
         return _str
-
-# class SinkReaction(Reaction):
-
-#     def __init__(self, related_compound: Compound = None, lower_bound: float = -1000.0, upper_bound: float = 1000.0):        
-#         if not isinstance(related_compound, Compound):
-#             raise Error("SinkReaction", "__init__", "A compound is required")
-#         name = "rxn_" + related_compound.name + "_sink"
-#         network = related_compound.network
-#         super().__init__(
-#             name = name,
-#             network = network,
-#             direction = "B",
-#             lower_bound = lower_bound,
-#             upper_bound = upper_bound
-#         )
-#         sink_comp = SinkCompound(related_compound=related_compound)
-#         self.add_substrate(related_compound, stoich=1)
-#         self.add_product(sink_comp, stoich=1)
-
-#     @classmethod
-#     def from_biota(cls, *args, **kwargs):
-#         raise Error("SinkReaction", "from_biota", "Not allowed")

@@ -6,9 +6,9 @@
 import json
 from typing import List
 
-from gws.logger import Error
 from gws.file import File
 from gws.csv import CSVData, CSVLoader, CSVDumper, CSVImporter, CSVExporter
+from gws.exception.bad_request_exception import BadRequestException
 
 # ####################################################################
 #
@@ -94,10 +94,10 @@ class BiomassData(CSVData):
         
         data = super()._import(*args, index_col=0, **kwargs)
         if not data.column_exists( chebi_column_name ):
-            raise Error("BiomassData", "_import", f"No CheBI ID column found (no column with name '{chebi_column_name}')")
+            raise BadRequestException(f"Cannot import BiomassData. No CheBI ID column found (no column with name '{chebi_column_name}')")
         
         if not data.column_exists( biomass_column_name ):
-            raise Error("BiomassData", "_import", f"No biomass equation found (no column with name '{biomass_column_name}')")
+            raise BadRequestException(f"Cannot import BiomassData.  No biomass equation found (no column with name '{biomass_column_name}')")
         
         data.biomass_column_name = biomass_column_name
         data.chebi_column_name = chebi_column_name

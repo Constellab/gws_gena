@@ -34,8 +34,7 @@ class TestFba(unittest.TestCase):
     def test_fba(self):
         GTest.print("Test FBAProto")
         data_dir = settings.get_dir("gena:testdata_dir")
-        data_dir = os.path.join(data_dir, "toy")
-
+        data_dir = os.path.join(data_dir, "toy_gap")
         proto = FBAProto()
         
         file_path = os.path.join(data_dir, "toy_network.json")

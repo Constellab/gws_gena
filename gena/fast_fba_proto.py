@@ -6,7 +6,6 @@
 import os
 import math
 
-from gws.logger import Error, Info
 from gws.protocol import Protocol
 from gws.settings import Settings
 from gws.plug import Source, Sink, FIFO2

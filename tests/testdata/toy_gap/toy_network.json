@@ -1,0 +1,125 @@
+{
+    "id": "toy",
+    "name": "toy_cell",
+    "metabolites": [
+        {
+            "id": "X1_c",
+            "name": "X1",
+            "compartment":"c"
+        },
+        {
+            "id": "X2_c",
+            "name": "X2",
+            "compartment":"c"
+        },
+        {
+            "id": "X3_c",
+            "name": "X3",
+            "compartment":"c"
+        },
+        {
+            "id": "X4_c",
+            "name": "X4",
+            "compartment":"c"
+        },
+        {
+            "id": "X5_c",
+            "name": "X5",
+            "compartment":"c"
+        },
+        {
+            "id": "X1_e",
+            "name": "X1_e",
+            "compartment":"e"
+        },
+        {
+            "id": "X2_e",
+            "name": "X2_e",
+            "compartment":"e"
+        },
+        {
+            "id": "X4_e",
+            "name": "X4_e",
+            "compartment":"e"
+        },
+        {
+            "id": "X5_e",
+            "name": "X5_e",
+            "compartment":"e"
+        },
+        {
+            "id": "XB_b",
+            "name": "XB_b",
+            "compartment":"b"
+        }
+    ],
+    "reactions": [
+        {
+            "id": "R2",
+            "name": "R2",
+            "metabolites": {
+                "X4_c": -1.0,
+                "X3_c": 1.0
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "id": "RB",
+            "name": "RB",
+            "metabolites": {
+                "X3_c": -1.0,
+                "X5_c": -2.0,
+                "XB_b": 3.0
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "id": "R1_ex",
+            "name": "R1_ex",
+            "metabolites": {
+                "X1_e": -1.0,
+                "X1_c": 1.0
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "id": "R2_ex",
+            "name": "R2_ex",
+            "metabolites": {
+                "X2_c": -1.0,
+                "X2_e": 1.0
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "id": "R4_ex",
+            "name": "R4_ex",
+            "metabolites": {
+                "X4_e": -1.0,
+                "X4_c": 1.0
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        },
+        {
+            "id": "R5_ex",
+            "name": "R5_ex",
+            "metabolites": {
+                "X5_e": -1.0,
+                "X5_c": 1.0
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0
+        }
+    ],
+    "compartments": {
+        "c": "cytosol",
+        "e": "extracellular",
+        "n": "nucleus",
+        "b": "biomass"
+    }
+}

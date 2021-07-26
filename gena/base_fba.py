@@ -5,7 +5,6 @@
 
 import abc
 from pandas import DataFrame
-from gws.logger import Error
 from gws.resource import Resource
 
 class AbstractFBAResult(Resource):

@@ -4,8 +4,8 @@
 # About us: https://gencovery.com
 
 import math
-from gws.logger import Error, Info
 from gws.process import Process
+from gws.exception.bad_request_exception import BadRequestException
 
 from .network import Network, Compound, Reaction, ReactionDuplicate, CompoundDuplicate
 from .data import ECData, BiomassData, MediumData
@@ -105,7 +105,7 @@ class DraftRecon(Process):
                 # ... the reactoin alread exits => OK!
                 pass
             except Exception as err:
-                raise Error("DraftRecon", "_create_culture_medium", f"Unexpected error. Exception: {err}")
+                raise BadRequestException(f"Cannot create culture medium reactions. Exception: {err}")
                 
             i += 1
             

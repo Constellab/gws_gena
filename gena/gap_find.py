@@ -11,7 +11,6 @@ from pandas import DataFrame
 from gws.process import Process
 from gws.resource import Resource
 from gws.settings import Settings
-from gws.logger import Error, Info
 from gws.view import DictView
 from .network import Network
 
@@ -102,6 +101,7 @@ class GapFinder(Process):
                 "is_substrate": 0,
                 "is_product": 0,
                 "is_gap": False,
+                "is_orphan": False,
             }
  
         for k in net.reactions:
@@ -117,6 +117,7 @@ class GapFinder(Process):
 
         # collect gaps
         for k in compounds: 
+            is_orphan = False
             if compounds[k]["is_product"] and compounds[k]["is_substrate"]:
                 is_gap = False
             elif compounds[k]["is_product"] > 1:
@@ -125,11 +126,16 @@ class GapFinder(Process):
                 is_gap = False #is linked to more than 1 reactions
             else:
                 is_gap = True
+                if not compounds[k]["is_product"] and not compounds[k]["is_substrate"]:
+                    is_orphan = True
 
-            if  is_gap:
+            if is_gap:
                 comp = net.compounds[k]
                 if comp.is_steady:
                     compounds[k]["is_gap"] = True
+
+            if is_orphan:
+                compounds[k]["is_orphan"] = True
 
         for k in net.reactions:
             rxn = net.reactions[k]

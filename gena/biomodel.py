@@ -8,7 +8,7 @@ import uuid
 from typing import List
 from copy import deepcopy
 
-from gws.logger import Error
+from gws.exception.bad_request_exception import BadRequestException
 from gws.resource import Resource
 from gws.process import Process
 
@@ -63,15 +63,15 @@ class BioModel(Resource):
         """
         
         if not isinstance(network, Network):
-            raise Error("Network", "add_network", "The network must an instance of Network")
+            raise BadRequestException("The network must an instance of Network")
         if not network.is_saved():
             network.save()
         if network.uri in self.networks:
-            raise Error("Network", "add_network", f"Network uri '{network.uri }'' duplicated")
+            raise BadRequestException(f"Network uri '{network.uri }'' duplicated")
         self.networks[network.uri] = network
         if related_context:
             if not isinstance(related_context, Context):
-                raise Error("Network", "add_network", "The related context must be an instance of Context")
+                raise BadRequestException("The related context must be an instance of Context")
             self.add_context(related_context, network)
         
     def add_context(self, ctx: 'Context', related_network: 'Network' = None):  
@@ -85,19 +85,19 @@ class BioModel(Resource):
         """
         
         if not isinstance(ctx, Context):
-            raise Error("Network", "add_context", "The context must be an instance of Context")
+            raise BadRequestException("The context must be an instance of Context")
         if not ctx.is_saved():
             ctx.save()
         if ctx.uri in self.contexts:
-            raise Error("Network", "add_context", f"Context id {ctx.uri} duplicate")
+            raise BadRequestException(f"Context id {ctx.uri} duplicate")
         self.contexts[ctx.uri] = ctx
         if related_network:
             if not isinstance(related_network, Network):
-                raise Error("Network", "add_context", "The related network must be an instance of Network")
+                raise BadRequestException("The related network must be an instance of Network")
             if not related_network.is_saved():
                 related_network.save()
             if not related_network.uri in self.networks:
-                raise Error("Network", "add_context", f"The related networks is not found")
+                raise BadRequestException("The related networks is not found")
             # ckeck that the context is consistent with the related network 
             reaction_ids = related_network.get_reaction_ids()
             for k in ctx.measures:
@@ -105,9 +105,9 @@ class BioModel(Resource):
                 for v in measure.variables:
                     if v.reference_type == Variable.REACTION_REFERENCE_TYPE:
                         if not v.reference_id in reaction_ids:
-                            raise Error("BioModel", "add_context", f"The reaction '{v.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
+                            raise BadRequestException(f"The reaction '{v.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
                     else:
-                        raise Error("BioModel", "add_context", f"Invalid reference type '{v.reference_type}' for the context measure '{measure.id}'")
+                        raise BadRequestException(f"Invalid reference type '{v.reference_type}' for the context measure '{measure.id}'")
             self.network_contexts[related_network.uri] = ctx
     
     # -- B --

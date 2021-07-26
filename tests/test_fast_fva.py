@@ -36,7 +36,8 @@ class TestFba(unittest.TestCase):
     def test_small_fva(self):
         GTest.print("Test FastFVAProto: Small metwork")
         data_dir = settings.get_dir("gena:testdata_dir")
-
+        data_dir = os.path.join(data_dir, "toy")
+        
         proto = FastFVAProto()
         file_path = os.path.join(data_dir, "toy_network.json")
         network_file = File(path=file_path)
@@ -47,7 +48,6 @@ class TestFba(unittest.TestCase):
         proto.input["context_file"] = ctx_file
 
         fva = proto.get_fva()
-        fva.set_param('least_energy', False)
 
         def _on_end(*args, **kwargs):
             result = proto.output["fva_result"]
@@ -82,7 +82,6 @@ class TestFba(unittest.TestCase):
         proto.input["network_file"] = network_file
         proto.input["context_file"] = ctx_file
         fba = proto.get_fva()
-        fba.set_param('least_energy', False)
 
         if organism == 'ecoli':
             fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
