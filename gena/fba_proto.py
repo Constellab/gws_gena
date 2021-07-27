@@ -53,14 +53,14 @@ class FBAProto(Protocol):
                 (context_fifo>>"resource").pipe(biomodel_builder<<"context", lazy=True),
                 biomodel_builder>>"biomodel" | fba<<"biomodel",
                 biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
-                fba>>"file" | biomodel_annotator<<"fba_result"
+                fba>>"result" | biomodel_annotator<<"fba_result"
             ]
             interfaces = {
                 "network_file": network_importer<<"file",
                 "context_file": context_importer<<"file"
             }
             outerfaces = {
-                "fba_file": fba>>"file",
+                "fba_file": fba>>"result",
                 "annotated_biomodel": biomodel_annotator>>"biomodel"
             }
             self._build(

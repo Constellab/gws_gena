@@ -5,7 +5,6 @@
 
 import json
 import math
-from copy import deepcopy
 
 from gws.process import Process
 
@@ -30,7 +29,7 @@ class BioModelAnnotator(Process):
         fba_result = self.input["fba_result"]
         annotated_bio = BioModel()
         for k in input_biomodel.networks:
-            net = deepcopy(input_biomodel.networks[k])
+            net = input_biomodel.networks[k].copy()
             for rnx_id in net.reactions:
                 rxn = net.reactions[rnx_id]
                 net_name = net.name

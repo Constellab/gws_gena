@@ -23,7 +23,7 @@ class RndExplorerResult(FBAResult):
 
 class RndExplorer(FBA):
     input_specs = { 'biomodel': (BioModel,) }
-    output_specs = { 'file': (RndExplorerResult,) }
+    output_specs = { 'result': (RndExplorerResult,) }
     #config_specs = {
     #    "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
     #    "ineq_tol": {"type": float, "default": 1e-6, "Description": "Inequality constraint tolerance"},

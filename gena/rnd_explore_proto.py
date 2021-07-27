@@ -12,6 +12,7 @@ from gws.plug import Source, Sink, FIFO2
 from gws.io import Interface, Outerface
 from gws.file import *
 
+from .annotator import BioModelAnnotator
 from .network import NetworkImporter
 from .biomodel import BioModel, BioModelBuilder
 from .rnd_explore import RndExplorer
@@ -28,24 +29,29 @@ class RndExplorerProto(Protocol):
             network_fifo = FIFO2()
             network_source = Source()
             network_importer = NetworkImporter()
+            biomodel_annotator = BioModelAnnotator()
             processes = {
                 "network_fifo": network_fifo,
                 "network_source": network_source,
                 "network_importer": network_importer,
                 "biomodel_builder": biomodel_builder,
-                "rnd_explorer": rnd_explorer
+                "rnd_explorer": rnd_explorer,
+                "biomodel_annotator": biomodel_annotator
             }
             connectors = [
                 network_source>>"resource" | network_fifo<<"resource_1",
                 network_importer>>"data" | network_fifo<<"resource_2",
                 (network_fifo>>"resource").pipe(biomodel_builder<<"network", lazy=True),
-                biomodel_builder>>"biomodel" | rnd_explorer<<"biomodel"
+                biomodel_builder>>"biomodel" | rnd_explorer<<"biomodel",
+                biomodel_builder>>"biomodel" | biomodel_annotator<<"biomodel",
+                rnd_explorer>>"result" | biomodel_annotator<<"fba_result",
             ]
             interfaces = {
                 "network_file": network_importer<<"file"
             }
             outerfaces = {
-                "rnd_explorer_file": rnd_explorer>>"file"
+                "annotated_biomodel": biomodel_annotator>>"biomodel",
+                "rnd_explorer_result": rnd_explorer>>"result"
             }
             self._build(
                 processes = processes,
@@ -62,6 +68,9 @@ class RndExplorerProto(Protocol):
 
     def get_biomodel_builder(self) -> BioModelBuilder:
         return self._processes["biomodel_builder"]
+
+    def get_biomodel_annotator(self) -> BioModelAnnotator:
+        return self._processes["biomodel_annotator"]
 
     def get_rnd_explorer(self) -> RndExplorer:
         return self._processes["rnd_explorer"]

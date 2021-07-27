@@ -43,24 +43,33 @@ class TestRndExplorer(unittest.TestCase):
         proto.input["network_file"] = network_file
 
         def _on_end(*args, **kwargs):
-            f = proto.output["rnd_explorer_file"]
+            rnd_explorer_result = proto.output["rnd_explorer_result"]
+            annotated_biomodel = proto.output["annotated_biomodel"]
+
             result_dir = os.path.join(organism_dir, 'rnd_explore')
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
-                
+            
+            print("Annotated biomodel:")
+            print("------------")
+            file_path = os.path.join(result_dir, "annotated_network.json")
+            with open(file_path, 'w') as fp:
+                for net in annotated_biomodel.networks.values():
+                    json.dump(net.to_json(shallow=False), fp)
+
             print("Fluxes:")
             print("------------")
-            print(f.render__flux_ranges__as_table())
+            print(rnd_explorer_result.render__flux_ranges__as_table())
             file_path = os.path.join(result_dir, "flux.csv")
             with open(file_path, 'w') as fp:
-                fp.write( f.render__flux_ranges__as_table().to_csv() )
+                fp.write( rnd_explorer_result.render__flux_ranges__as_table().to_csv() )
 
             print("SV:")
             print("------------")
-            print(f.render__sv_ranges__as_table())
+            print(rnd_explorer_result.render__sv_ranges__as_table())
             file_path = os.path.join(result_dir, "sv.csv")
             with open(file_path, 'w') as fp:
-                fp.write( f.render__sv_ranges__as_table().to_csv() )
+                fp.write( rnd_explorer_result.render__sv_ranges__as_table().to_csv() )
                 
         e = proto.create_experiment(study=GTest.study, user=GTest.user)
         e.on_end(_on_end)

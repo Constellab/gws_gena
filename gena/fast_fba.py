@@ -213,11 +213,6 @@ class FastFBA(Process):
         ub = pd.concat([v_ub, y_ub], axis=0) #vert_concat
         ub.index = A_eq.columns
 
-        with open("lb.csv", "w") as fp:
-            fp.write(lb.to_csv())
-        with open("ub.csv", "w") as fp:
-            fp.write(ub.to_csv())
-        
         lb_numpy = lb.to_numpy()
         ub_numpy = ub.to_numpy()
         bounds = []
@@ -272,11 +267,6 @@ class FastFBA(Process):
     def solve_cvxpy( c, A_eq, b_eq, bounds):
         x_names = A_eq.columns
         con_names = A_eq.index
-
-        with open("A_eq.csv", "w") as fp:
-            fp.write(A_eq.to_csv())
-        with open("b_eq.csv", "w") as fp:
-            fp.write(b_eq.to_csv())
 
         A_eq = A_eq.to_numpy()
         b_eq = b_eq.to_numpy()
@@ -364,12 +354,7 @@ class FastFBA(Process):
             A_eq = pd.concat([A_eq, -A_sink], axis=1)
             c = pd.concat([c, c_sink], axis=0)
             extended_bounds = [ *extended_bounds, *[extended_bounds[k] for k in sink_idx] ]
-            
-            with open("A_eq.csv", "w") as fp:
-                fp.write(A_eq.to_csv())
-            with open("b_eq.csv", "w") as fp:
-                fp.write(b_eq.to_csv())
-
+     
             res = linprog(
                 c,
                 A_eq=A_eq.to_numpy(),

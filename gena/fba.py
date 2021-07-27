@@ -205,7 +205,7 @@ class FBAResult(File, AbstractFBAResult):
 class FBA(Shell):
     
     input_specs = { 'biomodel': (BioModel,) }
-    output_specs = { 'file': (FBAResult,) }
+    output_specs = { 'result': (FBAResult,) }
     config_specs = {
         "eq_tol": {"type": float, "default": 1e-6, "Description": "Equality constraint tolerance"},
         "ineq_tol": {"type": float, "default": 1e-6, "Description": "Inequality constraint tolerance"},
@@ -260,10 +260,10 @@ class FBA(Shell):
     # -- G --
     
     def gather_outputs(self, stdout: str=None):
-        t = self.out_port("file").get_default_resource_type()        
+        t = self.out_port("result").get_default_resource_type()        
         file = t()
         file.path = self.output_file
-        self.output["file"] = file
+        self.output["result"] = file
         self.data["stdout"] = stdout
 
     # -- T --
