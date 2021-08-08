@@ -6,10 +6,9 @@ import unittest
 from gws.settings import Settings
 settings = Settings.retrieve()
 
-from gena.network import Network, Compound, Reaction
-from gena.biomodel import BioModel
-from gena.context import Context, ContextBuilder
-from gena.data import FluxData
+from gena import Network, Compound, Reaction
+from gena import BioModel, Context, ContextBuilder
+from gena import FluxTable
 
 from biota.compound import Compound as BiotaCompound
 from biota.base import DbManager as BiotaDbManager
@@ -48,6 +47,9 @@ class TestContext(unittest.TestCase):
         self.assertEqual( data["measures"][0].get("confidence_score"), 1.0 )
         self.assertEqual( ctx.dumps()[0].get("confidence_score"), 1.0 )
         
+        ctx2 = ctx.copy()
+        self.assertNotEqual( ctx.uri, ctx2.uri )
+        self.assertEqual( ctx2.to_json()["data"], ctx.to_json()["data"] )
         
     def test_context_builder(self):
         GTest.print("Test Context Builder")
@@ -56,10 +58,10 @@ class TestContext(unittest.TestCase):
         
         # flux
         file_path = os.path.join(data_dir, "toy_flux_data.csv")
-        flux_data = FluxData._import(file_path, delimiter=",")
+        flux_data = FluxTable._import(file_path, delimiter=",")
         
         # network
-        file_path = os.path.join(data_dir, "toy_network.json")
+        file_path = os.path.join(data_dir, "toy.json")
         with open(file_path) as f:
             data = json.load(f)
             net = Network.from_json(data)
@@ -67,7 +69,7 @@ class TestContext(unittest.TestCase):
         # experiment
         builder = ContextBuilder()
         builder.input["network"] = net
-        builder.input["flux_data"] = flux_data
+        builder.input["flux_table"] = flux_data
         
         def _on_end(*args, **kwargs):
             ctx = builder.output["context"]

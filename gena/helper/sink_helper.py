@@ -3,10 +3,10 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gena.compound import Compound
-from gena.reaction import Reaction
 from gws.logger import Logger
 from gws.exception.bad_request_exception import BadRequestException
+from ..network.compound import Compound
+from ..network.reaction import Reaction
 
 class SinkHelper:
 

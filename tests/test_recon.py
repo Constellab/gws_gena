@@ -9,13 +9,10 @@ from gws.file import File
 
 settings = Settings.retrieve()
 
-from gena.network import *
-from gena.context import Context
-from gena.recon import DraftRecon
-from gena.gap_fill import GapFiller 
-from gena.merge import NetworkMerger
-from gena.data import *
-from gena.recon_proto import ReconProto
+from gena import Context
+from gena import DraftRecon, GapFiller
+from gena import NetworkMerger
+from gena.proto import ReconProto
 
 from biota.base import DbManager as BiotaDbManager
 
@@ -37,7 +34,7 @@ class TestRecon(unittest.TestCase):
         GTest.print("Test ReconProto")
         data_dir = settings.get_dir("gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
-        file_path = os.path.join(data_dir, "recon_ec_data.csv")
+        file_path = os.path.join(data_dir, "recon_ec_table.csv")
         ec_file = File(path=file_path)
         #ec_file.move_to_store()
 

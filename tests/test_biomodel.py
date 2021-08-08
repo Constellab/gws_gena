@@ -8,9 +8,9 @@ from gws.settings import Settings
 from gws.unittest import GTest
 settings = Settings.retrieve()
 
-from gena.network import Network
-from gena.context import Context
-from gena.biomodel import BioModel
+from gena import Network
+from gena import BioModel, FlatBioModel, Context
+from gena.biomodel.biomodel_service import BioModelService
 
 from biota.base import DbManager as BiotaDbManager
 
@@ -28,30 +28,8 @@ class TestBioModel(unittest.TestCase):
         BiotaDbManager.use_prod_db(False)
         GTest.drop_tables()
 
-    # def test_small_biomodel__(self):
-    #     data_dir = settings.get_dir("gena:testdata_dir")
-        
-    #     file_path = os.path.join(data_dir, "dist/olga.json")
-    #     with open(file_path) as f:
-    #         data = json.load(f)
-    #         net = Network.from_json(data)
-        
-    #     file_path = os.path.join(data_dir, "dist/olga_context.json")
-    #     with open(file_path) as f:
-    #         data = json.load(f)
-    #         ctx = Context.from_json(data)
-        
-    #     bio = BioModel()
-    #     bio.add_network(net)
-    #     bio.add_context(ctx, related_network=net)
-
-    #     _json = bio.flatten()
-
-    #     #print(net.dumps()["reactions"])
-
     def test_small_biomodel(self):
         GTest.print("Test BioModel")
-
         data_dir = settings.get_dir("gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "small_net.json")
@@ -84,9 +62,8 @@ class TestBioModel(unittest.TestCase):
             data = json.load(f)
             print(data)
             self.assertEqual(bio.flatten(), data)
-        
-        from gena.service.biomodel_service import BioModelService
-        flat_bio = bio.flatten(as_biomodel=True)
+   
+        flat_bio = FlatBioModel(bio.flatten())
         problem = BioModelService.create_fba_problem(flat_bio)
 
         print(problem["S"])
@@ -136,7 +113,7 @@ class TestBioModel(unittest.TestCase):
         data_dir = settings.get_dir("gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
 
-        file_path = os.path.join(data_dir, "toy_network.json")
+        file_path = os.path.join(data_dir, "toy.json")
         with open(file_path) as f:
             data = json.load(f)
             net = Network.from_json(data)
@@ -152,8 +129,7 @@ class TestBioModel(unittest.TestCase):
         bio.add_network(net)
         bio.add_context(ctx, related_network=net)
         
-        from gena.service.biomodel_service import BioModelService
-        flat_bio = bio.flatten(as_biomodel=True)
+        flat_bio = FlatBioModel(bio.flatten())
         problem = BioModelService.create_fba_problem(flat_bio)
 
         print('--- S_full ---')

@@ -1,0 +1,10 @@
+,value,lower_bound,upper_bound
+toy_cell_R1,30.0,30.0,30.0
+toy_cell_R2,-29.625,-29.625,-29.625
+toy_cell_RB,0.375,0.375,0.375
+toy_cell_R1_ex,30.0,30.0,30.0
+toy_cell_R2_ex,30.0,30.0,30.0
+toy_cell_R4_ex,-29.625,-29.625,-29.625
+toy_cell_R5_ex,0.75,0.75,0.75
+v_M1,30.0,30.0,30.0
+v_M2,0.75,0.75,0.75

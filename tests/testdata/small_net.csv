@@ -1,4 +1,4 @@
-,id,equation_str,enzyme,ec_number,lb,ub,enzyme_class,is_from_gap_filling,comments,substrates,products,superkingdom,clade,kingdom,subkingdom,class,phylum,subphylum,order,genus,family,species,brenda_pathway,kegg_pathway,metacyc_pathway
-0,EX_glc_D_e,(1.0) glc_D_e <==()==> *,,,-10.0,1000.0,,False,,D-Glucose (),*,,,,,,,,,,,,,,
-1,GLNabc,(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c,,,0.0,1000.0,,False,,ATP C10H12N5O13P3 (); L-Glutamine (),ADP C10H12N5O10P2 (); L-Glutamine (),,,,,,,,,,,,,,
-2,biomass,(1.0) glc_D_e <==()==> (1.0) biomass_b,,,-10.0,1000.0,,False,,D-Glucose (),Biomass (),,,,,,,,,,,,,,
+,id,equation_str,enzyme,ec_number,lb,ub,enzyme_class,is_from_gap_filling,comments,substrates,products,mass_balance,charge_balance,superkingdom,clade,kingdom,subkingdom,class,phylum,subphylum,order,genus,family,species,brenda,kegg,metacyc
+0,EX_glc_D_e,(1.0) glc_D_e <==()==> *,,,1000.0,-10.0,,False,,D-Glucose (),*,,,,,,,,,,,,,,,,
+1,GLNabc,(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c,,,1000.0,0.0,,False,,ATP C10H12N5O13P3 (); L-Glutamine (),ADP C10H12N5O10P2 (); L-Glutamine (),,,,,,,,,,,,,,,,
+2,biomass,(1.0) glc_D_e <==()==> (1.0) biomass_b,,,1000.0,-10.0,,False,,D-Glucose (),Biomass (),,,,,,,,,,,,,,,,
