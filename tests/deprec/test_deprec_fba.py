@@ -2,6 +2,8 @@
 import asyncio
 import os, json
 import unittest
+import pandas
+import numpy
 
 from gws.settings import Settings
 from gws.file import File
@@ -62,31 +64,39 @@ class TestFba(unittest.TestCase):
                 if not os.path.exists(result_dir):
                     os.makedirs(result_dir)
 
-                file_path = os.path.join(result_dir, "result.json")
-                with open(file_path, 'w') as fp:
-                    result_content = result.to_json(shallow=False)["data"]["content"]
-                    json.dump(result_content, fp)
-                
-                file_path = os.path.join(result_dir, "result.json")
-                with open(file_path) as fp:
-                    expected_result_content = json.load(fp)          
-                    result_content = result.to_json(shallow=False)["data"]["content"]
-                    self.assertEqual( result_content, expected_result_content  )
-
                 fluxes = result.render__flux_ranges__as_table()
-                sv = result.render__flux_ranges__as_table()
+                sv = result.render__sv_ranges__as_table()
                 print(fluxes)
                 print(sv)
 
-                biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:]
-                print(biomass_flux)
+                # file_path = os.path.join(result_dir,"flux.csv")
+                # with open(file_path, 'w') as fp:
+                #     fp.write( fluxes.to_csv() )
+                # file_path = os.path.join(result_dir,"sv.csv")
+                # with open(file_path, 'w') as fp:
+                #     fp.write( sv.to_csv() )
+
+                if organism == "ecoli":
+                    biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:]
+                    file_path = os.path.join(result_dir,"biomass_flux.csv")
+                    with open(file_path, 'w') as fp:
+                        fp.write( biomass_flux.to_csv() )
+
+                    print(biomass_flux)
+
+                table = fluxes.to_numpy()
+                table = numpy.array(table, dtype=float)
+                file_path = os.path.join(result_dir,"flux.csv")
+                expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
+                expected_table = numpy.array(expected_table, dtype=float)
+                self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-01,equal_nan=True).all() )
 
             e = proto.create_experiment(study=GTest.study, user=GTest.user)
             e.on_end(_on_end)
             asyncio.run( e.run() )
         
-        #run_fba( organism="toy", number_of_randomizations=1  )
-        #run_fba( organism="toy", number_of_randomizations=100 )
+        run_fba( organism="toy", number_of_randomizations=1  )
+        run_fba( organism="toy", number_of_randomizations=100 )
         run_fba( organism="ecoli", number_of_randomizations=100 )
 
         
