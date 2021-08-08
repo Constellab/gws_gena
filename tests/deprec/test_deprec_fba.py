@@ -87,6 +87,6 @@ class TestFba(unittest.TestCase):
         
         #run_fba( organism="toy", number_of_randomizations=1  )
         #run_fba( organism="toy", number_of_randomizations=100 )
-        run_fba( organism="ecoli", number_of_randomizations=1000 )
+        run_fba( organism="ecoli", number_of_randomizations=100 )
 
         
