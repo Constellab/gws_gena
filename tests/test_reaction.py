@@ -1,33 +1,17 @@
 
 import os, json
-import unittest
 from pandas import DataFrame
 
-from gws.unittest import GTest
-from gws.settings import Settings
+from gws_core import Settings, GTest
+from gws_biota import BaseTestCaseUsingFullBiotaDB
+from gws_gena import Compound, Reaction, Network, Twin, TwinContext
+
 settings = Settings.retrieve()
 
-from gena import Compound, Reaction, Network
-from gena import BioModel, Context
-
-from biota.base import DbManager as BiotaDbManager
-
-class TestNetwork(unittest.TestCase):
-    
-    @classmethod
-    def setUpClass(cls):
-        GTest.drop_tables()
-        GTest.create_tables()
-        GTest.init()
-        BiotaDbManager.use_prod_db(True)
-     
-    @classmethod
-    def tearDownClass(cls):
-        BiotaDbManager.use_prod_db(False)
-        GTest.drop_tables()
+class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
     def test_reaction(self):
-        GTest.print("Test Reaction")
+        self.print("Test Reaction")
 
         t = Network()
   

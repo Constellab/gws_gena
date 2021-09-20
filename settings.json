@@ -1,15 +1,40 @@
 {
-    "name"      : "gena",
-    "authors"   : "Gencovery",
-    "version"   : "0.1",
-    "dirs"     :{
-        "gena:testdata_dir"    : "./tests/testdata"
+    "name"      : "gws_gena",
+    "author"   : "Gencovery",
+    "version"   : "0.1.0",
+    "variables":{
+        "gws_gena:testdata_dir" : "{CURRENT_DIR}/tests/testdata"
     },
-    "externs"  : {
-        "gena-cpp": "DEFAULT_ORIGIN"
-    },
-    "dependencies"  : {
-        "biota": "DEFAULT_ORIGIN",
-        "gaia": "DEFAULT_ORIGIN"
+    "environment":{
+        "pip":[
+            {
+                "source": "https://pypi.python.org/simple",
+                "packages":[]
+            },
+            {
+                "source": "https://$GWS_PIP_PACKAGE_TOKEN@gitlab.com/api/v4/projects/27171024/packages/pypi",
+                "packages":[]
+            }
+        ],
+        "git":[
+            {
+                "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core",
+                "packages":[
+                    "gws_biota[commit=latest, branch=develop]",
+                    "gws_gaia[commit=latest, branch=develop]"
+                ]
+            },
+            {
+                "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core/lib",
+                "packages":[
+                    "gena-cpp"
+                ]
+            }
+        ],
+        "variables":{
+            "GWS_GIT_LOGIN": "",
+            "GWS_GIT_PWD": "",
+            "GWS_PIP_PACKAGE_TOKEN": ""
+        }
     }
 }

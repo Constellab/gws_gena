@@ -1,41 +1,24 @@
 
 import os, json
-import unittest
 from pandas import DataFrame
 
-from gws.unittest import GTest
-from gws.settings import Settings
+from gws_core import GTest, Settings
+from gws_biota import BaseTestCaseUsingFullBiotaDB
+from gws_gena import Network, Compound, Reaction, Twin, TwinContext
 settings = Settings.retrieve()
 
-from gena import Network, Compound, Reaction
-from gena import BioModel, Context
-
-from biota.base import DbManager as BiotaDbManager
-
-class TestNetwork(unittest.TestCase):
-    
-    @classmethod
-    def setUpClass(cls):
-        GTest.drop_tables()
-        GTest.create_tables()
-        GTest.init()
-        BiotaDbManager.use_prod_db(True)
-     
-    @classmethod
-    def tearDownClass(cls):
-        BiotaDbManager.use_prod_db(False)
-        GTest.drop_tables()
+class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
     def test_network_import(self):
-        GTest.print("Test Network Import")
-        data_dir = settings.get_dir("gena:testdata_dir")
+        self.print("Test Network Import")
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
         file_path = os.path.join(data_dir, "small_net.json")
         
         with open(file_path) as f:
             data = json.load(f)
             net = Network.from_json(data)
         
-        _json = net.dumps(stringify=True, prettify=True)
+        _json = net.dumps()
         print(_json)        
         print(net.to_json())
         

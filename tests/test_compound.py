@@ -3,38 +3,16 @@ import os, json
 import unittest
 from pandas import DataFrame
 
-from gws.unittest import GTest
-from gws.settings import Settings
-settings = Settings.retrieve()
+from gws_core import Settings, GTest
+from gws_biota import BaseTestCaseUsingFullBiotaDB
+from gws_gena import Compound, Reaction, Network, TwinContext, Twin, BiomassTable
 
-from gena import Compound, Reaction, Network
-from gena import Context, BioModel
-from gena import BiomassTable
-
-from biota.base import DbManager as BiotaDbManager
-
-class TestNetwork(unittest.TestCase):
-    
-    @classmethod
-    def setUpClass(cls):
-        GTest.drop_tables()
-        GTest.create_tables()
-        GTest.init()
-        BiotaDbManager.use_prod_db(True)
-     
-    @classmethod
-    def tearDownClass(cls):
-        BiotaDbManager.use_prod_db(False)
-        GTest.drop_tables()
+class TestNetwork(BaseTestCaseUsingFullBiotaDB):
     
     def test_compound(self):
-        GTest.print("Test Compound")
+        self.print("Test Compound")
 
         t = Network()     
-
-        print( Network.full_classname() )
-        print( BiomassTable.full_classname() )   
-
         comp1 = Compound(name="gluc", network=t, compartment=Compound.COMPARTMENT_CYTOSOL, chebi_id="CHEBI:17234")
         
         bc1 = comp1.get_related_biota_compound()

@@ -1,66 +1,50 @@
 
 import os, json
-import unittest
-import asyncio
 
-from gws.settings import Settings
-from gws.unittest import GTest
-from gws.file import File
+from gws_core import Settings, IExperiment, Experiment, File
+from gws_biota import BaseTestCaseUsingFullBiotaDB
+from gws_gena import TwinContext, DraftRecon, GapFiller, NetworkMerger
+from gws_gena.proto import ReconProto
 
 settings = Settings.retrieve()
 
-from gena import Context
-from gena import DraftRecon, GapFiller
-from gena import NetworkMerger
-from gena.proto import ReconProto
-
-from biota.base import DbManager as BiotaDbManager
-
-class TestRecon(unittest.TestCase):
+class TestRecon(BaseTestCaseUsingFullBiotaDB):
     
-    @classmethod
-    def setUpClass(cls):
-        GTest.drop_tables()
-        GTest.create_tables()
-        GTest.init()
-        BiotaDbManager.use_prod_db(True)
-
-    @classmethod
-    def tearDownClass(cls):
-        BiotaDbManager.use_prod_db(False)
-        GTest.drop_tables()
-        
-    def test_recon_proto(self):
-        GTest.print("Test ReconProto")
-        data_dir = settings.get_dir("gena:testdata_dir")
+    async def test_recon_proto(self):
+        self.print("Test ReconProto")
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
+
         file_path = os.path.join(data_dir, "recon_ec_table.csv")
-        ec_file = File(path=file_path)
-        #ec_file.move_to_store()
+        ec_file = File()
+        ec_file.path = file_path
 
         file_path = os.path.join(data_dir, "recon_medium.csv")
-        medium_file = File(path=file_path)
-        #medium_file.move_to_store()
+        medium_file = File()
+        medium_file.path = file_path
 
         file_path = os.path.join(data_dir, "recon_biomass.csv")
-        biomass_file = File(path=file_path)
-        #biomass_file.move_to_store()
-    
-        proto = ReconProto()
-        proto.input["ec_file"] = ec_file
-        proto.input["biomass_file"] = biomass_file
-        proto.input["medium_file"] = medium_file
-        recon = proto.get_draft_recon()
+        biomass_file = File()
+        biomass_file.path = file_path
+
+        experiment = IExperiment( ReconProto )
+        proto = experiment.get_protocol()
+
+        proto.set_input("ec_file", ec_file)
+        proto.set_input("biomass_file", biomass_file)
+        proto.set_input("medium_file", medium_file)
+
+        recon = proto.get_process("recon")
         recon.set_param('tax_id', "263815")  #pcystis murina
 
-        gapfiller = proto.get_gapfiller()
-        gapfiller.set_param('tax_id', "4753")    #pcystis 
-        #gapfiller.set_param('tax_id', "4751")    #fungi
-        #gapfiller.set_param('tax_id', "2759")    #eukaryota
-        gapfiller.set_param('biomass_and_medium_gaps_only', True)
-        gapfiller.set_param('add_sink_reactions', True)
+        gap_filler = proto.get_process("gap_filler")
+        gap_filler.set_param('tax_id', "4753")    #pcystis 
+        #gap_filler.set_param('tax_id', "4751")    #fungi
+        #gap_filler.set_param('tax_id', "2759")    #eukaryota
+        gap_filler.set_param('biomass_and_medium_gaps_only', True)
+        gap_filler.set_param('add_sink_reactions', True)
 
-        def _export_network(net, file_name):
+        async def assert_results(net, file_name):
             # file_path = os.path.join(data_dir, file_name+"_net.csv")
             # with open(file_path, 'w') as f:
             #     f.write(net.to_csv())
@@ -68,6 +52,7 @@ class TestRecon(unittest.TestCase):
             # file_path = os.path.join(data_dir, file_name+"_net.json")
             # with open(file_path, 'w') as f:
             #     json.dump(net.to_json(), f)
+            #print(net.to_csv())
 
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'r') as f:
@@ -83,16 +68,14 @@ class TestRecon(unittest.TestCase):
                 table = net.render__gaps__as_table()
                 f.write(table.to_csv())
 
-        def _on_end(*args, **kwargs):
-            recon_net = proto.output["draft_recon_network"]
-            file_name = "recon"
-            _export_network(recon_net, file_name)
+        # run experiment
+        await experiment.run()
 
-            gapfill_net = proto.output["gapfiller_network"]
-            file_name = "gapfill"
-            _export_network(gapfill_net, file_name)
+        # test results
+        recon_net = proto.get_output("draft_recon_network")
+        file_name = "recon"
+        await assert_results(recon_net, file_name)
 
-        e = proto.create_experiment(user=GTest.user, study=GTest.study)
-        e.on_end( _on_end )
-        asyncio.run( e.run() )
-        
+        gapfill_net = proto.get_output("gap_filler_network")
+        file_name = "gapfill"
+        await assert_results(gapfill_net, file_name)
