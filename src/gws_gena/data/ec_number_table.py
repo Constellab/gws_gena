@@ -5,7 +5,7 @@
 
 from gws_core import resource_decorator, task_decorator, CSVTable
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam
+from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -15,8 +15,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 
 @resource_decorator("ECNumberTable", 
                     human_name="ECNumberTable", 
-                    short_description="CSV table of enzyme classification (EC) numbers",
-                    serializable_fields=["ec_column_name"])
+                    short_description="CSV table of enzyme classification (EC) numbers")
 class ECNumberTable(CSVTable):
     """ 
     Represents ec number data table
@@ -38,18 +37,10 @@ class ECNumberTable(CSVTable):
     """
     
     DEFAULT_EC_COLUMN_NAME = "ec_number"
-    ec_column_name: str = DEFAULT_EC_COLUMN_NAME
+    ec_column_name: str = StrRField(default_value=DEFAULT_EC_COLUMN_NAME)
 
     # -- E --
-    
-    # @property
-    # def ec_column_name(self):
-    #     return self.data.get('ec_column_name', self.EC_COLUMN_NAME)
 
-    # @ec_column_name.setter
-    # def ec_column_name(self, name):
-    #     self.data['ec_column_name'] = name
-    
     # -- G --
     
     def get_ec_numbers(self, rtype='list') -> ('DataFrame', list):

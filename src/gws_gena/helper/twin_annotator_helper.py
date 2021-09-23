@@ -23,14 +23,14 @@ class TwinAnnotatorHelper():
     @staticmethod
     def annotate(twin: Twin, fba_result: FBAResult):
         if isinstance(twin, FlatTwin):
-            raise BadRequestException("Cannot annotate de FlabMetaTwin. A non-flat Twin is required")
+            raise BadRequestException("Cannot annotate a FlatTwin. A non-flat Twin is required")
 
-        flat_dict: dict = twin.flatten()
-        flux_rev_mapping = flat_dict["twin"]["reverse_mapping"]
-        annotated_bio = Twin()
+        flat_twin: FlatTwin = twin.flatten()
+        flux_rev_mapping = flat_twin.reverse_mapping
+        annotated_twin = Twin()
         for k in twin.networks:
             net = twin.networks[k]
-            ctx = twin.network_contexts[net.uref]
+            ctx = twin.network_contexts[net.uid]
             net = net.copy()
             for rnx_id in net.reactions:
                 rxn = net.reactions[rnx_id]
@@ -42,5 +42,5 @@ class TwinAnnotatorHelper():
                     "lower_bound": fluxes.loc[flat_rxn_id, "lower_bound"],
                     "upper_bound": fluxes.loc[flat_rxn_id, "upper_bound"],
                 })
-            annotated_bio.add_network(net, related_context=ctx.copy())
-        return annotated_bio
+            annotated_twin.add_network(net, related_context=ctx.copy())
+        return annotated_twin

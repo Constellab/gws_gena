@@ -4,6 +4,7 @@
 # About us: https://gencovery.com
 
 import re
+import copy
 from typing import List
 
 from gws_core import BadRequestException, Utils
@@ -122,8 +123,6 @@ class Compound:
         "CHEBI:29034": "iron_3",
     }
     
-    
-    
     def __init__(self, id="", name="", compartment=None, \
                  network:'Network'=None, formula="", \
                  charge="", mass="", monoisotopic_mass="", inchi="", \
@@ -167,6 +166,7 @@ class Compound:
                 raise BadRequestException(f"Invalid compound id '{self.id}'. The id suffix must be {compartment_suffix}.")
         else:
             # try to use inchikey or chebi compound name if possible
+            is_found = False
             if not name:
                 if inchikey:
                     try:
@@ -217,6 +217,22 @@ class Compound:
         net.add_compound(self)
     
     # -- C --
+
+    def copy(self) -> 'Compound':
+        c = Compound( id=self.id )
+        c.name = self.name
+        c.network = self.network
+        c.charge = self.charge
+        c.mass = self.mass
+        c.monoisotopic_mass = self.monoisotopic_mass
+        c.formula = self.formula
+        c.inchi = self.inchi
+        c.compartment = self.compartment
+        c.chebi_id = self.chebi_id
+        c.alt_chebi_ids = copy.deepcopy(self.alt_chebi_ids)
+        c.kegg_id = self.kegg_id
+        c.inchikey = self.inchikey
+        return c
 
     @classmethod
     def create_sink_compound(cls, related_compound: 'Compound') -> 'Compound':
@@ -415,19 +431,3 @@ class Compound:
             return comp.reactions
         except:
             return None
-
-    # @property
-    # def PROTON(self):
-    #     return Compound.from_biota(chebi_id="CHEBI:24636")
-    # @property
-    # def WATER(self):
-    #     return Compound.from_biota(chebi_id="CHEBI:15377")
-    # @property
-    # def OXYGEN(self):
-    #     return Compound.from_biota(chebi_id="CHEBI:25805")
-    # @property
-    # def DIOXYGEN(self):
-    #     return Compound.from_biota(chebi_id="CHEBI:15379")
-    # @property
-    # def CO2(self):
-    #     return Compound.from_biota(chebi_id="CHEBI:16526")

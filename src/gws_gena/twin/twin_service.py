@@ -31,6 +31,9 @@ class MetaTwinService:
         :rtype: `dict`
         """
         
+        if not isinstance(flat_twin, FlatTwin):
+            raise BadRequestException("Cannot create the stoichiometric matrix. A flat model is required")
+        
         S = cls.create_stoichiometric_matrix(flat_twin)
         obsv_matrix = cls.create_observation_matrices(flat_twin)
 

@@ -3,14 +3,14 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import copy
+
 from gws_core import BadRequestException
 from gws_core import Utils
-
 from gws_biota import Compound as BiotaCompound
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
-
 from .compound import Compound
 
 def slugify_id(_id):
@@ -75,6 +75,7 @@ class Reaction:
     _estimate: dict = None
     _substrates: dict = None
     _products: dict = None
+
     _flattening_delimiter = flattening_delimiter
     
     def __init__(self, id: str="", name: str = "", network: 'Network' = None, \
@@ -170,6 +171,24 @@ class Reaction:
         }
 
     # -- C --
+
+    def copy(self) -> 'Reaction':
+        rxn = Reaction()
+        rxn.id = self.id
+        rxn.name = self.name
+        rxn.network = self.network
+        rxn.direction = self.direction
+        rxn.lower_bound = self.lower_bound
+        rxn.upper_bound = self.upper_bound
+        rxn.rhea_id = self.rhea_id
+        rxn.enzyme = self.enzyme
+
+        rxn._tax_ids = copy.deepcopy(self._tax_ids)
+        rxn._estimate = copy.deepcopy(self._estimate)
+        rxn._substrates = copy.deepcopy(self._substrates)
+        rxn._products = copy.deepcopy(self._products)
+
+        return rxn
 
     def compute_mass_and_charge_balance(self) -> dict:
         charge = 0.0

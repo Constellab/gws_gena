@@ -10,14 +10,14 @@ from typing import List, Dict
 from pathlib import Path
 from pandas import DataFrame
 import numpy as np
+import copy
 from typing import TypedDict, Optional
 
-from gws_core import FileImporter, FileExporter, FileLoader, FileDumper, File
-from gws_core import Resource, resource_decorator, task_decorator, DictView, SerializedResourceData, StrParam
-from gws_core import BadRequestException
-
-from gws_biota import EnzymeClass
-from gws_biota import Taxonomy as BiotaTaxo
+from gws_core import (FileImporter, FileExporter, FileLoader, FileDumper, 
+                        File, Resource, resource_decorator, task_decorator, DictView, 
+                        StrParam, StrRField, RField, DictRField, 
+                        BadRequestException)
+from gws_biota import EnzymeClass, Taxonomy as BiotaTaxo
 from .compound import Compound
 from .reaction import Reaction
 
@@ -43,10 +43,38 @@ NetworkTagDict = TypedDict("NetworkTagDict",{
     "compounds": dict 
 })
 
+
+CompoundDict = TypedDict("CompoundDict", {
+    "id": str,
+    "name": str,
+    "network": "Network",
+    "charge": float,
+    "mass": float,
+    "monoisotopic_mass": float,
+    "formula": str,
+    "inchi": str,
+    "compartment": str,
+    "chebi_id": str,
+    "alt_chebi_ids": list,
+    "kegg_id": str,
+    "inchikey": str
+})
+
+ReactionDict = TypedDict("ReactionDict", {
+    "id": str,
+    "name": str,
+    "network": "Network",
+    "direction": str,
+    "lower_bound": float,
+    "upper_bound": float,
+    "rhea_id": str,
+    "enzyme": dict
+})
+
 NetworkDict = TypedDict("NetworkDict", {
     "name": str,
-    "metabolites": dict,
-    "reactions": dict,
+    "metabolites": CompoundDict,
+    "reactions": ReactionDict,
     "compartments": dict,
     "tags": NetworkTagDict
 })
@@ -59,8 +87,7 @@ NetworkDict = TypedDict("NetworkDict", {
 
 @resource_decorator("Network",
                     human_name="Network",
-                    short_description="Metabolic network",
-                    serializable_fields=["uref", "name", "description"])
+                    short_description="Metabolic network")
 class Network(Resource):
     """
     Class that represents a network. 
@@ -69,41 +96,25 @@ class Network(Resource):
     """
     
     DEFAULT_NAME = "network"
-    uref: str = ""
-    name: str = DEFAULT_NAME
-    description: str = ""
+    name: str = StrRField(default_value=DEFAULT_NAME, searchable=True)
+    description: str = StrRField(default_value="", searchable=True)
+    _dumps = DictRField()
+    
+    compounds: Dict[str, Compound] = DictRField()
+    reactions: Dict[str, Reaction] = DictRField()
+    compartments: Dict[str, str] = DictRField()
+    tags: Dict[str, NetworkTagDict] = DictRField(
+        default_value=NetworkTagDict(reactions={}, compounds={})
+    )
 
-    _compounds: Dict[str, Compound] = None
-    _reactions: Dict[str, Reaction] = None
-    _compartments: Dict[str, str] = None
-    _medium: dict = None
-    _stats: dict = None
-    _cofactor_freq_threshold = 0.7
+    _stats: Dict[str, str] = DictRField()
+    _set_of_chebi_ids: Dict[str, str] = DictRField()
+    _set_of_ec_numbers: Dict[str, str] = DictRField()
+    _set_of_rhea_ids: Dict[str, str] = DictRField()
+
+    _cofactor_freq_threshold: float = 0.7
+
     _table_name = "gena_network"
-
-    def __init__( self, *args, **kwargs ):
-        super().__init__( *args, **kwargs )
-        self._compounds = {}
-        self._reactions = {}
-        self._compartments = {}
-        self._medium = {}
-        self.__set_of_chebi_ids = {}
-        self.__set_of_ec_numbers = {}
-        self.__set_of_rhea_ids = {}
-        self._stats = {}
-
-        if "network" in self.binary_store:
-            net_dict = self.binary_store["network"]
-            self._build_from_dump(net_dict)
-        else:
-            self.uref = str(uuid.uuid4())
-            self.binary_store["network"] = NetworkDict(
-                name = self.DEFAULT_NAME,
-                metabolites = {},
-                reactions = {},
-                compartments = {},
-                tags =  NetworkTagDict(reactions = {}, compounds = {})
-            )
 
     # -- A --
     
@@ -119,22 +130,22 @@ class Network(Resource):
             raise BadRequestException("The compound must an instance of Compound")
         if comp.network and comp.network != self:
             raise BadRequestException("The compound is already in another network")
-        if comp.id in self._compounds:
+        if comp.id in self.compounds:
             raise CompoundDuplicate(f"Compound id {comp.id} duplicate")
         if not comp.compartment:
             raise NoCompartmentFound("No compartment defined for the compound")
-        if not comp.compartment in self._compartments:
+        if not comp.compartment in self.compartments:
             suffix = comp.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
             self.compartments[comp.compartment] = Compound.COMPARTMENTS[suffix]["name"]
         comp.network = self
         self.compounds[comp.id] = comp
         self._stats = {}
         if comp.chebi_id:
-            if not comp.compartment in self.__set_of_chebi_ids:
-                self.__set_of_chebi_ids[comp.compartment] = {}
-            self.__set_of_chebi_ids[comp.compartment][comp.chebi_id] = comp.id
+            if not comp.compartment in self._set_of_chebi_ids:
+                self._set_of_chebi_ids[comp.compartment] = {}
+            self._set_of_chebi_ids[comp.compartment][comp.chebi_id] = comp.id
             for _id in comp.alt_chebi_ids:
-                self.__set_of_chebi_ids[comp.compartment][_id] = comp.id
+                self._set_of_chebi_ids[comp.compartment][_id] = comp.id
 
     def add_reaction(self, rxn: Reaction):
         """
@@ -192,154 +203,31 @@ class Network(Resource):
         self._stats = {}
 
         if rxn.rhea_id:
-            self.__set_of_rhea_ids[rxn.rhea_id] = rxn.id
+            self._set_of_rhea_ids[rxn.rhea_id] = rxn.id
         if rxn.enzyme:
             ec = rxn.enzyme.get("ec_number")
             if ec:
-                self.__set_of_ec_numbers[ec] = rxn.id
+                self._set_of_ec_numbers[ec] = rxn.id
               
     # -- B --
-
-    def _build_from_dump_and_set_store(self, net: NetworkDict):
-        self._build_from_dump(net)
-        self.binary_store["network"] = self.dumps()
-
-    def _build_from_dump(self, data: NetworkDict):
-        """
-        Build the network from a dump
-        """
-    
-        if not data.get("compartments"):
-            raise BadRequestException("Invalid network dump")
-
-        self.compartments = data["compartments"]
-        ckey = "compounds" if "compounds" in data else "metabolites"
-
-        added_comps = {}
-        for val in data[ckey]:
-            compart = val["compartment"]
-            if not compart in self.compartments:
-                raise BadRequestException(f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
-   
-            chebi_id = val.get("chebi_id", "")
-            inchikey = val.get("inchikey", "")
-            # if re.match(r"CHEBI\:\d+$", val["id"]):
-            #     chebi_id = val["id"]
-
-            is_BIGG_data_format = ("annotation" in val)
-            alt_chebi_ids = []
-            if not chebi_id and not inchikey and is_BIGG_data_format:
-                annotation = val["annotation"]
-                alt_chebi_ids = annotation.get("chebi",[])
-                inchikey = annotation.get("inchi_key", [""])[0]
-                if alt_chebi_ids:
-                    chebi_id = alt_chebi_ids.pop(0)
-
-            _id = val["id"] #.replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
-            comp = None
-            if chebi_id or inchikey:
-                try:
-                    comp = Compound.from_biota(
-                        id=_id, \
-                        name=val.get("name",""), \
-                        chebi_id=chebi_id,
-                        inchikey=inchikey, \
-                        compartment=compart,
-                        network=self
-                    )
-                    if alt_chebi_ids:
-                        comp.alt_chebi_ids = alt_chebi_ids
-                except:   
-                    pass
-            
-            if comp is None:
-                comp = Compound(
-                    id=_id, \
-                    name=val.get("name",""), \
-                    network=self, \
-                    compartment=compart,\
-                    charge = val.get("charge",""),\
-                    mass = val.get("mass",""),\
-                    monoisotopic_mass = val.get("monoisotopic_mass",""),\
-                    formula = val.get("formula",""),\
-                    inchi = val.get("inchi",""),\
-                    inchikey = val.get("inchikey",""),\
-                    chebi_id = chebi_id,\
-                    alt_chebi_ids = alt_chebi_ids,\
-                    kegg_id = val.get("kegg_id","")\
-                )
-            added_comps[_id] = comp
-
-        for val in data["reactions"]:
-            rxn = Reaction(
-                id=val["id"], #.replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER),\
-                name=val.get("name"), \
-                network=self, \
-                lower_bound=val.get("lower_bound", Reaction.lower_bound), \
-                upper_bound=val.get("upper_bound", Reaction.upper_bound), \
-                enzyme=val.get("enzyme",{}),\
-                direction=val.get("direction","B"),\
-                rhea_id=val.get("rhea_id","")\
-            )
-            
-            if val.get("estimate"):
-                rxn.set_estimate(val.get("estimate"))
-
-            for comp_id in val[ckey]:
-                comp = added_comps[comp_id]  
-                # search according to compound ids
-                if re.match(r"CHEBI\:\d+$", comp_id):
-                    comps = self.get_compound_by_chebi_id(comp_id)
-                    # select the compound in the good compartment
-                    for c in comps:
-                        if c.compartment == comp.compartment:
-                            break
-
-                stoich = val[ckey][comp_id]
-                if stoich < 0:
-                    rxn.add_substrate( comp, stoich )
-                elif stoich > 0:
-                    rxn.add_product( comp, stoich )
-
-        self.name = data.get("name", self.DEFAULT_NAME)
-        self.description = data.get("description","")
 
     # -- C --
     
     def copy(self) -> 'Network':
-        net: NetworkDict
-        net = self.to_json()["network"]
-        return Network.from_json(net)
+        net = Network()
+        net.name = self.name
+        net.description = self.description
+        net.compounds = copy.deepcopy(self.compounds)
+        net.reactions = copy.deepcopy(self.reactions)
+        net.compartments = self.compartments.copy()
+        net.tags = copy.deepcopy(self.tags)
+
+        net._stats = copy.deepcopy(self._stats)
+        net._set_of_chebi_ids = copy.deepcopy(self._set_of_chebi_ids)
+        net._set_of_ec_numbers = copy.deepcopy(self._set_of_ec_numbers)
+        net._set_of_rhea_ids = copy.deepcopy(self._set_of_rhea_ids)
+        return net
         
-    @property
-    def compartments(self) -> Dict[str, str]:
-        """
-        Returns the list of compartments
-        
-        :rtype: `dict`
-        """
-        return self._compartments
-    
-    @compartments.setter
-    def compartments(self, vals: list):
-        """ 
-        Set the list of compartments.
-        
-        :param vals: The list of compartments
-        :type vals: `list` of `str`
-        """
-        self._compartments = vals
-    
-    @property
-    def compounds(self) -> Dict[str, Compound]:
-        """
-        Returns the list of compounds
-        
-        :rtype: `dict`
-        """
-        
-        return self._compounds
-    
     def create_stoichiometric_matrix(self) -> DataFrame:
         rxn_ids = list(self.reactions.keys())
         comp_ids = list(self.compounds.keys())
@@ -424,7 +312,7 @@ class Network(Resource):
             "metabolites": _met_json,
             "reactions": _rxn_json,
             "compartments": self.compartments,
-            "tags": self.binary_store["network"]["tags"]
+            "tags": self.tags
         }
         
         return _json
@@ -462,7 +350,7 @@ class Network(Resource):
         file_extension = Path(file_path).suffix
         with open(file_path, 'r') as fp:
             if file_extension in [".json"] or file_format == ".json":
-                data = self.to_json()
+                data = self.dumps()
                 json.dump(data, fp)
             elif file_extension in [".csv", ".txt", ".tsv"] or file_format in [".csv", ".txt", ".tsv"]:
                 fp.write(self.to_csv())
@@ -471,31 +359,7 @@ class Network(Resource):
             
     # -- F --
     
-    @classmethod
-    def from_json(cls, data: dict) -> 'Network':
-        """
-        Create a network from a JSON dump
-        
-        :param data: The dictionnay describing the network
-        :type data: `dict`
-        :return: The network
-        :rtype: `gena.network.Network`
-        """
-        
-        net = Network()          
-        if data.get("network"):
-            net.uref = data["uref"]
-            net._build_from_dump_and_set_store(data["network"])
-        else:
-            net = Network()  
-            net._build_from_dump_and_set_store(data)
-
-        return net
-    
     # -- G --
-    
-    def _get_network_dict_from_store(self):
-        return self.binary_store.get("network", NetworkDict())
 
     def get_compound_tag(self, comp_id: str, tag_name: str = None):
         """
@@ -522,13 +386,13 @@ class Network(Resource):
         :rtype: `dict`
         """
         
-        return self.binary_store["network"]["tags"]["compounds"]
+        return self.tags["compounds"]
     
     def get_compound_ids(self) -> List[str]:
-        return [ _id for _id in self._compounds ]
+        return [ _id for _id in self.compounds ]
 
     def get_reaction_ids(self) -> List[str]:
-        return [ _id for _id in self._reactions ]
+        return [ _id for _id in self.reactions ]
 
     def get_reaction_tag(self, rxn_id: str, tag_name: str = None):
         """
@@ -543,21 +407,10 @@ class Network(Resource):
         """
         
         if tag_name:
-            return self.get_reaction_tags().get(rxn_id,{}).get(tag_name)
+            return self.tags.get(rxn_id,{}).get(tag_name)
         else:
-            return self.get_reaction_tags().get(rxn_id,{})
-        
-        
-    def get_reaction_tags(self) -> dict:
-        """
-        Get all the reaction tags
-        
-        :return: The tags
-        :rtype: `dict`
-        """
-        
-        return self.binary_store["network"]["tags"]["reactions"]
-    
+            return self.tags.get(rxn_id,{})
+            
     def get_compound_by_id(self, comp_id: str) -> Compound:
         """
         Get a compound by its id.
@@ -568,7 +421,7 @@ class Network(Resource):
         :rtype: `gena.network.Compound` or `None`
         """
         
-        return self._compounds.get(comp_id)
+        return self.compounds.get(comp_id)
     
     def get_compound_by_chebi_id(self, chebi_id: str, compartment: str=None)->Compound:
         """
@@ -588,18 +441,18 @@ class Network(Resource):
         if "CHEBI" not in chebi_id:
             chebi_id = f"CHEBI:{chebi_id}"
         
-        if not compartment in self.__set_of_chebi_ids:
+        if not compartment in self._set_of_chebi_ids:
             return None
         
-        c_id = self.__set_of_chebi_ids[compartment].get(chebi_id)
+        c_id = self._set_of_chebi_ids[compartment].get(chebi_id)
         if c_id:
-            return self._compounds[c_id]
+            return self.compounds[c_id]
         else:
             return None
 
         # _list = []
-        # for _id in self._compounds:
-        #     comp: Compound = self._compounds[_id]
+        # for _id in self.compounds:
+        #     comp: Compound = self.compounds[_id]
         #     OK = ( comp.chebi_id == chebi_id ) or \
         #          ( chebi_id in comp.alt_chebi_ids )
         #     if OK:
@@ -619,7 +472,7 @@ class Network(Resource):
         :rtype: `gena.network.Reaction` or `None`
         """
         
-        return self._reactions.get(rxn_id)
+        return self.reactions.get(rxn_id)
     
     def get_reaction_by_ec_number(self, ec_number: str)->Reaction:
         """
@@ -631,14 +484,14 @@ class Network(Resource):
         :rtype: `gena.network.Reaction` or `None`
         """
         
-        r_id = self.__set_of_ec_numbers.get(ec_number)
+        r_id = self._set_of_ec_numbers.get(ec_number)
         if r_id:
-            return self._reactions[r_id]
+            return self.reactions[r_id]
         else:
             return None
 
-        # for k in self._reactions:
-        #     rxn = self._reactions[k]
+        # for k in self.reactions:
+        #     rxn = self.reactions[k]
         #     if rxn.ec_number == ec_number:
         #         return rxn
 
@@ -652,9 +505,9 @@ class Network(Resource):
         :rtype: `gena.network.Reaction` or `None`
         """
         
-        r_id = self.__set_of_rhea_ids.get(rhea_id)
+        r_id = self._set_of_rhea_ids.get(rhea_id)
         if r_id:
-            return self._reactions[r_id]
+            return self.reactions[r_id]
         else:
             return None
 
@@ -783,6 +636,7 @@ class Network(Resource):
         :rtype: any
         """
 
+        net: Network
         file_extension = Path(file_path).suffix
         if file_extension in [".json"] or file_format == ".json":
             with open(file_path, 'r') as fp:
@@ -790,38 +644,136 @@ class Network(Resource):
                     _json = json.load(fp)
                 except Exception as err:
                     raise BadRequestException(f"Cannot load JSON file {file_path}. Error: {err}")  
+                
                 if _json.get("reactions"):
                     # is a raw dump network
-                    net = cls.from_json(_json)
+                    net = cls.loads(_json)
                 elif _json.get("network"): 
                     # is gws resource
-                    net = cls.from_json(_json["network"])
+                    net = cls.loads(_json["network"])
                 elif _json.get("data",{}).get("network"): 
                     # TODO : Remove after
                     # is gws resource [RETRO COMPATIBILTY]
-                    net = cls.from_json(_json["data"]["network"])
+                    net = cls.loads(_json["data"]["network"])
                 else:
                     raise BadRequestException("Invalid network data")
         else:
             raise BadRequestException("Invalid file format")
         return net
     
+    # -- L --
+
+    @classmethod
+    def loads(cls, data: NetworkDict):
+        if not data.get("compartments"):
+            raise BadRequestException("Invalid network dump. Compartment field not found")
+        if not data.get("metabolites"):
+            raise BadRequestException("Invalid network dump. Metabolite field not found")
+        if not data.get("reactions"):
+            raise BadRequestException("Invalid network dump. Reaction field not found")
+        
+        net = cls() 
+        net.compartments = data["compartments"]
+        ckey = "compounds" if "compounds" in data else "metabolites"
+
+        added_comps = {}
+        for val in data[ckey]:
+            compart = val["compartment"]
+            if not compart in net.compartments:
+                raise BadRequestException(f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
+   
+            chebi_id = val.get("chebi_id", "")
+            inchikey = val.get("inchikey", "")
+            # if re.match(r"CHEBI\:\d+$", val["id"]):
+            #     chebi_id = val["id"]
+
+            is_BIGG_data_format = ("annotation" in val)
+            alt_chebi_ids = []
+            if not chebi_id and not inchikey and is_BIGG_data_format:
+                annotation = val["annotation"]
+                alt_chebi_ids = annotation.get("chebi",[])
+                inchikey = annotation.get("inchi_key", [""])[0]
+                if alt_chebi_ids:
+                    chebi_id = alt_chebi_ids.pop(0)
+
+            _id = val["id"] #.replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
+            comp = None
+            if chebi_id or inchikey:
+                try:
+                    comp = Compound.from_biota(
+                        id=_id, \
+                        name=val.get("name",""), \
+                        chebi_id=chebi_id,
+                        inchikey=inchikey, \
+                        compartment=compart,
+                        network=net
+                    )
+                    if alt_chebi_ids:
+                        comp.alt_chebi_ids = alt_chebi_ids
+                except:   
+                    pass
+            
+            if comp is None:
+                comp = Compound(
+                    id=_id, \
+                    name=val.get("name",""), \
+                    network=net, \
+                    compartment=compart,\
+                    charge = val.get("charge",""),\
+                    mass = val.get("mass",""),\
+                    monoisotopic_mass = val.get("monoisotopic_mass",""),\
+                    formula = val.get("formula",""),\
+                    inchi = val.get("inchi",""),\
+                    inchikey = val.get("inchikey",""),\
+                    chebi_id = chebi_id,\
+                    alt_chebi_ids = alt_chebi_ids,\
+                    kegg_id = val.get("kegg_id","")\
+                )
+            added_comps[_id] = comp
+
+        for val in data["reactions"]:
+            rxn = Reaction(
+                id=val["id"], #.replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER),\
+                name=val.get("name"), \
+                network=net, \
+                lower_bound=val.get("lower_bound", Reaction.lower_bound), \
+                upper_bound=val.get("upper_bound", Reaction.upper_bound), \
+                enzyme=val.get("enzyme",{}),\
+                direction=val.get("direction","B"),\
+                rhea_id=val.get("rhea_id","")\
+            )
+            
+            if val.get("estimate"):
+                rxn.set_estimate(val.get("estimate"))
+
+            for comp_id in val[ckey]:
+                comp = added_comps[comp_id]  
+                # search according to compound ids
+                if re.match(r"CHEBI\:\d+$", comp_id):
+                    comps = net.get_compound_by_chebi_id(comp_id)
+                    # select the compound in the good compartment
+                    for c in comps:
+                        if c.compartment == comp.compartment:
+                            break
+
+                stoich = val[ckey][comp_id]
+                if stoich < 0:
+                    rxn.add_substrate( comp, stoich )
+                elif stoich > 0:
+                    rxn.add_product( comp, stoich )
+
+        net.name = data.get("name", cls.DEFAULT_NAME)
+        net.description = data.get("description","")
+
+        return net
+
     # -- N --
 
     # -- P --
     
     # -- R --
     
-    @property
-    def reactions(self) -> Dict[str, Reaction]:
-        """
-        Returns the list of reactions
-        
-        :rtype: `dict`
-        """
-        
-        return self._reactions #self.kv_store["reactions"]
-    
+
     def remove_reaction(self, rxn_id: str):
         """
         Remove a reaction from the network
@@ -838,7 +790,7 @@ class Network(Resource):
     def render__compound_stats__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
         _dict = self.stats["compounds"]
         for comp_id in _dict:
-            _dict[comp_id]["chebi_id"] = self._compounds[comp_id].chebi_id
+            _dict[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
         table = DictView.to_table(_dict, columns=["count", "freq", "chebi_id"], stringify=False)
         table = table.sort_values(by=['freq'], ascending=False)
         if stringify:
@@ -872,9 +824,6 @@ class Network(Resource):
     
     # -- R -- 
 
-    def refresh_binary_store(self):
-        self._set_network_dict_in_store( self.dumps() )
-
     # -- S --
     
     @property
@@ -904,41 +853,20 @@ class Network(Resource):
         return stats
 
     def set_reaction_tag(self, tag_id, tag: dict):
-        net = self.binary_store["network"]
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")  
-        if not tag_id in net["tags"]["reactions"]:
-            net["tags"]["reactions"][tag_id] = {}
-        net["tags"]["reactions"][tag_id].update(tag)
-        self.binary_store["network"] = net
+        if not tag_id in self.tags["reactions"]:
+            self.tags["reactions"][tag_id] = {}
+        self.tags["reactions"][tag_id].update(tag)
 
     def set_compound_tag(self, tag_id, tag: dict):
-        net = self.binary_store["network"]
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in net["tags"]["compounds"]:
-            net["tags"]["compounds"][tag_id] = {}
-        net["tags"]["compounds"][tag_id].update(tag)
-        self.binary_store["network"] = net
-        
-    def _set_network_dict_in_store(self, net_dict: NetworkDict):
-        self.binary_store["network"] = net_dict
+        if not tag_id in self.tags["compounds"]:
+            self.tags["compounds"][tag_id] = {}
+        self.tags["compounds"][tag_id].update(tag)
         
     # -- T --
-
-    def to_json(self, **kwargs) -> (dict, str,):
-        """
-        Returns JSON string or dictionnary representation of the model.
-        
-        :param kwargs: Theses parameters are passed to the super class
-        :type kwargs: keyword arguments
-        :return: The representation
-        :rtype: dict, str
-        """
-        
-        _json = super().to_json(**kwargs)
-        _json["network"] = self.dumps() #override to account for new updates
-        return _json
     
     def to_str(self) -> str:
         """
@@ -1064,9 +992,8 @@ class Network(Resource):
             table.append(list(_rxn_row.values()))
   
         # add the errored ec numbers
-        tags = self.get_reaction_tags()
-        for k in tags:
-            t = tags[k]
+        for k in self.tags:
+            t = self.tags[k]
             ec = t.get("ec_number")
             is_partial_ec_number = t.get("is_partial_ec_number")
             error = t.get("error")

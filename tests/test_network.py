@@ -13,14 +13,10 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.print("Test Network Import")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         file_path = os.path.join(data_dir, "small_net.json")
-        
-        with open(file_path) as f:
-            data = json.load(f)
-            net = Network.from_json(data)
-        
-        _json = net.dumps()
-        print(_json)        
-        print(net.to_json())
+        net = Network.import_from_path(file_path)
+        json_data = net.dumps()
+        print(json_data)        
+        print(net.loads(json_data))
         
         self.assertEqual(len(net.compounds), 7)
         self.assertEqual(net.compounds["glc_D_e"].id, "glc_D_e")

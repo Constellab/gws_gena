@@ -9,7 +9,7 @@ import numpy
 import re
 from scipy import stats
 
-from gws_core import Resource, resource_decorator
+from gws_core import Resource, resource_decorator, RField, DictRField
 from ..twin.twin import Twin
 
 class OptimizeResult:
@@ -37,21 +37,22 @@ class FBAResult(Resource):
     FBAResult class
     """
 
-    _annotated_bio = None
+    twin_data = DictRField()
+    optimize_result = RField(default_value=None)
+
+    _annotated_twin = None
     _default_zero_flux_threshold = 0.01
 
     def __init__(self, *args, twin: Twin=None, optimize_result: OptimizeResult = None, **kwargs):
         super().__init__(*args, **kwargs)
-        if 'optimize_result' not in self.binary_store:
-            if optimize_result:
-                self.binary_store['optimize_result'] = optimize_result
-        if 'twin' not in self.binary_store:
-            if twin:
-                self.binary_store['twin'] = twin.to_json(deep=True)
-        # self.add_related_model(relation_name="twin", related_model=twin)
+        if twin is not None:
+            self.twin_data = twin.dumps(deep=True)
+            self.optimize_result = optimize_result
+            
 
     def get_related_twin(self):
-        return Twin.from_json(self.binary_store['twin'])
+        print(self.twin_data)
+        return Twin.loads(self.twin_data)
     # -- C --
 
     def compute_zero_flux_threshold(self) -> (float, float):
@@ -72,28 +73,28 @@ class FBAResult(Resource):
     # -- R --
 
     def render__fluxes__as_table(self) -> DataFrame:
-        res: OptimizeResult = self.binary_store['optimize_result']
+        res: OptimizeResult = self.optimize_result
         val = DataFrame(data=res.x, index=res.x_names, columns=["value"])
         lb = DataFrame(data=res.x, index=res.x_names, columns=["lower_bound"])
         ub = DataFrame(data=res.x, index=res.x_names, columns=["upper_bound"])
         return pd.concat([val, lb, ub], axis=1)
 
     def render__sv__as_table(self) -> DataFrame:
-        res: OptimizeResult = self.binary_store['optimize_result']
+        res: OptimizeResult = self.optimize_result
         df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
         return df
 
     def render__total_abs_flux__as_table(self) -> DataFrame:
-        if not self._annotated_bio:
+        if not self._annotated_twin:
             from ..helper.twin_annotator_helper import TwinAnnotatorHelper
-            bio: Twin = Twin.from_json(self.binary_store["twin"])
-            self._annotated_bio: Twin = TwinAnnotatorHelper.annotate(bio, self)
-        net = list(self._annotated_bio.networks.values())[0]
+            twin: Twin = self.get_related_twin()
+            self._annotated_twin: Twin = TwinAnnotatorHelper.annotate(twin, self)
+        net = list(self._annotated_twin.networks.values())[0]
         return net.render__total_abs_flux__as_table()
 
     def render__annotated_twin__as_json(self) -> dict:
-        if not self._annotated_bio:
+        if not self._annotated_twin:
             from ..helper.twin_annotator_helper import TwinAnnotatorHelper
-            bio: Twin = Twin.from_json(self.binary_store["twin"])
-            self._annotated_bio: Twin = TwinAnnotatorHelper.annotate(bio, self)
-        return self._annotated_bio.to_json(deep=True)
+            twin: Twin = self.get_related_twin()
+            self._annotated_twin: Twin = TwinAnnotatorHelper.annotate(twin, self)
+        return self._annotated_twin.to_json(deep=True)

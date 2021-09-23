@@ -33,6 +33,5 @@ class NetworkMerger(Task):
             except:
                 pass
         
-        net_1.refresh_binary_store()
         return {'network': net_1}
         

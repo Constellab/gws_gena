@@ -38,5 +38,4 @@ class TwinBuilder(Task):
             ctx = inputs["context"]
             bio.add_context(ctx, related_network=net)
 
-        bio.refresh_binary_store()
         return {"twin" : bio}

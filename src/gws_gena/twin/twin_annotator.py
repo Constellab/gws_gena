@@ -26,5 +26,4 @@ class MetaTwinAnnotator(Task):
         twin = inputs["twin"]
         fba_result = inputs["fba_result"]
         annotated_bio: Twin = TwinAnnotatorHelper.annotate(twin, fba_result)
-        annotated_bio.refresh_binary_store()
         return { "twin": annotated_bio }

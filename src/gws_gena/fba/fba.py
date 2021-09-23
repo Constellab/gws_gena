@@ -83,7 +83,7 @@ class FBA(Task):
     
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         self.add_progress_message(message="Creating problem ...")
-        bio = inputs["twin"]
+        twin = inputs["twin"]
         solver = params["solver"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
@@ -95,7 +95,7 @@ class FBA(Task):
             solver = "quad"
 
         c, A_eq, b_eq, bounds = self.build_problem(
-            bio, 
+            twin, 
             fluxes_to_maximize=fluxes_to_maximize, 
             fluxes_to_minimize=fluxes_to_minimize,
             fill_gaps_with_sinks=fill_gaps_with_sinks
@@ -113,24 +113,24 @@ class FBA(Task):
                 solver=solver
             )
         self.update_progress_value(90, message=res.message)
-        result = FBAResult(twin=bio, optimize_result = res)
+        result = FBAResult(twin=twin, optimize_result = res)
         return { "result" : result }
 
     # -- B --
 
     @classmethod
-    def build_problem( cls, bio, *, fluxes_to_maximize = [], fluxes_to_minimize = [], fill_gaps_with_sinks=True):
-        flat_bio: FlatTwin = FlatTwin.from_flat_dict(bio.flatten())
-        flat_net: Network = flat_bio.flat_network
+    def build_problem( cls, twin, *, fluxes_to_maximize = [], fluxes_to_minimize = [], fill_gaps_with_sinks=True):
+        flat_twin: FlatTwin = twin.flatten()
+        flat_net: Network = flat_twin.get_flat_network()
         if fill_gaps_with_sinks:
             SinkHelper.fill_gaps_with_sinks(flat_net)
         
         # reshape problem
-        obsv_matrix = MetaTwinService.create_observation_matrices(flat_bio)
+        obsv_matrix = MetaTwinService.create_observation_matrices(flat_twin)
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
 
-        S_int = MetaTwinService.create_steady_stoichiometric_matrix(flat_bio)
+        S_int = MetaTwinService.create_steady_stoichiometric_matrix(flat_twin)
         Y_names = [ "v_"+name for name in C.index ]
         S_zeros = DataFrame( 
             index = S_int.index,

@@ -67,7 +67,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-02).all() )
 
         GTest.print(f"Test FVAProto: Small network (toy + linprog)")
-        run_fva(solver="highs")
+        await run_fva(solver="highs")
 
         for relax_qssa in [True, False]:
             GTest.print(f"Test FVAProto: Small network (toy + quad + relax={relax_qssa})")
@@ -149,7 +149,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         # ecoli
         organism = "ecoli"
         GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
-        run_fva(organism=organism, solver="highs")
+        await run_fva(organism=organism, solver="highs")
         for relax in [True]:
             GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             await run_fva(organism=organism, solver="quad", relax_qssa=relax)

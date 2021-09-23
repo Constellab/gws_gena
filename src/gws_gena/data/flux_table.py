@@ -5,7 +5,7 @@
 
 from gws_core import resource_decorator, task_decorator, CSVTable
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam
+from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -15,8 +15,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 
 @resource_decorator("FluxTable",
                     human_name="FluxTable", 
-                    short_description="CSV table of experimental metabolic fluxes",
-                    serializable_fields=["confidence_score_column_name"])
+                    short_description="CSV table of experimental metabolic fluxes")
 class FluxTable(CSVTable):
     """ 
     Represents experimentally-measured (or user-defined) flux data table
@@ -45,7 +44,7 @@ class FluxTable(CSVTable):
     DEFAULT_LOWER_BOUND_COLUMN_NAME = "lower_bound"
     DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME = "confidence_score"
     
-    confidence_score_column_name: str = DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME
+    confidence_score_column_name: str = StrRField(default_value=DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME)
 
     # -- C --
 

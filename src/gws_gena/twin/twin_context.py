@@ -7,10 +7,12 @@ import json
 import uuid
 from typing import List, Dict, TypedDict
 from pathlib import Path
+import copy
 
-from gws_core import BadRequestException
-from gws_core import Resource, resource_decorator, task_decorator, Utils, SerializedResourceData
-from gws_core import FileImporter, FileExporter, FileLoader, FileDumper, File, StrParam
+from gws_core import (BadRequestException, Resource, resource_decorator, 
+                        task_decorator, Utils, FileImporter, FileExporter, 
+                        FileLoader, FileDumper, File, StrParam, 
+                        StrRField, DictRField)
 
 def slugify_id(_id):
     return Utils.slugify(_id, snakefy=True, to_lower=False)
@@ -28,15 +30,23 @@ class Variable:
     REACTION_REFERENCE_TYPE = "reaction"
     METABOLITE_REFERENCE_TYPE = "metabolite"
     _allowed_ref_types = [ REACTION_REFERENCE_TYPE, METABOLITE_REFERENCE_TYPE ]
-    
+
     def __init__( self, coefficient: float, reference_id: str, reference_type: str = "metabolite"):
         if not reference_type in self._allowed_ref_types:
             raise BadRequestException("Invalid reference_type")
         self.coefficient = coefficient
         self.reference_id = reference_id
         self.reference_type = reference_type
-        
-    def to_json(self):
+    
+    def copy(self):
+        var = Variable(
+            self.coefficient, 
+            self.reference_id,
+            self.reference_type 
+        )
+        return var
+
+    def dumps(self):
         _json = {
             "reference_id": self.reference_id,
             "reference_type": self.reference_type,
@@ -62,8 +72,8 @@ class Measure:
     target: float = None
     confidence_score: float = None
     _variables: List[Variable] = None
-    _flattening_delim = ":"
     _ids = []
+    _flattening_delim = ":"
     
     def __init__( self, id: str = None, name: str = "", \
                  target:float = None, confidence_score:float = 1.0, \
@@ -87,7 +97,20 @@ class Measure:
             raise BadRequestException("The variable must an instance of Variable")
         self._variables.append(variable)
     
-    def to_json(self):
+    def copy(self):
+        meas = Measure()
+        meas.id = self.id
+        meas.name = self.name
+        meas.lower_bound = self.lower_bound
+        meas.upper_bound = self.upper_bound
+        meas.target = self.target
+        meas.confidence_score = self.confidence_score
+        meas._variables = [ v.copy() for v in self._variables ]
+        meas._flattening_delim = self._flattening_delim
+        meas._ids = copy.deepcopy(self._ids)
+        return meas
+
+    def dumps(self):
         _json = {
             "id": self._format(self.id),
             "name": self.name,
@@ -98,7 +121,7 @@ class Measure:
             "confidence_score" : self.confidence_score
         }
         for variable in self._variables:
-            _json["variables"].append( variable.to_json() )
+            _json["variables"].append( variable.dumps() )
         return _json
     
     @classmethod
@@ -130,88 +153,48 @@ TwinContextDict = TypedDict("TwinContextDict", {
     "measures": list,
 })
 
-@resource_decorator("TwinContext", serializable_fields=["uref", "name", "description"])
+@resource_decorator("TwinContext")
 class TwinContext(Resource):
     """
     TwinContext class
     """
     DEFAULT_NAME = "context"
 
-    name: str = ""
-    description: str = ""
+    name: str = StrRField()
+    description: str = StrRField()
+    measures: Dict[str, Measure] = DictRField()
 
-    _measures: Dict[str, Measure] = None
     _flattening_delim = ":"
     
     def __init__( self, *args, **kwargs ):
         super().__init__( *args, **kwargs )
-        self._measures = {}
+        self.measures = {}
 
-        if "context" in self.binary_store:
-            ctx_dict = self.binary_store["context"]
-            self._build_from_dump(ctx_dict)
-        else:
-            self.uref = str(uuid.uuid4())
-            self.binary_store["context"] = TwinContextDict(
-                name = self.DEFAULT_NAME,
-                measures = []
-            )
-
-        # ctx_dict = self._get_context_dict_from_store()
-        # if ctx_dict:
-        #     self._build_from_dump(ctx_dict)
-    
     # -- A --
     
-    def to_json(self, *args, **kwargs):
-        _json = super().to_json(*args, **kwargs)
-        _json["context"] = self.dumps()  #override to account for new updates
-        return _json    
-    
     def add_measure(self, measure: Measure):
-        if measure.id in self._measures:
+        if measure.id in self.measures:
             raise BadRequestException("Measure duplicate")
-        self._measures[measure.id] = measure
+        self.measures[measure.id] = measure
 
     # -- C --
     
     def copy(self) -> 'TwinContext':
-        return TwinContext.from_json( self.to_json() )
+        ctx = TwinContext()
+        ctx.name = self.name
+        ctx.description = self.description
+        ctx._flattening_delim = self._flattening_delim
+        ctx.measures = {k:self.measures[k].copy() for k in self.measures}
+        return ctx
 
     # -- B --
     
-    def _build_from_dump_and_set_store(self, data: dict):
-        self._build_from_dump(data)
-        self._set_context_dict_in_store(data)
-
-    def _build_from_dump(self, data: dict):
-        for _meas in data["measures"]:
-            measure = Measure( \
-                id = self._format(_meas["id"]), \
-                name = _meas.get("name"), \
-                target = _meas.get("target"), \
-                confidence_score = _meas.get("confidence_score",1.0), \
-                lower_bound = _meas.get("lower_bound",-1000.0), \
-                upper_bound = _meas.get("upper_bound",1000.0) \
-            )
-            for _var in _meas["variables"]:
-                variable = Variable( \
-                    coefficient = _var["coefficient"], \
-                    reference_id = _var["reference_id"], \
-                    reference_type = _var["reference_type"] \
-                )
-                measure.add_variable(variable)               
-            self.add_measure(measure)
-        
-        self.name = self._format( data.get("name","TwinContext") )
-        self.description = data.get("description","")
-        
     # -- D -- 
     
     def dumps(self) -> dict:
         _json = {"measures": []}
-        for k in self._measures:
-            _json["measures"].append( self._measures[k].to_json() )
+        for k in self.measures:
+            _json["measures"].append( self.measures[k].dumps() )
         return _json
         
     # -- E --
@@ -232,13 +215,10 @@ class TwinContext(Resource):
 
     # -- G --
     
-    def _get_context_dict_from_store(self):
-        return self.binary_store.get("context",{})
-
     def get_measure_ids(self) -> List[str]:
         _ids = []
-        for k in self._measures:
-            m = self._measures[k]
+        for k in self.measures:
+            m = self.measures[k]
             _ids.append(m.id)
         return _ids
 
@@ -247,17 +227,6 @@ class TwinContext(Resource):
     @classmethod
     def _format(cls, id) -> str:
         return id.replace(cls._flattening_delim,"_")
-    
-    @classmethod
-    def from_json(cls, data: dict) -> 'TwinContext':
-        ctx = TwinContext()
-        if data.get("context"):
-            ctx.uref = data["uref"]
-            ctx._build_from_dump_and_set_store(data["context"])
-        else:
-            ctx._build_from_dump_and_set_store(data)
-
-        return ctx
     
     # -- I --
 
@@ -274,21 +243,35 @@ class TwinContext(Resource):
         if file_extension in [".json"] or file_format in [".json"]:
             with open(file_path, "r") as f:
                 data = json.load(f)
-        return cls.from_json(data)
+        return cls.loads(data)
 
-    # -- M --
-    
-    @property
-    def measures(self):
-        return self._measures
+    # -- L --
 
-    def refresh_binary_store(self):
-        self.binary_store["context"] = self.dumps()
-
-    # -- S --
-    
-    def _set_context_dict_in_store(self, data: dict):
-        self.binary_store["context"] = data
+    @classmethod
+    def loads(cls, data: dict) -> 'TwinContext':
+        ctx = cls()
+        for _meas in data["measures"]:
+            measure = Measure( \
+                id = ctx._format(_meas["id"]), \
+                name = _meas.get("name"), \
+                target = _meas.get("target"), \
+                confidence_score = _meas.get("confidence_score",1.0), \
+                lower_bound = _meas.get("lower_bound",-1000.0), \
+                upper_bound = _meas.get("upper_bound",1000.0) \
+            )
+            for _var in _meas["variables"]:
+                variable = Variable( \
+                    coefficient = _var["coefficient"], \
+                    reference_id = _var["reference_id"], \
+                    reference_type = _var["reference_type"] \
+                )
+                measure.add_variable(variable)               
+            ctx.add_measure(measure)
+        
+        ctx.name = cls._format( data.get("name","TwinContext") )
+        ctx.description = data.get("description","")
+        return ctx
+        
 
 # ####################################################################
 #

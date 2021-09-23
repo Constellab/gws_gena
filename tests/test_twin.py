@@ -19,38 +19,28 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         
         file_path = os.path.join(data_dir, "small_net.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            net = Network.from_json(data)
-            net2 = Network.from_json(data)
-        
+        net = Network.import_from_path(file_path)
+
         file_path = os.path.join(data_dir, "small_context.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            ctx = TwinContext.from_json(data)
-            ctx2 = TwinContext.from_json(data)
+        ctx = TwinContext.import_from_path(file_path)
+
+        twin = Twin()
+        twin.add_network(net)
+        twin.add_context(ctx, related_network=net)
         
-        bio = Twin()
-        bio.add_network(net)
-        bio.add_context(ctx, related_network=net)
-        
-        # export as json
-        _json = bio.dumps(deep=True)
-        #print(_json)
-        
-        self.assertRaises(Exception, bio.add_network, net)
+        self.assertRaises(Exception, twin.add_network, net)
         file_path = os.path.join(data_dir, "small_flat_twin.json")
         with open(file_path, 'w') as f:
-            json.dump(bio.flatten(), f)
+            json.dump(twin.dumps_flat(), f)
             
         file_path = os.path.join(data_dir, "small_flat_twin.json")
         with open(file_path) as f:
             data = json.load(f)
             print(data)
-            self.assertEqual(bio.flatten(), data)
+            self.assertEqual(twin.dumps_flat(), data)
    
-        flat_bio = FlatTwin.from_flat_dict(bio.flatten())
-        problem = MetaTwinService.create_fba_problem(flat_bio)
+        flat_twin = twin.flatten()
+        problem = MetaTwinService.create_fba_problem(flat_twin)
 
         print(problem["S"])
         expected_S = DataFrame({
@@ -99,24 +89,15 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
 
-        file_path = os.path.join(data_dir, "toy.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            net = Network.from_json(data)
-            #net2 = Network.from_json(data)
+        net = Network.import_from_path(os.path.join(data_dir, "toy.json"))
+        ctx = TwinContext.import_from_path(os.path.join(data_dir, "toy_context.json"))
+
+        twin = Twin()
+        twin.add_network(net)
+        twin.add_context(ctx, related_network=net)
         
-        file_path = os.path.join(data_dir, "toy_context.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            ctx = TwinContext.from_json(data)
-            #ctx2 = TwinContext.from_json(data)
-        
-        bio = Twin()
-        bio.add_network(net)
-        bio.add_context(ctx, related_network=net)
-        
-        flat_bio = FlatTwin.from_flat_dict(bio.flatten())
-        problem = MetaTwinService.create_fba_problem(flat_bio)
+        flat_twin = twin.flatten()
+        problem = MetaTwinService.create_fba_problem(flat_twin)
 
         print('--- S_full ---')
         print(problem["S"])
@@ -128,12 +109,12 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         print(problem["b"])
 
         print('--- S_intra ---')        
-        Si = MetaTwinService.create_steady_stoichiometric_matrix(flat_bio)
+        Si = MetaTwinService.create_steady_stoichiometric_matrix(flat_twin)
         #Si = MetaTwinService.extract_intracell_stoichiometric_matrix(problem["S"])
         print(Si)
 
         print('--- S_extra ---')
-        Se = MetaTwinService.create_non_steady_stoichiometric_matrix(flat_bio)
+        Se = MetaTwinService.create_non_steady_stoichiometric_matrix(flat_twin)
         #Se = MetaTwinService.extract_extracell_stoichiometric_matrix(problem["S"])
         print(Se)
 

@@ -17,21 +17,19 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
         file_path = os.path.join(data_dir, "toy_context.json")
-        
+        ctx = TwinContext.import_from_path(file_path)
+
         with open(file_path) as f:
             data = json.load(f)
-            ctx = TwinContext.from_json(data)
-        
-        _json = ctx.dumps()
-        print(_json)        
-        print(ctx.to_json())
+              
+        print(ctx.dumps())
 
         self.assertEqual( data["measures"][1], ctx.dumps()["measures"][1] )
         self.assertEqual( data["measures"][0].get("confidence_score"), 1.0 )
         self.assertEqual( ctx.dumps()["measures"][0].get("confidence_score"), 1.0 )
         
         ctx2 = ctx.copy()
-        self.assertEqual( ctx2.to_json()["context"], ctx.to_json()["context"] )
+        self.assertEqual( ctx2.dumps(), ctx.dumps() )
         
     async def test_context_builder(self):
         self.print("Test TwinContext Builder")
@@ -44,10 +42,8 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         
         # network
         file_path = os.path.join(data_dir, "toy.json")
-        with open(file_path) as f:
-            data = json.load(f)
-            net = Network.from_json(data)
-        
+        net = Network.import_from_path(file_path)
+
         # experiment
         tester = TaskTester(
             inputs = {"network": net, "flux_table": flux_data},

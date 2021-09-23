@@ -5,7 +5,7 @@
 
 from gws_core import resource_decorator, task_decorator, CSVTable
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam
+from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -15,8 +15,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 
 @resource_decorator("MediumTable",
                     human_name="MediumTable", 
-                    short_description="CSV table of experimental medium culture composition",
-                    serializable_fields=["chebi_column_name"])
+                    short_description="CSV table of experimental medium culture composition")
 class MediumTable(CSVTable):
     """ 
     Represents medium composition data table
@@ -38,18 +37,10 @@ class MediumTable(CSVTable):
     """
     
     DEFAULT_CHEBI_COLUMN_NAME = "chebi_id"
-    chebi_column_name: str = DEFAULT_CHEBI_COLUMN_NAME
+    chebi_column_name: str = StrRField(default_value=DEFAULT_CHEBI_COLUMN_NAME)
 
     # -- E --
-    
-    # @property
-    # def chebi_column_name(self):
-    #     return self.data.get('chebi_column_name', self.DEFAULT_CHEBI_COLUMN_NAME)
 
-    # @chebi_column_name.setter
-    # def chebi_column_name(self, name):
-    #     self.data['chebi_column_name'] = name
-    
     # -- F --
     
     def get_chebi_ids(self, rtype='list') -> ('DataFrame', list):

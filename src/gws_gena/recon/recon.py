@@ -53,7 +53,6 @@ class DraftRecon(Task):
         net = self._create_network()
         self._create_biomass_equation(net)
         self._create_culture_medium(net)
-        net.refresh_binary_store()
         return {"network" : net}
      
     def _create_network(self):

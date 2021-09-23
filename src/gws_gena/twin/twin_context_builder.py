@@ -61,5 +61,4 @@ class TwinContextBuilder(Task):
             ctx.add_measure(m)
             i += 1
             
-        ctx.refresh_binary_store()
         return {"context" : ctx}

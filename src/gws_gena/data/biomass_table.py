@@ -5,7 +5,7 @@
 
 from gws_core import resource_decorator, task_decorator, CSVTable
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam
+from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -15,8 +15,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 
 @resource_decorator("BiomassTable", 
                     human_name="BiomassTable", 
-                    short_description="CSV table describing biomass composition",
-                    serializable_fields=["biomass_column_name", "chebi_column_name"])
+                    short_description="CSV table describing biomass composition")
 class BiomassTable(CSVTable): 
     """ 
     Represents biomass data table
@@ -53,26 +52,10 @@ class BiomassTable(CSVTable):
     DEFAULT_CHEBI_COLUMN_NAME = "chebi_id"
     DEFAULT_BIOMASS_COLUMN_NAME = "biomass"
     
-    biomass_column_name: str = DEFAULT_BIOMASS_COLUMN_NAME
-    chebi_column_name: str = DEFAULT_CHEBI_COLUMN_NAME
+    biomass_column_name: str = StrRField(default_value=DEFAULT_BIOMASS_COLUMN_NAME)
+    chebi_column_name: str = StrRField(default_value=DEFAULT_CHEBI_COLUMN_NAME)
 
     # -- E --
-    
-    # @property
-    # def biomass_column_name(self):
-    #     return self.data.get('biomass_column_name', self.DEFAULT_BIOMASS_COLUMN_NAME)
-
-    # @biomass_column_name.setter
-    # def biomass_column_name(self, name):
-    #     self.data['biomass_column_name'] = name
-        
-    # @property
-    # def chebi_column_name(self):
-    #     return self.data.get('chebi_column_name', self.DEFAULT_CHEBI_COLUMN_NAME)
-
-    # @chebi_column_name.setter
-    # def chebi_column_name(self, name):
-    #     self.data['chebi_column_name'] = name
     
     # -- F --
     

@@ -13,6 +13,5 @@ class TwinFlattener(Task):
     config_specs = {}
     
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        bio = inputs["twin"]
-        flat_json: dict = bio.flatten()
-        return {"flat_twin" : FlatTwin.from_flat_dict(flat_json) }
+        twin = inputs["twin"]
+        return {"flat_twin" : twin.flatten() }

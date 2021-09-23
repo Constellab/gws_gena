@@ -12,10 +12,10 @@ from .twin.twin_flatner import TwinFlattener
 from .twin.twin_context_builder import TwinContext, TwinContextBuilder
 
 # table
-from .data.biomass_table import BiomassTable
-from .data.ec_number_table import ECNumberTable
-from .data.flux_table import FluxTable
-from .data.medium_table import MediumTable
+from .data.biomass_table import BiomassTable, BiomassDumper, BiomassExporter, BiomassImporter, BiomassLoader
+from .data.ec_number_table import ECNumberTable, ECNumberDumper, ECNumberExporter, ECNumberImporter, ECNumberLoader
+from .data.flux_table import FluxTable, FluxDumper, FluxExporter, FluxImporter, FluxLoader
+from .data.medium_table import MediumTable, MediumDumper, MediumExporter, MediumImporter, MediumLoader 
 
 # fba
 from .fba.fba import FBA
