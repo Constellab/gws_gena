@@ -51,7 +51,6 @@ class FBAResult(Resource):
             
 
     def get_related_twin(self):
-        print(self.twin_data)
         return Twin.loads(self.twin_data)
     # -- C --
 

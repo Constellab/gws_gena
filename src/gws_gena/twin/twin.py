@@ -266,16 +266,16 @@ class Twin(JSONDict):
     # -- G --
   
     def _get_related_network(self, ctx):
-        for net_uri in self._network_contexts:
-            net_ctx = self._network_contexts[net_uri]
-            if ctx == net_ctx:
-                return self._networks[net_uri]
+        for net_uid in self._network_contexts:
+            ctx = self._network_contexts[net_uid]
+            if ctx.uid == ctx.uid:
+                return self._networks[net_uid]
         return None
     
     def _get_related_context(self, net):
-        for net_uri in self._network_contexts:
-            if net.uid == net_uri:
-                ctx = self._network_contexts[net_uri]
+        for net_uid in self._network_contexts:
+            if net.uid == net_uid:
+                ctx = self._network_contexts[net_uid]
                 return ctx
         return None
 

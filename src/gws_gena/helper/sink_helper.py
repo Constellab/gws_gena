@@ -18,7 +18,7 @@ class SinkHelper:
             is_gap = gap_info["compounds"][k]["is_gap"]
             is_orphan = gap_info["compounds"][k]["is_orphan"]
             if is_gap and not is_orphan:   # do not deal with orphans
-                comp: Compound = net._compounds[k]
+                comp: Compound = net.compounds[k]
                 if comp.is_sink:
                     raise BadRequestException("A sink reaction compound cannot not be a gap compound.")
                 if biomass_and_medium_gaps_only:

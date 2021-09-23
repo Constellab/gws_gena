@@ -42,16 +42,16 @@ class DeprecFBA(Shell):
         brick_dir = Utils.get_brick_path(self)
         bin_file = os.path.join(brick_dir, "bin/fba/fba")
         twin = inputs["twin"]
-        self.__flat_bio: dict = twin.flatten()
-        network_file = os.path.join(self.cwd.name,"network.json")
+        flat_twin = twin.flatten()
+        network_file = os.path.join(self.working_dir,"network.json")
         with open(network_file, "w") as fp:
-            json.dump(self.__flat_bio["twin"]["networks"][0], fp) 
+            json.dump(flat_twin.networks[0], fp) 
         
-        context_file = os.path.join(self.cwd.name,"context.json")
+        context_file = os.path.join(self.working_dir,"context.json")
         with open(context_file, "w") as fp:
-            json.dump(self.__flat_bio["twin"]["contexts"][0], fp)
+            json.dump(flat_twin.contexts[0], fp)
         
-        config_file = os.path.join(self.cwd.name,"config.json")
+        config_file = os.path.join(self.working_dir,"config.json")
         with open(config_file, "w") as fp:
             json.dump(params, fp)
  
@@ -66,24 +66,16 @@ class DeprecFBA(Shell):
         return cmd
     
     def _build_output_file_path(self):
-        return os.path.join(self.cwd.name,"result.json")
-
+        return os.path.join(self.working_dir,"result.json")
 
     # -- C --
-    
-    def compute_progress_bar_value(self, stdout_count: int=0, stdout_line: str="") -> tuple:
-        value = stdout_count / self.get_param("number_of_randomizations")
-        message = stdout_line
-        if value and value < 100:
-            # prevent blocking the progress bar if the current is not well computed by the user
-            self.update_progress_value(value, message=message)
-            
+ 
     # -- G --
     
     #def gather_outputs(self, stdout: str=None):
     def gather_outputs(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        bio = inputs["twin"]   
-        file = DeprecFBAResult(twin=bio)
+        twin = inputs["twin"]   
+        file = DeprecFBAResult(twin=twin)
         file.path = self._build_output_file_path()
         return {"result": file}
 

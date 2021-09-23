@@ -13,9 +13,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         organism_dir = os.path.join(data_dir, organism)
         file_path = os.path.join(organism_dir, f"{organism}.json")
-        with open(file_path, 'r') as fp:
-            json_data = json.load(fp)
-        net = Network.from_json(json_data)
+        net = Network.import_from_path(file_path)
 
         tester = TaskTester(
             params = {},

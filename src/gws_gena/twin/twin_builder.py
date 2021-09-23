@@ -32,10 +32,13 @@ class TwinBuilder(Task):
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
-        bio = Twin()
-        bio.add_network(net)
+        twin = Twin()
+        twin.add_network(net)
         if params["use_context"]:
             ctx = inputs["context"]
-            bio.add_context(ctx, related_network=net)
+            twin.add_context(ctx, related_network=net)
 
-        return {"twin" : bio}
+        print(twin.contexts)
+        print(twin.networks)
+
+        return {"twin" : twin}

@@ -14,10 +14,8 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         async def run_gap_fill(organism):
             data_dir = settings.get_variable("gws_gena:testdata_dir")
             file_path = os.path.join(data_dir, organism, f"{organism}.json")
-            with open(file_path, 'r') as fp:
-                json_data = json.load(fp)
-            net = Network.from_json(json_data)
-
+            net = Network.import_from_path(file_path)
+   
             nb_gaps = 0
             info = net._get_gap_info()
             for k in info["compounds"]:
@@ -41,18 +39,18 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = outputs["network"]
-            result_dir = os.path.join(data_dir, 'gap_fill')
+            result_dir = os.path.join(data_dir, 'gap_filler')
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
             
             file_path = os.path.join(result_dir, f"{organism}.json")
             with open(file_path, 'w') as fp:
-                json.dump(result.to_json(), fp)
+                json.dump(result.dumps(), fp)
 
             # file_path = os.path.join(result_dir, f"{organism}.json")
             # with open(file_path, 'r') as fp:
             #     expected_json = json.load(fp)
-            #     self.assertEquals(result.to_json(), expected_json)
+            #     self.assertEquals(result.dumps(), expected_json)
 
         await run_gap_fill("ecoli_gap")
 

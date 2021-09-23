@@ -96,7 +96,7 @@ class GapFiller(Task):
             is_gap = _gap_info["compounds"][k]["is_gap"]
             is_orphan = _gap_info["compounds"][k]["is_orphan"]
             if is_gap and not is_orphan:   # do not deal with orphans
-                comp: Compound = net._compounds[k]
+                comp: Compound = net.compounds[k]
                 if comp.is_sink:
                     raise BadRequestException("Coherence check. A sink reaction compound should not be a gap compound.")
 
@@ -151,27 +151,3 @@ class GapFiller(Task):
                         if fill_each_gap_once and _is_filled_once:
                             break
         return _nb_filled 
-
-    # def __fill_gaps_with_sinks(self, net, params):
-    #     _gap_info = net._get_gap_info()
-    #     _nb_filled = 0
-    #     biomass_and_medium_gaps_only = params["biomass_and_medium_gaps_only"]
-    #     for k in _gap_info["compounds"]:
-    #         is_gap = _gap_info["compounds"][k]["is_gap"]
-    #         is_orphan = _gap_info["compounds"][k]["is_orphan"]
-    #         if is_gap and not is_orphan:   # do not deal with orphans
-    #             comp: Compound = net._compounds[k]
-    #             if comp.is_sink:
-    #                 raise BadRequestException("Coherence check. A sink reaction compound should not be a gap compound.")
-    #             if biomass_and_medium_gaps_only:
-    #                 is_in_biomass_or_medium = net.get_compound_tag(comp.id, "is_in_biomass_or_medium")
-    #                 if not is_in_biomass_or_medium:
-    #                     # skip this compound
-    #                     continue
-    #             rxn = Reaction.create_sink_reaction(related_compound=comp)
-    #             net.set_reaction_tag(rxn.id, {
-    #                 "id": rxn.id,
-    #                 "is_from_gap_fillering": True
-    #             })
-    #             _nb_filled += 1
-    #     return _nb_filled

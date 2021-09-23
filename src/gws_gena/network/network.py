@@ -97,9 +97,7 @@ class Network(Resource):
     
     DEFAULT_NAME = "network"
     name: str = StrRField(default_value=DEFAULT_NAME, searchable=True)
-    description: str = StrRField(default_value="", searchable=True)
-    _dumps = DictRField()
-    
+    description: str = StrRField(default_value="", searchable=True)    
     compounds: Dict[str, Compound] = DictRField()
     reactions: Dict[str, Reaction] = DictRField()
     compartments: Dict[str, str] = DictRField()
@@ -268,7 +266,7 @@ class Network(Resource):
         
         _met_json = []
         _rxn_json = []
-        
+
         for _met in self.compounds.values():
             _met_json.append({
                 "id": _met.id,
@@ -282,7 +280,7 @@ class Network(Resource):
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id
             })
-            
+
         for _rxn in self.reactions.values():
             _rxn_met = {}
             for sub in _rxn.substrates.values():

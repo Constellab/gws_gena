@@ -42,7 +42,7 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
 
             # file_path = os.path.join(result_dir, file_name+"_net.json")
             # with open(file_path, 'w') as f:
-            #     json.dump(net.to_json(), f)
+            #     json.dump(net.dumps(), f)
 
             file_path = os.path.join(result_dir, file_name+"_net.csv")
             with open(file_path, 'r') as f:
