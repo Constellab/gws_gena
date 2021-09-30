@@ -3,9 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import resource_decorator, task_decorator, CSVTable
+from gws_core import resource_decorator, task_decorator, Table
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
+from gws_core import File, TableLoader, TableDumper, TableImporter, TableExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -16,7 +16,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 @resource_decorator("ECNumberTable", 
                     human_name="ECNumberTable", 
                     short_description="CSV table of enzyme classification (EC) numbers")
-class ECNumberTable(CSVTable):
+class ECNumberTable(Table):
     """ 
     Represents ec number data table
         
@@ -66,7 +66,7 @@ class ECNumberTable(CSVTable):
         ec_column_name = ec_column_name or cls.DEFAULT_EC_COLUMN_NAME
 
         if not csv_table.column_exists( ec_column_name ):
-            raise BadRequestException(f"Cannot import CSVTable. No ec numbers found (no column with name '{ec_column_name}')")
+            raise BadRequestException(f"Cannot import Table. No ec numbers found (no column with name '{ec_column_name}')")
         
         csv_table.ec_column_name = ec_column_name
         return csv_table
@@ -78,11 +78,11 @@ class ECNumberTable(CSVTable):
 # ####################################################################
     
 @task_decorator("ECNumberImporter")
-class ECNumberImporter(CSVImporter):
+class ECNumberImporter(TableImporter):
     input_specs = {'file' : File}
     output_specs = {"data": ECNumberTable}
     config_specs = {
-        **CSVImporter.config_specs,
+        **TableImporter.config_specs,
         'ec_column_name': StrParam(default_value=ECNumberTable.DEFAULT_EC_COLUMN_NAME, description="The ec number column name"),
     }
 
@@ -93,11 +93,11 @@ class ECNumberImporter(CSVImporter):
 # ####################################################################
 
 @task_decorator("ECNumberExporter")
-class ECNumberExporter(CSVExporter):
+class ECNumberExporter(TableExporter):
     input_specs = {"data": ECNumberTable}
     output_specs = {'file' : File}
     config_specs = {
-        **CSVExporter.config_specs,
+        **TableExporter.config_specs,
     }
 
 # ####################################################################
@@ -107,11 +107,11 @@ class ECNumberExporter(CSVExporter):
 # ####################################################################
 
 @task_decorator("ECNumberLoader")
-class ECNumberLoader(CSVLoader):
+class ECNumberLoader(TableLoader):
     input_specs = {}
     output_specs = {"data" : ECNumberTable}
     config_specs = {
-        **CSVLoader.config_specs,
+        **TableLoader.config_specs,
         'ec_column_name': StrParam(default_value=ECNumberTable.DEFAULT_EC_COLUMN_NAME, description="The ec number column name"),
     }
 
@@ -122,9 +122,9 @@ class ECNumberLoader(CSVLoader):
 # ####################################################################
 
 @task_decorator("ECNumberDumper")
-class ECNumberDumper(CSVDumper):
+class ECNumberDumper(TableDumper):
     input_specs = {"data" : ECNumberTable}
     output_specs = {}
     config_specs = {
-        **CSVDumper.config_specs,
+        **TableDumper.config_specs,
     }

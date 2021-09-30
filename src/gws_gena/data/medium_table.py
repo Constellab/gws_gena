@@ -3,9 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import resource_decorator, task_decorator, CSVTable
+from gws_core import resource_decorator, task_decorator, Table
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
+from gws_core import File, TableLoader, TableDumper, TableImporter, TableExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -16,7 +16,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 @resource_decorator("MediumTable",
                     human_name="MediumTable", 
                     short_description="CSV table of experimental medium culture composition")
-class MediumTable(CSVTable):
+class MediumTable(Table):
     """ 
     Represents medium composition data table
         
@@ -79,11 +79,11 @@ class MediumTable(CSVTable):
 # ####################################################################
     
 @task_decorator("MediumImporter")
-class MediumImporter(CSVImporter):
+class MediumImporter(TableImporter):
     input_specs = {'file' : File}
     output_specs = {'data': MediumTable}
     config_specs = {
-        **CSVImporter.config_specs,
+        **TableImporter.config_specs,
         'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
     }
 
@@ -94,11 +94,11 @@ class MediumImporter(CSVImporter):
 # ####################################################################
 
 @task_decorator("MediumExporter")
-class MediumExporter(CSVExporter):
+class MediumExporter(TableExporter):
     input_specs = {'data': MediumTable}
     output_specs = {'file' : File}
     config_specs = {
-        **CSVExporter.config_specs,
+        **TableExporter.config_specs,
     }
 
 # ####################################################################
@@ -108,11 +108,11 @@ class MediumExporter(CSVExporter):
 # ####################################################################
 
 @task_decorator("MediumLoader")
-class MediumLoader(CSVLoader):
+class MediumLoader(TableLoader):
     input_specs = {}
     output_specs = {'data' : MediumTable}
     config_specs = {
-        **CSVLoader.config_specs,
+        **TableLoader.config_specs,
         'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
     }
 
@@ -123,9 +123,9 @@ class MediumLoader(CSVLoader):
 # ####################################################################
 
 @task_decorator("MediumDumper")
-class MediumDumper(CSVDumper):
+class MediumDumper(TableDumper):
     input_specs = {'data' : MediumTable}
     output_specs = {}
     config_specs = {
-        **CSVDumper.config_specs,
+        **TableDumper.config_specs,
     }

@@ -6,7 +6,7 @@
 from pandas import DataFrame
 
 from gws_core import Resource, resource_decorator
-from gws_core import DictView, DictRField
+from gws_core import DictRField
 
 @resource_decorator("GapFinderResult")
 class GapFinderResult(Resource):
@@ -25,9 +25,10 @@ class GapFinderResult(Resource):
         return self.gaps_data
 
     def render__compounds__as_table(self, filter_gaps_only=False, **kwargs) -> DataFrame:
-        table: DataFrame = DictView.to_table(
+        table: DataFrame = DataFrame.from_dict(
             self.gaps_data["compounds"], 
-            columns=["is_substrate", "is_product", "is_gap"]
+            columns=["is_substrate", "is_product", "is_gap"],
+            orient="index"
         )
         if filter_gaps_only:
             table = table[ :, table["is_gap"] == True ]
@@ -35,18 +36,20 @@ class GapFinderResult(Resource):
 
 
     def render__reactions__as_table(self, filter_gaps_only=False, **kwargs) -> DataFrame:
-        table: DataFrame = DictView.to_table(
+        table: DataFrame = DataFrame.from_dict(
             self.gaps_data["reactions"], 
-            columns=["name", "has_gap"]
+            columns=["name", "has_gap"],
+            orient="index"
         )
         if filter_gaps_only:
             table = table[ :, table["has_gap"] == True ]
         return table
 
     def render__pathways__as_table(self, filter_gaps_only=False, **kwargs) -> DataFrame:
-        table: DataFrame = DictView.to_table(
+        table: DataFrame = DataFrame.from_dict(
             self.gaps_data["pathways"], 
-            columns=["name", "nb_reactions", "nb_gaps", "gap_ratio"]
+            columns=["name", "nb_reactions", "nb_gaps", "gap_ratio"],
+            orient="index"
         )
         if filter_gaps_only:
             table = table[ :, table["nb_gaps"] > 0 ]

@@ -14,7 +14,7 @@ import copy
 from typing import TypedDict, Optional
 
 from gws_core import (FileImporter, FileExporter, FileLoader, FileDumper, 
-                        File, Resource, resource_decorator, task_decorator, DictView, 
+                        File, Resource, resource_decorator, task_decorator, 
                         StrParam, StrRField, RField, DictRField, 
                         BadRequestException)
 from gws_biota import EnzymeClass, Taxonomy as BiotaTaxo
@@ -43,6 +43,10 @@ NetworkTagDict = TypedDict("NetworkTagDict",{
     "compounds": dict 
 })
 
+PositionDict = TypedDict("PositionDict",{ 
+    "x": float, 
+    "y": float 
+})
 
 CompoundDict = TypedDict("CompoundDict", {
     "id": str,
@@ -57,7 +61,8 @@ CompoundDict = TypedDict("CompoundDict", {
     "chebi_id": str,
     "alt_chebi_ids": list,
     "kegg_id": str,
-    "inchikey": str
+    "inchikey": str,
+    "position": PositionDict
 })
 
 ReactionDict = TypedDict("ReactionDict", {
@@ -68,7 +73,8 @@ ReactionDict = TypedDict("ReactionDict", {
     "lower_bound": float,
     "upper_bound": float,
     "rhea_id": str,
-    "enzyme": dict
+    "enzyme": dict,
+    "position": PositionDict,
 })
 
 NetworkDict = TypedDict("NetworkDict", {
@@ -278,7 +284,8 @@ class Network(Resource):
                 "inchi": _met.inchi,
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
-                "kegg_id": _met.kegg_id
+                "kegg_id": _met.kegg_id,
+                "position": {"x": None, "y": None}
             })
 
         for _rxn in self.reactions.values():
@@ -301,6 +308,7 @@ class Network(Resource):
                 "metabolites": _rxn_met,
                 "lower_bound": _rxn.lower_bound,
                 "upper_bound": _rxn.upper_bound,
+                "position": {"x": None, "y": None},
                 "estimate": _rxn.estimate,
                 "balance": _rxn.compute_mass_and_charge_balance()
             })
@@ -782,43 +790,34 @@ class Network(Resource):
         
         del self.reactions[rxn_id]
     
-    def render__compound_stats__as_json(self, stringify=False, **kwargs) -> (dict, str,):
+    def render__compound_stats__as_json(self, **kwargs) -> dict:
         return self.stats["compounds"]
     
-    def render__compound_stats__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+    def render__compound_stats__as_table(self, **kwargs) -> "DataFrame":
         _dict = self.stats["compounds"]
         for comp_id in _dict:
             _dict[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
-        table = DictView.to_table(_dict, columns=["count", "freq", "chebi_id"], stringify=False)
+        table = DataFrame.from_dict(_dict, columns=["count", "freq", "chebi_id"], orient="index")
         table = table.sort_values(by=['freq'], ascending=False)
-        if stringify:
-            return table.to_csv()
-        else:
-            return table
+        return table
     
-    def render__gaps__as_json(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+    def render__gaps__as_json(self, **kwargs) -> "DataFrame":
         return self._get_gap_info()
     
-    def render__gaps__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+    def render__gaps__as_table(self, **kwargs) -> "DataFrame":
         _dict = self._get_gap_info()
-        return DictView.to_table(_dict, columns=["is_substrate", "is_product", "is_gap"], stringify=stringify)
+        return DataFrame.from_dict(_dict, columns=["is_substrate", "is_product", "is_gap"], orient="index")
 
-    def render__total_abs_flux__as_table(self, stringify=False, **kwargs) -> (str, "DataFrame",):
+    def render__total_abs_flux__as_table(self, **kwargs) -> "DataFrame":
         total_flux = 0
         for k in self.reactions:
             rxn = self.reactions[k]
             if rxn._estimate:
                 total_flux += abs(rxn.estimate["value"])
-        return DictView.to_table( {"0": [ total_flux ]}, columns=["total_abs_flux"], stringify=stringify)
+        return DataFrame.from_dict( {"0": [ total_flux ]}, columns=["total_abs_flux"], orient="index")
 
-    def render__stats__as_json(self, stringify=False, prettify=False, **kwargs) -> (dict, str,):
-        if stringify:
-            if prettify:
-                return json.dumps(self.stats, indent=4)
-            else:
-                return json.dumps(self.stats)
-        else:
-            return self.stats
+    def render__stats__as_json(self, **kwargs) -> dict:
+        return self.stats
     
     # -- R -- 
 
@@ -1011,7 +1010,7 @@ class Network(Resource):
             
         # export
         table = DataFrame(table, columns=column_names)
-        table = table.sort_values(by=['ec_number'])
+        table = table.sort_values(by=['id'])
         return table
             
 

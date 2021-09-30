@@ -3,9 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import resource_decorator, task_decorator, CSVTable
+from gws_core import resource_decorator, task_decorator, Table
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
+from gws_core import File, TableLoader, TableDumper, TableImporter, TableExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -16,7 +16,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 @resource_decorator("BiomassTable", 
                     human_name="BiomassTable", 
                     short_description="CSV table describing biomass composition")
-class BiomassTable(CSVTable): 
+class BiomassTable(Table): 
     """ 
     Represents biomass data table
         
@@ -100,11 +100,11 @@ class BiomassTable(CSVTable):
 # ####################################################################
     
 @task_decorator("BiomassImporter")
-class BiomassImporter(CSVImporter):
+class BiomassImporter(TableImporter):
     input_specs = {'file' : File}
     output_specs = {'data': BiomassTable}
     config_specs = {
-        **CSVImporter.config_specs,
+        **TableImporter.config_specs,
         'chebi_column_name': StrParam(default_value=BiomassTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
         'biomass_column_name': StrParam(default_value=BiomassTable.DEFAULT_BIOMASS_COLUMN_NAME, description="The biomass equation column name"),
     }
@@ -116,11 +116,11 @@ class BiomassImporter(CSVImporter):
 # ####################################################################
 
 @task_decorator("BiomassExporter")
-class BiomassExporter(CSVExporter):
+class BiomassExporter(TableExporter):
     input_specs = {'data': BiomassTable}
     output_specs = {'file' : File}
     config_specs = {
-        **CSVExporter.config_specs,
+        **TableExporter.config_specs,
     }
 
 # ####################################################################
@@ -130,11 +130,11 @@ class BiomassExporter(CSVExporter):
 # ####################################################################
 
 @task_decorator("BiomassLoader")
-class BiomassLoader(CSVLoader):
+class BiomassLoader(TableLoader):
     input_specs = {}
     output_specs = {'data' : BiomassTable}
     config_specs = {
-        **CSVLoader.config_specs,
+        **TableLoader.config_specs,
         'chebi_column_name': StrParam(default_value=BiomassTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
         'biomass_column_name': StrParam(default_value=BiomassTable.DEFAULT_BIOMASS_COLUMN_NAME, description="The biomass equation column name"),
     }
@@ -146,9 +146,9 @@ class BiomassLoader(CSVLoader):
 # ####################################################################
 
 @task_decorator("BiomassDumper")
-class BiomassDumper(CSVDumper):
+class BiomassDumper(TableDumper):
     input_specs = {'data' : BiomassTable}
     output_specs = {}
     config_specs = {
-        **CSVDumper.config_specs,
+        **TableDumper.config_specs,
     }

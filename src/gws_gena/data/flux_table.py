@@ -3,9 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import resource_decorator, task_decorator, CSVTable
+from gws_core import resource_decorator, task_decorator, Table
 from gws_core import BadRequestException
-from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrParam, StrRField
+from gws_core import File, TableLoader, TableDumper, TableImporter, TableExporter, StrParam, StrRField
 
 # ####################################################################
 #
@@ -16,7 +16,7 @@ from gws_core import File, CSVLoader, CSVDumper, CSVImporter, CSVExporter, StrPa
 @resource_decorator("FluxTable",
                     human_name="FluxTable", 
                     short_description="CSV table of experimental metabolic fluxes")
-class FluxTable(CSVTable):
+class FluxTable(Table):
     """ 
     Represents experimentally-measured (or user-defined) flux data table
         
@@ -121,11 +121,11 @@ class FluxTable(CSVTable):
 # ####################################################################
     
 @task_decorator("FluxImporter")
-class FluxImporter(CSVImporter):
+class FluxImporter(TableImporter):
     input_specs = {'file' : File}
     output_specs = {'data': FluxTable}
     config_specs = {
-        **CSVImporter.config_specs,
+        **TableImporter.config_specs,
         'target_column_name': StrParam(default_value=FluxTable.DEFAULT_TARGET_COLUMN_NAME, description="The name of the target column"),
         'lower_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_LOWER_BOUND_COLUMN_NAME, description="The name of the lower-bound column"),
         'upper_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_UPPER_BOUND_COLUMN_NAME, description="The name of the upper-bound column"),
@@ -139,11 +139,11 @@ class FluxImporter(CSVImporter):
 # ####################################################################
 
 @task_decorator("FluxExporter")
-class FluxExporter(CSVExporter):
+class FluxExporter(TableExporter):
     input_specs = {'data': FluxTable}
     output_specs = {'file' : File}
     config_specs = {
-        **CSVExporter.config_specs,
+        **TableExporter.config_specs,
     }
 
 # ####################################################################
@@ -153,11 +153,11 @@ class FluxExporter(CSVExporter):
 # ####################################################################
 
 @task_decorator("FluxLoader")
-class FluxLoader(CSVLoader):
+class FluxLoader(TableLoader):
     input_specs = {}
     output_specs = {'data' : FluxTable}
     config_specs = {
-        **CSVLoader.config_specs,
+        **TableLoader.config_specs,
         'target_column_name': StrParam(default_value=FluxTable.DEFAULT_TARGET_COLUMN_NAME, description="The name of the target column"),
         'lower_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_LOWER_BOUND_COLUMN_NAME, description="The name of the lower-bound column"),
         'upper_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_UPPER_BOUND_COLUMN_NAME, description="The name of the upper-bound column"),
@@ -171,9 +171,9 @@ class FluxLoader(CSVLoader):
 # ####################################################################
 
 @task_decorator("FluxDumper")
-class FluxDumper(CSVDumper):
+class FluxDumper(TableDumper):
     input_specs = {'data' : FluxTable}
     output_specs = {}
     config_specs = {
-        **CSVDumper.config_specs,
+        **TableDumper.config_specs,
     }
