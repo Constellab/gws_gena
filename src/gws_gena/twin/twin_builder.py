@@ -21,7 +21,7 @@ class TwinBuilder(Task):
     input_specs = { 'network': (Network,), 'context': SkippableIn(TwinContext) }
     output_specs = { 'twin': (Twin,) }
     config_specs = {
-        "use_context": BoolParam(default_value=True, description="Set True to use the context, False otherwise."),
+        "use_context": BoolParam(default_value=True, human_name="Use context", short_description="Set True to use the context, False otherwise."),
     }
     
     def check_before_run(self, params: ConfigParams, inputs: TaskInputs) -> CheckBeforeTaskResult:

@@ -284,7 +284,7 @@ class ContextImporter(FileImporter):
     input_specs = {'file' : File}
     output_specs = {'data': TwinContext}
     config_specs = {
-        'file_format': StrParam(default_value=".json", description="File format")
+        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format")
     }
 
 # ####################################################################
@@ -298,8 +298,8 @@ class ContextExporter(FileExporter):
     input_specs = {'data': TwinContext}
     output_specs = {'file' : File}
     config_specs = {
-        'file_name': StrParam(default_value='network.json', description="Destination file name in the store"),
-        'file_format': StrParam(default_value=".json", description="File format"),
+        'file_name': StrParam(default_value='network.json', human_name="File name", short_description="Destination file name in the store"),
+        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
     }
     
 # ####################################################################
@@ -313,8 +313,8 @@ class ContextLoader(FileLoader):
     input_specs = {}
     output_specs = {'data' : TwinContext}
     config_specs = {
-        'file_path': StrParam(default_value=None, description="Location of the file to import"),
-        'file_format': StrParam(default_value=".json", description="File format"),
+        'file_path': StrParam(default_value=None, human_name="File path", short_description="Location of the file to import"),
+        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
     }
     
 # ####################################################################
@@ -328,6 +328,6 @@ class ContextDumper(FileDumper):
     input_specs = {'data' : TwinContext}
     output_specs = {}
     config_specs = {
-        'file_path': StrParam(default_value=None, description="Destination of the exported file"),
-        'file_format': StrParam(default_value=".json", description="File format"),
+        'file_path': StrParam(default_value=None, human_name="File path", short_description="Destination of the exported file"),
+        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
     }

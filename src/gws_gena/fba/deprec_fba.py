@@ -23,14 +23,14 @@ class DeprecFBA(Shell):
     input_specs = { 'twin': (Twin,) }
     output_specs = { 'result': (DeprecFBAResult,) }
     config_specs = {
-        "eq_tol": FloatParam(default_value=1e-6, description="Equality constraint tolerance"),
-        "ineq_tol": FloatParam(default_value=1e-6, description="Inequality constraint tolerance"),
-        "algorithm": StrParam(default_value="bfgs", allowed_values=["bfgs", "lbfgs"], description="Type of optimization algorithm"),
-        "use_hard_bounds": BoolParam(default_value=True, description="True to use hard bounds, Flase otherwise."),
-        "verbose": BoolParam(default_value=False, description="True to verbose, Flase otherwise."),
-        "least_energy_weight": FloatParam(default_value=0.0, min_value=0, max_value=1, description="The least energy weight. The higher it is, lower will be sum of fluxes"),
-        "use_random_starting_point": BoolParam(default_value=True, description="True to use random initial conditions to explore to flux space, False otherwise. If number_of_randomizations > 1, then this parameter will operate to True."),
-        "number_of_randomizations": IntParam(default_value=100, description="Number of random initial conditions to use to explore the flux space.")
+        "eq_tol": FloatParam(default_value=1e-6, human_name="Eq. tol", short_description="Equality constraint tolerance"),
+        "ineq_tol": FloatParam(default_value=1e-6, human_name="Ineq. tol", short_description="Inequality constraint tolerance"),
+        "algorithm": StrParam(default_value="bfgs", allowed_values=["bfgs", "lbfgs"], human_name="Algorithm", short_description="Type of optimization algorithm"),
+        "use_hard_bounds": BoolParam(default_value=True, human_name="Hard bounds", short_description="True to use hard bounds, Flase otherwise."),
+        "verbose": BoolParam(default_value=False, human_name="Verbose", short_description="True to verbose, Flase otherwise."),
+        "least_energy_weight": FloatParam(default_value=0.0, min_value=0, max_value=1, human_name="Least energy weight", short_description="The least energy weight. The higher it is, lower will be sum of fluxes"),
+        "use_random_starting_point": BoolParam(default_value=True, human_name="Random starting point", short_description="True to use random initial conditions to explore to flux space, False otherwise. If number_of_randomizations > 1, then this parameter will operate to True."),
+        "number_of_randomizations": IntParam(default_value=100, human_name="Nb. of randomizations", short_description="Number of random initial conditions to use to explore the flux space.")
     }
     
     # -- A --

@@ -105,8 +105,8 @@ class BiomassImporter(TableImporter):
     output_specs = {'data': BiomassTable}
     config_specs = {
         **TableImporter.config_specs,
-        'chebi_column_name': StrParam(default_value=BiomassTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
-        'biomass_column_name': StrParam(default_value=BiomassTable.DEFAULT_BIOMASS_COLUMN_NAME, description="The biomass equation column name"),
+        'chebi_column_name': StrParam(default_value=BiomassTable.DEFAULT_CHEBI_COLUMN_NAME, short_description="The CheBI ID column name"),
+        'biomass_column_name': StrParam(default_value=BiomassTable.DEFAULT_BIOMASS_COLUMN_NAME, short_description="The biomass equation column name"),
     }
 
 # ####################################################################
@@ -135,8 +135,8 @@ class BiomassLoader(TableLoader):
     output_specs = {'data' : BiomassTable}
     config_specs = {
         **TableLoader.config_specs,
-        'chebi_column_name': StrParam(default_value=BiomassTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
-        'biomass_column_name': StrParam(default_value=BiomassTable.DEFAULT_BIOMASS_COLUMN_NAME, description="The biomass equation column name"),
+        'chebi_column_name': StrParam(default_value=BiomassTable.DEFAULT_CHEBI_COLUMN_NAME, human_name="CheBI column name", short_description="The CheBI ID column name"),
+        'biomass_column_name': StrParam(default_value=BiomassTable.DEFAULT_BIOMASS_COLUMN_NAME, human_name="Biomass column name", short_description="The biomass equation column name"),
     }
 
 # ####################################################################

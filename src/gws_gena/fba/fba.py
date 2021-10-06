@@ -72,11 +72,11 @@ class FBA(Task):
     input_specs = { 'twin': (Twin,) }
     output_specs = { 'result': (FBAResult,) }
     config_specs = {
-        "fluxes_to_maximize": ListParam(default_value=[], description="The fluxes to maximize"),
-        "fluxes_to_minimize": ListParam(default_value=[], description="The fluxes to minimize"),
-        "solver": StrParam(default_value="quad", allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], description="The optimization solver"),
-        "fill_gaps_with_sinks": BoolParam(default_value=False, description="True to fill gaps using sink reaction. False otherwise"),
-        "relax_qssa": BoolParam(default_value=False, description="True to relaxing the quasi-steady state constrain. False otherwise.")
+        "fluxes_to_maximize": ListParam(default_value=[], human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
+        "fluxes_to_minimize": ListParam(default_value=[], human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
+        "solver": StrParam(default_value="quad", allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], human_name="Solver", short_description="The optimization solver"),
+        "fill_gaps_with_sinks": BoolParam(default_value=False, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
+        "relax_qssa": BoolParam(default_value=False, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain. False otherwise.")
     }
     __CVXPY_MAX_ITER = 100000
     __CVXPY_SOLVER_PRIORITY = [ cp.OSQP, cp.ECOS ]

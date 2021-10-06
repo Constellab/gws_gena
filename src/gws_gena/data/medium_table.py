@@ -84,7 +84,7 @@ class MediumImporter(TableImporter):
     output_specs = {'data': MediumTable}
     config_specs = {
         **TableImporter.config_specs,
-        'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
+        'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, human_name="CheBI column name", short_description="The CheBI ID column name"),
     }
 
 # ####################################################################
@@ -113,7 +113,7 @@ class MediumLoader(TableLoader):
     output_specs = {'data' : MediumTable}
     config_specs = {
         **TableLoader.config_specs,
-        'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, description="The CheBI ID column name"),
+        'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, human_name="CheBI column name", short_description="The CheBI ID column name"),
     }
 
 # ####################################################################

@@ -45,11 +45,11 @@ class GapFiller(Task):
     input_specs = { 'network': (Network,) }
     output_specs = { 'network': (Network,) }
     config_specs = {
-        'tax_id': StrParam(default_value='', description="The taxonomy id used to fill gaps"),
-        'biomass_and_medium_gaps_only': BoolParam(default_value=False, description="True to only fill gaps related to compounds comming from the biomass equation or the medium composition; False otherwise."),
-        'add_sink_reactions': BoolParam(default_value=False, description="True to add sink reactions to unresolved dead-end compounds. False otherwise"),
-        'skip_cofactors': BoolParam(default_value=True, description="True to skip gaps related to dead-end cofactors. False otherwise"),
-        'fill_each_gap_once': BoolParam(default_value=False, description="True to fill each gap with only one putative reaction. False otherwise"),
+        'tax_id': StrParam(default_value='', human_name="Taxonomy ID", short_description="The taxonomy id used to fill gaps"),
+        'biomass_and_medium_gaps_only': BoolParam(default_value=False, human_name="Only biomass & medium gaps", short_description="True to only fill gaps related to compounds comming from the biomass equation or the medium composition; False otherwise."),
+        'add_sink_reactions': BoolParam(default_value=False, human_name="Add sink reactions", short_description="True to add sink reactions to unresolved dead-end compounds. False otherwise"),
+        'skip_cofactors': BoolParam(default_value=True, human_name="Skip cofactors", short_description="True to skip gaps related to dead-end cofactors. False otherwise"),
+        'fill_each_gap_once': BoolParam(default_value=False, human_name="Fill each gap once", short_description="True to fill each gap with only one putative reaction. False otherwise"),
     }
         
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

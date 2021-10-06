@@ -83,7 +83,7 @@ class ECNumberImporter(TableImporter):
     output_specs = {"data": ECNumberTable}
     config_specs = {
         **TableImporter.config_specs,
-        'ec_column_name': StrParam(default_value=ECNumberTable.DEFAULT_EC_COLUMN_NAME, description="The ec number column name"),
+        'ec_column_name': StrParam(default_value=ECNumberTable.DEFAULT_EC_COLUMN_NAME, short_description="The ec number column name"),
     }
 
 # ####################################################################
@@ -112,7 +112,7 @@ class ECNumberLoader(TableLoader):
     output_specs = {"data" : ECNumberTable}
     config_specs = {
         **TableLoader.config_specs,
-        'ec_column_name': StrParam(default_value=ECNumberTable.DEFAULT_EC_COLUMN_NAME, description="The ec number column name"),
+        'ec_column_name': StrParam(default_value=ECNumberTable.DEFAULT_EC_COLUMN_NAME, human_name="EC column name", short_description="The ec number column name"),
     }
 
 # ####################################################################
