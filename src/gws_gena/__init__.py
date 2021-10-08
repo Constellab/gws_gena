@@ -10,6 +10,7 @@ from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
 from .twin.twin_flatner import TwinFlattener
 from .twin.twin_context_builder import TwinContext, TwinContextBuilder
+from .twin.twin_service import TwinService
 
 # table
 from .data.biomass_table import BiomassTable, BiomassDumper, BiomassExporter, BiomassImporter, BiomassLoader
