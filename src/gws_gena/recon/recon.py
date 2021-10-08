@@ -6,7 +6,9 @@
 import math
 from gws_core import Task, task_decorator, ConfigParams, TaskInputs, TaskOutputs, OptionalIn, StrParam
 from gws_core import BadRequestException
-
+from gws_biota import (Enzyme as BiotaEnzyme, 
+                        Reaction as BiotaReaction,
+                        Taxonomy as BiotaTaxo)
 from ..network.network import Network, ReactionDuplicate, CompoundDuplicate
 from ..network.compound import Compound
 from ..network.reaction import Reaction
@@ -37,7 +39,7 @@ class DraftRecon(Task):
     """
     
     input_specs = { 
-        'ec_number_table': (ECNumberTable,), 
+        'ec_number_table': OptionalIn(ECNumberTable,), 
         'biomass_table': OptionalIn(BiomassTable), 
         'medium_table': OptionalIn(MediumTable) 
     }
@@ -54,14 +56,68 @@ class DraftRecon(Task):
         self._create_biomass_equation(net)
         self._create_culture_medium(net)
         return {"network" : net}
-     
+
     def _create_network(self):
-        ec_number_table = self._inputs['ec_number_table']
-        ec_list = ec_number_table.get_ec_numbers(rtype="list")
-        net = Network()
         tax_id = self._params['tax_id']
+        if 'ec_number_table' in self._inputs:
+            return self._create_network_with_ec_list()
+        elif tax_id:
+            return self._create_network_without_ec_list()
+        else:
+            raise BadRequestException("A list of EC numbers or a taxonomy ID is required")
+
+    def _create_network_without_ec_list(self):
+        tax_id = self._params['tax_id']
+        tax_search_method = self._params['tax_search_method']
+        try:
+            tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
+        except:
+            raise BadRequestException(f"No taxonomy found with tax_id {tax_id}")
         
+        enzymes = BiotaEnzyme.select(BiotaEnzyme.ec_number.distinct()).where( 
+            getattr(BiotaEnzyme, "tax_"+tax.rank) == tax.tax_id,  
+        )
+
+        total_enzymes = len(enzymes)
+        self.add_progress_message(f"{total_enzymes} enzymes found")
+        net = Network()
+        counter = 1
+        nb_interval = int(total_enzymes/10)
+        perc = 0
+        self.update_progress_value(perc, message=f"enzyme {counter} ...")
+        for enzyme in enzymes:
+            if (counter % nb_interval) == 0:
+                perc = 100*(counter/total_enzymes)
+                self.update_progress_value(perc, message=f"enzyme {counter} ...")
+            try:
+                Reaction.from_biota(ec_number=enzyme.ec_number, network=net, tax_id=tax_id, tax_search_method=tax_search_method)
+            except Exception as err:
+                pass
+                # net.set_reaction_tag(enzyme.ec_number, {
+                #     "ec_number": enzyme.ec_number,
+                #     "error": str(err)
+                # })
+            counter+=1
+        return net
+
+    def _create_network_with_ec_list(self):
+        ec_number_table = self._inputs['ec_number_table']
+        tax_id = self._params['tax_id']
+        ec_list = ec_number_table.get_ec_numbers(rtype="list")
+        tax_search_method = self._params['tax_search_method']
+        net = Network()
+        
+        total_enzymes = len(ec_list)
+        self.add_progress_message(f"{total_enzymes} enzymes to process")
+        counter = 1
+        nb_interval = int(total_enzymes/10)
+        perc = 0
+        self.update_progress_value(perc, message=f"enzyme {counter} ...")
         for ec in ec_list:
+            if (counter % nb_interval) == 0:
+                perc = 100*(total_enzymes/counter)
+                self.update_progress_value(perc, message=f"enzyme {counter} ...")
+
             ec = str(ec).strip()
             is_incomplete_ec = ("-" in ec)
             if is_incomplete_ec:
@@ -70,22 +126,15 @@ class DraftRecon(Task):
                     "is_partial_ec_number": True,
                     "error": "Partial ec number"
                 })
-                #net.data["logs"]["reactions"].append({
-                #    "ec_number": ec,
-                #    "reason": "partial_ec_number"
-                #})
             else:
                 try:
-                    Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id)
+                    Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id, tax_search_method=tax_search_method)
                 except Exception as err:
                     net.set_reaction_tag(ec, {
                         "ec_number": ec,
                         "error": str(err)
                     })
-                    #net.data["logs"]["reactions"].append({
-                    #    "ec_number": ec,
-                    #    "reason": str(err)
-                    #})
+            counter+=1
         return net
     
     def _create_biomass_equation(self, net):
@@ -93,10 +142,10 @@ class DraftRecon(Task):
         self._create_biomass_rxns(net, biomass_comps)
     
     def _create_culture_medium(self, net):
-        medium_table = self._inputs['medium_table']
-        if not medium_table:
+        if 'medium_table' not in self._inputs:
             return
-        
+
+        medium_table = self._inputs['medium_table']
         row_names = medium_table.row_names
         #col_names = medium_table.column_names
         chebi_ids = medium_table.get_chebi_ids()
@@ -121,9 +170,10 @@ class DraftRecon(Task):
             i += 1
             
     def _create_biomass_rxns(self, net, biomass_comps):
-        biomass_table = self._inputs['biomass_table']
-        if not biomass_table:
+        if 'biomass_table' not in self._inputs:
             return
+
+        biomass_table = self._inputs['biomass_table']
         col_names = biomass_table.column_names
         chebi_col_name = biomass_table.chebi_column_name        
         for col_name in col_names:
@@ -161,6 +211,9 @@ class DraftRecon(Task):
                 })
                 
     def _create_biomass_compounds(self, net):
+        if 'biomass_table' not in self._inputs:
+            return
+
         biomass_table = self._inputs['biomass_table']
         row_names = biomass_table.row_names
         chebi_ids = biomass_table.get_chebi_ids()

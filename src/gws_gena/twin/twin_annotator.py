@@ -13,12 +13,12 @@ from ..helper.twin_annotator_helper import TwinAnnotatorHelper
 
 # ####################################################################
 #
-# MetaTwinAnnotator class
+# TwinAnnotator class
 #
 # ####################################################################
 
-@task_decorator("MetaTwinAnnotator")
-class MetaTwinAnnotator(Task):
+@task_decorator("TwinAnnotator")
+class TwinAnnotator(Task):
     input_specs = { 'twin': (Twin,), 'fba_result': (FBAResult,) }
     output_specs = { 'twin': (Twin,) }
 

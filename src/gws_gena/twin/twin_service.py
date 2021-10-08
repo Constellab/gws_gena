@@ -14,11 +14,11 @@ from .twin_context import Variable
 
 # ####################################################################
 #
-# MetaTwinService class
+# TwinService class
 #
 # ####################################################################
 
-class MetaTwinService:
+class TwinService:
     
     @classmethod
     def create_fba_problem(cls, flat_twin: FlatTwin) -> Dict[str, DataFrame]:

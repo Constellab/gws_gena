@@ -13,7 +13,7 @@ from ...network.network import NetworkImporter
 from ...twin.twin import Twin
 from ...twin.twin_context import ContextImporter
 from ...twin.twin_builder import TwinBuilder
-from ...twin.twin_annotator import MetaTwinAnnotator
+from ...twin.twin_annotator import TwinAnnotator
 from ..deprec_fba import DeprecFBA
 
 @protocol_decorator("DeprecFBAProto")
@@ -27,7 +27,7 @@ class DeprecFBAProto(Protocol):
         # fba
         fba: ProcessSpec = self.add_process(DeprecFBA, 'fba')
         twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder').set_param("use_context", True)
-        twin_annotator: ProcessSpec = self.add_process(MetaTwinAnnotator, 'twin_annotator')
+        twin_annotator: ProcessSpec = self.add_process(TwinAnnotator, 'twin_annotator')
 
         self.add_connectors([
             (network_importer>>"data", twin_builder<<"network"),

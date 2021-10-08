@@ -14,7 +14,7 @@ from ..fba.fba_result import FBAResult
 
 # ####################################################################
 #
-# MetaTwinAnnotator class
+# TwinAnnotator class
 #
 # ####################################################################
 

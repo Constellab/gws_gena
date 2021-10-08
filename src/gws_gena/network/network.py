@@ -282,6 +282,7 @@ class Network(Resource):
                 "monoisotopic_mass": _met.monoisotopic_mass,
                 "formula": _met.formula,
                 "inchi": _met.inchi,
+                "is_cofactor": _met.is_cofactor,
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,

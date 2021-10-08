@@ -17,7 +17,7 @@ from gws_core import (Task, task_decorator, Logger,
 from gws_core import BadRequestException
 
 from ..twin.twin import Twin, FlatTwin
-from ..twin.twin_service import MetaTwinService
+from ..twin.twin_service import TwinService
 from ..network.network import Network
 from ..helper.sink_helper import SinkHelper
 from .fba_result import OptimizeResult, FBAResult
@@ -126,11 +126,11 @@ class FBA(Task):
             SinkHelper.fill_gaps_with_sinks(flat_net)
         
         # reshape problem
-        obsv_matrix = MetaTwinService.create_observation_matrices(flat_twin)
+        obsv_matrix = TwinService.create_observation_matrices(flat_twin)
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
 
-        S_int = MetaTwinService.create_steady_stoichiometric_matrix(flat_twin)
+        S_int = TwinService.create_steady_stoichiometric_matrix(flat_twin)
         Y_names = [ "v_"+name for name in C.index ]
         S_zeros = DataFrame( 
             index = S_int.index,

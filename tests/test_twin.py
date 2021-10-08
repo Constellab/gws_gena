@@ -8,7 +8,7 @@ from gws_core import Settings, GTest
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Network
 from gws_gena import Twin, FlatTwin, TwinContext
-from gws_gena.twin.twin_service import MetaTwinService
+from gws_gena.twin.twin_service import TwinService
 
 settings = Settings.retrieve()
 
@@ -40,7 +40,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             self.assertEqual(twin.dumps_flat(), data)
    
         flat_twin = twin.flatten()
-        problem = MetaTwinService.create_fba_problem(flat_twin)
+        problem = TwinService.create_fba_problem(flat_twin)
 
         print(problem["S"])
         expected_S = DataFrame({
@@ -97,7 +97,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         twin.add_context(ctx, related_network=net)
         
         flat_twin = twin.flatten()
-        problem = MetaTwinService.create_fba_problem(flat_twin)
+        problem = TwinService.create_fba_problem(flat_twin)
 
         print('--- S_full ---')
         print(problem["S"])
@@ -109,19 +109,19 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         print(problem["b"])
 
         print('--- S_intra ---')        
-        Si = MetaTwinService.create_steady_stoichiometric_matrix(flat_twin)
-        #Si = MetaTwinService.extract_intracell_stoichiometric_matrix(problem["S"])
+        Si = TwinService.create_steady_stoichiometric_matrix(flat_twin)
+        #Si = TwinService.extract_intracell_stoichiometric_matrix(problem["S"])
         print(Si)
 
         print('--- S_extra ---')
-        Se = MetaTwinService.create_non_steady_stoichiometric_matrix(flat_twin)
-        #Se = MetaTwinService.extract_extracell_stoichiometric_matrix(problem["S"])
+        Se = TwinService.create_non_steady_stoichiometric_matrix(flat_twin)
+        #Se = TwinService.extract_extracell_stoichiometric_matrix(problem["S"])
         print(Se)
 
         print('--- Ker(S_intra) ---')
-        K = MetaTwinService.compute_nullspace(Si)
+        K = TwinService.compute_nullspace(Si)
         print(K)
 
         print('--- Ker( [S_intra; C] ) ---')
-        K = MetaTwinService.compute_nullspace( pd.concat([Si, problem["C"]]) )
+        K = TwinService.compute_nullspace( pd.concat([Si, problem["C"]]) )
         print(K)

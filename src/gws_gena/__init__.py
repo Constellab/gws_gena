@@ -6,7 +6,7 @@ from .network.compound import Compound
 
 # twin
 from .twin.twin import Twin, FlatTwin
-from .twin.twin_annotator import MetaTwinAnnotator
+from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
 from .twin.twin_flatner import TwinFlattener
 from .twin.twin_context_builder import TwinContext, TwinContextBuilder

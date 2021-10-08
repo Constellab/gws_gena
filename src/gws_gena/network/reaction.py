@@ -419,10 +419,7 @@ class Reaction:
                 if not Q:
                     raise BadRequestException(f"No enzyme found with ec number {ec_number}")  
                 _added_rxns = []
-                #messages = []
                 for e in Q:
-                    # if not e.reactions:
-                    #     messages.append(f"No rhea found for {e.ec_number}")              
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
@@ -434,18 +431,13 @@ class Reaction:
                             # skip error!
                             pass
                 if not rxns:
-                    #messages.append(f"No new reactions found with ec number {ec_number}")
                     raise BadRequestException(f"No new reactions found with ec number {ec_number}")  
             else:
-                #Q = BiotaEnzyme.select().where(BiotaEnzyme.ec_number == ec_number)
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
                 if not Q:
                     raise BadRequestException("gena.reaction.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
-                # messages = []
                 for e in Q:
-                    # if not e.reactions:
-                    #     messages.append(f"No rhea found for {e.ec_number}")
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
@@ -455,7 +447,6 @@ class Reaction:
                         except:
                             pass
                 if not rxns:
-                    # messages.append(f"No new reactions found with ec number {ec_number}")
                     raise BadRequestException(f"No new reactions found with ec number {ec_number}")
         else:
             raise BadRequestException("gena.reaction.Reaction", "from_biota", "Invalid arguments")
