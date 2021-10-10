@@ -36,7 +36,7 @@ class TwinAnnotatorHelper():
                 rxn = net.reactions[rnx_id]
                 net_name = net.name
                 flat_rxn_id = flux_rev_mapping[net_name][rnx_id]
-                fluxes = fba_result.render__fluxes__as_table()
+                fluxes = fba_result.get_fluxes_as_table()
                 rxn.set_estimate({
                     "value": fluxes.loc[flat_rxn_id, "value"],
                     "lower_bound": fluxes.loc[flat_rxn_id, "lower_bound"],

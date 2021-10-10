@@ -16,7 +16,7 @@ from typing import TypedDict, Optional
 from gws_core import (FileImporter, FileExporter, FileLoader, FileDumper, 
                         File, Resource, resource_decorator, task_decorator, 
                         StrParam, StrRField, RField, DictRField, 
-                        BadRequestException)
+                        BadRequestException, view, TableView, JSONView)
 from gws_biota import EnzymeClass, Taxonomy as BiotaTaxo
 from .compound import Compound
 from .reaction import Reaction
@@ -791,10 +791,15 @@ class Network(Resource):
         
         del self.reactions[rxn_id]
     
-    def render__compound_stats__as_json(self, **kwargs) -> dict:
+    @view(view_type=TableView, human_name="CompoundStatsTable")
+    def view_compound_stats_as_table(self, **kwargs) -> TableView:
+        table = self.get_compound_stats_as_table(**kwargs)
+        return TableView(data=table, **kwargs)
+
+    def get_compound_stats_as_json(self, **kwargs) -> dict:
         return self.stats["compounds"]
-    
-    def render__compound_stats__as_table(self, **kwargs) -> "DataFrame":
+
+    def get_compound_stats_as_table(self, **kwargs) -> DataFrame:
         _dict = self.stats["compounds"]
         for comp_id in _dict:
             _dict[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
@@ -802,14 +807,19 @@ class Network(Resource):
         table = table.sort_values(by=['freq'], ascending=False)
         return table
     
-    def render__gaps__as_json(self, **kwargs) -> "DataFrame":
-        return self._get_gap_info()
-    
-    def render__gaps__as_table(self, **kwargs) -> "DataFrame":
+    @view(view_type=TableView, human_name="GapStatsTable")
+    def view_gaps_as_table(self, **kwargs) -> TableView:
+        table = self.get_gaps_as_table(**kwargs)
+        return TableView(data=table, **kwargs)
+
+    def get_gaps_as_table(self, **kwargs) -> DataFrame:
         _dict = self._get_gap_info()
         return DataFrame.from_dict(_dict, columns=["is_substrate", "is_product", "is_gap"], orient="index")
 
-    def render__total_abs_flux__as_table(self, **kwargs) -> "DataFrame":
+    def get_gaps_as_json(self, **kwargs) -> DataFrame:
+        return self._get_gap_info()
+
+    def get_total_abs_flux_as_table(self, **kwargs) -> DataFrame:
         total_flux = 0
         for k in self.reactions:
             rxn = self.reactions[k]
@@ -817,7 +827,7 @@ class Network(Resource):
                 total_flux += abs(rxn.estimate["value"])
         return DataFrame.from_dict( {"0": [ total_flux ]}, columns=["total_abs_flux"], orient="index")
 
-    def render__stats__as_json(self, **kwargs) -> dict:
+    def get_stats_as_json(self, **kwargs) -> dict:
         return self.stats
     
     # -- R -- 

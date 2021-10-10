@@ -36,8 +36,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
     
             # test results
             result = proto.get_output("fba_result")
-            fluxes = result.render__fluxes__as_table()
-            sv = result.render__sv__as_table()
+            fluxes = result.get_fluxes_as_table()
+            sv = result.get_sv_as_table()
             print(fluxes)
             print(sv)
             th, p = result.compute_zero_flux_threshold()
@@ -70,10 +70,10 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             
             bio = proto.get_output("annotated_twin")
             net = list(bio.networks.values())[0]
-            tflux = net.render__total_abs_flux__as_table()
+            tflux = net.get_total_abs_flux_as_table()
             print(tflux)
 
-            tflux2 = result.render__total_abs_flux__as_table()
+            tflux2 = result.get_total_abs_flux_as_table()
             print("----")
             print(tflux2)
             self.assertTrue( tflux.equals(tflux2) )
@@ -122,13 +122,13 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-            fluxes = result.render__fluxes__as_table()
+            fluxes = result.get_fluxes_as_table()
             if organism == 'ecoli':
                 biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:]
             else:
                 biomass_flux = fluxes.loc[["pcys_Biomass"],:]
 
-            sv = result.render__sv__as_table()
+            sv = result.get_sv_as_table()
             print(fluxes)
             print(sv)
             print(biomass_flux)
@@ -157,17 +157,17 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             bio = proto.get_output("annotated_twin")
             net = list(bio.networks.values())[0]
-            tflux = net.render__total_abs_flux__as_table()
+            tflux = net.get_total_abs_flux_as_table()
             print(tflux)
 
-            tflux2 = result.render__total_abs_flux__as_table()
+            tflux2 = result.get_total_abs_flux_as_table()
             print("----")
             print(tflux2)
             self.assertTrue( tflux.equals(tflux2) )
 
             bio = result.get_related_twin()
             self.assertIsInstance( bio, Twin )
-            #bio_json = result.render__annotated_twin__as_json()
+            #bio_json = result.get_annotated_twin_as_json()
             #print(bio_json)
 
         # ecoli

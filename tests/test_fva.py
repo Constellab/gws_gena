@@ -40,8 +40,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            fluxes = result.render__fluxes__as_table()
-            sv = result.render__sv__as_table()
+            fluxes = result.get_fluxes_as_table()
+            sv = result.get_sv_as_table()
             print(fluxes)
             print(sv)
             th, p = result.compute_zero_flux_threshold()
@@ -106,8 +106,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            fluxes = result.render__fluxes__as_table()
-            sv = result.render__sv__as_table()
+            fluxes = result.get_fluxes_as_table()
+            sv = result.get_sv_as_table()
             if organism == 'ecoli':
                 biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:]
             else:
@@ -140,10 +140,10 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             bio = result.get_related_twin()
             net = list(bio.networks.values())[0]
-            tflux = net.render__total_abs_flux__as_table()
+            tflux = net.get_total_abs_flux_as_table()
             print(tflux)
 
-            #bio_json = result.render__annotated_twin__as_json()
+            #bio_json = result.get_annotated_twin_as_json()
             #print(bio_json)
 
         # ecoli

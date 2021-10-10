@@ -59,12 +59,12 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
             file_path = os.path.join(data_dir, file_name+"_stats.csv")
             with open(file_path, 'w') as f:
-                table = net.render__compound_stats__as_table()
+                table = net.get_compound_stats_as_table()
                 f.write(table.to_csv())
             
             file_path = os.path.join(data_dir, file_name+"_gaps.csv")
             with open(file_path, 'w') as f:
-                table = net.render__gaps__as_table()
+                table = net.get_gaps_as_table()
                 f.write(table.to_csv())
 
         # run experiment

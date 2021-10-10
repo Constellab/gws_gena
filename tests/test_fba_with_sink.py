@@ -39,8 +39,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-            fluxes = result.render__fluxes__as_table()
-            sv = result.render__sv__as_table()
+            fluxes = result.get_fluxes_as_table()
+            sv = result.get_sv_as_table()
             print(fluxes)
             print(sv)
             
@@ -68,7 +68,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             
             bio = proto.get_output("annotated_twin")
             net = list(bio.networks.values())[0]
-            tflux = net.render__total_abs_flux__as_table()
+            tflux = net.get_total_abs_flux_as_table()
             print(tflux)
 
         # fill_with_sink = True, relax = False
