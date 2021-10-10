@@ -27,9 +27,7 @@
             },
             {
                 "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core/lib",
-                "packages":[
-                    "gena-cpp"
-                ]
+                "packages":[]
             }
         ],
         "variables":{
