@@ -9,7 +9,9 @@
         "pip":[
             {
                 "source": "https://pypi.python.org/simple",
-                "packages":[]
+                "packages":[
+                    "efmtool"
+                ]
             },
             {
                 "source": "https://$GWS_PIP_PACKAGE_TOKEN@gitlab.com/api/v4/projects/27171024/packages/pypi",

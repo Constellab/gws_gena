@@ -25,8 +25,8 @@ from .fba.fva import FVA
 from .fba.fva_result import FVAResult
 
 # deprecated fba
-from .fba.deprec_fba import DeprecFBA
-from .fba.deprec_fba_result import DeprecFBAResult
+#from .fba.deprec_fba import DeprecFBA
+#from .fba.deprec_fba_result import DeprecFBAResult
 
 #recon
 from .recon.recon import DraftRecon
@@ -41,5 +41,5 @@ from .fba.proto.fba_proto import FBAProto
 from .fba.proto.fva_proto import FVAProto
 
 # deprected proto
-from .fba.proto.deprec_fba_proto import DeprecFBAProto
+#from .fba.proto.deprec_fba_proto import DeprecFBAProto
 

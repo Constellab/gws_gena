@@ -1,6 +1,6 @@
 import os, json
 
-from gws_core import Settings, GTest, Experiment, ExperimentService, File
+from gws_core import Settings, GTest, IExperiment, File
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import DeprecFBAProto
 
@@ -12,6 +12,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         self.print("Test DeprecFBAProto")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy_gap")
+
+        experiment = IExperiment(DeprecFBAProto)
         proto = DeprecFBAProto()
         
         file_path = os.path.join(data_dir, "toy.json")
@@ -19,8 +21,9 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy_context.json")
         ctx_file = File(path=file_path)
 
-        proto.input["network_file"] = network_file
-        proto.input["context_file"] = ctx_file
+
+        proto.set_input("network_file", network_file)
+        proto.set_input("context_file", ctx_file)
 
         fba = proto.get_fba()
         fba.set_param("least_energy_weight", 0)
