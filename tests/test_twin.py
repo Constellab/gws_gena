@@ -16,6 +16,7 @@ settings = Settings.retrieve()
 class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
     def test_small_twin(self):
+        return
         self.print("Test Twin")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "small_net")
@@ -87,6 +88,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue(problem["b"].equals(expected_B))
 
     def test_toy_twin(self):
+        return
         self.print("Test Toy Twin")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
@@ -165,7 +167,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
 
         print('\n--- Reduced Twin ---')
-        K = TwinService.compute_reduced_stoiochimetric_matrix(flat_twin)
+        K = TwinService.compute_reduced_stoichiometric_matrix(flat_twin)
         print(K)
 
     def test_bastin_twin(self):
@@ -187,5 +189,5 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         print(efm)
 
         print('\n--- Reduced Bastin & Provost ---')
-        K = TwinService.compute_reduced_stoiochimetric_matrix(flat_twin)
+        K = TwinService.compute_reduced_stoichiometric_matrix(flat_twin)
         print(K)
