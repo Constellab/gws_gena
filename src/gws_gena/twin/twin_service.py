@@ -202,17 +202,11 @@ class TwinService:
         return DataFrame(index=N.columns, columns=column_names, data=efms)
 
     @classmethod
-    def reduce_twin(cls, flat_twin: FlatTwin) -> DataFrame:
+    def compute_reduced_stoiochimetric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
         E = TwinService.compute_elementary_flux_modes(flat_twin)
         Ns = TwinService.compute_input_stoichiometric_matrix(flat_twin)
         Np = TwinService.compute_output_stoichiometric_matrix(flat_twin)
         N = pandas.concat([Ns, Np])
-        
-        print('---')
-        print(Ns)
-        print('---')
-        print(Np)
-
         K = DataFrame(
             data=np.matmul(N.values, E.values),
             index=N.index,
