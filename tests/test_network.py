@@ -12,6 +12,8 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
     def test_network_import(self):
         self.print("Test Network Import")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = os.path.join(data_dir, "small_net")
+        
         file_path = os.path.join(data_dir, "small_net.json")
         net = Network.import_from_path(file_path)
         json_data = net.dumps()

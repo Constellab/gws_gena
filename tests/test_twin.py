@@ -3,6 +3,7 @@ import os, json
 import unittest
 from pandas import DataFrame
 import pandas as pd
+import numpy
 
 from gws_core import Settings, GTest
 from gws_biota import BaseTestCaseUsingFullBiotaDB
@@ -15,9 +16,11 @@ settings = Settings.retrieve()
 class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
     def test_small_twin(self):
+        return
         self.print("Test Twin")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        
+        data_dir = os.path.join(data_dir, "small_net")
+
         file_path = os.path.join(data_dir, "small_net.json")
         net = Network.import_from_path(file_path)
 
@@ -85,6 +88,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue(problem["b"].equals(expected_B))
 
     def test_toy_twin(self):
+        return
         self.print("Test Toy Twin")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
@@ -99,29 +103,91 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         flat_twin = twin.flatten()
         problem = TwinService.create_fba_problem(flat_twin)
 
-        print('--- S_full ---')
+        print('\n--- S_full ---')
         print(problem["S"])
 
-        print('--- C ---')
+        print('\n--- C ---')
         print(problem["C"])
 
-        print('--- b ---')
+        print('\n--- b ---')
         print(problem["b"])
 
-        print('--- S_intra ---')        
+        print('\n--- S_intra ---')        
         Si = TwinService.create_steady_stoichiometric_matrix(flat_twin)
-        #Si = TwinService.extract_intracell_stoichiometric_matrix(problem["S"])
+        self.assertEqual(Si.shape, (5,7,))
         print(Si)
 
-        print('--- S_extra ---')
+        print('\n--- S_extra ---')
         Se = TwinService.create_non_steady_stoichiometric_matrix(flat_twin)
-        #Se = TwinService.extract_extracell_stoichiometric_matrix(problem["S"])
+        self.assertEqual(Se.shape, (5,7,))
         print(Se)
 
-        print('--- Ker(S_intra) ---')
+        print('\n--- Ker(S_intra) ---')
         K = TwinService.compute_nullspace(Si)
+        self.assertEqual(K.shape, (7,2,))
+        expected_K = numpy.array([
+            [-0.428766, 0.204856],
+            [0.469203, 0.194713],
+            [0.040437, 0.399569],
+            [-0.428766, 0.204856],
+            [-0.428766, 0.204856],
+            [0.469203, 0.194713],
+            [0.080873, 0.799138]
+        ])
+        self.assertTrue( numpy.all(numpy.isclose(K.values,expected_K, atol=1e-3)) )
         print(K)
 
-        print('--- Ker( [S_intra; C] ) ---')
+        print('\n--- Ker( [S_intra; C] ) ---')
         K = TwinService.compute_nullspace( pd.concat([Si, problem["C"]]) )
+        self.assertEqual(K.shape, (7,0,))
+        print(K)
+
+        print('\n--- EFM ---')
+        efm = TwinService.compute_elementary_flux_modes(flat_twin)
+        self.assertEqual(efm.shape, (7,2,))
+        expected_efm = numpy.array([
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [1.0, 1.0],
+            [1.0, 0.0],
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [2.0, 2.0]
+        ])
+        self.assertTrue( numpy.all(numpy.isclose(efm.values,expected_efm)) )
+        print(efm)
+
+        print('\n--- Input S ---')
+        S = TwinService.compute_input_stoichiometric_matrix(flat_twin)
+        print(S)
+
+        print('\n--- Output S ---')
+        S = TwinService.compute_output_stoichiometric_matrix(flat_twin)
+        print(S)
+
+
+        print('\n--- Reduced Twin ---')
+        K = TwinService.reduce_twin(flat_twin)
+        print(K)
+
+    def test_bastin_twin(self):
+        self.print("Test Toy Twin")
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = os.path.join(data_dir, "bastin")
+
+        net = Network.import_from_path(os.path.join(data_dir, "bastin_network.json"))
+        ctx = TwinContext.import_from_path(os.path.join(data_dir, "bastin_context.json"))
+
+        twin = Twin()
+        twin.add_network(net)
+        twin.add_context(ctx, related_network=net)
+        
+        flat_twin = twin.flatten()
+
+        print('\n--- EFM Bastin & Provost ---')
+        efm = TwinService.compute_elementary_flux_modes(flat_twin)
+        print(efm)
+
+        print('\n--- Reduced Bastin & Provost ---')
+        K = TwinService.reduce_twin(flat_twin)
         print(K)

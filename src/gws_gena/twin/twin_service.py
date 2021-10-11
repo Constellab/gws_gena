@@ -3,10 +3,12 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from typing import Dict, List
 import numpy as np
-from scipy.linalg import null_space
+import pandas
 from pandas import DataFrame
-from typing import Dict
+from scipy.linalg import null_space
+import efmtool
 
 from gws_core import BadRequestException
 from .twin import FlatTwin
@@ -50,7 +52,7 @@ class TwinService:
 
         :param flat_twin: A flat twin object
         :type flat_twin: `FlatTwin`
-        :returns: The  stroichiometric matrix
+        :returns: The  stoichiometric matrix
         :rtype: `DataFrame`
         """
 
@@ -66,12 +68,12 @@ class TwinService:
 
         :param flat_twin: A flat twin object
         :type flat_twin: `FlatTwin`
-        :returns: The steady stroichiometric matrix
+        :returns: The steady stoichiometric matrix
         :rtype: `DataFrame`
         """
 
         if not isinstance(flat_twin, FlatTwin):
-            raise BadRequestException("Cannot create the observation matrices. A flat model is required")
+            raise BadRequestException("Cannot create the steady stoichiometric matrix. A flat model is required")
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_steady_stoichiometric_matrix()
 
@@ -82,7 +84,7 @@ class TwinService:
 
         :param flat_twin: A flat twin object
         :type flat_twin: `FlatTwin`
-        :returns: The non_steady stroichiometric matrix
+        :returns: The non_steady stoichiometric matrix
         :rtype: `DataFrame`
         """
 
@@ -90,6 +92,39 @@ class TwinService:
             raise ErBadRequestExceptionror("A flat model is required")
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_non_steady_stoichiometric_matrix()
+
+
+    @classmethod
+    def compute_input_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
+        """
+        Creates the input-substrate stoichiometric matrix using a twin object
+
+        :param flat_twin: A flat twin object
+        :type flat_twin: `FlatTwin`
+        :returns: The input-substrate stoichiometric matrix
+        :rtype: `DataFrame`
+        """
+
+        if not isinstance(flat_twin, FlatTwin):
+            raise BadRequestException("A flat model is required")
+        flat_net = next(iter(flat_twin.networks.values()))
+        return flat_net.compute_input_stoichiometric_matrix()
+
+    @classmethod
+    def compute_output_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
+        """
+        Creates the output-product stoichiometric matrix using a twin object
+
+        :param flat_twin: A flat twin object
+        :type flat_twin: `FlatTwin`
+        :returns: The output-product stoichiometric matrix
+        :rtype: `DataFrame`
+        """
+
+        if not isinstance(flat_twin, FlatTwin):
+            raise BadRequestException("A flat model is required")
+        flat_net = next(iter(flat_twin.networks.values()))
+        return flat_net.compute_output_stoichiometric_matrix()
 
     @classmethod
     def create_observation_matrices(cls, flat_twin: FlatTwin) -> Dict[str, DataFrame]:
@@ -142,6 +177,48 @@ class TwinService:
         }
 
     @classmethod
-    def compute_nullspace(cls, A: DataFrame) -> DataFrame:
-        ns = null_space(A.to_numpy())
-        return DataFrame(index = A.columns, data=ns)
+    def compute_nullspace(cls, N: DataFrame) -> DataFrame:
+        ns = null_space(N.to_numpy())
+        return DataFrame(index = N.columns, data=ns)
+
+    @classmethod
+    def compute_elementary_flux_modes(cls, flat_twin: FlatTwin) -> DataFrame:
+        if not isinstance(flat_twin, FlatTwin):
+            raise BadRequestException("A flat model is required")
+        N = cls.create_steady_stoichiometric_matrix(flat_twin)
+        return cls._compute_elementary_flux_modes_from_matrix(N)
+
+    @classmethod
+    def _compute_elementary_flux_modes_from_matrix(cls, N: DataFrame, reversibilities: List[int] = None) -> DataFrame:
+        if reversibilities is None:
+            reversibilities = [0] * N.shape[1]
+        efms = efmtool.calculate_efms(
+            N.values,
+            reversibilities = reversibilities,
+            reaction_names = N.columns,
+            metabolite_names = N.index
+        )
+        column_names = [ f"e{i}" for i in range(1,efms.shape[1]+1) ]
+        return DataFrame(index=N.columns, columns=column_names, data=efms)
+
+    @classmethod
+    def reduce_twin(cls, flat_twin: FlatTwin) -> DataFrame:
+        E = TwinService.compute_elementary_flux_modes(flat_twin)
+        Ns = TwinService.compute_input_stoichiometric_matrix(flat_twin)
+        Np = TwinService.compute_output_stoichiometric_matrix(flat_twin)
+        N = pandas.concat([Ns, Np])
+        
+        print('---')
+        print(Ns)
+        print('---')
+        print(Np)
+
+        K = DataFrame(
+            data=np.matmul(N.values, E.values),
+            index=N.index,
+            columns=E.columns
+        )
+        return K
+
+
+

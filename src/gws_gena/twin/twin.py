@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import TypedDict, Dict
 
 from gws_core import (BadRequestException, JSONDict, resource_decorator, 
-                        ResourceService, StrRField, DictRField)
+                        ResourceService, StrRField, DictRField, view, JSONView)
 from ..network.network import Network, Compound, Reaction
 from .twin_context import TwinContext, Variable
 
@@ -372,6 +372,11 @@ class FlatTwin(Twin):
 
     def dumps_flat(self) -> dict:
         return self.dumps()
+
+    @view(view_type=JSONView, human_name="JSONView")
+    def view_flat_network_as_json(self, **kwargs) -> JSONView:
+        net = self.get_flat_network()
+        return net.view_as_json(**kwargs)
 
     def get_flat_network(self):
         return list(self._networks.values())[0]

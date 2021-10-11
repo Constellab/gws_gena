@@ -294,7 +294,7 @@
             "metabolites": {
                 "R5P_c": -1.0,
                 "Asp_c": -1.0,
-                "Gln_e": -1.0,
+                "Gln_e": -2.0,
                 "Pyrimidine_e": 1.0
             },
             "lower_bound": -1000.0,

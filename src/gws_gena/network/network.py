@@ -20,6 +20,7 @@ from gws_core import (FileImporter, FileExporter, FileLoader, FileDumper,
 from gws_biota import EnzymeClass, Taxonomy as BiotaTaxo
 from .compound import Compound
 from .reaction import Reaction
+from .view.network_view import NetworkView
 
 flattening_delimiter = ":"
     
@@ -261,6 +262,20 @@ class Network(Resource):
     def create_non_steady_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
         S = self.create_stoichiometric_matrix()
         names = list(self.get_non_steady_compounds().keys())
+        return S.loc[names, :]
+
+    def compute_input_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
+        S = self.create_non_steady_stoichiometric_matrix(include_biomass=include_biomass)
+        df = S.sum(axis=1)       
+        in_sub = df.loc[df < 0]
+        names = in_sub.index.values
+        return S.loc[names, :]
+
+    def compute_output_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
+        S = self.create_non_steady_stoichiometric_matrix(include_biomass=include_biomass)
+        df = S.sum(axis=1)
+        out_prod = df.loc[df > 0]
+        names = out_prod.index.values
         return S.loc[names, :]
 
     # -- D --
@@ -791,6 +806,16 @@ class Network(Resource):
         
         del self.reactions[rxn_id]
     
+    @view(view_type=NetworkView, default_view=True, human_name="NetworkView")
+    def view_as_network(self, **kwargs) -> NetworkView:
+        return NetworkView(data=self.dumps(), **kwargs)
+
+    @view(view_type=JSONView, human_name="JSONView")
+    def view_as_json(self, **kwargs) -> JSONView:
+        json_view: JSONView = super().view_as_json(**kwargs)
+        json_view._data = self.dumps()
+        return json_view
+
     @view(view_type=TableView, human_name="CompoundStatsTable")
     def view_compound_stats_as_table(self, **kwargs) -> TableView:
         table = self.get_compound_stats_as_table(**kwargs)

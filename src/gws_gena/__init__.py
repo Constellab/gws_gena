@@ -4,6 +4,9 @@ from .network.network_merger import NetworkMerger
 from .network.reaction import Reaction
 from .network.compound import Compound
 
+#network > View
+from .network.view.network_view import NetworkView
+
 # twin
 from .twin.twin import Twin, FlatTwin
 from .twin.twin_annotator import TwinAnnotator
