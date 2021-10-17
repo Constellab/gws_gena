@@ -12,7 +12,26 @@ from gws_biota import Compound as BiotaCompound
 
 def slugify_id(_id):
     return Utils.slugify(_id, snakefy=True, to_lower=False)
-    
+
+# ####################################################################
+#
+# CompoundPosition class
+#
+# ####################################################################
+
+class CompoundPosition:
+    """ Compount position """
+    x: float = None
+    y: float = None
+    z: float = None
+
+    def copy(self) -> 'CompoundPosition':
+        p = CompoundPosition()
+        p.x = self.x
+        p.y = self.y
+        p.z = self.z
+        return p
+
 # ####################################################################
 #
 # Compound class
@@ -63,7 +82,7 @@ class Compound:
     alt_chebi_ids: List = None
     kegg_id = ""
     inchikey = ""
-    
+    position: CompoundPosition = None
 
     FLATTENING_DELIMITER = "_"
     COMPARTMENT_DELIMITER = "_"
@@ -96,11 +115,16 @@ class Compound:
         "CHEBI:16474": "NADPH",
         "CHEBI:58349": "NADP_3",
         "CHEBI:57783": "NADPH_4",
-        #"CHEBI:63528": "dTMP_2",
+        "CHEBI:63528": "dTMP_2",
         "CHEBI:35924": "peroxol",
         "CHEBI:30879": "alcohol",
-        "CHEBI:456216": "ADP_3",
-        "CHEBI:30616": "ATP_4",
+
+        "CHEBI:456216": "ADP(3-)",
+        "CHEBI:30616": "ATP(4-)",
+
+        "CHEBI:57667": "dADP(3-)",
+        "CHEBI:61404": "dATP(4-)",
+
         "CHEBI:456215": "AMP",
         
         "CHEBI:57692": "FAD_3",
@@ -121,6 +145,35 @@ class Compound:
 
         "CHEBI:29033": "iron_2",
         "CHEBI:29034": "iron_3",
+
+        "CHEBI:61402": "ITP(4-)",
+        "CHEBI:58280": "IDP(3-)",
+
+        "CHEBI:58189": "GDP(3-)",
+        "CHEBI:37565": "GTP(4-)",
+        "CHEBI:61429": "dGTP(4-)",
+        
+        "CHEBI:58223": "UDP(3-)",
+        "CHEBI:46398": "UTP(4-)",
+        "CHEBI:61555": "dUTP(4-)",
+
+        "CHEBI:58280": "IDP(3-)",
+        "CHEBI:61402": "ITP(4-)",
+        "CHEBI:61382": "dITP(4-)",
+
+        "CHEBI:58069": "CDP(3-)",
+        "CHEBI:37563": "CTP(4-)",
+        "CHEBI:61481": "dCTP(4-)",
+
+        "CHEBI:58223": "UDP(3-)",
+        "CHEBI:46398": "UTP(4-)",
+        "CHEBI:61555": "dUTP(4-)",
+        
+        "CHEBI:16389": "ubiquinones",
+        "CHEBI:17976": "ubiquinol",
+        "CHEBI:61683": "ubiquinone-8",
+        "CHEBI:61682": "ubiquinol-8",
+        
     }
     
     def __init__(self, id="", name="", compartment=None, \
@@ -203,7 +256,8 @@ class Compound:
         self.chebi_id = chebi_id
         self.kegg_id = kegg_id
         self.alt_chebi_ids = (alt_chebi_ids if alt_chebi_ids else [])
-
+        self.position = CompoundPosition()
+        
     # -- A --
 
     def add_to_network(self, net: 'Network'):  
@@ -232,6 +286,7 @@ class Compound:
         c.alt_chebi_ids = copy.deepcopy(self.alt_chebi_ids)
         c.kegg_id = self.kegg_id
         c.inchikey = self.inchikey
+        c.position = self.position.copy()
         return c
 
     @classmethod
@@ -330,7 +385,11 @@ class Compound:
         c.charge = biota_compound.charge
         c.formula = biota_compound.formula
         c.mass = biota_compound.mass
-        c.monoisotopic_mass = biota_compound.monoisotopic_mass
+        if biota_compound.position is not None:
+            c.position.x = biota_compound.position.x
+            c.position.y = biota_compound.position.y
+            c.position.z = biota_compound.position.z
+
         return c
 
     # -- I --

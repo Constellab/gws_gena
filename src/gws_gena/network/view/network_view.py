@@ -3,40 +3,32 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from pandas import DataFrame
 from typing import Dict
 from gws_core import View, BadRequestException, ViewSpecs
 
 class NetworkView(View):
     
     _type = "network-view"
-    _specs: ViewSpecs = {}
-    _data: Dict
-
-    def check_and_clean_data(self, data: Dict):
+    _data: "Network"
+    _specs: ViewSpecs = {
+        **View._specs
+    }
+    
+    def check_and_set_data(self, data: Dict):
         """
         Check the data and return.
 
         Must be overloaded to implement adhoc data checker
         """
+        from ..network import Network
+        if not isinstance(data, Network):
+            raise BadRequestException("NetworkView data be instance of Network")
 
-        if not isinstance(data, dict):
-            raise BadRequestException("Network data must be a dictionnary")
+        self._data = data
 
-        if "metabolites" not in data:
-            raise BadRequestException("Invalid network data. No metabolites found.")
-        
-        if "reactions" not in data:
-            raise BadRequestException("Invalid network data. No reactions found.")
-        
-        if "compartments" not in data:
-            raise BadRequestException("Invalid network data. No compartments found.")
-
-        return data
-
-
-    def to_dict(self, **kwargs) -> dict:
-
+    def to_dict(self, *args, **kwargs) -> dict:
         return {
-            "type": self._type,
-            "data": self._data
+            **super().to_dict(*args, **kwargs),
+            "data": self._data.dumps()
         }

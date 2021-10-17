@@ -89,7 +89,7 @@ class TwinService:
         """
 
         if not isinstance(flat_twin, FlatTwin):
-            raise ErBadRequestExceptionror("A flat model is required")
+            raise BadRequestException("A flat model is required")
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_non_steady_stoichiometric_matrix()
 

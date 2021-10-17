@@ -30,6 +30,26 @@ class SubstrateDuplicate(BadRequestException):
 class ProductDuplicate(BadRequestException): 
     pass
 
+# ####################################################################
+#
+# ReactionPosition class
+#
+# ####################################################################
+
+class ReactionPosition:
+    """ reaction position """
+    x: float = None
+    y: float = None
+    z: float = None
+    line: str = ""
+
+    def copy(self) -> 'ReactionPosition':
+        p = ReactionPosition()
+        p.x = self.x
+        p.y = self.y
+        p.z = self.z
+        p.line = self.line
+        return p
 
 # ####################################################################
 #
@@ -70,7 +90,8 @@ class Reaction:
     upper_bound: float = 1000.0
     rhea_id: str = ""
     enzyme: dict = None
-    
+    position: ReactionPosition = None
+
     _tax_ids = []
     _estimate: dict = None
     _substrates: dict = None
@@ -111,7 +132,8 @@ class Reaction:
             self.add_to_network(network)
         
         self.rhea_id = rhea_id
-        
+        self.position = ReactionPosition()
+
     # -- A --
 
     def add_to_network(self, net: 'Network'):  
@@ -182,12 +204,13 @@ class Reaction:
         rxn.upper_bound = self.upper_bound
         rxn.rhea_id = self.rhea_id
         rxn.enzyme = self.enzyme
+        rxn.position = self.position.copy()
 
         rxn._tax_ids = copy.deepcopy(self._tax_ids)
         rxn._estimate = copy.deepcopy(self._estimate)
         rxn._substrates = copy.deepcopy(self._substrates)
         rxn._products = copy.deepcopy(self._products)
-
+        rxn._products = copy.deepcopy(self._products)
         return rxn
 
     def compute_mass_and_charge_balance(self) -> dict:
@@ -323,6 +346,13 @@ class Reaction:
                       network=network, 
                       direction=rhea_rxn.direction,
                       enzyme=e)
+            
+            if rhea_rxn.position is not None:
+                    rxn.position.x = rhea_rxn.position.x
+                    rxn.position.y = rhea_rxn.position.y
+                    rxn.position.z = rhea_rxn.position.z
+                    rxn.position.line = rhea_rxn.position.line
+                    
             eqn = rhea_rxn.data["equation"]
             for chebi_id in eqn["substrates"]:
                 stoich =  eqn["substrates"][chebi_id]
@@ -334,6 +364,11 @@ class Reaction:
                 c.formula = biota_comp.formula
                 c.mass = biota_comp.mass
                 c.monoisotopic_mass = biota_comp.monoisotopic_mass
+                if biota_comp.position is not None:
+                    c.position.x = biota_comp.position.x
+                    c.position.y = biota_comp.position.y
+                    c.position.z = biota_comp.position.z
+
                 rxn.add_substrate(c, stoich)
             for chebi_id in eqn["products"]:
                 stoich = eqn["products"][chebi_id]
@@ -345,6 +380,11 @@ class Reaction:
                 c.formula = biota_comp.formula
                 c.mass = biota_comp.mass
                 c.monoisotopic_mass = biota_comp.monoisotopic_mass
+                if biota_comp.position is not None:
+                    c.position.x = biota_comp.position.x
+                    c.position.y = biota_comp.position.y
+                    c.position.z = biota_comp.position.z
+
                 rxn.add_product(c, stoich)
             return rxn
         

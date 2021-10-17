@@ -301,7 +301,7 @@ class Network(Resource):
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
-                "position": {"x": None, "y": None}
+                "position": {"x": _met.position.x, "y": _met.position.y}
             })
 
         for _rxn in self.reactions.values():
@@ -324,7 +324,8 @@ class Network(Resource):
                 "metabolites": _rxn_met,
                 "lower_bound": _rxn.lower_bound,
                 "upper_bound": _rxn.upper_bound,
-                "position": {"x": None, "y": None},
+                "position": {"x": _rxn.position.x, "y": _rxn.position.y},
+                "line": _rxn.position.line,
                 "estimate": _rxn.estimate,
                 "balance": _rxn.compute_mass_and_charge_balance()
             })
@@ -685,6 +686,18 @@ class Network(Resource):
     
     # -- L --
 
+    def get_layout(self) -> DataFrame:
+        table = []
+        for k in self.metabolite:
+            met = self.metabolite[k]
+            table.append(
+                [ met.id, met.position ]
+            )
+
+        table = DataFrame(table, columns=column_names)
+        table = table.sort_values(by=['id'])
+        return table
+
     @classmethod
     def loads(cls, data: NetworkDict):
         if not data.get("compartments"):
@@ -751,6 +764,12 @@ class Network(Resource):
                     alt_chebi_ids = alt_chebi_ids,\
                     kegg_id = val.get("kegg_id","")\
                 )
+                position = val.get("position",{})
+                if position:
+                    comp.position.x = position.get("x",None)
+                    comp.position.y = position.get("y",None)
+                    comp.position.z = position.get("z",None)
+
             added_comps[_id] = comp
 
         for val in data["reactions"]:
@@ -765,6 +784,13 @@ class Network(Resource):
                 rhea_id=val.get("rhea_id","")\
             )
             
+            position = val.get("position",{})
+            if position:
+                rxn.position.x = position.get("x",None)
+                rxn.position.y = position.get("y",None)
+                rxn.position.z = position.get("z",None)
+                rxn.position.line = position.get("line",None)
+
             if val.get("estimate"):
                 rxn.set_estimate(val.get("estimate"))
 
@@ -807,24 +833,24 @@ class Network(Resource):
         del self.reactions[rxn_id]
     
     @view(view_type=NetworkView, default_view=True, human_name="NetworkView")
-    def view_as_network(self, **kwargs) -> NetworkView:
-        return NetworkView(data=self.dumps(), **kwargs)
+    def view_as_network(self, *args, **kwargs) -> NetworkView:
+        return NetworkView(data=self, *args, **kwargs)
 
     @view(view_type=JSONView, human_name="JSONView")
-    def view_as_json(self, **kwargs) -> JSONView:
+    def view_as_json(self, *args, **kwargs) -> JSONView:
         json_view: JSONView = super().view_as_json(**kwargs)
         json_view._data = self.dumps()
         return json_view
 
     @view(view_type=TableView, human_name="CompoundStatsTable")
-    def view_compound_stats_as_table(self, **kwargs) -> TableView:
-        table = self.get_compound_stats_as_table(**kwargs)
-        return TableView(data=table, **kwargs)
+    def view_compound_stats_as_table(self, *args, **kwargs) -> TableView:
+        table = self.get_compound_stats_as_table()
+        return TableView(data=table, *args, **kwargs)
 
     def get_compound_stats_as_json(self, **kwargs) -> dict:
         return self.stats["compounds"]
 
-    def get_compound_stats_as_table(self, **kwargs) -> DataFrame:
+    def get_compound_stats_as_table(self) -> DataFrame:
         _dict = self.stats["compounds"]
         for comp_id in _dict:
             _dict[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
@@ -833,18 +859,18 @@ class Network(Resource):
         return table
     
     @view(view_type=TableView, human_name="GapStatsTable")
-    def view_gaps_as_table(self, **kwargs) -> TableView:
-        table = self.get_gaps_as_table(**kwargs)
-        return TableView(data=table, **kwargs)
+    def view_gaps_as_table(self, *args, **kwargs) -> TableView:
+        table = self.get_gaps_as_table()
+        return TableView(data=table, *args, **kwargs)
 
-    def get_gaps_as_table(self, **kwargs) -> DataFrame:
+    def get_gaps_as_table(self) -> DataFrame:
         _dict = self._get_gap_info()
         return DataFrame.from_dict(_dict, columns=["is_substrate", "is_product", "is_gap"], orient="index")
 
-    def get_gaps_as_json(self, **kwargs) -> DataFrame:
+    def get_gaps_as_json(self) -> DataFrame:
         return self._get_gap_info()
 
-    def get_total_abs_flux_as_table(self, **kwargs) -> DataFrame:
+    def get_total_abs_flux_as_table(self) -> DataFrame:
         total_flux = 0
         for k in self.reactions:
             rxn = self.reactions[k]
@@ -852,7 +878,7 @@ class Network(Resource):
                 total_flux += abs(rxn.estimate["value"])
         return DataFrame.from_dict( {"0": [ total_flux ]}, columns=["total_abs_flux"], orient="index")
 
-    def get_stats_as_json(self, **kwargs) -> dict:
+    def get_stats_as_json(self) -> dict:
         return self.stats
     
     # -- R -- 

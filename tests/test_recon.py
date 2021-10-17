@@ -90,7 +90,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             "mus musculus" : "10090"
         }
 
-        name = "yeast"
+        name = "sapiens"
         tester = TaskTester(
             task_type = DraftRecon,
             inputs = {},
@@ -100,7 +100,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         net = outputs["network"]
 
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        data_dir = os.path.join(data_dir, name)
+        data_dir = os.path.join(data_dir, "recon/build", name)
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
 
