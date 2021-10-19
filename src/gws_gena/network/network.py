@@ -297,11 +297,13 @@ class Network(Resource):
                 "monoisotopic_mass": _met.monoisotopic_mass,
                 "formula": _met.formula,
                 "inchi": _met.inchi,
-                "is_cofactor": _met.is_cofactor,
+                "level": _met.get_level(),
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
-                "position": {"x": _met.position.x, "y": _met.position.y}
+                "position": {
+                    "center": {"x": _met.position.x, "y": _met.position.y}
+                }
             })
 
         for _rxn in self.reactions.values():
@@ -324,8 +326,10 @@ class Network(Resource):
                 "metabolites": _rxn_met,
                 "lower_bound": _rxn.lower_bound,
                 "upper_bound": _rxn.upper_bound,
-                "position": {"x": _rxn.position.x, "y": _rxn.position.y},
-                "line": _rxn.position.line,
+                "position": {
+                    "center": {"x": _rxn.position.x, "y": _rxn.position.y},
+                    "line": _rxn.position.line,
+                },
                 "estimate": _rxn.estimate,
                 "balance": _rxn.compute_mass_and_charge_balance()
             })

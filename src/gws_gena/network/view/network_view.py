@@ -23,7 +23,7 @@ class NetworkView(View):
         """
         from ..network import Network
         if not isinstance(data, Network):
-            raise BadRequestException("NetworkView data be instance of Network")
+            raise BadRequestException("NetworkView data must be an instance of Network")
 
         self._data = data
 
