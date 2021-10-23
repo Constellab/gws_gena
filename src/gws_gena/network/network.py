@@ -302,20 +302,31 @@ class Network(Resource):
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
                 "position": {
-                    "center": {"x": _met.position.x, "y": _met.position.y}
+                    "x": _met.position.x, 
+                    "y": _met.position.y
                 }
             })
 
         for _rxn in self.reactions.values():
             _rxn_met = {}
             for sub in _rxn.substrates.values():
+                comp_id = sub["compound"].id
+                stoich = sub["stoichiometry"]
                 _rxn_met.update({
-                    sub["compound"].id: -abs(sub["stoichiometry"])
+                    comp_id: {
+                        "stoich": -abs(stoich),
+                        "points": _rxn.position.points.get(comp_id)
+                    }
                 })
                 
             for prod in _rxn.products.values():
+                comp_id = prod["compound"].id
+                stoich = prod["stoichiometry"]
                 _rxn_met.update({
-                    prod["compound"].id: abs(prod["stoichiometry"])
+                    prod["compound"].id: {
+                        "stoich": abs(stoich),
+                        "points": _rxn.position.points.get(comp_id)
+                    }
                 })
             
             _rxn_json.append({
@@ -327,8 +338,8 @@ class Network(Resource):
                 "lower_bound": _rxn.lower_bound,
                 "upper_bound": _rxn.upper_bound,
                 "position": {
-                    "center": {"x": _rxn.position.x, "y": _rxn.position.y},
-                    "line": _rxn.position.line,
+                    "x": _rxn.position.x,
+                    "y": _rxn.position.y
                 },
                 "estimate": _rxn.estimate,
                 "balance": _rxn.compute_mass_and_charge_balance()
@@ -673,14 +684,14 @@ class Network(Resource):
                     raise BadRequestException(f"Cannot load JSON file {file_path}. Error: {err}")  
                 
                 if _json.get("reactions"):
-                    # is a raw dump network
+                    # is a raw dump network (e.g. BIGG database, classical bioinformatics exchange files)
                     net = cls.loads(_json)
                 elif _json.get("network"): 
                     # is gws resource
                     net = cls.loads(_json["network"])
                 elif _json.get("data",{}).get("network"): 
-                    # TODO : Remove after
-                    # is gws resource [RETRO COMPATIBILTY]
+                    # is gws old resource [RETRO COMPATIBILTY]
+                    # TODO: will be deprecated in the future
                     net = cls.loads(_json["data"]["network"])
                 else:
                     raise BadRequestException("Invalid network data")
@@ -793,8 +804,8 @@ class Network(Resource):
                 rxn.position.x = position.get("x",None)
                 rxn.position.y = position.get("y",None)
                 rxn.position.z = position.get("z",None)
-                rxn.position.line = position.get("line",None)
 
+            rxn.position.points = {}
             if val.get("estimate"):
                 rxn.set_estimate(val.get("estimate"))
 
@@ -807,13 +818,20 @@ class Network(Resource):
                     for c in comps:
                         if c.compartment == comp.compartment:
                             break
-
-                stoich = val[ckey][comp_id]
+                
+                if isinstance(val[ckey][comp_id], dict):
+                    stoich = float(val[ckey][comp_id].get("stoich"))
+                    points = val[ckey][comp_id].get("points")
+                else:
+                    stoich = float(val[ckey][comp_id]) #for retro compatiblity 
+                    points = None
                 if stoich < 0:
                     rxn.add_substrate( comp, stoich )
                 elif stoich > 0:
                     rxn.add_product( comp, stoich )
 
+                rxn.position.points[comp.id] = points
+                
         net.name = data.get("name", cls.DEFAULT_NAME)
         net.description = data.get("description","")
 

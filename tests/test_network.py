@@ -69,3 +69,12 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
             'biomass': [-1.0, 0.0, 1.0],
         }, index=["glc_D_e", "gln_L_e", "biomass_b"])
         self.assertTrue(Se.equals(expected_Se))
+
+    def test_network_import_bigg_file(self):
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = os.path.join(data_dir, "ecoli")
+        file_path = os.path.join(data_dir, "ecoli.json")
+        net = Network.import_from_path(file_path)
+        print("ecoli successffuly imported")
+        self.assertEqual(len(net.compounds), 72)
+        self.assertEqual(len(net.reactions), 95)

@@ -41,14 +41,20 @@ class ReactionPosition:
     x: float = None
     y: float = None
     z: float = None
-    line: str = ""
+    points: str = None
+
+    def __init__(self):
+        self.x = None
+        self.y = None
+        self.z = None
+        self.points = {}
 
     def copy(self) -> 'ReactionPosition':
         p = ReactionPosition()
         p.x = self.x
         p.y = self.y
         p.z = self.z
-        p.line = self.line
+        p.points = self.points
         return p
 
 # ####################################################################
@@ -161,7 +167,7 @@ class Reaction:
         
         # add the compound to the reaction network
         if self.network:
-            if not comp.id in self.network.compounds:
+            if comp.id not in self.network.compounds:
                 self.network.add_compound(comp)
 
         self._substrates[comp.id] = {
@@ -180,11 +186,11 @@ class Reaction:
         """
         
         if comp.id in self._products:
-            raise ProductDuplicate("gena.reaction.Reaction", "add_substrate", "Product duplicate (id= {comp.id})")
+            raise ProductDuplicate("gena.reaction.Reaction", "add_product", f"Product duplicate (id= {comp.id})")
         
         # add the compound to the reaction network
         if self.network:
-            if not comp.id in self.network.compounds:
+            if comp.id not in self.network.compounds:
                 self.network.add_compound(comp)
                 
         self._products[comp.id] = {
@@ -351,7 +357,7 @@ class Reaction:
                     rxn.position.x = rhea_rxn.position.x
                     rxn.position.y = rhea_rxn.position.y
                     rxn.position.z = rhea_rxn.position.z
-                    rxn.position.line = rhea_rxn.position.line
+                    rxn.position.points = rhea_rxn.position.points
                     
             eqn = rhea_rxn.data["equation"]
             for chebi_id in eqn["substrates"]:

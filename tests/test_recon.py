@@ -11,7 +11,6 @@ settings = Settings.retrieve()
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
     
     async def test_recon_proto(self):
-        return
         self.print("Test ReconProto")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
@@ -53,7 +52,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             # file_path = os.path.join(data_dir, file_name+"_net.json")
             # with open(file_path, 'w') as f:
             #     json.dump(net.dumps(), f)
-
+            
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'r') as f:
                 self.assertEqual(net.to_csv(), f.read())
@@ -81,6 +80,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         await assert_results(gapfill_net, file_name)
 
     async def test_recon_using_tax_id(self):
+        return
         self.print("Test Recon using tax_id only")
 
         organisms = {
