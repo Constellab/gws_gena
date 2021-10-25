@@ -168,8 +168,8 @@ class Network(Resource):
             raise ReactionDuplicate(f"Reaction id {rxn.id} duplicate")
         
         # add reaction compounds to the network
-        for k in rxn.substrates.copy():            
-            sub = rxn.substrates[k]
+        for sub in rxn.substrates.values():            
+            #sub = rxn.substrates[k]
             comp = sub["compound"]
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
@@ -185,8 +185,8 @@ class Network(Resource):
                 else:
                     self.add_compound(comp)
             
-        for k in rxn.products.copy():
-            prod = rxn.products[k]
+        for prod in rxn.products.values():
+            #prod = rxn.products[k]
             comp = prod["compound"]
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
@@ -246,11 +246,11 @@ class Network(Resource):
             rxn = self.reactions[rxn_id]
             for comp_id in rxn._substrates:
                 val = rxn._substrates[comp_id]["stoichiometry"]
-                S.at[comp_id, rxn_id] = -val
+                S.at[comp_id, rxn_id] -= val
 
             for comp_id in rxn._products:
                 val = rxn._products[comp_id]["stoichiometry"]
-                S.at[comp_id, rxn_id] = val
+                S.at[comp_id, rxn_id] += val
 
         return S
         

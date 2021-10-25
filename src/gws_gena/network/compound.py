@@ -83,7 +83,7 @@ class Compound:
     kegg_id = ""
     inchikey = ""
     position: CompoundPosition = None
-
+    
     FLATTENING_DELIMITER = "_"
     COMPARTMENT_DELIMITER = "_"
     COMPARTMENT_CYTOSOL    = "c"
@@ -342,7 +342,7 @@ class Compound:
                 else:
                     raise BadRequestException("Please provide at least a valid compound id, name or chebi_id")
 
-            self.id = slugify_id(name + Compound.COMPARTMENT_DELIMITER + compartment)
+            self.id = slugify_id(name + Compound.COMPARTMENT_DELIMITER + compartment_suffix)
         
         if not name:
             name = self.id
@@ -506,6 +506,40 @@ class Compound:
         else:
             return self.LEVEL_MINOR.lower()
 
+    def get_related_biota_compound(self):
+        """
+        Get the biota compound that is related to this network compound
+        
+        :return: The biota compound corresponding to the chebi of kegg id. Returns `None` is no biota coumpund is found
+        :rtype: `bioa.compound.Compound`, `None`
+        """
+        
+        try:
+            if self.chebi_id:
+                return BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
+            elif self.kegg_id:
+                return BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
+        except:
+            return None
+
+    def get_related_biota_reactions(self):
+        """
+        Get the biota reactions that are related to this network compound
+        
+        :return: The list of biota reactions corresponding to the chebi of kegg id. Returns [] is no biota reaction is found
+        :rtype: `List[bioa.compound.reaction]` or SQL `select` resutls
+        """
+        
+        try:
+            if self.chebi_id:
+                comp = BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
+            elif self.kegg_id:
+                comp = BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
+            
+            return comp.reactions
+        except:
+            return None
+
     # -- I --
  
     @property
@@ -592,38 +626,30 @@ class Compound:
     def is_minor(self)->bool:
         return (not self.is_cofactor) and (not self.is_major)
 
-    # -- R --
+    # -- M --
     
-    def get_related_biota_compound(self):
-        """
-        Get the biota compound that is related to this network compound
-        
-        :return: The biota compound corresponding to the chebi of kegg id. Returns `None` is no biota coumpund is found
-        :rtype: `bioa.compound.Compound`, `None`
-        """
-        
-        try:
-            if self.chebi_id:
-                return BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
-            elif self.kegg_id:
-                return BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
-        except:
-            return None
+    @classmethod
+    def merge_compounds(self, comps: List['Compound'], compartment=None) -> 'Compound':
+        """ Merge a list of compounds (oligomerisation) """
 
-    def get_related_biota_reactions(self):
-        """
-        Get the biota reactions that are related to this network compound
+        if compartment is None:
+            compartment = comps[0].compartment
+
+        names = []
+        for comp in comps:
+            names.append(comp.name)
         
-        :return: The list of biota reactions corresponding to the chebi of kegg id. Returns [] is no biota reaction is found
-        :rtype: `List[bioa.compound.reaction]` or SQL `select` resutls
-        """
-        
-        try:
-            if self.chebi_id:
-                comp = BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
-            elif self.kegg_id:
-                comp = BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
-            
-            return comp.reactions
-        except:
-            return None
+        c = Compound(name=",".join(names), compartment=compartment)
+        c.chebi_id = ",".join([ comp_.chebi_id or "" for comp_ in comps ])
+        c.kegg_id = ",".join([ comp_.kegg_id or "" for comp_ in comps ])
+        c.charge = str(sum([ float(comp_.charge or 0.0) for comp_ in comps ]))
+        c.formula = ",".join([ comp_.formula or "" for comp_ in comps ])
+        c.mass = str(sum([ float(comp_.mass or 0.0) for comp_ in comps ]))
+        c.monoisotopic_mass = str(sum([ float(comp_.monoisotopic_mass or 0.0) for comp_ in comps ]))
+        if comps[0].position is not None:
+            c.position.x = comps[0].position.x
+            c.position.y = comps[0].position.y
+            c.position.z = comps[0].position.z
+
+        return c
+    

@@ -4,6 +4,7 @@
 # About us: https://gencovery.com
 
 import copy
+import re
 
 from gws_core import BadRequestException
 from gws_core import Utils
@@ -17,6 +18,7 @@ def slugify_id(_id):
     return Utils.slugify(_id, snakefy=True, to_lower=False)
     
 flattening_delimiter = ":"
+EQN_SPLIT_REGEXP = re.compile(" <?=>? ")
 
 # ####################################################################
 #
@@ -152,7 +154,7 @@ class Reaction:
         
         net.add_reaction(self)
 
-    def add_substrate( self, comp: Compound, stoich: float ):
+    def add_substrate( self, comp: Compound, stoich: float, update_if_exists=False ):
         """
         Adds a substrate to the reaction
         
@@ -163,8 +165,21 @@ class Reaction:
         """
         
         if comp.id in self._substrates:
-            raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate", f"Substrate duplicate (id= {comp.id})")
+            if update_if_exists:
+                self._substrates[comp.id]["stoichiometry"] += abs(float(stoich))
+                return
+            else:
+                raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate", f"Substrate duplicate (id= {comp.id})")
         
+        if comp.id in self._products:
+            if update_if_exists:
+                self._products[comp.id]["stoichiometry"] -= abs(float(stoich))
+                if self._products[comp.id]["stoichiometry"] == 0.0:
+                    self.remove_product(comp)
+                return
+            else:
+                raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate", f"Cannot add the substrate. A product with the id already exists (id= {comp.id})")
+
         # add the compound to the reaction network
         if self.network:
             if comp.id not in self.network.compounds:
@@ -175,7 +190,7 @@ class Reaction:
             "stoichiometry": abs(float(stoich))
         }
     
-    def add_product( self, comp: Compound, stoich: float ):
+    def add_product( self, comp: Compound, stoich: float, update_if_exists=False ):
         """
         Adds a product to the reaction
         
@@ -186,8 +201,21 @@ class Reaction:
         """
         
         if comp.id in self._products:
-            raise ProductDuplicate("gena.reaction.Reaction", "add_product", f"Product duplicate (id= {comp.id})")
+            if update_if_exists:
+                self._products[comp.id]["stoichiometry"] += abs(float(stoich))
+                return
+            else:
+                raise ProductDuplicate("gena.reaction.Reaction", "add_product", f"Product duplicate (id= {comp.id})")
         
+        if comp.id in self._substrates:
+            if update_if_exists:
+                self._substrates[comp.id]["stoichiometry"] -= abs(float(stoich))
+                if self._substrates[comp.id]["stoichiometry"] == 0.0:
+                    self.remove_substrate(comp)
+                return
+            else:
+                raise ProductDuplicate("gena.reaction.Reaction", "add_substrate", f"Cannot add the product. A susbtrate with the id already exists (id= {comp.id})")
+
         # add the compound to the reaction network
         if self.network:
             if comp.id not in self.network.compounds:
@@ -348,7 +376,8 @@ class Reaction:
                     e["pathway"] = pwy.data   
             else:
                 e = {} 
-            rxn = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number, 
+            
+            rxn: Reaction = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number, 
                       network=network, 
                       direction=rhea_rxn.direction,
                       enzyme=e)
@@ -358,40 +387,64 @@ class Reaction:
                     rxn.position.y = rhea_rxn.position.y
                     rxn.position.z = rhea_rxn.position.z
                     rxn.position.points = rhea_rxn.position.points
-                    
-            eqn = rhea_rxn.data["equation"]
-            for chebi_id in eqn["substrates"]:
-                stoich =  eqn["substrates"][chebi_id]
-                biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                c = Compound(name=biota_comp.name, compartment=Compound.COMPARTMENT_CYTOSOL)
-                c.chebi_id = biota_comp.chebi_id
-                c.kegg_id = biota_comp.kegg_id
-                c.charge = biota_comp.charge
-                c.formula = biota_comp.formula
-                c.mass = biota_comp.mass
-                c.monoisotopic_mass = biota_comp.monoisotopic_mass
-                if biota_comp.position is not None:
-                    c.position.x = biota_comp.position.x
-                    c.position.y = biota_comp.position.y
-                    c.position.z = biota_comp.position.z
+            
+            tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["definition"])
+            substrate_definition = tab[0].split(" + ")
+            product_definition = tab[1].split(" + ")
 
+            tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["source_equation"])
+            eqn_substrates = tab[0].split(" + ")
+            eqn_products = tab[1].split(" + ")
+
+            count = 0
+            for sub in eqn_substrates:
+                tab = sub.split(" ")
+                if len(tab) == 2:
+                    stoich = tab[0].replace("n","")
+                    if stoich == "":
+                        stoich = 1.0
+                    chebi_ids = tab[1].split(",")
+                else:
+                    stoich = 1.0
+                    chebi_ids = tab[0].split(",")
+
+                biota_comps = []
+                for id_ in chebi_ids:
+                    biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
+                
+                if substrate_definition[count].endswith("(out)"):
+                    compartment = Compound.COMPARTMENT_EXTRACELL
+                else:
+                    compartment=Compound.COMPARTMENT_CYTOSOL
+                
+                c = Compound.merge_compounds(biota_comps, compartment=compartment)
                 rxn.add_substrate(c, stoich)
-            for chebi_id in eqn["products"]:
-                stoich = eqn["products"][chebi_id]
-                biota_comp = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                c = Compound(name=biota_comp.name, compartment=Compound.COMPARTMENT_CYTOSOL)
-                c.chebi_id = biota_comp.chebi_id
-                c.kegg_id = biota_comp.kegg_id
-                c.charge = biota_comp.charge
-                c.formula = biota_comp.formula
-                c.mass = biota_comp.mass
-                c.monoisotopic_mass = biota_comp.monoisotopic_mass
-                if biota_comp.position is not None:
-                    c.position.x = biota_comp.position.x
-                    c.position.y = biota_comp.position.y
-                    c.position.z = biota_comp.position.z
+                count += 1
 
+            count = 0
+            for prod in eqn_products:
+                tab = prod.split(" ")
+
+                if len(tab) == 2:
+                    stoich =  tab[0]
+                    chebi_ids =  tab[1].split(",")
+                else:
+                    stoich =  1
+                    chebi_ids =  tab[0].split(",")
+
+                biota_comps = []
+                for id_ in chebi_ids:
+                    biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
+
+                if product_definition[count].endswith("(out)"):
+                    compartment = Compound.COMPARTMENT_EXTRACELL
+                else:
+                    compartment=Compound.COMPARTMENT_CYTOSOL
+
+                c = Compound.merge_compounds(biota_comps, compartment=compartment)
                 rxn.add_product(c, stoich)
+                count += 1
+
             return rxn
         
         if biota_reaction:
