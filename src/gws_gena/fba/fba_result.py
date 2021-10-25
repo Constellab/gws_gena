@@ -84,7 +84,7 @@ class FBAResult(Resource):
         return pd.concat([val, lb, ub], axis=1)
 
     @view(view_type=TableView, human_name="SVTable")
-    def get_sv_as_table(self, **kwargs) -> TableView:
+    def view_sv_as_table(self, **kwargs) -> TableView:
         table = self.get_sv_as_table(**kwargs)
         return TableView(data=table, **kwargs)
 
