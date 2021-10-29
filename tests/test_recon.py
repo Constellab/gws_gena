@@ -45,13 +45,13 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         gap_filler.set_param('add_sink_reactions', True)
 
         async def assert_results(net, file_name):
-            # file_path = os.path.join(data_dir, file_name+"_net.csv")
-            # with open(file_path, 'w') as f:
-            #     f.write(net.to_csv())
+            file_path = os.path.join(data_dir, file_name+"_net.csv")
+            with open(file_path, 'w') as f:
+                f.write(net.to_csv())
 
-            # file_path = os.path.join(data_dir, file_name+"_net.json")
-            # with open(file_path, 'w') as f:
-            #     json.dump(net.dumps(), f)
+            file_path = os.path.join(data_dir, file_name+"_net.json")
+            with open(file_path, 'w') as f:
+                json.dump(net.dumps(), f)
             
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'r') as f:

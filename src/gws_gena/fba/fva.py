@@ -106,7 +106,7 @@ class FVA(Task):
     __CVXPY_MAX_ITER = 100000
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        self.add_progress_message(message="Creating problem ...")
+        self.log_info_message(message="Creating problem ...")
         bio = inputs["twin"]
         solver = params["solver"]
         relax_qssa = params["relax_qssa"]
@@ -115,7 +115,7 @@ class FVA(Task):
         fluxes_to_minimize = params["fluxes_to_minimize"]
 
         if relax_qssa and solver != "quad":
-            self.add_progress_message(message=f"Change solver to '{solver}' for constrain relaxation.")
+            self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
 
         c, A_eq, b_eq, bounds = FBA.build_problem(
@@ -125,7 +125,7 @@ class FVA(Task):
             fill_gaps_with_sinks=fill_gaps_with_sinks
         )
 
-        self.add_progress_message(message=f"Starting optimization with solver '{solver}' ...")
+        self.log_info_message(message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
             res, warm_solver = FBA.solve_cvxpy( 
                 c, A_eq, b_eq, bounds,
@@ -137,11 +137,11 @@ class FVA(Task):
                 c, A_eq, b_eq, bounds, 
                 solver=solver
             )
-        self.add_progress_message(message=res.message)
+        self.log_info_message(message=res.message)
         if not res.success:
             raise BadRequestException(f"Convergence error. Optimization message: '{res.message}'")
 
-        self.add_progress_message(message=f"Peforming variability analysis around the optimal value using solver '{solver}' ...")
+        self.log_info_message(message=f"Peforming variability analysis around the optimal value using solver '{solver}' ...")
         x0 = res.x
         m = x0.shape[0]
         step = max(1, int(m/10)) # plot only 10 iterations on screen

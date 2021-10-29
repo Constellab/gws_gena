@@ -304,6 +304,8 @@ class Twin(JSONDict):
         twin.description = data.get("description","")
         return twin
 
+    # -- M --
+
     # -- N --
 
     @property

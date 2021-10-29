@@ -82,7 +82,7 @@ class FBA(Task):
     __CVXPY_SOLVER_PRIORITY = [ cp.OSQP, cp.ECOS ]
     
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        self.add_progress_message(message="Creating problem ...")
+        self.log_info_message(message="Creating problem ...")
         twin = inputs["twin"]
         solver = params["solver"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
@@ -91,7 +91,7 @@ class FBA(Task):
         relax_qssa = params["relax_qssa"]
 
         if relax_qssa and solver != "quad":
-            self.add_progress_message(message=f"Change solver to '{solver}' for constrain relaxation.")
+            self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
 
         c, A_eq, b_eq, bounds = self.build_problem(

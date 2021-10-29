@@ -93,14 +93,18 @@ class Compound:
     COMPARTMENT_EXTRACELL  = "e"
     COMPARTMENT_SINK = "s"
 
-    #VALID_COMPARTMENTS     = ["c","n","b","e"]
-    COMPARTMENTS = {
+    # Use BiGG nomenclature for compartments
+    COMPARTMENTS = { 
         "c": {"name": "cytosol", "is_steady": True},
         "n": {"name": "nucleus", "is_steady": True},
         "m": {"name": "mitochondrion", "is_steady": True},
         "b": {"name": "biomass", "is_steady": False},
         "e": {"name": "extracellular", "is_steady": False},
         "s": {"name": "sink", "is_steady": False},
+        "r": {"name": "endoplasmic reticulum", "is_steady": True},
+        "v": {"name": "vacuole", "is_steady": True},
+        "x": {"name": "peroxisome/glyoxysome", "is_steady": True},
+        "g": {"name": "golgi apparatus", "is_steady": True}
     }
 
     LEVEL_MAJOR = "major"
@@ -277,7 +281,6 @@ class Compound:
         "CHEBI:17140": "D-xylulose",
         "CHEBI:57483": "sedoheptulose 7-phosphate(2-)",
         "CHEBI:16897": "D-erythrose 4-phosphate(2-)"
-
     }
 
     def __init__(self, id="", name="", compartment=None, \
@@ -629,7 +632,7 @@ class Compound:
     # -- M --
     
     @classmethod
-    def merge_compounds(self, comps: List['Compound'], compartment=None) -> 'Compound':
+    def merge_compounds(self, comps: List['Compound'], compartment=None, oligomerization=None) -> 'Compound':
         """ Merge a list of compounds (oligomerisation) """
 
         if compartment is None:
@@ -639,6 +642,9 @@ class Compound:
         for comp in comps:
             names.append(comp.name)
         
+        if oligomerization is not None:
+            names.append(oligomerization)
+
         c = Compound(name=",".join(names), compartment=compartment)
         c.chebi_id = ",".join([ comp_.chebi_id or "" for comp_ in comps ])
         c.kegg_id = ",".join([ comp_.kegg_id or "" for comp_ in comps ])

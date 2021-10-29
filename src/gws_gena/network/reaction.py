@@ -19,6 +19,7 @@ def slugify_id(_id):
     
 flattening_delimiter = ":"
 EQN_SPLIT_REGEXP = re.compile(" <?=>? ")
+OLIG_REGEXP = re.compile("\((n(\+\d)?)\)$")
 
 # ####################################################################
 #
@@ -417,7 +418,9 @@ class Reaction:
                 else:
                     compartment=Compound.COMPARTMENT_CYTOSOL
                 
-                c = Compound.merge_compounds(biota_comps, compartment=compartment)
+                tab = re.findall(OLIG_REGEXP, substrate_definition[count])  
+                oligo = tab[0][0] if len(tab) else None
+                c = Compound.merge_compounds(biota_comps, compartment=compartment, oligomerization=oligo)
                 rxn.add_substrate(c, stoich)
                 count += 1
 
@@ -434,14 +437,16 @@ class Reaction:
 
                 biota_comps = []
                 for id_ in chebi_ids:
-                    biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
+                    biota_comps.append( BiotaCompound.get(BiotaCompound.chebi_id == id_) )
 
                 if product_definition[count].endswith("(out)"):
                     compartment = Compound.COMPARTMENT_EXTRACELL
                 else:
                     compartment=Compound.COMPARTMENT_CYTOSOL
 
-                c = Compound.merge_compounds(biota_comps, compartment=compartment)
+                tab = re.findall(OLIG_REGEXP, product_definition[count])  
+                oligo = tab[0][0] if len(tab) else None
+                c = Compound.merge_compounds(biota_comps, compartment=compartment, oligomerization=oligo)
                 rxn.add_product(c, stoich)
                 count += 1
 

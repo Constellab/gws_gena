@@ -79,7 +79,7 @@ class DraftRecon(Task):
         )
 
         total_enzymes = len(enzymes)
-        self.add_progress_message(f"{total_enzymes} enzymes found")
+        self.log_info_message(f"{total_enzymes} enzymes found")
         net = Network()
         counter = 1
         nb_interval = int(total_enzymes/10)
@@ -108,14 +108,14 @@ class DraftRecon(Task):
         net = Network()
         
         total_enzymes = len(ec_list)
-        self.add_progress_message(f"{total_enzymes} enzymes to process")
+        self.log_info_message(f"{total_enzymes} enzymes to process")
         counter = 1
         nb_interval = int(total_enzymes/10)
         perc = 0
         self.update_progress_value(perc, message=f"enzyme {counter} ...")
         for ec in ec_list:
             if (counter % nb_interval) == 0:
-                perc = 100*(total_enzymes/counter)
+                perc = 100*(counter/total_enzymes)
                 self.update_progress_value(perc, message=f"enzyme {counter} ...")
 
             ec = str(ec).strip()

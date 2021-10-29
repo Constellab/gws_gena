@@ -3,7 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import Dict, List
+from typing import Dict, List, TypedDict
 import numpy as np
 import pandas
 from pandas import DataFrame
@@ -20,10 +20,28 @@ from .twin_context import Variable
 #
 # ####################################################################
 
+FBAProblem = TypedDict("FBAProblem",{ 
+    "S": DataFrame, 
+    "C": DataFrame,
+    "b": DataFrame,
+    "C_rel": DataFrame
+})
+
+ObsvMatrices = TypedDict("ObsvMatrices",{ 
+    "C": DataFrame,
+    "b": DataFrame
+})
+
+ReducedMatrices = TypedDict("ReducedMatrices",{ 
+    "K": DataFrame,
+    "Kp": DataFrame,
+    "b": DataFrame
+})
+
 class TwinService:
     
     @classmethod
-    def create_fba_problem(cls, flat_twin: FlatTwin) -> Dict[str, DataFrame]:
+    def create_fba_problem(cls, flat_twin: FlatTwin) -> FBAProblem:
         """
         Creates a FBA problem using a biomdel object
 
@@ -38,12 +56,12 @@ class TwinService:
         
         S = cls.create_stoichiometric_matrix(flat_twin)
         obsv_matrix = cls.create_observation_matrices(flat_twin)
-
-        return {
-            "S": S,
-            "C": obsv_matrix["C"],
-            "b": obsv_matrix["b"]
-        }
+        C = obsv_matrix["C"]
+        b = obsv_matrix["b"]
+        C_rel =  S.to_numpy() @ C.to_numpy().T  # b_ref.T = S * C.T
+        C_rel = DataFrame(data=C_rel.T, index=C.index, columns=S.index)
+        return FBAProblem( S=S, C=C, b=b, C_rel=C_rel )
+ 
     
     @classmethod
     def create_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
@@ -127,7 +145,7 @@ class TwinService:
         return flat_net.compute_output_stoichiometric_matrix()
 
     @classmethod
-    def create_observation_matrices(cls, flat_twin: FlatTwin) -> Dict[str, DataFrame]:
+    def create_observation_matrices(cls, flat_twin: FlatTwin) -> ObsvMatrices:
         """
         Creates the observation matrices (i.e. such as C * y = b, where b is measurement vector)
 
@@ -171,10 +189,7 @@ class TwinService:
                     C.at[meas_id, rxn_id] = coef
                 else:
                     raise BadRequestException("Variables of type metabolite/compound are not supported in context")
-        return {
-            "C": C,
-            "b": b
-        }
+        return ObsvMatrices(C=C,b=b)
 
     @classmethod
     def compute_nullspace(cls, N: DataFrame) -> DataFrame:
@@ -213,6 +228,25 @@ class TwinService:
             columns=E.columns
         )
         return K
+
+    # @classmethod
+    # def compute_reduced_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
+    #     E = TwinService.compute_elementary_flux_modes(flat_twin)
+    #     Ns = TwinService.compute_input_stoichiometric_matrix(flat_twin)
+    #     Np = TwinService.compute_output_stoichiometric_matrix(flat_twin)
+    #     N = pandas.concat([Ns, Np])
+    #     K = DataFrame(
+    #         data=np.matmul(N.values, E.values),
+    #         index=N.index,
+    #         columns=E.columns
+    #     )
+    #     fba_prob = TwinService.create_fba_problem(flat_twin)
+    #     C_rel   = fba_prob["C_rel"]
+    #     C_rel   = C_rel.loc[:, K.index]                      # reduce C_rel and only keep external compounds
+    #     C_rel   = C_rel.loc[:, (C_rel != 0).any(axis=0)]    # remove zero columns
+    #     b       = fba_prob["b"]
+    #     K_prime = K.loc[C_rel.columns, :]                   # reduce K to only keep measured fluxes
+    #     return ReducedMatrices(K=K, Kp=K_prime, b=b)
 
 
 
