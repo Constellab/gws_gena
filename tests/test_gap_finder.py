@@ -1,6 +1,6 @@
 import os, json
 
-from gws_core import Settings, TaskTester, File
+from gws_core import Settings, TaskTester, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Compound, Reaction, Network, TwinContext, Twin, GapFinder
 settings = Settings.retrieve()
@@ -13,7 +13,10 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         organism_dir = os.path.join(data_dir, organism)
         file_path = os.path.join(organism_dir, f"{organism}.json")
-        net = Network.import_from_path(file_path)
+        net = Network.import_from_path(
+            File(path=file_path),
+            ConfigParams()
+        )
 
         tester = TaskTester(
             params = {},

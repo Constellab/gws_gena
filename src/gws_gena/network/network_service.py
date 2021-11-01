@@ -36,7 +36,7 @@ class NetworkService:
         return net.create_stoichiometric_matrix()
 
     @classmethod
-    def create_steady_stoichiometric_matrix(cls, net: Network) -> DataFrame:
+    def create_steady_stoichiometric_matrix(cls, net: Network, ignore_cofactors=False) -> DataFrame:
         """
         Creates the steady stoichiometric matrix of a network
 
@@ -48,7 +48,7 @@ class NetworkService:
 
         if not isinstance(net, Network):
             raise BadRequestException("A netwok is required")
-        return net.create_steady_stoichiometric_matrix()
+        return net.create_steady_stoichiometric_matrix(ignore_cofactors=ignore_cofactors)
 
     @classmethod
     def create_non_steady_stoichiometric_matrix(cls, net: Network) -> DataFrame:

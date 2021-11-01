@@ -3,15 +3,20 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import resource_decorator, task_decorator, Table
-from gws_core import BadRequestException
-from gws_core import File, TableLoader, TableDumper, TableImporter, TableExporter, StrParam, StrRField
+from gws_core import (resource_decorator, task_decorator, Table, ConfigParams,
+                        importer_decorator, exporter_decorator, import_from_path, export_to_path,
+                        BadRequestException, File, TableImporter, TableExporter, StrParam, StrRField)
 
 # ####################################################################
 #
 # Flux Datatable class
 #
 # ####################################################################
+
+FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME = "target"
+FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN_NAME = "upper_bound"
+FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN_NAME = "lower_bound"
+FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME = "confidence_score"
 
 @resource_decorator("FluxTable",
                     human_name="FluxTable", 
@@ -38,13 +43,13 @@ class FluxTable(Table):
     ------------------------------------------------------------------------------------
     ```
     """
-    
-    DEFAULT_TARGET_COLUMN_NAME = "target"
-    DEFAULT_UPPER_BOUND_COLUMN_NAME = "upper_bound"
-    DEFAULT_LOWER_BOUND_COLUMN_NAME = "lower_bound"
-    DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME = "confidence_score"
-    
-    confidence_score_column_name: str = StrRField(default_value=DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME)
+
+    DEFAULT_TARGET_COLUMN_NAME = FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME
+    DEFAULT_UPPER_BOUND_COLUMN_NAME = FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN_NAME
+    DEFAULT_LOWER_BOUND_COLUMN_NAME = FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN_NAME
+    DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME = FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME
+
+    confidence_score_column_name: str = StrRField(default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME)
 
     # -- C --
 
@@ -65,46 +70,42 @@ class FluxTable(Table):
     # -- I --
 
     @classmethod
-    def import_from_path(cls, *args, 
-                target_column_name:str=None, 
-                upper_bound_column_name:str=None, 
-                lower_bound_column_name:str=None, 
-                confidence_score_column_name:str=None, 
-                **kwargs) -> 'FluxTable':
+    @import_from_path(specs = {
+        **TableImporter.config_specs,
+        'target_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME, human_name="Targer column name", short_description="The name of the target column"),
+        'lower_bound_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN_NAME, human_name="Lower bound column name", short_description="The name of the lower-bound column"),
+        'upper_bound_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN_NAME, human_name="Upper bound column name", short_description="The name of the upper-bound column"),
+        'confidence_score_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME, human_name="Confidence score column name", short_description="The name of the upper-bound column"),
+    })
+    def import_from_path(cls, file: File, params: ConfigParams) -> 'FluxTable':
         """ 
         Import from a repository
         
         Additional parameters
         
-        :param target_column_name: The name of the target column
-        :type target_column_name: `str`
-        :param upper_bound_column_name: The name of the upper-bound column
-        :type upper_bound_column_name: `str`
-        :param lower_bound_column_name: The name of the lower-bound column
-        :type lower_bound_column_name: `str`
-        :param confidence_score_column_name: The name of the confidence-score column
-        :type confidence_score_column_name: `str`
-        :param kwargs: Additional parameters passed to the superclass
-        :type kwargs: `dict`
+        :param file: The file to import
+        :type file: `File`
+        :param params: The config params
+        :type params: `ConfigParams`
         :returns: the parsed csv table
         :rtype: FluxTable
         """
         
-        csv_table = super().import_from_path(*args, index_col=0, **kwargs)
-        target_column_name = target_column_name or cls.DEFAULT_TARGET_COLUMN_NAME
-        upper_bound_column_name = upper_bound_column_name or cls.DEFAULT_UPPER_BOUND_COLUMN_NAME
-        lower_bound_column_name = lower_bound_column_name or cls.DEFAULT_LOWER_BOUND_COLUMN_NAME
-        confidence_score_column_name = confidence_score_column_name or cls.DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME
+        index_columns = params.get_value("index_columns") or 0
+        params["index_columns"] = index_columns
+        csv_table = super().import_from_path(file, params)
+
+        target_column_name = params.get_value("target_column_name", cls.DEFAULT_TARGET_COLUMN_NAME)
+        upper_bound_column_name = params.get_value("upper_bound_column_name", cls.DEFAULT_UPPER_BOUND_COLUMN_NAME)
+        lower_bound_column_name = params.get_value("lower_bound_column_name", cls.DEFAULT_LOWER_BOUND_COLUMN_NAME)
+        confidence_score_column_name = params.get_value("confidence_score_column_name", cls.DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME)
 
         if not csv_table.column_exists( target_column_name ):
-            raise BadRequestException(f"Cannot import FluxTable. No target found (no column with name '{target_column_name}')")
-            
+            raise BadRequestException(f"Cannot import FluxTable. No target found (no column with name '{target_column_name}')")            
         if not csv_table.column_exists( upper_bound_column_name ):
-            raise BadRequestException(f"Cannot import FluxTable. No upper bound found (no column with name '{upper_bound_column_name}')")
-            
+            raise BadRequestException(f"Cannot import FluxTable. No upper bound found (no column with name '{upper_bound_column_name}')")         
         if not csv_table.column_exists( lower_bound_column_name ):
             raise BadRequestException(f"Cannot import FluxTable. No lower bound found (no column with name '{lower_bound_column_name}')")
-            
         if not csv_table.column_exists( confidence_score_column_name ):
             raise BadRequestException(f"Cannot import FluxTable. No confidence score found (no column with name '{confidence_score_column_name}')")
         
@@ -120,17 +121,9 @@ class FluxTable(Table):
 #
 # ####################################################################
     
-@task_decorator("FluxImporter")
+@importer_decorator("FluxImporter", resource_type=FluxTable)
 class FluxImporter(TableImporter):
-    input_specs = {'file' : File}
-    output_specs = {'data': FluxTable}
-    config_specs = {
-        **TableImporter.config_specs,
-        'target_column_name': StrParam(default_value=FluxTable.DEFAULT_TARGET_COLUMN_NAME, human_name="Targer column name", short_description="The name of the target column"),
-        'lower_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_LOWER_BOUND_COLUMN_NAME, human_name="Lower bound column name", short_description="The name of the lower-bound column"),
-        'upper_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_UPPER_BOUND_COLUMN_NAME, human_name="Upper bound column name", short_description="The name of the upper-bound column"),
-        'confidence_score_column_name': StrParam(default_value=FluxTable.DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME, human_name="Confidence score column name", short_description="The name of the upper-bound column"),
-    }
+    pass
 
 # ####################################################################
 #
@@ -138,42 +131,6 @@ class FluxImporter(TableImporter):
 #
 # ####################################################################
 
-@task_decorator("FluxExporter")
+@exporter_decorator("FluxExporter", resource_type=FluxTable)
 class FluxExporter(TableExporter):
-    input_specs = {'data': FluxTable}
-    output_specs = {'file' : File}
-    config_specs = {
-        **TableExporter.config_specs,
-    }
-
-# ####################################################################
-#
-# Loader class
-#
-# ####################################################################
-
-@task_decorator("FluxLoader")
-class FluxLoader(TableLoader):
-    input_specs = {}
-    output_specs = {'data' : FluxTable}
-    config_specs = {
-        **TableLoader.config_specs,
-        'target_column_name': StrParam(default_value=FluxTable.DEFAULT_TARGET_COLUMN_NAME, human_name="Target column name", short_description="The name of the target column"),
-        'lower_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_LOWER_BOUND_COLUMN_NAME, human_name="Lower bound column name", short_description="The name of the lower-bound column"),
-        'upper_bound_column_name': StrParam(default_value=FluxTable.DEFAULT_UPPER_BOUND_COLUMN_NAME, human_name="Upper bound column name", short_description="The name of the upper-bound column"),
-        'confidence_score_column_name': StrParam(default_value=FluxTable.DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME, human_name="Confidence score column name", short_description="The name of the upper-bound column"),
-    }
-
-# ####################################################################
-#
-# Dumper class
-#
-# ####################################################################
-
-@task_decorator("FluxDumper")
-class FluxDumper(TableDumper):
-    input_specs = {'data' : FluxTable}
-    output_specs = {}
-    config_specs = {
-        **TableDumper.config_specs,
-    }
+    pass

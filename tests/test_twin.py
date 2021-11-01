@@ -5,7 +5,7 @@ from pandas import DataFrame
 import pandas as pd
 import numpy
 
-from gws_core import Settings, GTest
+from gws_core import Settings, GTest, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Network
 from gws_gena import Twin, FlatTwin, TwinContext
@@ -21,10 +21,15 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         data_dir = os.path.join(data_dir, "small_net")
 
         file_path = os.path.join(data_dir, "small_net.json")
-        net = Network.import_from_path(file_path)
-
+        net = Network.import_from_path(
+            File(path=file_path),
+            params = ConfigParams()
+        )
         file_path = os.path.join(data_dir, "small_context.json")
-        ctx = TwinContext.import_from_path(file_path)
+        ctx = TwinContext.import_from_path(
+            File(path=file_path),
+            params = ConfigParams()
+        )
 
         twin = Twin()
         twin.add_network(net)
@@ -85,17 +90,19 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         )
         self.assertTrue(problem["b"].equals(expected_B))
 
-        print(problem["b_rel"])
-
     def test_toy_twin(self):
-        return
         self.print("Test Toy Twin")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
 
-        net = Network.import_from_path(os.path.join(data_dir, "toy.json"))
-        ctx = TwinContext.import_from_path(os.path.join(data_dir, "toy_context.json"))
-
+        net = Network.import_from_path(
+            File(path=os.path.join(data_dir, "toy.json")),
+            ConfigParams()
+        )
+        ctx = TwinContext.import_from_path(
+            File(path=os.path.join(data_dir, "toy_context.json")),
+            ConfigParams()
+        )
         twin = Twin()
         twin.add_network(net)
         twin.add_context(ctx, related_network=net)
@@ -175,8 +182,14 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "bastin")
 
-        net = Network.import_from_path(os.path.join(data_dir, "bastin_network.json"))
-        ctx = TwinContext.import_from_path(os.path.join(data_dir, "bastin_context.json"))
+        net = Network.import_from_path(
+            File(path=os.path.join(data_dir, "bastin_network.json")),
+            ConfigParams()
+        )
+        ctx = TwinContext.import_from_path(
+            File(path=os.path.join(data_dir, "bastin_context.json")),
+            ConfigParams()
+        )
 
         twin = Twin()
         twin.add_network(net)

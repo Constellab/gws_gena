@@ -80,7 +80,7 @@ class TwinService:
         return flat_net.create_stoichiometric_matrix()
 
     @classmethod
-    def create_steady_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
+    def create_steady_stoichiometric_matrix(cls, flat_twin: FlatTwin, ignore_cofactors=False) -> DataFrame:
         """
         Creates the steady stoichiometric matrix using a twin object
 
@@ -93,7 +93,7 @@ class TwinService:
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("Cannot create the steady stoichiometric matrix. A flat model is required")
         flat_net = next(iter(flat_twin.networks.values()))
-        return flat_net.create_steady_stoichiometric_matrix()
+        return flat_net.create_steady_stoichiometric_matrix(ignore_cofactors=ignore_cofactors)
 
     @classmethod
     def create_non_steady_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:

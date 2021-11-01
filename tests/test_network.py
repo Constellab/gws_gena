@@ -2,7 +2,7 @@
 import os, json
 from pandas import DataFrame
 
-from gws_core import GTest, Settings
+from gws_core import GTest, Settings, ConfigParams, File
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Network, Compound, Reaction, Twin, TwinContext
 settings = Settings.retrieve()
@@ -15,7 +15,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         data_dir = os.path.join(data_dir, "small_net")
         
         file_path = os.path.join(data_dir, "small_net.json")
-        net = Network.import_from_path(file_path)
+        net = Network.import_from_path(File(path=file_path), params=ConfigParams())
         json_data = net.dumps()
         print(json_data)        
         print(net.loads(json_data))
@@ -74,7 +74,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "ecoli")
         file_path = os.path.join(data_dir, "ecoli.json")
-        net = Network.import_from_path(file_path)
+        net = Network.import_from_path(File(path=file_path), params=ConfigParams())
         print("ecoli successffuly imported")
         self.assertEqual(len(net.compounds), 72)
         self.assertEqual(len(net.reactions), 95)

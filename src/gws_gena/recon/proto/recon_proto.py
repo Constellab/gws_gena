@@ -11,7 +11,7 @@ from gws_core import Settings, Source, Sink, FIFO2, Interface, Outerface
 
 from ...data.biomass_table import BiomassImporter
 from ...data.medium_table import MediumImporter
-from ...data.ec_number_table import ECNumberImporter
+from ...data.ec_table import ECTableImporter
 from ..recon import DraftRecon
 from ..gap_filler import GapFiller
 
@@ -20,7 +20,7 @@ class ReconProto(Protocol):
     
     def configure_protocol(self, config_params: ConfigParams) -> None:
         # ec
-        ec_importer: ProcessSpec = self.add_process(ECNumberImporter, 'ec_importer')
+        ec_importer: ProcessSpec = self.add_process(ECTableImporter, 'ec_importer')
         ec_importer.set_param("ec_column_name", "EC Number")
         # biomass
         biomass_importer: ProcessSpec = self.add_process(BiomassImporter, 'biomass_importer')
@@ -35,9 +35,9 @@ class ReconProto(Protocol):
         sink: ProcessSpec = self.add_process(Sink, 'sink')
         
         self.add_connectors([
-            (ec_importer>>"data", recon<<"ec_number_table"),
-            (biomass_importer>>"data", recon<<"biomass_table"),
-            (medium_importer>>"data", recon<<"medium_table"),
+            (ec_importer>>"resource", recon<<"ec_table"),
+            (biomass_importer>>"resource", recon<<"biomass_table"),
+            (medium_importer>>"resource", recon<<"medium_table"),
             (recon>>"network", gap_filler<<"network"),
             (gap_filler>>"network", sink<<"resource")
         ])

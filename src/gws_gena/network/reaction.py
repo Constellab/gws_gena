@@ -44,7 +44,7 @@ class ReactionPosition:
     x: float = None
     y: float = None
     z: float = None
-    points: str = None
+    points: dict = None
 
     def __init__(self):
         self.x = None
@@ -387,7 +387,7 @@ class Reaction:
                     rxn.position.x = rhea_rxn.position.x
                     rxn.position.y = rhea_rxn.position.y
                     rxn.position.z = rhea_rxn.position.z
-                    rxn.position.points = rhea_rxn.position.points
+                    rxn.position.points = rhea_rxn.position.points or {}
             
             tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["definition"])
             substrate_definition = tab[0].split(" + ")

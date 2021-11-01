@@ -3,15 +3,18 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import resource_decorator, task_decorator, Table
-from gws_core import BadRequestException
-from gws_core import File, TableLoader, TableDumper, TableImporter, TableExporter, StrParam, StrRField
+from gws_core import (resource_decorator, task_decorator, Table, 
+                    BadRequestException, ConfigParams,
+                    import_from_path, export_to_path, importer_decorator, exporter_decorator,
+                    File, TableImporter, TableExporter, StrParam, StrRField)
 
 # ####################################################################
 #
 # Medium Datatable class
 #
 # ####################################################################
+
+MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN_NAME = "chebi_id"
 
 @resource_decorator("MediumTable",
                     human_name="MediumTable", 
@@ -36,7 +39,7 @@ class MediumTable(Table):
     ```
     """
     
-    DEFAULT_CHEBI_COLUMN_NAME = "chebi_id"
+    DEFAULT_CHEBI_COLUMN_NAME = MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN_NAME
     chebi_column_name: str = StrRField(default_value=DEFAULT_CHEBI_COLUMN_NAME)
 
     # -- E --
@@ -49,23 +52,29 @@ class MediumTable(Table):
     # -- I --
 
     @classmethod
-    def import_from_path(cls, *args, chebi_column_name:str=None, **kwargs) -> 'MediumTable':
+    @import_from_path(specs = {
+        **TableImporter.config_specs,
+        'chebi_column_name': StrParam(default_value=MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN_NAME, human_name="CheBI column name", short_description="The CheBI ID column name"),
+    })
+    def import_from_path(cls, file: File, params: ConfigParams) -> 'MediumTable':
         """ 
         Import from a repository
         
         Additional parameters
         
-        :param chebi_column_name: The name of the column containing the CheBI IDs
-        :type chebi_column_name: `str`
-        :param kwargs: Additional parameters passed to the superclass
-        :type kwargs: `dict`
-        :returns: the parsed csv table
+        :param file: The file to import
+        :type file: `File`
+        :param params: The config params
+        :type params: `ConfigParams`
+        :returns: the parsed medium table
         :rtype: MediumTable
         """
         
-        csv_table = super().import_from_path(*args, index_col=0, **kwargs)
-        chebi_column_name = chebi_column_name or cls.DEFAULT_CHEBI_COLUMN_NAME
+        index_columns = params.get_value("index_columns") or 0
+        params["index_columns"] = index_columns
+        csv_table = super().import_from_path(file, params)
 
+        chebi_column_name = params.get_value("chebi_column_name", cls.DEFAULT_CHEBI_COLUMN_NAME)
         if not csv_table.column_exists( chebi_column_name ):
             raise BadRequestException(f"Cannot import MediumTable. No chebi ids found (no column with name '{chebi_column_name}')")
         
@@ -78,14 +87,9 @@ class MediumTable(Table):
 #
 # ####################################################################
     
-@task_decorator("MediumImporter")
+@importer_decorator("MediumImporter", resource_type=MediumTable)
 class MediumImporter(TableImporter):
-    input_specs = {'file' : File}
-    output_specs = {'data': MediumTable}
-    config_specs = {
-        **TableImporter.config_specs,
-        'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, human_name="CheBI column name", short_description="The CheBI ID column name"),
-    }
+    pass
 
 # ####################################################################
 #
@@ -93,39 +97,6 @@ class MediumImporter(TableImporter):
 #
 # ####################################################################
 
-@task_decorator("MediumExporter")
+@exporter_decorator("MediumExporter", resource_type=MediumTable)
 class MediumExporter(TableExporter):
-    input_specs = {'data': MediumTable}
-    output_specs = {'file' : File}
-    config_specs = {
-        **TableExporter.config_specs,
-    }
-
-# ####################################################################
-#
-# Loader class
-#
-# ####################################################################
-
-@task_decorator("MediumLoader")
-class MediumLoader(TableLoader):
-    input_specs = {}
-    output_specs = {'data' : MediumTable}
-    config_specs = {
-        **TableLoader.config_specs,
-        'chebi_column_name': StrParam(default_value=MediumTable.DEFAULT_CHEBI_COLUMN_NAME, human_name="CheBI column name", short_description="The CheBI ID column name"),
-    }
-
-# ####################################################################
-#
-# Dumper class
-#
-# ####################################################################
-
-@task_decorator("MediumDumper")
-class MediumDumper(TableDumper):
-    input_specs = {'data' : MediumTable}
-    output_specs = {}
-    config_specs = {
-        **TableDumper.config_specs,
-    }
+    pass

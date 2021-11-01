@@ -30,8 +30,8 @@ class FVAProto(Protocol):
         twin_annotator: ProcessSpec = self.add_process(TwinAnnotator, 'twin_annotator')
 
         self.add_connectors([
-            (network_importer>>"data", twin_builder<<"network"),
-            (context_importer>>"data", twin_builder<<"context"),
+            (network_importer>>"resource", twin_builder<<"network"),
+            (context_importer>>"resource", twin_builder<<"context"),
             (twin_builder>>"twin", fva<<"twin"),
             (twin_builder>>"twin", twin_annotator<<"twin"),
             (fva>>"result", twin_annotator<<"fba_result")

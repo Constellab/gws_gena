@@ -99,9 +99,10 @@ class FVA(Task):
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The list of fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value="[]", human_name="Fluxes to minimize", short_description="The list of fluxes to minimize"),
-        "solver": StrParam(default_value="highs", allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"], human_name="Solver", short_description="The optimization solver"),
+        "solver": StrParam(default_value="highs", visibility="protected", allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"], human_name="Solver", short_description="The optimization solver"),
         "fill_gaps_with_sinks": BoolParam(default_value=False, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
-        "relax_qssa": BoolParam(default_value=False, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain. False otherwise.")
+        "relax_qssa": BoolParam(default_value=False, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain (quad solver is used). False otherwise."),
+        "ignore_cofactors": BoolParam(default_value=False, human_name="Ignore cofactors", short_description="True to ignore cofactors quasi-steady state for cofactors. False otherwise.")   
     }
     __CVXPY_MAX_ITER = 100000
 
@@ -113,6 +114,7 @@ class FVA(Task):
         fill_gaps_with_sinks = params["fill_gaps_with_sinks"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
+        ignore_cofactors = params["ignore_cofactors"]
 
         if relax_qssa and solver != "quad":
             self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
@@ -122,7 +124,8 @@ class FVA(Task):
             bio, 
             fluxes_to_maximize=fluxes_to_maximize, 
             fluxes_to_minimize=fluxes_to_minimize,
-            fill_gaps_with_sinks=fill_gaps_with_sinks
+            fill_gaps_with_sinks=fill_gaps_with_sinks,
+            ignore_cofactors=ignore_cofactors
         )
 
         self.log_info_message(message=f"Starting optimization with solver '{solver}' ...")

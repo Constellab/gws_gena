@@ -3,6 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import os
 import json
 import uuid
 from typing import List, Dict, TypedDict
@@ -10,9 +11,10 @@ from pathlib import Path
 import copy
 
 from gws_core import (BadRequestException, Resource, resource_decorator, 
-                        task_decorator, Utils, FileImporter, FileExporter, 
-                        FileLoader, FileDumper, File, StrParam, 
-                        StrRField, DictRField)
+                        task_decorator, Utils, ResourceImporter, ResourceExporter, 
+                        File, StrParam, importer_decorator, exporter_decorator,
+                        import_from_path, export_to_path,
+                        StrRField, DictRField, ConfigParams)
 
 def slugify_id(_id):
     return Utils.slugify(_id, snakefy=True, to_lower=False)
@@ -199,19 +201,23 @@ class TwinContext(Resource):
         
     # -- E --
 
-    def export_to_path(self, file_path: str, file_format:str = ".json", prettify: bool=False):
+    @export_to_path(specs={
+        'file_name': StrParam(default_value="context.json", short_description="File name"),
+        #'file_format': StrParam(default_value=".json", short_description="File format"),
+    })
+    def export_to_path(self, dest_dir: str, params: ConfigParams):
         """ 
         Export to a give repository
 
         :param file_path: The destination file path
         :type file_path: File
         """
-    
+
+        file_name = params.get_value("file_name", "context.json")
+        #file_format = params.get_value("file_format", ".json")
+        file_path = os.path.join(dest_dir, file_name)
         with open(file_path, "w") as f:
-            if prettify:
-                json.dump(self.dumps(), f, indent=4)
-            else:
-                json.dump(self.dumps(), f)
+            json.dump(self.dumps(), f)
 
     # -- G --
     
@@ -231,7 +237,10 @@ class TwinContext(Resource):
     # -- I --
 
     @classmethod
-    def import_from_path(cls, file_path: str, file_format:str = ".json") -> 'TwinContext':
+    @import_from_path(specs={
+        'file_format': StrParam(default_value=".json", short_description="File format"),
+    })
+    def import_from_path(cls, file: File, params: ConfigParams) -> 'TwinContext':
         """ 
         Import from a repository
  
@@ -239,9 +248,11 @@ class TwinContext(Resource):
         :rtype: TwinContext
         """
 
-        file_extension = Path(file_path).suffix
+        file_format = params.get_value("file_format",".json")
+        file_extension = Path(file.path).suffix or file_format
+        file_extension = Path(file.path).suffix
         if file_extension in [".json"] or file_format in [".json"]:
-            with open(file_path, "r") as f:
+            with open(file.path, "r") as f:
                 data = json.load(f)
         return cls.loads(data)
 
@@ -279,13 +290,9 @@ class TwinContext(Resource):
 #
 # ####################################################################
 
-@task_decorator("ContextImporter")
-class ContextImporter(FileImporter):
-    input_specs = {'file' : File}
-    output_specs = {'data': TwinContext}
-    config_specs = {
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format")
-    }
+@importer_decorator("ContextImporter", resource_type=TwinContext)
+class ContextImporter(ResourceImporter):
+    pass
 
 # ####################################################################
 #
@@ -293,41 +300,6 @@ class ContextImporter(FileImporter):
 #
 # ####################################################################
 
-@task_decorator("ContextExporter")
-class ContextExporter(FileExporter):
-    input_specs = {'data': TwinContext}
-    output_specs = {'file' : File}
-    config_specs = {
-        'file_name': StrParam(default_value='network.json', human_name="File name", short_description="Destination file name in the store"),
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
-    }
-    
-# ####################################################################
-#
-# Loader class
-#
-# ####################################################################
-
-@task_decorator("ContextLoader")
-class ContextLoader(FileLoader):
-    input_specs = {}
-    output_specs = {'data' : TwinContext}
-    config_specs = {
-        'file_path': StrParam(default_value=None, human_name="File path", short_description="Location of the file to import"),
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
-    }
-    
-# ####################################################################
-#
-# Dumper class
-#
-# ####################################################################
-
-@task_decorator("ContextDumper")
-class ContextDumper(FileDumper):
-    input_specs = {'data' : TwinContext}
-    output_specs = {}
-    config_specs = {
-        'file_path': StrParam(default_value=None, human_name="File path", short_description="Destination of the exported file"),
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
-    }
+@exporter_decorator("ContextExporter", resource_type=TwinContext)
+class ContextExporter(ResourceExporter):
+    pass

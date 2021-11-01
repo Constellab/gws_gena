@@ -1,5 +1,5 @@
 #network
-from .network.network import Network, NetworkLoader, NetworkDumper, NetworkImporter, NetworkExporter
+from .network.network import Network, NetworkImporter, NetworkExporter
 from .network.network_merger import NetworkMerger
 from .network.reaction import Reaction
 from .network.compound import Compound
@@ -16,10 +16,10 @@ from .twin.twin_context_builder import TwinContext, TwinContextBuilder
 from .twin.twin_service import TwinService
 
 # table
-from .data.biomass_table import BiomassTable, BiomassDumper, BiomassExporter, BiomassImporter, BiomassLoader
-from .data.ec_number_table import ECNumberTable, ECNumberDumper, ECNumberExporter, ECNumberImporter, ECNumberLoader
-from .data.flux_table import FluxTable, FluxDumper, FluxExporter, FluxImporter, FluxLoader
-from .data.medium_table import MediumTable, MediumDumper, MediumExporter, MediumImporter, MediumLoader 
+from .data.biomass_table import BiomassTable, BiomassExporter, BiomassImporter
+from .data.ec_table import ECTable, ECTableExporter, ECTableImporter
+from .data.flux_table import FluxTable, FluxExporter, FluxImporter
+from .data.medium_table import MediumTable, MediumExporter, MediumImporter 
 
 # fba
 from .fba.fba import FBA

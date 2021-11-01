@@ -4,7 +4,7 @@
 # About us: https://gencovery.com
 
 from gws_core import task_decorator, ConfigParams, Task, TaskOutputs, TaskInputs
-from ..data.ec_number_table import ECNumberTable
+from ..data.ec_table import ECTable
 from ..network.network import Network
 
 @task_decorator("ReactionAdder")
@@ -15,7 +15,7 @@ class ReactionAdder(Task):
     Add a list of reactions to an existing network
     """
     
-    input_specs = { 'network': (Network,), 'ec_number_table': (ECNumberTable,) }
+    input_specs = { 'network': (Network,), 'ec_table': (ECTable,) }
     output_specs = { 'network': (Network,) }
     config_specs = {}
 

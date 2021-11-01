@@ -3,26 +3,24 @@ import os, json
 
 from gws_core import Settings, Protocol, IExperiment, Experiment, File, ProcessSpec, ConfigParams, protocol_decorator
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import NetworkMerger, Twin, TwinContext, NetworkLoader
+from gws_gena import NetworkMerger, Twin, TwinContext, NetworkImporter
 
 settings = Settings.retrieve()
 
 @protocol_decorator("MergerProtocol")
 class MergerProtocol(Protocol):
     def configure_protocol(self, config_params: ConfigParams) -> None:
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
-        
-        loader_1: ProcessSpec = self.add_process(NetworkLoader, 'loader_1')
-        loader_1.set_param("file_path", os.path.join(data_dir, "recon", "recon_net.json"))
-
-        loader_2: ProcessSpec = self.add_process(NetworkLoader, 'loader_2')
-        loader_2.set_param("file_path", os.path.join(data_dir, "network_merger", "addon.json"))
+        loader_1: ProcessSpec = self.add_process(NetworkImporter, 'loader_1')
+        loader_2: ProcessSpec = self.add_process(NetworkImporter, 'loader_2')
         merger: ProcessSpec = self.add_process(NetworkMerger, 'merger')
 
         self.add_connectors([
-            (loader_1>>"data", merger<<"network_1"),
-            (loader_2>>"data", merger<<"network_2")
+            (loader_1>>"resource", merger<<"network_1"),
+            (loader_2>>"resource", merger<<"network_2")
         ])
+
+        self.add_interface('file1', loader_1, 'file')
+        self.add_interface('file2', loader_2, 'file')
 
 class TestMerge(BaseTestCaseUsingFullBiotaDB):
     
@@ -32,6 +30,10 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         experiment = IExperiment(MergerProtocol)
         proto = experiment.get_protocol()
         merger = proto.get_process("merger")
+
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        proto.set_input('file1',File(path=os.path.join(data_dir, "recon", "recon_net.json")))
+        proto.set_input('file2',File(path=os.path.join(data_dir, "network_merger", "addon.json")))
 
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         result_dir = os.path.join(data_dir, "network_merger")
@@ -59,6 +61,8 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
                 f.write(table.to_csv())
 
         await experiment.run()
+
         net = merger.get_output("network")
         file_name = "merger"
+
         await assert_results(net, file_name)

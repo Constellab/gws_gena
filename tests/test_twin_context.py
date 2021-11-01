@@ -1,7 +1,7 @@
 
 import os, json
 
-from gws_core import Settings, GTest, Experiment, ExperimentService, TaskTester
+from gws_core import Settings, GTest, Experiment, ExperimentService, TaskTester, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_biota import Compound as BiotaCompound
 from gws_gena import Network, Compound, Reaction
@@ -17,7 +17,7 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
         file_path = os.path.join(data_dir, "toy_context.json")
-        ctx = TwinContext.import_from_path(file_path)
+        ctx = TwinContext.import_from_path(File(path=file_path), params=ConfigParams())
 
         with open(file_path) as f:
             data = json.load(f)
@@ -38,11 +38,11 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         
         # flux
         file_path = os.path.join(data_dir, "toy_flux_data.csv")
-        flux_data = FluxTable.import_from_path(file_path, delimiter=",")
-        
+        flux_data = FluxTable.import_from_path(File(path=file_path), params=ConfigParams({"delimiter":","}))
+
         # network
         file_path = os.path.join(data_dir, "toy.json")
-        net = Network.import_from_path(file_path)
+        net = Network.import_from_path(File(path=file_path), params=ConfigParams())
 
         # experiment
         tester = TaskTester(

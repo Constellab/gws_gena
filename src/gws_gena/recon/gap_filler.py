@@ -4,7 +4,6 @@
 # About us: https://gencovery.com
 
 from gws_core import Task, task_decorator
-from gws_core import Logger
 from gws_core import BadRequestException, StrParam, BoolParam, ConfigParams, TaskInputs, TaskOutputs
 
 from gws_biota import Compound as BiotaCompound
@@ -58,23 +57,21 @@ class GapFiller(Task):
         i = 0
         while True:
             i += 1
-            Logger.progress(f"Doing pass {i} ...")
+            self.log_info_message(f"Doing pass {i} ...")
             _nb_filled = self.__fill_gaps_with_tax(output_net, params)
             if _nb_filled <= 1:
                 message = f"Pass {i} done: {_nb_filled} gap filled."
             else:
                 message = f"Pass {i} done: {_nb_filled} gaps filled."
-            if i < 100:
-                self.update_progress_value(i+1, message=message)
-            Logger.progress(message)
+            self.log_info_message(message)
             if not _nb_filled:
                 break    
         add_sink_reactions = params["add_sink_reactions"]
         if add_sink_reactions:
-            Logger.progress(f"Adding sink reactions ...")
+            self.log_info_message(f"Adding sink reactions ...")
             tf = params["biomass_and_medium_gaps_only"]
             _nb_filled = SinkHelper.fill_gaps_with_sinks(output_net, biomass_and_medium_gaps_only=tf)
-            Logger.progress(f"Done: {_nb_filled} gaps filled with sink reactions.")
+            self.log_info_message(f"Done: {_nb_filled} gaps filled with sink reactions.")
         return {"network": output_net}
 
     def __fill_gaps_with_tax(self, net, params):

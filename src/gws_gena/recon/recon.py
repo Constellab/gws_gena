@@ -14,7 +14,7 @@ from ..network.compound import Compound
 from ..network.reaction import Reaction
 from ..data.biomass_table import BiomassTable
 from ..data.medium_table import MediumTable
-from ..data.ec_number_table import ECNumberTable
+from ..data.ec_table import ECTable
 
 @task_decorator("DraftRecon")
 class DraftRecon(Task):
@@ -39,7 +39,7 @@ class DraftRecon(Task):
     """
     
     input_specs = { 
-        'ec_number_table': OptionalIn(ECNumberTable,), 
+        'ec_table': OptionalIn(ECTable,), 
         'biomass_table': OptionalIn(BiomassTable), 
         'medium_table': OptionalIn(MediumTable) 
     }
@@ -59,7 +59,7 @@ class DraftRecon(Task):
 
     def _create_network(self):
         tax_id = self._params['tax_id']
-        if 'ec_number_table' in self._inputs:
+        if 'ec_table' in self._inputs:
             return self._create_network_with_ec_list()
         elif tax_id:
             return self._create_network_without_ec_list()
@@ -82,7 +82,7 @@ class DraftRecon(Task):
         self.log_info_message(f"{total_enzymes} enzymes found")
         net = Network()
         counter = 1
-        nb_interval = int(total_enzymes/10)
+        nb_interval = int(total_enzymes/10) + 1
         perc = 0
         self.update_progress_value(perc, message=f"enzyme {counter} ...")
         for enzyme in enzymes:
@@ -101,16 +101,16 @@ class DraftRecon(Task):
         return net
 
     def _create_network_with_ec_list(self):
-        ec_number_table = self._inputs['ec_number_table']
+        ec_table = self._inputs['ec_table']
         tax_id = self._params['tax_id']
-        ec_list = ec_number_table.get_ec_numbers(rtype="list")
+        ec_list = ec_table.get_ec_numbers(rtype="list")
         tax_search_method = self._params['tax_search_method']
         net = Network()
         
         total_enzymes = len(ec_list)
         self.log_info_message(f"{total_enzymes} enzymes to process")
         counter = 1
-        nb_interval = int(total_enzymes/10)
+        nb_interval = int(total_enzymes/10) + 1
         perc = 0
         self.update_progress_value(perc, message=f"enzyme {counter} ...")
         for ec in ec_list:

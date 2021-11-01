@@ -43,7 +43,6 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             th, p = result.compute_zero_flux_threshold()
             print(f"sv_mean = {sv.mean()}, sv_std = {sv.std()}, sv_th={th}, sv_p = {p}")
 
-
             if solver == "quad":
                 relax_dir = "relax" if relax_qssa else "no-relax"
             else:
@@ -172,7 +171,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         # ecoli
         organism = "ecoli"
         self.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
-        run_fba(organism=organism, solver="highs")
+        await run_fba(organism=organism, solver="highs")
         for relax in [False, True]:
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             await run_fba(organism=organism, solver="quad", relax_qssa=relax)

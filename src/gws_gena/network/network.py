@@ -3,6 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import os
 import re
 import json
 import uuid
@@ -13,8 +14,9 @@ import numpy as np
 import copy
 from typing import TypedDict, Optional
 
-from gws_core import (FileImporter, FileExporter, FileLoader, FileDumper, 
-                        File, Resource, resource_decorator, task_decorator, 
+from gws_core import (ResourceImporter, ResourceExporter, import_from_path, export_to_path,
+                        importer_decorator, exporter_decorator,
+                        File, Resource, resource_decorator, task_decorator, ConfigParams,
                         StrParam, StrRField, RField, DictRField, 
                         BadRequestException, view, TableView, JSONView)
 from gws_biota import EnzymeClass, Taxonomy as BiotaTaxo
@@ -254,9 +256,9 @@ class Network(Resource):
 
         return S
         
-    def create_steady_stoichiometric_matrix(self) -> DataFrame:
+    def create_steady_stoichiometric_matrix(self,ignore_cofactors=False) -> DataFrame:
         S = self.create_stoichiometric_matrix()
-        names = list(self.get_steady_compounds().keys())
+        names = list(self.get_steady_compounds(ignore_cofactors=ignore_cofactors).keys())
         return S.loc[names, :]
 
     def create_non_steady_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
@@ -377,7 +379,11 @@ class Network(Resource):
     
     # -- E --
     
-    def export_to_path(self, file_path: str, file_format:str = None):
+    @export_to_path(specs={
+        'file_name': StrParam(default_value="network.json", short_description="File name"),
+        'file_format': StrParam(default_value=".json", short_description="File format"),
+    })
+    def export_to_path(self, dest_dir: str, params: ConfigParams):
         """ 
         Export the network to a repository
 
@@ -385,7 +391,10 @@ class Network(Resource):
         :type file_path: str
         """
         
-        file_extension = Path(file_path).suffix
+        file_name = params.get_value("file_name", "network.json")
+        file_format = params.get_value("file_format", ".json")
+        file_extension = Path(file_name).suffix or file_format
+        file_path = os.path.join(dest_dir, file_name)
         with open(file_path, 'r') as fp:
             if file_extension in [".json"] or file_format == ".json":
                 data = self.dumps()
@@ -599,7 +608,7 @@ class Network(Resource):
                 comps[name] = self.compounds[name]
         return comps
 
-    def get_steady_compounds(self) -> Dict[str, Compound]:
+    def get_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
         """ 
         Get the steady compounds
         
@@ -611,7 +620,10 @@ class Network(Resource):
         for name in self.compounds:
             comp = self.compounds[name]
             if comp.is_steady:
-                comps[name] = self.compounds[name]
+                if ignore_cofactors and comp.is_cofactor:
+                    continue
+                else:
+                    comps[name] = self.compounds[name]
         return comps
 
     def get_non_steady_compounds(self) -> Dict[str, Compound]:
@@ -664,7 +676,10 @@ class Network(Resource):
     # -- I --
 
     @classmethod
-    def import_from_path(cls, file_path: str, file_format:str = None) -> 'Network':
+    @import_from_path(specs={
+        'file_format': StrParam(default_value=".json", short_description="File format"),
+    })
+    def import_from_path(cls, file: File, params: ConfigParams) -> 'Network':
         """ 
         Import a network from a repository
         
@@ -675,13 +690,14 @@ class Network(Resource):
         """
 
         net: Network
-        file_extension = Path(file_path).suffix
+        file_format = params.get_value("file_format",".json")
+        file_extension = Path(file.path).suffix or file_format
         if file_extension in [".json"] or file_format == ".json":
-            with open(file_path, 'r') as fp:
+            with open(file.path, 'r') as fp:
                 try:
                     _json = json.load(fp)
                 except Exception as err:
-                    raise BadRequestException(f"Cannot load JSON file {file_path}. Error: {err}")  
+                    raise BadRequestException(f"Cannot load JSON file {file.path}. Error: {err}")  
                 
                 if _json.get("reactions"):
                     # is a raw dump network (e.g. BIGG database, classical bioinformatics exchange files)
@@ -1104,13 +1120,9 @@ class Network(Resource):
 #
 # ####################################################################
     
-@task_decorator("NetworkImporter")
-class NetworkImporter(FileImporter):
-    input_specs = {'file' : File}
-    output_specs = {'data': Network}
-    config_specs = {
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format")
-    }
+@importer_decorator("NetworkImporter", resource_type=Network)
+class NetworkImporter(ResourceImporter):
+    pass
 
 # ####################################################################
 #
@@ -1118,41 +1130,6 @@ class NetworkImporter(FileImporter):
 #
 # ####################################################################
 
-@task_decorator("NetworkExporter")
-class NetworkExporter(FileExporter):
-    input_specs = {'data': Network}
-    output_specs = {'file' : File}
-    config_specs = {
-        'file_name': StrParam(default_value='network.json', human_name="File name", short_description="Destination file name in the store"),
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
-    }
-    
-# ####################################################################
-#
-# Loader class
-#
-# ####################################################################
-
-@task_decorator("NetworkLoader")
-class NetworkLoader(FileLoader):
-    input_specs = {}
-    output_specs = {'data' : Network}
-    config_specs = {
-        'file_path': StrParam(default_value=None, human_name="File path", short_description="Location of the file to import"),
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
-    }
-    
-# ####################################################################
-#
-# Dumper class
-#
-# ####################################################################
-
-@task_decorator("NetworkDumper")
-class NetworkDumper(FileDumper):
-    input_specs = {'data' : Network}
-    output_specs = {}
-    config_specs = {
-        'file_path': StrParam(default_value=None, human_name="File path", short_description="Destination of the exported file"),
-        'file_format': StrParam(default_value=".json", human_name="File format", short_description="File format"),
-    }
+@exporter_decorator("NetworkExporter", resource_type=Network)
+class NetworkExporter(ResourceExporter):
+    pass

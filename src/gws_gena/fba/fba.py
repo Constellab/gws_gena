@@ -74,9 +74,10 @@ class FBA(Task):
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value=[], human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value=[], human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
-        "solver": StrParam(default_value="quad", allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], human_name="Solver", short_description="The optimization solver"),
+        "solver": StrParam(default_value="quad", visibility="protected", allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], human_name="Solver", short_description="The optimization solver"),
         "fill_gaps_with_sinks": BoolParam(default_value=False, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
-        "relax_qssa": BoolParam(default_value=False, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain. False otherwise.")
+        "relax_qssa": BoolParam(default_value=False, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain (quad solver is used). False otherwise."),
+        "ignore_cofactors": BoolParam(default_value=False, human_name="Ignore cofactors", short_description="True to ignore cofactors quasi-steady state for cofactors. False otherwise.")
     }
     __CVXPY_MAX_ITER = 100000
     __CVXPY_SOLVER_PRIORITY = [ cp.OSQP, cp.ECOS ]
@@ -88,6 +89,7 @@ class FBA(Task):
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
         fill_gaps_with_sinks = params["fill_gaps_with_sinks"]
+        ignore_cofactors = params["ignore_cofactors"]
         relax_qssa = params["relax_qssa"]
 
         if relax_qssa and solver != "quad":
@@ -98,7 +100,8 @@ class FBA(Task):
             twin, 
             fluxes_to_maximize=fluxes_to_maximize, 
             fluxes_to_minimize=fluxes_to_minimize,
-            fill_gaps_with_sinks=fill_gaps_with_sinks
+            fill_gaps_with_sinks=fill_gaps_with_sinks,
+            ignore_cofactors=ignore_cofactors,
         )
         
         self.update_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
@@ -119,7 +122,7 @@ class FBA(Task):
     # -- B --
 
     @classmethod
-    def build_problem( cls, twin, *, fluxes_to_maximize = [], fluxes_to_minimize = [], fill_gaps_with_sinks=True):
+    def build_problem( cls, twin, *, fluxes_to_maximize = [], fluxes_to_minimize = [], fill_gaps_with_sinks=True, ignore_cofactors=False):
         flat_twin: FlatTwin = twin.flatten()
         flat_net: Network = flat_twin.get_flat_network()
         if fill_gaps_with_sinks:
@@ -130,7 +133,7 @@ class FBA(Task):
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
 
-        S_int = TwinService.create_steady_stoichiometric_matrix(flat_twin)
+        S_int = TwinService.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
         Y_names = [ "v_"+name for name in C.index ]
         S_zeros = DataFrame( 
             index = S_int.index,
