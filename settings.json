@@ -23,7 +23,8 @@
                 "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core",
                 "packages":[
                     "gws_biota[commit=latest, branch=develop]",
-                    "gws_ode[commit=latest, branch=develop]"
+                    "gws_ode[commit=latest, branch=develop]",
+                    "gws_stats[commit=latest, branch=develop]"
                 ]
             },
             {
