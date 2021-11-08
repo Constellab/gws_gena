@@ -11,7 +11,7 @@ from gws_biota import Compound as BiotaCompound
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import BadRequestException, Logger, Utils
+from gws_core import BadRequestException, Utils
 
 from .compound import Compound
 
@@ -531,8 +531,7 @@ class Reaction:
                 _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                 try:
                     rxns.append(__create_reaction(rhea_rxn, network, e))
-                except Exception as err:
-                    #Logger.warning(str(err), truncate=True)
+                except:
                     pass
             return rxns
         elif rhea_id:
@@ -548,8 +547,7 @@ class Reaction:
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                     try:
                         rxns.append(__create_reaction(rhea_rxn, network, e))
-                    except Exception as err:
-                        #Logger.warning(str(err), truncate=True)
+                    except:
                         pass
             return rxns
         elif ec_number:
@@ -602,10 +600,9 @@ class Reaction:
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
                             rxns.append(__create_reaction(rhea_rxn, network, e))
-                        except Exception as err:
+                        except:
                             # reaction duplicate
                             # skip error!
-                            #Logger.warning(str(err), truncate=True)
                             pass
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")
@@ -622,8 +619,7 @@ class Reaction:
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
                             rxns.append(__create_reaction(rhea_rxn, network, e))
-                        except Exception as err:
-                            #Logger.warning(str(err), truncate=True)
+                        except:
                             pass
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")

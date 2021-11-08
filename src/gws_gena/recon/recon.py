@@ -137,7 +137,6 @@ class DraftRecon(Task):
                 try:
                     Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id, tax_search_method=tax_search_method)
                 except Exception as err:
-                    self.log_info_message(str(err))
                     net.set_reaction_tag(ec, {
                         "ec_number": ec,
                         "error": str(err)
