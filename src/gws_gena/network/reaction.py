@@ -532,7 +532,8 @@ class Reaction:
                 try:
                     rxns.append(__create_reaction(rhea_rxn, network, e))
                 except Exception as err:
-                    Logger.warning(str(err), truncate=True)
+                    #Logger.warning(str(err), truncate=True)
+                    pass
             return rxns
         elif rhea_id:
             tax = None
@@ -548,7 +549,8 @@ class Reaction:
                     try:
                         rxns.append(__create_reaction(rhea_rxn, network, e))
                     except Exception as err:
-                        Logger.warning(str(err), truncate=True)
+                        #Logger.warning(str(err), truncate=True)
+                        pass
             return rxns
         elif ec_number:
             tax = None
@@ -603,7 +605,8 @@ class Reaction:
                         except Exception as err:
                             # reaction duplicate
                             # skip error!
-                            Logger.warning(str(err), truncate=True)
+                            #Logger.warning(str(err), truncate=True)
+                            pass
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")
             else:
@@ -620,7 +623,8 @@ class Reaction:
                         try:
                             rxns.append(__create_reaction(rhea_rxn, network, e))
                         except Exception as err:
-                            Logger.warning(str(err), truncate=True)
+                            #Logger.warning(str(err), truncate=True)
+                            pass
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")
         else:
