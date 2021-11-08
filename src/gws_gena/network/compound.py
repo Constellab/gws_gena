@@ -1,14 +1,15 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import re
 import copy
+import re
 from typing import List
 
-from gws_core import BadRequestException, Utils
 from gws_biota import Compound as BiotaCompound
+from gws_core import BadRequestException, Utils
+
 
 def slugify_id(_id):
     return Utils.slugify(_id, snakefy=True, to_lower=False)
@@ -18,6 +19,7 @@ def slugify_id(_id):
 # CompoundPosition class
 #
 # ####################################################################
+
 
 class CompoundPosition:
     """ Compount position """
@@ -38,12 +40,13 @@ class CompoundPosition:
 #
 # ####################################################################
 
+
 class Compound:
     """
-    Class that represents a network compound. 
-    
-    Network compounds are proxy of biota compounds (i.e. Chebi compounds). 
-    They a used to build reconstructed digital twins. 
+    Class that represents a network compound.
+
+    Network compounds are proxy of biota compounds (i.e. Chebi compounds).
+    They a used to build reconstructed digital twins.
 
     :property id: The id of the compound
     :type id: `str`
@@ -68,7 +71,7 @@ class Compound:
     :property kegg_id: The corresponding Kegg id of the compound
     :type kegg_id: `str`
     """
-    
+
     id = ""
     name = ""
     network = None
@@ -83,18 +86,18 @@ class Compound:
     kegg_id = ""
     inchikey = ""
     position: CompoundPosition = None
-    
+
     FLATTENING_DELIMITER = "_"
     COMPARTMENT_DELIMITER = "_"
-    COMPARTMENT_CYTOSOL    = "c"
-    COMPARTMENT_NUCLEUS    = "n"
+    COMPARTMENT_CYTOSOL = "c"
+    COMPARTMENT_NUCLEUS = "n"
     COMPARTMENT_MITOCHONDRION = "m"
-    COMPARTMENT_BIOMASS    = "b"
-    COMPARTMENT_EXTRACELL  = "e"
+    COMPARTMENT_BIOMASS = "b"
+    COMPARTMENT_EXTRACELL = "e"
     COMPARTMENT_SINK = "s"
 
     # Use BiGG nomenclature for compartments
-    COMPARTMENTS = { 
+    COMPARTMENTS = {
         "c": {"name": "cytosol", "is_steady": True},
         "n": {"name": "nucleus", "is_steady": True},
         "m": {"name": "mitochondrion", "is_steady": True},
@@ -111,6 +114,12 @@ class Compound:
     LEVEL_MINOR = "minor"
     LEVEL_COFACTOR = "cofactor"
 
+    LEVEL_NUMBER = {
+        LEVEL_MAJOR: 1,
+        LEVEL_MINOR: 2,
+        LEVEL_COFACTOR: 3
+    }
+
     COFACTOR_NAME_PATTERNS = ["residue"]
     COFACTORS = {
         "CHEBI:15378": "hydron",
@@ -118,7 +127,7 @@ class Compound:
         "CHEBI:16240": "hydrogen_peroxide",
         "CHEBI:43474": "hydrogenphosphate",
         "CHEBI:33019": "diphosphate_3",
-        
+
         "CHEBI:57540": "NAD_1",
         "CHEBI:57945": "NADH_2",
         "CHEBI:18009": "NADP",
@@ -142,14 +151,14 @@ class Compound:
         "CHEBI:58307": "FADH2_2",
         "CHEBI:58210": "FMN_3",
         "CHEBI:57618": "FMNH2_2",
-        
+
         "CHEBI:28938": "ammonium",
         "CHEBI:15379": "dioxygen",
         "CHEBI:16526": "carbon_dioxide",
         "CHEBI:29108": "ca2+",
-        
+
         "CHEBI:57287": "coenzyme A(4-)",
-        
+
         "CHEBI:59789": "S_adenosyl_L_methionine",
         "CHEBI:57856": "S_adenosyl_L_homocysteine",
 
@@ -162,7 +171,7 @@ class Compound:
         "CHEBI:58189": "GDP(3-)",
         "CHEBI:37565": "GTP(4-)",
         "CHEBI:61429": "dGTP(4-)",
-        
+
         "CHEBI:58223": "UDP(3-)",
         "CHEBI:46398": "UTP(4-)",
         "CHEBI:61555": "dUTP(4-)",
@@ -178,7 +187,7 @@ class Compound:
         "CHEBI:58223": "UDP(3-)",
         "CHEBI:46398": "UTP(4-)",
         "CHEBI:61555": "dUTP(4-)",
-        
+
         "CHEBI:16389": "ubiquinones",
         "CHEBI:17976": "ubiquinol",
         "CHEBI:61683": "ubiquinone-8",
@@ -190,7 +199,7 @@ class Compound:
         "CHEBI:13193": "hydrogen acceptor",
 
         "CHEBI:29950": "L-cysteine residue",
-        "CHEBI:29969": "L-lysinium residue", 
+        "CHEBI:29969": "L-lysinium residue",
     }
 
     MAJOR_NAME_PATTERNS = []
@@ -231,7 +240,7 @@ class Compound:
 
         "CHEBI:10983": "(R)-3-hydroxybutyrate",
         "CHEBI:11047": "(S)-3-hydroxybutyrate",
-    
+
         "CHEBI:32372": "palmitoleate",
         "CHEBI:17268": "myo-inositol",
         "CHEBI:15354": "choline",
@@ -250,7 +259,7 @@ class Compound:
         "CHEBI:16113": "cholesterol",
         "CHEBI:62237": "cardiolipin(2-)",
 
-        "CHEBI:58359": "L-glutamine zwitterion",        
+        "CHEBI:58359": "L-glutamine zwitterion",
         "CHEBI:29985": "L-glutamate(1-)",
         "CHEBI:60039": "L-proline zwitterion",
         "CHEBI:29991": "L-aspartate(1-)",
@@ -283,11 +292,11 @@ class Compound:
         "CHEBI:16897": "D-erythrose 4-phosphate(2-)"
     }
 
-    def __init__(self, id="", name="", compartment=None, \
-                 network:'Network'=None, formula="", \
-                 charge="", mass="", monoisotopic_mass="", inchi="", \
-                 inchikey="", chebi_id="", alt_chebi_ids: List=None, kegg_id=""):  
-        
+    def __init__(self, id="", name="", compartment=None,
+                 network: 'Network' = None, formula="",
+                 charge="", mass="", monoisotopic_mass="", inchi="",
+                 inchikey="", chebi_id="", alt_chebi_ids: List = None, kegg_id=""):
+
         if chebi_id is None:
             chebi_id = ""
         if inchikey is None:
@@ -309,7 +318,7 @@ class Compound:
             if not compartment_suffix in self.COMPARTMENTS.keys():
                 raise BadRequestException(f"Invalid compartment '{compartment}'")
 
-        self.compartment = compartment   
+        self.compartment = compartment
 
         if id:
             self.id = slugify_id(id)
@@ -319,11 +328,12 @@ class Compound:
                     is_compartment_found = True
             if not is_compartment_found:
                 raise BadRequestException(f"Invalid compound id '{self.id}'. No compartment suffix found.")
-            #if not is_compartment_found:
+            # if not is_compartment_found:
             #    self.id = slugify_id(self.id + Compound.COMPARTMENT_DELIMITER + compartment_suffix)
-            
+
             if not self.id.endswith(Compound.COMPARTMENT_DELIMITER + compartment_suffix):
-                raise BadRequestException(f"Invalid compound id '{self.id}'. The id suffix must be {compartment_suffix}.")
+                raise BadRequestException(
+                    f"Invalid compound id '{self.id}'. The id suffix must be {compartment_suffix}.")
         else:
             # try to use inchikey or chebi compound name if possible
             is_found = False
@@ -335,7 +345,7 @@ class Compound:
                         is_found = True
                     except:
                         is_found = False
-                
+
                 if not is_found and chebi_id:
                     try:
                         c = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
@@ -346,13 +356,13 @@ class Compound:
                     raise BadRequestException("Please provide at least a valid compound id, name or chebi_id")
 
             self.id = slugify_id(name + Compound.COMPARTMENT_DELIMITER + compartment_suffix)
-        
+
         if not name:
             name = self.id
-            
+
         if network:
             self.add_to_network(network)
-        
+
         self.name = name
         self.charge = charge
         self.mass = mass
@@ -364,23 +374,23 @@ class Compound:
         self.kegg_id = kegg_id
         self.alt_chebi_ids = (alt_chebi_ids if alt_chebi_ids else [])
         self.position = CompoundPosition()
-        
+
     # -- A --
 
-    def add_to_network(self, net: 'Network'):  
+    def add_to_network(self, net: 'Network'):
         """
         Adds the compound to a newtork
-        
+
         :param net: The network
         :type net: `gena.network.Network`
         """
-        
+
         net.add_compound(self)
-    
+
     # -- C --
 
     def copy(self) -> 'Compound':
-        c = Compound( id=self.id )
+        c = Compound(id=self.id)
         c.name = self.name
         c.network = self.network
         c.charge = self.charge
@@ -411,12 +421,12 @@ class Compound:
         )
 
     # -- F --
-    
+
     @classmethod
     def _flatten_id(cls, id, ctx_name, is_compartment=False) -> str:
         """
         Flattens a compound or compartment id
-        
+
         :param id: The id
         :type id: `str`
         :param ctx_name: The name of the (metabolic, biological, network) context
@@ -426,19 +436,21 @@ class Compound:
         :return: The flattened id
         :rtype: `str`
         """
-        
+
         flat_delim = Compound.FLATTENING_DELIMITER
-        skip_list = [ cls.COMPARTMENT_EXTRACELL ]
+        skip_list = [cls.COMPARTMENT_EXTRACELL]
         for compart in skip_list:
             if id.endswith(Compound.COMPARTMENT_DELIMITER + compart) or (is_compartment and id == compart):
                 return id
-        return slugify_id(ctx_name + flat_delim + id.replace(flat_delim,Compound.COMPARTMENT_DELIMITER))
-     
+        return slugify_id(ctx_name + flat_delim + id.replace(flat_delim, Compound.COMPARTMENT_DELIMITER))
+
     @classmethod
-    def from_biota(cls, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="", compartment="", network=None) -> 'Compound':
+    def from_biota(
+            cls, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="", compartment="",
+            network=None) -> 'Compound':
         """
         Create a network compound from a ChEBI of Kegg id
-        
+
         :param biota_compound: The biota compound to use. If not provided, the chebi_id or keeg_id are used to fetch the corresponding compound from the biota db.
         :type biota_compound: `biota.compound.Compound`
         :param chebi_id: The ChEBI id
@@ -448,42 +460,43 @@ class Compound:
         :return: The network compound
         :rtype: `gena.compound.Compound`
         """
-        
+
         if not biota_compound:
             if inchikey:
                 try:
                     biota_compound = BiotaCompound.get(BiotaCompound.inchikey == inchikey)
                 except:
                     pass
-            
+
             if not biota_compound and chebi_id:
                 if isinstance(chebi_id, float) or isinstance(chebi_id, int):
                     chebi_id = f"CHEBI:{chebi_id}"
-                if re.match(r"CHEBI\:\d+$", chebi_id): # not in chebi_id:
+                if re.match(r"CHEBI\:\d+$", chebi_id):  # not in chebi_id:
                     chebi_id = chebi_id
                 try:
                     biota_compound = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
                 except:
                     pass
-            
+
             if not biota_compound and kegg_id:
                 try:
                     biota_compound = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
                 except:
                     pass
-        
+
         if not biota_compound:
-            raise BadRequestException(f"Cannot find compound (inchikey={inchikey}, chebi_id={chebi_id}, kegg_id={kegg_id})")
+            raise BadRequestException(
+                f"Cannot find compound (inchikey={inchikey}, chebi_id={chebi_id}, kegg_id={kegg_id})")
 
         if not compartment:
             compartment = Compound.COMPARTMENT_CYTOSOL
         if not name:
             name = biota_compound.name
-        
+
         c = Compound(
-            id=id, 
-            name=name, 
-            compartment=compartment, 
+            id=id,
+            name=name,
+            compartment=compartment,
             network=network
         )
         c.chebi_id = biota_compound.chebi_id
@@ -501,22 +514,24 @@ class Compound:
 
     # -- G --
 
-    def get_level(self):
+    def get_level(self) -> int:
         if self.is_major:
-            return self.LEVEL_MAJOR.lower()
+            level_str = self.LEVEL_MAJOR
         elif self.is_cofactor:
-            return self.LEVEL_COFACTOR.lower()
+            level_str = self.LEVEL_COFACTOR
         else:
-            return self.LEVEL_MINOR.lower()
+            level_str = self.LEVEL_MINOR
+
+        return self.LEVEL_NUMBER[level_str]
 
     def get_related_biota_compound(self):
         """
         Get the biota compound that is related to this network compound
-        
+
         :return: The biota compound corresponding to the chebi of kegg id. Returns `None` is no biota coumpund is found
         :rtype: `bioa.compound.Compound`, `None`
         """
-        
+
         try:
             if self.chebi_id:
                 return BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
@@ -528,42 +543,42 @@ class Compound:
     def get_related_biota_reactions(self):
         """
         Get the biota reactions that are related to this network compound
-        
+
         :return: The list of biota reactions corresponding to the chebi of kegg id. Returns [] is no biota reaction is found
         :rtype: `List[bioa.compound.reaction]` or SQL `select` resutls
         """
-        
+
         try:
             if self.chebi_id:
                 comp = BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
             elif self.kegg_id:
                 comp = BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
-            
+
             return comp.reactions
         except:
             return None
 
     # -- I --
- 
+
     @property
-    def is_intracellular(self)->bool:
+    def is_intracellular(self) -> bool:
         """
         Test if the compound is intracellular
-        
+
         :return: True if the compound is intracellular, False otherwise
         :rtype: `bool`
         """
-        
+
         compartment_suffix = self.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
-        return  compartment_suffix != self.COMPARTMENT_EXTRACELL and \
-                compartment_suffix != self.COMPARTMENT_BIOMASS and \
-                compartment_suffix != self.COMPARTMENT_SINK
+        return compartment_suffix != self.COMPARTMENT_EXTRACELL and \
+            compartment_suffix != self.COMPARTMENT_BIOMASS and \
+            compartment_suffix != self.COMPARTMENT_SINK
 
     @property
-    def is_biomass(self)->bool:
+    def is_biomass(self) -> bool:
         """
         Test if the compound is the biomass compound
-        
+
         :return: True if the compound is the biomass compound, False otherwise
         :rtype: `bool`
         """
@@ -572,10 +587,10 @@ class Compound:
         return compartment_suffix == Compound.COMPARTMENT_BIOMASS
 
     @property
-    def is_sink(self)->bool:
+    def is_sink(self) -> bool:
         """
         Test if the compound is a sink compound
-        
+
         :return: True if the compound is a sink compound, False otherwise
         :rtype: `bool`
         """
@@ -584,10 +599,10 @@ class Compound:
         return compartment_suffix == Compound.COMPARTMENT_SINK
 
     @property
-    def is_steady(self)->bool:
+    def is_steady(self) -> bool:
         """
         Test if the compound is at steady state (is intracellular)
-        
+
         :return: True if the compound is steady, False otherwise
         :rtype: `bool`
         """
@@ -596,66 +611,37 @@ class Compound:
         return self.COMPARTMENTS[compartment_suffix]["is_steady"]
 
     @property
-    def is_cofactor(self)->bool:
+    def is_cofactor(self) -> bool:
         """
         Test if the compound is a factor
-        
+
         :return: True if the compound is intracellular, False otherwise
         :rtype: `bool`
         """
-        
+
         for pattern in self.COFACTOR_NAME_PATTERNS:
             if pattern in self.name:
                 return True
-        
+
         return self.chebi_id in self.COFACTORS
 
     @property
-    def is_major(self)->bool:
+    def is_major(self) -> bool:
         """
         Test if the compound is a major metabolite
-        
+
         :return: True if the compound is intracellular, False otherwise
         :rtype: `bool`
         """
-        
+
         for pattern in self.MAJOR_NAME_PATTERNS:
             if pattern in self.name:
                 return True
-        
-        return self.chebi_id in self.MAJORS 
-    
+
+        return self.chebi_id in self.MAJORS
+
     @property
-    def is_minor(self)->bool:
+    def is_minor(self) -> bool:
         return (not self.is_cofactor) and (not self.is_major)
 
     # -- M --
-    
-    @classmethod
-    def merge_compounds(self, comps: List['Compound'], compartment=None, oligomerization=None) -> 'Compound':
-        """ Merge a list of compounds (oligomerisation) """
-
-        if compartment is None:
-            compartment = comps[0].compartment
-
-        names = []
-        for comp in comps:
-            names.append(comp.name)
-        
-        if oligomerization is not None:
-            names.append(oligomerization)
-
-        c = Compound(name=",".join(names), compartment=compartment)
-        c.chebi_id = ",".join([ comp_.chebi_id or "" for comp_ in comps ])
-        c.kegg_id = ",".join([ comp_.kegg_id or "" for comp_ in comps ])
-        c.charge = str(sum([ float(comp_.charge or 0.0) for comp_ in comps ]))
-        c.formula = ",".join([ comp_.formula or "" for comp_ in comps ])
-        c.mass = str(sum([ float(comp_.mass or 0.0) for comp_ in comps ]))
-        c.monoisotopic_mass = str(sum([ float(comp_.monoisotopic_mass or 0.0) for comp_ in comps ]))
-        if comps[0].position is not None:
-            c.position.x = comps[0].position.x
-            c.position.y = comps[0].position.y
-            c.position.z = comps[0].position.z
-
-        return c
-    

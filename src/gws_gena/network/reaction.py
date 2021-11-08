@@ -1,25 +1,28 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
 import copy
 import re
+from typing import List
 
-from gws_core import BadRequestException
-from gws_core import Utils
 from gws_biota import Compound as BiotaCompound
-from gws_biota import Reaction as BiotaReaction
 from gws_biota import Enzyme as BiotaEnzyme
+from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
+from gws_core import BadRequestException, Logger, Utils
+
 from .compound import Compound
+
 
 def slugify_id(_id):
     return Utils.slugify(_id, snakefy=True, to_lower=False)
-    
-flattening_delimiter = ":"
-EQN_SPLIT_REGEXP = re.compile(" <?=>? ")
-OLIG_REGEXP = re.compile("\((n(\+\d)?)\)$")
+
+
+FLATTENING_DELIMITER = ":"
+EQN_SPLIT_REGEXP = re.compile(r" <?=>? ")
+OLIG_REGEXP = re.compile(r"\((n(\+\d)?)\)$")
 
 # ####################################################################
 #
@@ -27,10 +30,12 @@ OLIG_REGEXP = re.compile("\((n(\+\d)?)\)$")
 #
 # ####################################################################
 
-class SubstrateDuplicate(BadRequestException): 
+
+class SubstrateDuplicate(BadRequestException):
     pass
 
-class ProductDuplicate(BadRequestException): 
+
+class ProductDuplicate(BadRequestException):
     pass
 
 # ####################################################################
@@ -38,6 +43,7 @@ class ProductDuplicate(BadRequestException):
 # ReactionPosition class
 #
 # ####################################################################
+
 
 class ReactionPosition:
     """ reaction position """
@@ -66,12 +72,13 @@ class ReactionPosition:
 #
 # ####################################################################
 
-class Reaction:   
+
+class Reaction:
     """
-    Class that represents a network reaction. 
-    
-    Network reactions are proxy of biota reaction (i.e. Rhea compounds). 
-    They a used to build reconstructed digital twins. 
+    Class that represents a network reaction.
+
+    Network reactions are proxy of biota reaction (i.e. Rhea compounds).
+    They a used to build reconstructed digital twins.
 
     :property id: The id of the reaction
     :type id: `str`
@@ -90,7 +97,7 @@ class Reaction:
     :property enzyme: The details on the enzyme that regulates the reaction
     :type enzyme: `dict`
     """
-    
+
     id: str = ""
     name: str = ""
     network: 'Network' = None
@@ -106,72 +113,73 @@ class Reaction:
     _substrates: dict = None
     _products: dict = None
 
-    _flattening_delimiter = flattening_delimiter
-    
-    def __init__(self, id: str="", name: str = "", network: 'Network' = None, \
-                 direction: str= "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0, \
-                 enzyme: dict={}, rhea_id=""):  
-        
+    _FLATTENING_DELIMITER = FLATTENING_DELIMITER
+
+    def __init__(self, id: str = "", name: str = "", network: 'Network' = None,
+                 direction: str = "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0,
+                 enzyme: dict = {}, rhea_id=""):
+
         if id:
             self.id = slugify_id(id)
         else:
             self.id = slugify_id(name)
-        
+
         self.name = name
         self.enzyme = enzyme
-        
+
         if not self.id:
             if self.enzyme:
-                self.id = self.enzyme.get("ec_number","")
+                self.id = self.enzyme.get("ec_number", "")
                 self.name = self.id
-        
+
         if not self.id:
             raise BadRequestException("At least a valid reaction id or name is reaction")
-            
+
         if direction in ["B", "L", "R"]:
             self.direction = direction
-            
+
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self._estimate = {}
         self._substrates = {}
         self._products = {}
-        
+
         if network:
             self.add_to_network(network)
-        
+
         self.rhea_id = rhea_id
         self.position = ReactionPosition()
 
     # -- A --
 
-    def add_to_network(self, net: 'Network'):  
+    def add_to_network(self, net: 'Network'):
         """
         Adds the reaction to a newtork
-        
+
         :param net: The network
         :type net: `gena.network.Network`
         """
-        
+
         net.add_reaction(self)
 
-    def add_substrate( self, comp: Compound, stoich: float, update_if_exists=False ):
+    def add_substrate(self, comp: Compound, stoich: float, update_if_exists=False):
         """
         Adds a substrate to the reaction
-        
+
         :param comp: The compound to add as substrate
         :type comp: `gena.compound.Compound`
         :param stoich: The stoichiometry of the compound in the reaction
         :type stoich: `int`
         """
-        
+
         if comp.id in self._substrates:
             if update_if_exists:
                 self._substrates[comp.id]["stoichiometry"] += abs(float(stoich))
                 return
             else:
-                raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate", f"Substrate duplicate (id= {comp.id})")
-        
+                raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate",
+                                         f"Substrate duplicate (id= {comp.id})")
+
         if comp.id in self._products:
             if update_if_exists:
                 self._products[comp.id]["stoichiometry"] -= abs(float(stoich))
@@ -179,7 +187,9 @@ class Reaction:
                     self.remove_product(comp)
                 return
             else:
-                raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate", f"Cannot add the substrate. A product with the id already exists (id= {comp.id})")
+                raise SubstrateDuplicate(
+                    "gena.reaction.Reaction", "add_substrate",
+                    f"Cannot add the substrate. A product with the id already exists (id= {comp.id})")
 
         # add the compound to the reaction network
         if self.network:
@@ -190,24 +200,24 @@ class Reaction:
             "compound": comp,
             "stoichiometry": abs(float(stoich))
         }
-    
-    def add_product( self, comp: Compound, stoich: float, update_if_exists=False ):
+
+    def add_product(self, comp: Compound, stoich: float, update_if_exists=False):
         """
         Adds a product to the reaction
-        
+
         :param comp: The compound to add as product
         :type comp: `gena.compound.Compound`
         :param stoich: The stoichiometry of the compound in the reaction
         :type stoich: `int`
         """
-        
+
         if comp.id in self._products:
             if update_if_exists:
                 self._products[comp.id]["stoichiometry"] += abs(float(stoich))
                 return
             else:
                 raise ProductDuplicate("gena.reaction.Reaction", "add_product", f"Product duplicate (id= {comp.id})")
-        
+
         if comp.id in self._substrates:
             if update_if_exists:
                 self._substrates[comp.id]["stoichiometry"] -= abs(float(stoich))
@@ -215,13 +225,15 @@ class Reaction:
                     self.remove_substrate(comp)
                 return
             else:
-                raise ProductDuplicate("gena.reaction.Reaction", "add_substrate", f"Cannot add the product. A susbtrate with the id already exists (id= {comp.id})")
+                raise ProductDuplicate(
+                    "gena.reaction.Reaction", "add_substrate",
+                    f"Cannot add the product. A susbtrate with the id already exists (id= {comp.id})")
 
         # add the compound to the reaction network
         if self.network:
             if comp.id not in self.network.compounds:
                 self.network.add_compound(comp)
-                
+
         self._products[comp.id] = {
             "compound": comp,
             "stoichiometry": abs(float(stoich))
@@ -276,22 +288,23 @@ class Reaction:
                 mass = None
 
         return {
-            "mass": mass, 
+            "mass": mass,
             "charge": charge
         }
 
     @classmethod
-    def create_sink_reaction(self, related_compound: Compound = None, lower_bound: float = -1000.0, upper_bound: float = 1000.0) -> 'Reaction':        
+    def create_sink_reaction(
+            self, related_compound: Compound = None, lower_bound: float = -1000.0, upper_bound: float = 1000.0) -> 'Reaction':
         if not isinstance(related_compound, Compound):
             raise BadRequestException("A compound is required")
         name = related_compound.id + "_sink"
         network = related_compound.network
         rxn = Reaction(
-            name = name,
-            network = network,
-            direction = "B",
-            lower_bound = lower_bound,
-            upper_bound = upper_bound
+            name=name,
+            network=network,
+            direction="B",
+            lower_bound=lower_bound,
+            upper_bound=upper_bound
         )
         sink_comp = Compound.create_sink_compound(related_compound=related_compound)
         rxn.add_substrate(related_compound, stoich=-1.0)
@@ -305,12 +318,12 @@ class Reaction:
         return self._estimate
 
     # -- F --
-    
+
     @classmethod
-    def _flatten_id(cls, id:str , ctx_name:str) -> str:
+    def _flatten_id(cls, id: str, ctx_name: str) -> str:
         """
         Flattens a reaction id
-        
+
         :param id: The id
         :type id: `str`
         :param ctx_name: The name of the (metabolic, biological, network) context
@@ -318,24 +331,26 @@ class Reaction:
         :return: The flattened id
         :rtype: `str`
         """
-        
-        delim = cls._flattening_delimiter
-        return slugify_id(ctx_name + delim + id.replace(delim,"_"))
-        
+
+        delim = cls._FLATTENING_DELIMITER
+        return slugify_id(ctx_name + delim + id.replace(delim, "_"))
+
     @classmethod
-    def from_biota(cls, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up', network=None) -> 'Reaction':
+    def from_biota(
+            cls, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up',
+            network=None) -> 'Reaction':
         """
         Create a biota reaction from a Rhea id or an EC number.
-        
+
         :param biota_reaction: The biota reaction to use. If not provided, the rhea_id or ec_number are used to fetch the corresponding reaction from the biota db.
         :type biota_reaction: `biota.compound.Compound`
         :param rhea_id: The Rhea id of the reaction. If given, the other parameters are not considered
         :rtype rhea_id: `str`
         :param ec_number: The EC number of the enzyme related to the reaction. If given, all the Rhea reactions associated with this enzyme are retrieved for the biota DB
         :rtype ec_number: `str`
-        :param tax_id: The taxonomy ID of the target organism. If given, the enzymes are fetched in the corresponding taxonomy. If the taxonomy ID is not valid, no reaction is built.  
+        :param tax_id: The taxonomy ID of the target organism. If given, the enzymes are fetched in the corresponding taxonomy. If the taxonomy ID is not valid, no reaction is built.
         :rtype tax_id: `str`
-        :param tax_search_method: The taxonomy search method (Defaults to `bottom_up`). 
+        :param tax_search_method: The taxonomy search method (Defaults to `bottom_up`).
             * `none`: the algorithm will only search at the given taxonomy level
             * `bottom_up`: the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found
         :rtype tax_search_method: `none` or `bottom_up`
@@ -343,10 +358,50 @@ class Reaction:
         :return: The network reaction
         :rtype: `gena.reaction.Reaction`
         """
-        
+
         rxns = []
 
-        def __create_rxn(rhea_rxn, network, enzyme):
+        def __merge_compounds_and_add_to_reaction(
+                comps: List[Compound], stoich, rxn: 'Reaction', is_product: bool,
+                compartment=None, alt_litteral_comppound_name=None, oligomerization=None):
+            """ Merge a list of compounds (oligomerisation) """
+
+            if compartment is None:
+                compartment = comps[0].compartment
+
+            names = []
+            for comp in comps:
+                names.append(comp.name)
+
+            if oligomerization is not None:
+                names.append(oligomerization)
+
+            is_substrate = not is_product
+            c = Compound(name=",".join(names), compartment=compartment)
+            if is_substrate:
+                comp_id_exists_in_products = (c.id in rxn.products)
+                if comp_id_exists_in_products and alt_litteral_comppound_name:
+                    # use the litteral name to uniquify the compound id
+                    c = Compound(name=alt_litteral_comppound_name, compartment=compartment)
+
+            c.chebi_id = ",".join([comp_.chebi_id or "" for comp_ in comps])
+            c.kegg_id = ",".join([comp_.kegg_id or "" for comp_ in comps])
+            c.charge = str(sum([float(comp_.charge or 0.0) for comp_ in comps]))
+            c.formula = ",".join([comp_.formula or "" for comp_ in comps])
+            c.mass = str(sum([float(comp_.mass or 0.0) for comp_ in comps]))
+            c.monoisotopic_mass = str(sum([float(comp_.monoisotopic_mass or 0.0) for comp_ in comps]))
+            if comps[0].position is not None:
+                c.position.x = comps[0].position.x
+                c.position.y = comps[0].position.y
+                c.position.z = comps[0].position.z
+
+            if is_product:
+                rxn.add_product(c, stoich)
+            else:
+                rxn.add_substrate(c, stoich)
+        # return c
+
+        def __create_reaction(rhea_rxn, network, enzyme):
             if enzyme:
                 e = {
                     "name": enzyme.get_name(),
@@ -366,7 +421,7 @@ class Reaction:
                         e["tax"][t.rank] = {
                             "tax_id": t.tax_id,
                             "name": t.get_name()
-                        }  
+                        }
                 if enzyme.related_deprecated_enzyme:
                     e["related_deprecated_enzyme"] = {
                         "ec_number": enzyme.related_deprecated_enzyme.ec_number,
@@ -374,21 +429,21 @@ class Reaction:
                     }
                 pwy = enzyme.pathway
                 if pwy:
-                    e["pathway"] = pwy.data   
+                    e["pathway"] = pwy.data
             else:
-                e = {} 
-            
-            rxn: Reaction = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number, 
-                      network=network, 
-                      direction=rhea_rxn.direction,
-                      enzyme=e)
-            
+                e = {}
+
+            rxn: Reaction = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number,
+                                network=network,
+                                direction=rhea_rxn.direction,
+                                enzyme=e)
+
             if rhea_rxn.position is not None:
-                    rxn.position.x = rhea_rxn.position.x
-                    rxn.position.y = rhea_rxn.position.y
-                    rxn.position.z = rhea_rxn.position.z
-                    rxn.position.points = rhea_rxn.position.points or {}
-            
+                rxn.position.x = rhea_rxn.position.x
+                rxn.position.y = rhea_rxn.position.y
+                rxn.position.z = rhea_rxn.position.z
+                rxn.position.points = rhea_rxn.position.points or {}
+
             tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["definition"])
             substrate_definition = tab[0].split(" + ")
             product_definition = tab[1].split(" + ")
@@ -401,7 +456,7 @@ class Reaction:
             for sub in eqn_substrates:
                 tab = sub.split(" ")
                 if len(tab) == 2:
-                    stoich = tab[0].replace("n","")
+                    stoich = tab[0].replace("n", "")
                     if stoich == "":
                         stoich = 1.0
                     chebi_ids = tab[1].split(",")
@@ -412,46 +467,61 @@ class Reaction:
                 biota_comps = []
                 for id_ in chebi_ids:
                     biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
-                
-                if substrate_definition[count].endswith("(out)"):
+
+                litteral_comp_name = substrate_definition[count]
+                if litteral_comp_name.endswith("(out)"):
                     compartment = Compound.COMPARTMENT_EXTRACELL
                 else:
-                    compartment=Compound.COMPARTMENT_CYTOSOL
-                
-                tab = re.findall(OLIG_REGEXP, substrate_definition[count])  
+                    compartment = Compound.COMPARTMENT_CYTOSOL
+
+                tab = re.findall(OLIG_REGEXP, litteral_comp_name)
                 oligo = tab[0][0] if len(tab) else None
-                c = Compound.merge_compounds(biota_comps, compartment=compartment, oligomerization=oligo)
-                rxn.add_substrate(c, stoich)
+                __merge_compounds_and_add_to_reaction(
+                    biota_comps,
+                    stoich,
+                    rxn,
+                    is_product=True,
+                    compartment=compartment,
+                    alt_litteral_comppound_name=None,
+                    oligomerization=oligo
+                )
                 count += 1
 
             count = 0
             for prod in eqn_products:
                 tab = prod.split(" ")
-
                 if len(tab) == 2:
-                    stoich =  tab[0]
-                    chebi_ids =  tab[1].split(",")
+                    stoich = tab[0]
+                    chebi_ids = tab[1].split(",")
                 else:
-                    stoich =  1
-                    chebi_ids =  tab[0].split(",")
+                    stoich = 1
+                    chebi_ids = tab[0].split(",")
 
                 biota_comps = []
                 for id_ in chebi_ids:
-                    biota_comps.append( BiotaCompound.get(BiotaCompound.chebi_id == id_) )
+                    biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
 
-                if product_definition[count].endswith("(out)"):
+                litteral_comp_name = product_definition[count]
+                if litteral_comp_name.endswith("(out)"):
                     compartment = Compound.COMPARTMENT_EXTRACELL
                 else:
-                    compartment=Compound.COMPARTMENT_CYTOSOL
+                    compartment = Compound.COMPARTMENT_CYTOSOL
 
-                tab = re.findall(OLIG_REGEXP, product_definition[count])  
+                tab = re.findall(OLIG_REGEXP, litteral_comp_name)
                 oligo = tab[0][0] if len(tab) else None
-                c = Compound.merge_compounds(biota_comps, compartment=compartment, oligomerization=oligo)
-                rxn.add_product(c, stoich)
+                __merge_compounds_and_add_to_reaction(
+                    biota_comps,
+                    stoich,
+                    rxn=rxn,
+                    is_product=False,
+                    compartment=compartment,
+                    alt_litteral_comppound_name=litteral_comp_name,
+                    oligomerization=oligo
+                )
                 count += 1
 
             return rxn
-        
+
         if biota_reaction:
             rhea_rxn = biota_reaction
             _added_rxns = []
@@ -460,9 +530,9 @@ class Reaction:
                     continue
                 _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                 try:
-                    rxns.append( __create_rxn(rhea_rxn, network, e) )
-                except:
-                    pass
+                    rxns.append(__create_reaction(rhea_rxn, network, e))
+                except Exception as err:
+                    Logger.warning(str(err), truncate=True)
             return rxns
         elif rhea_id:
             tax = None
@@ -476,9 +546,9 @@ class Reaction:
                         continue
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                     try:
-                        rxns.append( __create_rxn(rhea_rxn, network, e) )
-                    except:
-                        pass
+                        rxns.append(__create_reaction(rhea_rxn, network, e))
+                    except Exception as err:
+                        Logger.warning(str(err), truncate=True)
             return rxns
         elif ec_number:
             tax = None
@@ -486,17 +556,17 @@ class Reaction:
             if tax_id:
                 try:
                     tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
-                except:
-                    raise BadRequestException(f"No taxonomy found with tax_id {tax_id}") 
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number, tax_id = tax_id)
+                except Exception as err:
+                    raise BadRequestException(f"No taxonomy found with tax_id {tax_id}") from err
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number, tax_id=tax_id)
                 if not Q:
                     if tax_search_method == 'bottom_up':
                         found_Q = []
-                        Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
+                        Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
                         tab = {}
                         for e in Q:
                             if not e.ec_number in tab:
-                                tab[e.ec_number] = []  
+                                tab[e.ec_number] = []
                             tab[e.ec_number].append(e)
                         for t in tax.ancestors:
                             is_found = False
@@ -508,7 +578,7 @@ class Reaction:
                                     if getattr(e, "tax_"+t.rank) == t.tax_id:
                                         found_Q.append(e)
                                         is_found = True
-                                        break  #-> stop at this taxonomy rank
+                                        break  # -> stop at this taxonomy rank
                                 if is_found:
                                     del tab[ec]
                                     break
@@ -517,11 +587,11 @@ class Reaction:
                             e_group = tab[ec]
                             for e in e_group:
                                 found_Q.append(e)
-                                break 
+                                break
                         if found_Q:
                             Q = found_Q
                 if not Q:
-                    raise BadRequestException(f"No enzyme found with ec number {ec_number}")  
+                    raise BadRequestException(f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
                 for e in Q:
                     for rhea_rxn in e.reactions:
@@ -529,17 +599,18 @@ class Reaction:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
-                            rxns.append( __create_rxn(rhea_rxn, network, e) )
-                        except:
+                            rxns.append(__create_reaction(rhea_rxn, network, e))
+                        except Exception as err:
                             # reaction duplicate
                             # skip error!
-                            pass
+                            Logger.warning(str(err), truncate=True)
                 if not rxns:
-                    raise BadRequestException(f"No new reactions found with ec number {ec_number}")  
+                    raise BadRequestException(f"An error occured with ec number {ec_number}")
             else:
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number = ec_number)
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
                 if not Q:
-                    raise BadRequestException("gena.reaction.Reaction", "from_biota", f"No enzyme found with ec number {ec_number}")
+                    raise BadRequestException("gena.reaction.Reaction", "from_biota",
+                                              f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
                 for e in Q:
                     for rhea_rxn in e.reactions:
@@ -547,14 +618,14 @@ class Reaction:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
-                            rxns.append( __create_rxn(rhea_rxn, network, e) ) 
-                        except:
-                            pass
+                            rxns.append(__create_reaction(rhea_rxn, network, e))
+                        except Exception as err:
+                            Logger.warning(str(err), truncate=True)
                 if not rxns:
-                    raise BadRequestException(f"No new reactions found with ec number {ec_number}")
+                    raise BadRequestException(f"An error occured with ec number {ec_number}")
         else:
             raise BadRequestException("gena.reaction.Reaction", "from_biota", "Invalid arguments")
-        
+
         return rxns
 
     # -- G --
@@ -570,65 +641,65 @@ class Reaction:
     @property
     def is_empty(self):
         return not bool(self._substrates) and not bool(self._products)
-        
+
     # -- P --
-    
+
     @property
     def products(self) -> str:
         """
         Returns the products of the reaction
-        
+
         :return: The list of products as {key,value} dictionnary
         :rtype: `dict`
         """
-        
+
         return self._products
-    
+
     # -- R --
-    
-    def remove_substrate( self, comp: Compound ):
+
+    def remove_substrate(self, comp: Compound):
         """
         Removes a substrate to the reaction
-        
+
         :param comp: The compound to remove
         :type comp: `gena.compound.Compound`
         """
-        
+
         if not comp.id in self._substrates:
             raise BadRequestException(f"Substrate (id= {comp.id}) does not exist")
-        
+
         # remove the compound to the reaction network
         del self._substrates[comp.id]
-    
-    def remove_product( self, comp: Compound ):
+
+    def remove_product(self, comp: Compound):
         """
         Remove a product to the reaction
-        
+
         :param comp: The compound to remove
         :type comp: `gena.compound.Compound`
         """
-        
+
         if not comp.id in self._products:
             raise BadRequestException(f"Product (id= {comp.id}) does not exist")
-        
+
         # remove the compound to the reaction network
         del self._products[comp.id]
 
     def get_related_biota_reaction(self):
         """
         Get the biota reaction that is related to this network reaction
-        
+
         :return: The biota compound corresponding to the rhea id. Returns `None` is no biota reaction is found
         :rtype: `bioa.reaction.Reaction`, `None`
         """
-        
+
         try:
             return BiotaReaction.get(BiotaReaction.rhea_id == self.rhea_id)
         except:
             return None
-    
+
     # -- S --
-    
+
     def set_estimate(self, estimate: dict):
         if not "value" in estimate:
             BadRequestException("No value in estimate data")
@@ -645,53 +716,54 @@ class Reaction:
     def substrates(self) -> dict:
         """
         Returns the substrates of the reaction
-        
+
         :return: The list of substrates as {key,value} dictionnary
         :rtype: `dict`
         """
-        
+
         return self._substrates
-    
+
     # -- T --
-    
+
     def to_str(self, show_ids=False, show_mass=False, show_charge=False) -> str:
         """
         Returns a string representation of the reaction
-        
+
         :return: The string
         :rtype: `str`
         """
-        
+
         _left = []
         _right = []
         _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
-        
+
         for k in self._substrates:
             sub = self._substrates[k]
             comp = sub["compound"]
             stoich = sub["stoichiometry"]
             if show_ids:
                 _id = comp.chebi_id if comp.chebi_id else comp.id
-                _left.append( f"({stoich}) {_id}" )
+                _left.append(f"({stoich}) {_id}")
             else:
-                _left.append( f"({stoich}) {comp.id}" )
-        
+                _left.append(f"({stoich}) {comp.id}")
+
         for k in self._products:
             prod = self._products[k]
             comp = prod["compound"]
             stoich = prod["stoichiometry"]
             if show_ids:
                 _id = comp.chebi_id if comp.chebi_id else comp.id
-                _right.append( f"({stoich}) {_id}" )
+                _right.append(f"({stoich}) {_id}")
             else:
-                _right.append( f"({stoich}) {comp.id}" )
-        
+                _right.append(f"({stoich}) {comp.id}")
+
         if not _left:
             _left = ["*"]
-            
+
         if not _right:
             _right = ["*"]
-            
-        _str = " + ".join(_left) + _dir[self.direction].replace("E", self.enzyme.get("ec_number","")) + " + ".join(_right)
+
+        _str = " + ".join(_left) + _dir[self.direction].replace("E",
+                                                                self.enzyme.get("ec_number", "")) + " + ".join(_right)
         #_str = _str + " " + str(self.enzyme)
         return _str
