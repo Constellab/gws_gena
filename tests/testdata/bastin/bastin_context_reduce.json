@@ -80,6 +80,41 @@
             "upper_bound": 10,
             "target": 0.2686,
             "confidence_score": 1.0
+        },
+        {
+            "id": "CO2_ex",
+            "name": "CO2 ex",
+            "variables": [
+                {
+                    "reference_id": "v3",
+                    "reference_type": "reaction",
+                    "coefficient": 1.0
+                },
+                {
+                    "reference_id": "v8",
+                    "reference_type": "reaction",
+                    "coefficient": 1.0
+                },
+                {
+                    "reference_id": "v13",
+                    "reference_type": "reaction",
+                    "coefficient": 1.0
+                },
+                {
+                    "reference_id": "v11",
+                    "reference_type": "reaction",
+                    "coefficient": 1.0
+                },
+                {
+                    "reference_id": "v10",
+                    "reference_type": "reaction",
+                    "coefficient": 1.0
+                }
+            ],
+            "lower_bound": -10,
+            "upper_bound": 10,
+            "target": 0,
+            "confidence_score": 1.0
         }
     ]
 }

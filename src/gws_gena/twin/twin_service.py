@@ -1,16 +1,17 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
 from typing import Dict, List, TypedDict
+
+import efmtool
 import numpy as np
 import pandas
+from gws_core import BadRequestException
 from pandas import DataFrame
 from scipy.linalg import null_space
-import efmtool
 
-from gws_core import BadRequestException
 from .twin import FlatTwin
 from .twin_context import Variable
 
@@ -20,26 +21,26 @@ from .twin_context import Variable
 #
 # ####################################################################
 
-FBAProblem = TypedDict("FBAProblem",{ 
-    "S": DataFrame, 
+FBAProblem = TypedDict("FBAProblem", {
+    "S": DataFrame,
     "C": DataFrame,
     "b": DataFrame,
     "C_rel": DataFrame
 })
 
-ObsvMatrices = TypedDict("ObsvMatrices",{ 
+ObsvMatrices = TypedDict("ObsvMatrices", {
     "C": DataFrame,
     "b": DataFrame
 })
 
-ReducedMatrices = TypedDict("ReducedMatrices",{ 
+ReducedMatrices = TypedDict("ReducedMatrices", {
     "K": DataFrame,
-    "Kp": DataFrame,
-    "b": DataFrame
+    "EFM": DataFrame,
 })
 
+
 class TwinService:
-    
+
     @classmethod
     def create_fba_problem(cls, flat_twin: FlatTwin) -> FBAProblem:
         """
@@ -50,19 +51,18 @@ class TwinService:
         :returns: The FBA problem
         :rtype: `dict`
         """
-        
+
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("Cannot create the stoichiometric matrix. A flat model is required")
-        
+
         S = cls.create_stoichiometric_matrix(flat_twin)
         obsv_matrix = cls.create_observation_matrices(flat_twin)
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
-        C_rel =  S.to_numpy() @ C.to_numpy().T  # b_ref.T = S * C.T
+        C_rel = S.to_numpy() @ C.to_numpy().T  # b_ref.T = S * C.T
         C_rel = DataFrame(data=C_rel.T, index=C.index, columns=S.index)
-        return FBAProblem( S=S, C=C, b=b, C_rel=C_rel )
- 
-    
+        return FBAProblem(S=S, C=C, b=b, C_rel=C_rel)
+
     @classmethod
     def create_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
         """
@@ -110,7 +110,6 @@ class TwinService:
             raise BadRequestException("A flat model is required")
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_non_steady_stoichiometric_matrix()
-
 
     @classmethod
     def compute_input_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
@@ -162,21 +161,21 @@ class TwinService:
         rxn_ids = list(flat_net.reactions.keys())
         measure_ids = flat_ctx.get_measure_ids()
         C = DataFrame(
-            index = measure_ids,
-            columns = rxn_ids,
-            data = np.zeros((len(measure_ids),len(rxn_ids)))
+            index=measure_ids,
+            columns=rxn_ids,
+            data=np.zeros((len(measure_ids), len(rxn_ids)))
         )
         b = DataFrame(
-            index = measure_ids,
-            columns = ["target", "lb", "ub", "confidence_score"],
-            data = np.zeros((len(measure_ids),4))
+            index=measure_ids,
+            columns=["target", "lb", "ub", "confidence_score"],
+            data=np.zeros((len(measure_ids), 4))
         )
         for k in flat_ctx.measures:
             measure = flat_ctx.measures[k]
             meas_id = measure.id
             b.loc[meas_id, :] = [
-                measure.target, 
-                measure.lower_bound, 
+                measure.target,
+                measure.lower_bound,
                 measure.upper_bound,
                 measure.confidence_score
             ]
@@ -189,19 +188,27 @@ class TwinService:
                     C.at[meas_id, rxn_id] = coef
                 else:
                     raise BadRequestException("Variables of type metabolite/compound are not supported in context")
-        return ObsvMatrices(C=C,b=b)
+        return ObsvMatrices(C=C, b=b)
 
     @classmethod
     def compute_nullspace(cls, N: DataFrame) -> DataFrame:
         ns = null_space(N.to_numpy())
-        return DataFrame(index = N.columns, data=ns)
+        return DataFrame(index=N.columns, data=ns)
 
     @classmethod
-    def compute_elementary_flux_modes(cls, flat_twin: FlatTwin) -> DataFrame:
+    def compute_elementary_flux_modes(cls, flat_twin: FlatTwin, reversibilities=None) -> DataFrame:
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat model is required")
         N = cls.create_steady_stoichiometric_matrix(flat_twin)
-        return cls._compute_elementary_flux_modes_from_matrix(N)
+
+        # Nn = cls.create_non_steady_stoichiometric_matrix(flat_twin)
+        # idx = Nn.any(axis=0)
+        # reversibilities = [0] * N.shape[1]
+        # for k in range(idx.shape[0]):
+        #     if idx.iloc[k]:
+        #         reversibilities[k] = 1
+
+        return cls._compute_elementary_flux_modes_from_matrix(N, reversibilities=reversibilities)
 
     @classmethod
     def _compute_elementary_flux_modes_from_matrix(cls, N: DataFrame, reversibilities: List[int] = None) -> DataFrame:
@@ -209,44 +216,58 @@ class TwinService:
             reversibilities = [0] * N.shape[1]
         efms = efmtool.calculate_efms(
             N.values,
-            reversibilities = reversibilities,
-            reaction_names = N.columns,
-            metabolite_names = N.index
+            reversibilities=reversibilities,
+            reaction_names=N.columns,
+            metabolite_names=N.index
         )
-        column_names = [ f"e{i}" for i in range(1,efms.shape[1]+1) ]
+        column_names = [f"e{i}" for i in range(1, efms.shape[1]+1)]
         return DataFrame(index=N.columns, columns=column_names, data=efms)
 
     @classmethod
-    def compute_reduced_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
-        E = TwinService.compute_elementary_flux_modes(flat_twin)
+    def compute_reduced_matrices(cls, flat_twin: FlatTwin, use_context: bool = True) -> ReducedMatrices:
+        EFM = TwinService.compute_elementary_flux_modes(flat_twin)
+
         Ns = TwinService.compute_input_stoichiometric_matrix(flat_twin)
         Np = TwinService.compute_output_stoichiometric_matrix(flat_twin)
         N = pandas.concat([Ns, Np])
+
+        if use_context:
+            obs = TwinService.create_observation_matrices(flat_twin)
+            N = obs["C"]
+        else:
+            pass
+
         K = DataFrame(
-            data=np.matmul(N.values, E.values),
+            data=np.matmul(N.values, EFM.values),
             index=N.index,
-            columns=E.columns
+            columns=EFM.columns
         )
-        return K
+        # remove all zero rows
+        K = K.loc[K.any(axis=1), :]
+        K = K.loc[:, K.any(axis=0)]
+
+        return ReducedMatrices(K=K, EFM=EFM)
 
     # @classmethod
-    # def compute_reduced_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
-    #     E = TwinService.compute_elementary_flux_modes(flat_twin)
+    # def compute_reduced_matrices(cls, flat_twin: FlatTwin) -> DataFrame:
+    #     EFM = TwinService.compute_elementary_flux_modes(flat_twin)
     #     Ns = TwinService.compute_input_stoichiometric_matrix(flat_twin)
     #     Np = TwinService.compute_output_stoichiometric_matrix(flat_twin)
     #     N = pandas.concat([Ns, Np])
+    #     print(N)
+
+    #     obs = TwinService.create_observation_matrices(flat_twin)
+    #     C = obs["C"]
+    #     print(C)
+
     #     K = DataFrame(
-    #         data=np.matmul(N.values, E.values),
-    #         index=N.index,
+    #         data=np.matmul(C, E.values),
+    #         index=C.index,
     #         columns=E.columns
     #     )
-    #     fba_prob = TwinService.create_fba_problem(flat_twin)
-    #     C_rel   = fba_prob["C_rel"]
-    #     C_rel   = C_rel.loc[:, K.index]                      # reduce C_rel and only keep external compounds
-    #     C_rel   = C_rel.loc[:, (C_rel != 0).any(axis=0)]    # remove zero columns
-    #     b       = fba_prob["b"]
-    #     K_prime = K.loc[C_rel.columns, :]                   # reduce K to only keep measured fluxes
-    #     return ReducedMatrices(K=K, Kp=K_prime, b=b)
 
+    #     # remove all zero rows
+    #     K = K.loc[K.any(axis=1), :]
+    #     K = K.loc[:, K.any(axis=0)]
 
-
+    #     return ReducedMatrices(K=K, EFM=EFM)

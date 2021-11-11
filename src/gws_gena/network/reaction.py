@@ -435,6 +435,7 @@ class Reaction:
 
             rxn: Reaction = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number,
                                 network=network,
+                                rhea_id=rhea_rxn.rhea_id,
                                 direction=rhea_rxn.direction,
                                 enzyme=e)
 

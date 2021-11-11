@@ -725,20 +725,8 @@ class Network(Resource):
 
     # -- L --
 
-    def get_layout(self) -> DataFrame:
-        table = []
-        for k in self.metabolite:
-            met = self.metabolite[k]
-            table.append(
-                [met.id, met.position]
-            )
-
-        table = DataFrame(table, columns=column_names)
-        table = table.sort_values(by=['id'])
-        return table
-
     @classmethod
-    def loads(cls, data: NetworkDict):
+    def loads(cls, data: NetworkDict, skipp_bigg_exchange_reactions=True):
         if not data.get("compartments"):
             raise BadRequestException("Invalid network dump. Compartment field not found")
         if not data.get("metabolites"):
@@ -813,6 +801,9 @@ class Network(Resource):
             added_comps[_id] = comp
 
         for val in data["reactions"]:
+            if is_BIGG_data_format and skipp_bigg_exchange_reactions and val["id"].startswith("EX_"):
+                continue
+
             rxn = Reaction(
                 id=val["id"],  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER),\
                 name=val.get("name"), \
@@ -875,6 +866,9 @@ class Network(Resource):
         :param rxn_id: The id of the reaction to remove
         :type rxn_id: `str`
         """
+
+        if not isinstance(rxn_id, str):
+            raise BadRequestException("The reaction id must be a string")
 
         del self.reactions[rxn_id]
 

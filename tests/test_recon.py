@@ -1,15 +1,17 @@
 
-import os, json
+import json
+import os
 
-from gws_core import Settings, IExperiment, Experiment, File, TaskTester
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import TwinContext, DraftRecon, GapFiller, NetworkMerger
+from gws_core import Experiment, File, IExperiment, Settings, TaskTester
+from gws_gena import DraftRecon, GapFiller, NetworkMerger, TwinContext
 from gws_gena.proto import ReconProto
 
 settings = Settings.retrieve()
 
+
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
-    
+
     async def test_recon_proto(self):
         self.print("Test ReconProto")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
@@ -27,7 +29,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         biomass_file = File()
         biomass_file.path = file_path
 
-        experiment = IExperiment( ReconProto )
+        experiment = IExperiment(ReconProto)
         proto = experiment.get_protocol()
 
         proto.set_input("ec_file", ec_file)
@@ -35,24 +37,24 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         proto.set_input("medium_file", medium_file)
 
         recon = proto.get_process("recon")
-        recon.set_param('tax_id', "263815")  #pcystis murina
+        recon.set_param('tax_id', "263815")  # pcystis murina
 
         gap_filler = proto.get_process("gap_filler")
-        gap_filler.set_param('tax_id', "4753")    #pcystis 
-        #gap_filler.set_param('tax_id', "4751")    #fungi
-        #gap_filler.set_param('tax_id', "2759")    #eukaryota
+        gap_filler.set_param('tax_id', "4753")  # pcystis
+        # gap_filler.set_param('tax_id', "4751")    #fungi
+        # gap_filler.set_param('tax_id', "2759")    #eukaryota
         gap_filler.set_param('biomass_and_medium_gaps_only', True)
         gap_filler.set_param('add_sink_reactions', True)
 
         async def assert_results(net, file_name):
-            file_path = os.path.join(data_dir, file_name+"_net.csv")
-            with open(file_path, 'w') as f:
-                f.write(net.to_csv())
+            # file_path = os.path.join(data_dir, file_name+"_net.csv")
+            # with open(file_path, 'w') as f:
+            #     f.write(net.to_csv())
 
-            file_path = os.path.join(data_dir, file_name+"_net.json")
-            with open(file_path, 'w') as f:
-                json.dump(net.dumps(), f)
-            
+            # file_path = os.path.join(data_dir, file_name+"_net.json")
+            # with open(file_path, 'w') as f:
+            #     json.dump(net.dumps(), f)
+
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'r') as f:
                 self.assertEqual(net.to_csv(), f.read())
@@ -61,7 +63,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             with open(file_path, 'w') as f:
                 table = net.get_compound_stats_as_table()
                 f.write(table.to_csv())
-            
+
             file_path = os.path.join(data_dir, file_name+"_gaps.csv")
             with open(file_path, 'w') as f:
                 table = net.get_gaps_as_table()
@@ -84,17 +86,17 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         self.print("Test Recon using tax_id only")
 
         organisms = {
-            "eukaryota" : "2759",
-            "sapiens" : "9606",
+            "eukaryota": "2759",
+            "sapiens": "9606",
             "yeast": "4932",
-            "mus musculus" : "10090"
+            "mus musculus": "10090"
         }
 
         name = "sapiens"
         tester = TaskTester(
-            task_type = DraftRecon,
-            inputs = {},
-            params = {"tax_id": organisms[name]} 
+            task_type=DraftRecon,
+            inputs={},
+            params={"tax_id": organisms[name]}
         )
         outputs = await tester.run()
         net = outputs["network"]
@@ -106,8 +108,6 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         file_path = os.path.join(data_dir, f"{name}.json")
         with open(file_path, 'w') as f:
-             json.dump(net.view_as_network().to_dict(), f)
+            json.dump(net.view_as_network().to_dict(), f)
 
-        #print(len(net.reactions))
-
-        
+        # print(len(net.reactions))
