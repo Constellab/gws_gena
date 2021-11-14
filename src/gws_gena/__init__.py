@@ -1,4 +1,3 @@
-# network
 # table
 from .data.biomass_table import BiomassExporter, BiomassImporter, BiomassTable
 from .data.ec_table import ECTable, ECTableExporter, ECTableImporter
@@ -12,21 +11,26 @@ from .fba.fva import FVA
 from .fba.fva_result import FVAResult
 from .fba.proto.fba_proto import FBAProto
 from .fba.proto.fva_proto import FVAProto
+# KnockOut
+from .knockout_analysis.knockout_analysis import KnockOutAnalysis
+from .knockout_analysis.knockout_analysis_result import KnockOutAnalysisResult
+# network
 from .network.compound import Compound
 from .network.network import Network, NetworkExporter, NetworkImporter
+from .network.network_helper.reaction_adder_helper import ReactionAdderHelper
+from .network.network_helper.reaction_remover_helper import \
+    ReactionRemoverHelper
 from .network.network_transformer.network_merger import NetworkMerger
 from .network.network_transformer.reaction_adder import ReactionAdder
 from .network.network_transformer.reaction_remover import ReactionRemover
 from .network.reaction import Reaction
-#network > View
 from .network.view.network_view import NetworkView
+# recon
 from .recon.gap_filler import GapFiller
 from .recon.gap_finder import GapFinder
 from .recon.gap_finder_result import GapFinderResult
 from .recon.helper.recon_helper import ReconHelper
-# proto
 from .recon.proto.recon_proto import ReconProto
-# recon
 from .recon.recon import DraftRecon
 # twin
 from .twin.twin import FlatTwin, Twin

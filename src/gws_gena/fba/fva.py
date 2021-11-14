@@ -14,7 +14,7 @@ from gws_core import Task, task_decorator, ConfigParams, TaskInputs, TaskOutputs
 from gws_core import BadRequestException, ListParam, StrParam, BoolParam
 from gws_core import Logger
 
-from .fba import FBA
+from .fba_helper.fba_helper import FBAHelper
 from .fba_result import OptimizeResult
 from .fva_result import FVAResult
 from ..twin.twin import Twin
@@ -54,13 +54,13 @@ def _do_parallel_loop(kwargs):
         # min
         cf.iloc[i,0] = 1.0
         if solver == "quad":
-            res_fva, _ = FBA.solve_cvxpy( 
+            res_fva, _ = FBAHelper.solve_cvxpy( 
                 cf, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
                 verbose=False
             )
         else:
-            res_fva: OptimizeResult = FBA.solve_scipy( 
+            res_fva: OptimizeResult = FBAHelper.solve_scipy( 
                 cf, A_eq, b_eq, bounds, 
                 solver=solver
             )
@@ -69,13 +69,13 @@ def _do_parallel_loop(kwargs):
         # max
         cf.iloc[i,0] = -1.0
         if solver == "quad":
-            res_fva, _ = FBA.solve_cvxpy( 
+            res_fva, _ = FBAHelper.solve_cvxpy( 
                 cf, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
                 verbose=False
             )
         else:
-            res_fva: OptimizeResult = FBA.solve_scipy( 
+            res_fva: OptimizeResult = FBAHelper.solve_scipy( 
                 cf, A_eq, b_eq, bounds, 
                 solver=solver
             )
@@ -120,7 +120,7 @@ class FVA(Task):
             self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
 
-        c, A_eq, b_eq, bounds = FBA.build_problem(
+        c, A_eq, b_eq, bounds = FBAHelper.build_problem(
             bio, 
             fluxes_to_maximize=fluxes_to_maximize, 
             fluxes_to_minimize=fluxes_to_minimize,
@@ -130,13 +130,13 @@ class FVA(Task):
 
         self.log_info_message(message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
-            res, warm_solver = FBA.solve_cvxpy( 
+            res, warm_solver = FBAHelper.solve_cvxpy( 
                 c, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
                 verbose=False
             )
         else:
-            res: OptimizeResult = FBA.solve_scipy( 
+            res: OptimizeResult = FBAHelper.solve_scipy( 
                 c, A_eq, b_eq, bounds, 
                 solver=solver
             )

@@ -14,11 +14,12 @@ from typing import Dict, List, Optional, TypedDict
 import numpy as np
 from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import (BadRequestException, ConfigParams, DictRField, File,
-                      JSONView, Resource, ResourceExporter, ResourceImporter,
-                      RField, StrParam, StrRField, TableView, export_to_path,
-                      exporter_decorator, import_from_path, importer_decorator,
-                      resource_decorator, task_decorator, view)
+from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
+                      File, JSONView, Resource, ResourceExporter,
+                      ResourceImporter, RField, StrParam, StrRField, TableView,
+                      export_to_path, exporter_decorator, import_from_path,
+                      importer_decorator, resource_decorator, task_decorator,
+                      view)
 from pandas import DataFrame
 
 from .compound import Compound
@@ -177,7 +178,7 @@ class Network(Resource):
 
         # add reaction compounds to the network
         for sub in rxn.substrates.values():
-            #sub = rxn.substrates[k]
+            # sub = rxn.substrates[k]
             comp = sub["compound"]
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
@@ -194,7 +195,7 @@ class Network(Resource):
                     self.add_compound(comp)
 
         for prod in rxn.products.values():
-            #prod = rxn.products[k]
+            # prod = rxn.products[k]
             comp = prod["compound"]
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
@@ -230,8 +231,8 @@ class Network(Resource):
         net = Network()
         net.name = self.name
         net.description = self.description
-        net.compounds = copy.deepcopy(self.compounds)
-        net.reactions = copy.deepcopy(self.reactions)
+        net.compounds = copy.deepcopy(self.compounds) #/!\ use deepcopy for performance
+        net.reactions = copy.deepcopy(self.reactions) #/!\ use deepcopy for performance
         net.compartments = self.compartments.copy()
         net.tags = copy.deepcopy(self.tags)
 
@@ -684,9 +685,12 @@ class Network(Resource):
     # -- I --
 
     @classmethod
-    @import_from_path(specs={
-        'file_format': StrParam(default_value=".json", short_description="File format"),
-    })
+    @import_from_path(
+        specs={'file_format': StrParam(default_value=".json", short_description="File format"),
+               "skip_bigg_exchange_reactions":
+               BoolParam(
+                   default_value=True,
+                   short_description="Set True to skip Exchange reaction in while importing BiGG data files; False otherwise")})
     def import_from_path(cls, file: File, params: ConfigParams) -> 'Network':
         """
         Import a network from a repository
@@ -699,6 +703,7 @@ class Network(Resource):
 
         net: Network
         file_format = params.get_value("file_format", ".json")
+        skip_bigg_exchange_reactions = params.get_value("skip_bigg_exchange_reactions", True)
         file_extension = Path(file.path).suffix or file_format
         if file_extension in [".json"] or file_format == ".json":
             with open(file.path, 'r') as fp:
@@ -708,8 +713,8 @@ class Network(Resource):
                     raise BadRequestException(f"Cannot load JSON file {file.path}. Error: {err}")
 
                 if _json.get("reactions"):
-                    # is a raw dump network (e.g. BIGG database, classical bioinformatics exchange files)
-                    net = cls.loads(_json)
+                    # is an unknown dump network (e.g. BiGG database, classical bioinformatics exchange files)
+                    net = cls.loads(_json, skip_bigg_exchange_reactions=skip_bigg_exchange_reactions)
                 elif _json.get("network"):
                     # is gws resource
                     net = cls.loads(_json["network"])
@@ -726,7 +731,7 @@ class Network(Resource):
     # -- L --
 
     @classmethod
-    def loads(cls, data: NetworkDict, skipp_bigg_exchange_reactions=True):
+    def loads(cls, data: NetworkDict, skip_bigg_exchange_reactions: bool = True):
         if not data.get("compartments"):
             raise BadRequestException("Invalid network dump. Compartment field not found")
         if not data.get("metabolites"):
@@ -750,9 +755,9 @@ class Network(Resource):
             # if re.match(r"CHEBI\:\d+$", val["id"]):
             #     chebi_id = val["id"]
 
-            is_BIGG_data_format = ("annotation" in val)
+            is_bigg_data_format = ("annotation" in val)
             alt_chebi_ids = []
-            if not chebi_id and not inchikey and is_BIGG_data_format:
+            if not chebi_id and not inchikey and is_bigg_data_format:
                 annotation = val["annotation"]
                 alt_chebi_ids = annotation.get("chebi", [])
                 inchikey = annotation.get("inchi_key", [""])[0]
@@ -801,7 +806,7 @@ class Network(Resource):
             added_comps[_id] = comp
 
         for val in data["reactions"]:
-            if is_BIGG_data_format and skipp_bigg_exchange_reactions and val["id"].startswith("EX_"):
+            if is_bigg_data_format and skip_bigg_exchange_reactions and val["id"].startswith("EX_"):
                 continue
 
             rxn = Reaction(
@@ -1134,6 +1139,6 @@ class NetworkImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator("NetworkExporter", resource_type=Network)
+@ exporter_decorator("NetworkExporter", resource_type=Network)
 class NetworkExporter(ResourceExporter):
     pass

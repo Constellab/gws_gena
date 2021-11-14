@@ -49,7 +49,7 @@ class ReconHelper:
             if running_task is not None:
                 if (counter % nb_interval) == 0:
                     perc = 100*(counter/total_enzymes)
-                    enzymes.update_progress_value(perc, message=f"enzyme {counter} ...")
+                    running_task.update_progress_value(perc, message=f"enzyme {counter} ...")
                 counter += 1
 
             try:

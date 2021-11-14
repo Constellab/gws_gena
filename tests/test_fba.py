@@ -1,15 +1,15 @@
-import os, json
-import pandas
-import numpy
+import json
+import os
 
-from gws_core import Settings, GTest, IExperiment, ExperimentService, File
+import numpy
+import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import Network
-from gws_gena import Twin, TwinContext
-from gws_gena import FBA, FBAResult
+from gws_core import ExperimentService, File, GTest, IExperiment, Settings
+from gws_gena import FBA, FBAResult, Network, Twin, TwinContext
 from gws_gena.proto import FBAProto
 
 settings = Settings.retrieve()
+
 
 class TestFba(BaseTestCaseUsingFullBiotaDB):
 
@@ -33,7 +33,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             fba.set_param("solver", solver)
 
             await experiment.run()
-    
+
             # test results
             result = proto.get_output("fba_result")
             fluxes = result.get_fluxes_as_table()
@@ -59,14 +59,14 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 # file_path = os.path.join(result_dir,"flux.csv")
                 # with open(file_path, 'w') as fp:
                 #     fp.write(fluxes.to_csv())
-                
+
                 table = fluxes.to_numpy()
-                file_path = os.path.join(result_dir,"flux.csv")
+                file_path = os.path.join(result_dir, "flux.csv")
                 expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
                 table = numpy.array(table, dtype=float)
                 expected_table = numpy.array(expected_table, dtype=float)
-                self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-02).all() )
-            
+                self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-02).all())
+
             bio = proto.get_output("annotated_twin")
             net = list(bio.networks.values())[0]
             tflux = net.get_total_abs_flux_as_table()
@@ -75,23 +75,23 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             tflux2 = result.get_total_abs_flux_as_table()
             print("----")
             print(tflux2)
-            self.assertTrue( tflux.equals(tflux2) )
+            self.assertTrue(tflux.equals(tflux2))
 
             bio = result.get_related_twin()
-            self.assertIsInstance( bio, Twin )
+            self.assertIsInstance(bio, Twin)
 
         # highs
         for context in [False, True]:
             self.print(f"Test FBAProto: Small network (toy + context={context} + linprog)")
-            await run_fba(context=context,solver="highs")
+            await run_fba(context=context, solver="highs")
         # quad
         for relax in [False, True]:
             self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
-            await run_fba(context=True,solver="quad",relax_qssa=relax) 
+            await run_fba(context=True, solver="quad", relax_qssa=relax)
 
     async def test_large_fba(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        
+
         async def run_fba(organism, solver="highs", relax_qssa=False):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
@@ -104,6 +104,10 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             proto.set_input("network_file", network_file)
             proto.set_input("context_file", ctx_file)
+
+            importer = proto.get_process("network_importer")
+            importer.set_param("skip_bigg_exchange_reactions", False)
+
             fba = proto.get_process("fba")
             fba.set_param('solver', solver)
             fba.set_param('relax_qssa', relax_qssa)
@@ -113,7 +117,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
             await experiment.run()
-            
+
             relax_dir = ""
             if solver == "quad":
                 relax_dir = "relax" if relax_qssa else "no-relax"
@@ -122,9 +126,9 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             result = proto.get_output("fba_result")
             fluxes = result.get_fluxes_as_table()
             if organism == 'ecoli':
-                biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:]
+                biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"], :]
             else:
-                biomass_flux = fluxes.loc[["pcys_Biomass"],:]
+                biomass_flux = fluxes.loc[["pcys_Biomass"], :]
 
             sv = result.get_sv_as_table()
             print(fluxes)
@@ -147,11 +151,16 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             #     fp.write( biomass_flux.to_csv() )
 
             table = fluxes.to_numpy()
-            file_path = os.path.join(result_dir,"flux.csv")
-            expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
             table = numpy.array(table, dtype=float)
+
+            file_path = os.path.join(result_dir, "flux.csv")
+            expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
-            self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-01).all() )
+
+            print(table.shape)
+            print(expected_table.shape)
+
+            self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
             bio = proto.get_output("annotated_twin")
             net = list(bio.networks.values())[0]
@@ -161,12 +170,12 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             tflux2 = result.get_total_abs_flux_as_table()
             print("----")
             print(tflux2)
-            self.assertTrue( tflux.equals(tflux2) )
+            self.assertTrue(tflux.equals(tflux2))
 
             bio = result.get_related_twin()
-            self.assertIsInstance( bio, Twin )
+            self.assertIsInstance(bio, Twin)
             #bio_json = result.get_annotated_twin_as_json()
-            #print(bio_json)
+            # print(bio_json)
 
         # ecoli
         organism = "ecoli"
@@ -175,9 +184,9 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         for relax in [False, True]:
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             await run_fba(organism=organism, solver="quad", relax_qssa=relax)
-        
+
         # pcys
         for relax in [True]:
             organism = "pcys"
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-            await run_fba(organism=organism, solver="quad", relax_qssa=True)
+            await run_fba(organism=organism, solver="quad", relax_qssa=relax)

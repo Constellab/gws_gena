@@ -1,17 +1,18 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import json
 import copy
+import json
 import uuid
 from pathlib import Path
-from typing import TypedDict, Dict
+from typing import Dict, TypedDict
 
-from gws_core import (BadRequestException, JSONDict, resource_decorator, 
-                        ResourceService, StrRField, DictRField, view, JSONView)
-from ..network.network import Network, Compound, Reaction
+from gws_core import (BadRequestException, DictRField, JSONDict, JSONView,
+                      ResourceService, StrRField, resource_decorator, view)
+
+from ..network.network import Compound, Network, Reaction
 from .twin_context import TwinContext, Variable
 
 TwinDict = TypedDict("TwinDict", {
@@ -27,15 +28,16 @@ TwinDict = TypedDict("TwinDict", {
 #
 # ####################################################################
 
+
 @resource_decorator("Twin")
 class Twin(JSONDict):
     """
     Class that represents a twin.
-    
+
     A twin is defined by a set of networks related to a set of contexts. It
     can therefore be used for simulation and prediction.
     """
-    
+
     DEFAULT_NAME = "twin"
     name: str = StrRField(default_value="", searchable=True)
     description: str = StrRField(default_value="", searchable=True)
@@ -46,7 +48,7 @@ class Twin(JSONDict):
     _table_name = "gena_twin"
 
     # -- A --
-    
+
     def add_network(self, network: 'Network', related_context: 'TwinContext' = None):
         """
         Add a network to the twin
@@ -56,7 +58,7 @@ class Twin(JSONDict):
         :param related_context: A context related to the network
         :type related_context: `gena.twin_context.TwinContext`
         """
-        
+
         if not isinstance(network, Network):
             raise BadRequestException("The network must an instance of Network")
         if network.uid in self._networks:
@@ -66,8 +68,8 @@ class Twin(JSONDict):
             if not isinstance(related_context, TwinContext):
                 raise BadRequestException("The related context must be an instance of TwinContext")
             self.add_context(related_context, network)
-        
-    def add_context(self, ctx: 'TwinContext', related_network: 'Network' = None):  
+
+    def add_context(self, ctx: 'TwinContext', related_network: 'Network' = None):
         """
         Add a context to the twin
 
@@ -76,7 +78,7 @@ class Twin(JSONDict):
         :param related_network: A network related to the context
         :type related_network: `gena.network.Network`
         """
-        
+
         if not isinstance(ctx, TwinContext):
             raise BadRequestException("The context must be an instance of TwinContext")
         if ctx.uid in self._contexts:
@@ -87,35 +89,36 @@ class Twin(JSONDict):
                 raise BadRequestException("The related network must be an instance of Network")
             if not related_network.uid in self._networks:
                 raise BadRequestException("The related networks is not found")
-            # ckeck that the context is consistent with the related network 
+            # ckeck that the context is consistent with the related network
             reaction_ids = related_network.get_reaction_ids()
             for k in ctx.measures:
                 measure = ctx.measures[k]
                 for v in measure.variables:
                     if v.reference_type == Variable.REACTION_REFERENCE_TYPE:
                         if not v.reference_id in reaction_ids:
-                            raise BadRequestException(f"The reaction '{v.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
+                            raise BadRequestException(
+                                f"The reaction '{v.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
                     else:
-                        raise BadRequestException(f"Invalid reference type '{v.reference_type}' for the context measure '{measure.id}'")
+                        raise BadRequestException(
+                            f"Invalid reference type '{v.reference_type}' for the context measure '{measure.id}'")
             self._network_contexts[related_network.uid] = ctx
-    
+
     # -- B --
-  
+
     # -- C --
-    
+
     @property
     def contexts(self):
         return self._contexts
 
     def copy(self):
         twin = Twin()
-        twin.uid = self.uid
         twin.name = self.name
         twin.description = self.description
         # keep same networks
-        twin._networks = { k:self._networks[k].copy() for k in self._networks }
-        twin._contexts = { k:self._contexts[k].copy() for k in self._contexts }
-        twin._network_contexts = self._network_contexts
+        twin._networks = {k: self._networks[k].copy() for k in self._networks}
+        twin._contexts = {k: self._contexts[k].copy() for k in self._contexts}
+        twin._network_contexts = copy.deepcopy(self._network_contexts)
         return twin
 
     # -- D --
@@ -131,7 +134,7 @@ class Twin(JSONDict):
                 _net_json.append({
                     "uid": _net.uid,
                     **_net.dumps()
-                }) 
+                })
         for _ctx in self._contexts.values():
             if not deep:
                 _ctx_json.append({"uid": _ctx.uid})
@@ -143,7 +146,7 @@ class Twin(JSONDict):
         for _net_uid in self._network_contexts:
             _ctx = self._network_contexts[_net_uid]
             _net_ctx_json.append({
-                "network_uid": _net_uid, 
+                "network_uid": _net_uid,
                 "context_uid": _ctx.uid
             })
         _json = {
@@ -152,7 +155,7 @@ class Twin(JSONDict):
             "network_contexts": _net_ctx_json
         }
         return _json
-        
+
     # -- F --
 
     def flatten(self) -> 'FlatTwin':
@@ -164,10 +167,10 @@ class Twin(JSONDict):
         _rxns = []
 
         def __get_network_uname(net):
-            return ( net.name if net.name else "network_"+str(net.uri) )
+            return (net.name if net.name else "network_"+str(net.uri))
 
-        _mapping = {} 
-        _rev_mapping = {} 
+        _mapping = {}
+        _rev_mapping = {}
         for net in self._networks.values():
             net_data = net.dumps()
             uname = __get_network_uname(net)
@@ -175,20 +178,20 @@ class Twin(JSONDict):
                 c_name = Compound._flatten_id(k, uname, is_compartment=True)
                 c_desc = net_data["compartments"][k]
                 _comps[c_name] = c_desc
-            
+
             for _met in net_data["metabolites"]:
                 _met["id"] = Compound._flatten_id(_met["id"], uname)
-                _met["compartment"] =  Compound._flatten_id(_met["compartment"], uname, is_compartment=True)
-                _mets.append( _met )
-            
+                _met["compartment"] = Compound._flatten_id(_met["compartment"], uname, is_compartment=True)
+                _mets.append(_met)
+
             for _rxn in net_data["reactions"]:
                 _original_rxn_id = _rxn["id"]
                 _rxn["id"] = Reaction._flatten_id(_rxn["id"], uname)
                 _rxn["lower_bound"] = _rxn["lower_bound"]
                 _rxn["upper_bound"] = _rxn["upper_bound"]
-                _mapping[ _rxn["id"] ] = {
-                     "network_name": net.name,
-                     "reaction_id": _original_rxn_id
+                _mapping[_rxn["id"]] = {
+                    "network_name": net.name,
+                    "reaction_id": _original_rxn_id
                 }
                 if not net.name in _rev_mapping:
                     _rev_mapping[net.name] = {}
@@ -198,9 +201,9 @@ class Twin(JSONDict):
                     _flat_met_id = Compound._flatten_id(_met_id, uname)
                     stoich = _rxn["metabolites"][_met_id]
                     _rxn_mets[_flat_met_id] = stoich
-                _rxn["metabolites"] = _rxn_mets                
-                _rxns.append( _rxn )
-        
+                _rxn["metabolites"] = _rxn_mets
+                _rxns.append(_rxn)
+
         _meas = []
         for ctx in self._contexts.values():
             related_network = self._get_related_network(ctx)
@@ -210,7 +213,7 @@ class Twin(JSONDict):
                 _meas = copy.deepcopy(ctx_data["measures"])
                 for k in range(0, len(_meas)):
                     for var in _meas[k]["variables"]:
-                         var["reference_id"] = Reaction._flatten_id(var["reference_id"], uname)
+                        var["reference_id"] = Reaction._flatten_id(var["reference_id"], uname)
 
         _json = {
             "name": self.name,
@@ -228,14 +231,13 @@ class Twin(JSONDict):
         }
         return _json
 
-            
     # -- F --
 
     @classmethod
-    def import_from_path(cls, file_path: str, file_format:str = None) -> 'Twin':
-        """ 
+    def import_from_path(cls, file_path: str, file_format: str = None) -> 'Twin':
+        """
         Import a twin from a repository
-        
+
         :param file_path: The source file path
         :type file_path: str
         :returns: the tiwin
@@ -249,12 +251,12 @@ class Twin(JSONDict):
                 try:
                     _json = json.load(fp)
                 except Exception as err:
-                    raise BadRequestException(f"Cannot load JSON file {file_path}. Error: {err}")  
-                
+                    raise BadRequestException(f"Cannot load JSON file {file_path}. Error: {err}")
+
                 if _json.get("networks"):
                     # is a raw dump twin
                     twin = cls.loads(_json)
-                elif _json.get("twin"): 
+                elif _json.get("twin"):
                     # is gws resource
                     twin = cls.loads(_json["twin"])
                 else:
@@ -264,14 +266,14 @@ class Twin(JSONDict):
         return twin
 
     # -- G --
-  
+
     def _get_related_network(self, ctx):
         for net_uid in self._network_contexts:
             ctx = self._network_contexts[net_uid]
             if ctx.uid == ctx.uid:
                 return self._networks[net_uid]
         return None
-    
+
     def _get_related_context(self, net):
         for net_uid in self._network_contexts:
             if net.uid == net_uid:
@@ -285,23 +287,23 @@ class Twin(JSONDict):
     def loads(cls, data: TwinDict):
         twin = cls()
         nets = {}
-        for val in data.get("networks",[]):
+        for val in data.get("networks", []):
             net = Network.loads(val)
             nets[net.uid] = net
             twin.add_network(net)
 
-        for val in data.get("contexts",[]):
+        for val in data.get("contexts", []):
             ctx = TwinContext.loads(val)
             current_ctx_uid = ctx.uid
-            for net_ctx in data.get("network_contexts",[]):
+            for net_ctx in data.get("network_contexts", []):
                 ctx_uid = net_ctx["context_uid"]
                 if ctx_uid == current_ctx_uid:
                     net_uid = net_ctx["network_uid"]
                     twin.add_context(ctx, related_network=nets[net_uid])
                     break
 
-        twin.name = data.get("name","")
-        twin.description = data.get("description","")
+        twin.name = data.get("name", "")
+        twin.description = data.get("description", "")
         return twin
 
     # -- M --
@@ -323,7 +325,7 @@ class Twin(JSONDict):
             net = self._networks[k]
             c += len(net.compounds)
         return c
-    
+
     @property
     def number_of_reactions(self) -> int:
         c = 0
@@ -331,18 +333,19 @@ class Twin(JSONDict):
             net = self._networks[k]
             c += len(net.reactions)
         return c
-    
+
     # -- R --
-    
+
     def remove_all_contexts(self):
         self._contexts = {}
         self._network_contexts = {}
-        
+
     # -- S --
-    
+
     # -- T --
 
     # -- U --
+
 
 @resource_decorator("FlatTwin")
 class FlatTwin(Twin):
@@ -369,7 +372,7 @@ class FlatTwin(Twin):
         twin.name = flat_data["name"]
         twin.description = flat_data["description"]
         twin.mapping = flat_data["mapping"]
-        twin.reverse_mapping  = flat_data["reverse_mapping"]
+        twin.reverse_mapping = flat_data["reverse_mapping"]
         return twin
 
     def dumps_flat(self) -> dict:

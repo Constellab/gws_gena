@@ -133,7 +133,7 @@ class Reaction:
                 self.name = self.id
 
         if not self.id:
-            raise BadRequestException("At least a valid reaction id or name is reaction")
+            raise BadRequestException("At least a valid reaction id or name is required")
 
         if direction in ["B", "L", "R"]:
             self.direction = direction
@@ -242,9 +242,7 @@ class Reaction:
     # -- C --
 
     def copy(self) -> 'Reaction':
-        rxn = Reaction()
-        rxn.id = self.id
-        rxn.name = self.name
+        rxn = Reaction(id=self.id, name=self.name)
         rxn.network = self.network
         rxn.direction = self.direction
         rxn.lower_bound = self.lower_bound
@@ -252,11 +250,9 @@ class Reaction:
         rxn.rhea_id = self.rhea_id
         rxn.enzyme = self.enzyme
         rxn.position = self.position.copy()
-
         rxn._tax_ids = copy.deepcopy(self._tax_ids)
         rxn._estimate = copy.deepcopy(self._estimate)
         rxn._substrates = copy.deepcopy(self._substrates)
-        rxn._products = copy.deepcopy(self._products)
         rxn._products = copy.deepcopy(self._products)
         return rxn
 

@@ -1,15 +1,15 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
 import pandas as pd
+from gws_core import resource_decorator
 from pandas import DataFrame
 from scipy.optimize import OptimizeResult as SciPyOptimizeResult
 
-from gws_core import resource_decorator
-from .fba_result import FBAResult
-from .fba import OptimizeResult
+from .fba_result import FBAResult, OptimizeResult
+
 
 @resource_decorator("FVAResult")
 class FVAResult(FBAResult):
@@ -23,7 +23,7 @@ class FVAResult(FBAResult):
         lb = DataFrame(data=res.xmin, index=res.x_names, columns=["lower_bound"])
         ub = DataFrame(data=res.xmax, index=res.x_names, columns=["upper_bound"])
         return pd.concat([val, lb, ub], axis=1)
-    
+
     def get_sv_as_table(self, **kwargs) -> DataFrame:
         res: OptimizeResult = self.optimize_result
         df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])

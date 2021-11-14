@@ -1,25 +1,26 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import os
 import math
+import os
 
-from gws_core import Protocol, protocol_decorator
-from gws_core import Source, Sink, FIFO2, ConfigParams, ProcessSpec
+from gws_core import (FIFO2, ConfigParams, ProcessSpec, Protocol, Sink, Source,
+                      protocol_decorator)
 
 from ...network.network import NetworkImporter
-from ...twin.twin_context import ContextImporter
 from ...twin.twin import Twin
-from ...twin.twin_builder import TwinBuilder
 from ...twin.twin_annotator import TwinAnnotator
+from ...twin.twin_builder import TwinBuilder
+from ...twin.twin_context import ContextImporter
 from ..fba import FBA
+
 
 @protocol_decorator("FBAProto")
 class FBAProto(Protocol):
-    
-    def configure_protocol(self, config_params: ConfigParams) -> None:
+
+    def configure_protocol(self, _: ConfigParams) -> None:
         # network
         network_importer: ProcessSpec = self.add_process(NetworkImporter, 'network_importer')
         # context
@@ -30,11 +31,11 @@ class FBAProto(Protocol):
         twin_annotator: ProcessSpec = self.add_process(TwinAnnotator, 'twin_annotator')
 
         self.add_connectors([
-            (network_importer>>"resource", twin_builder<<"network"),
-            (context_importer>>"resource", twin_builder<<"context"),
-            (twin_builder>>"twin", fba<<"twin"),
-            (twin_builder>>"twin", twin_annotator<<"twin"),
-            (fba>>"result", twin_annotator<<"fba_result")
+            (network_importer >> "resource", twin_builder << "network"),
+            (context_importer >> "resource", twin_builder << "context"),
+            (twin_builder >> "twin", fba << "twin"),
+            (twin_builder >> "twin", twin_annotator << "twin"),
+            (fba >> "result", twin_annotator << "fba_result")
         ])
 
         self.add_interface('network_file', network_importer, 'file')

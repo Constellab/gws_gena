@@ -390,15 +390,13 @@ class Compound:
     # -- C --
 
     def copy(self) -> 'Compound':
-        c = Compound(id=self.id)
-        c.name = self.name
+        c = Compound(id=self.id, name=self.name, compartment=self.compartment)
         c.network = self.network
         c.charge = self.charge
         c.mass = self.mass
         c.monoisotopic_mass = self.monoisotopic_mass
         c.formula = self.formula
         c.inchi = self.inchi
-        c.compartment = self.compartment
         c.chebi_id = self.chebi_id
         c.alt_chebi_ids = copy.deepcopy(self.alt_chebi_ids)
         c.kegg_id = self.kegg_id

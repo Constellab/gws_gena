@@ -9,6 +9,7 @@ from gws_core import (ConfigParams, StrParam, Task, TaskInputs, TaskOutputs,
 from ...data.ec_table import ECTable
 from ...data.id_table import IDTable
 from ...network.network import Network, Reaction
+from ..network_helper.reaction_adder_helper import ReactionAdderHelper
 
 
 @task_decorator("ReactionAdder")
@@ -31,29 +32,12 @@ class ReactionAdder(Task):
     }
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        net: Network = inputs["network"]
+        network: Network = inputs["network"]
         tax_id = params['tax_id']
         tax_search_method = params['tax_search_method']
-        new_net: Network = net.copy()
-        table = inputs["reaction_table"]
-        if isinstance(table, ECTable):
-            ec_list: list = table.get_ec_numbers()
-            for ec in ec_list:
-                try:
-                    rxn = Reaction.from_biota(ec_number=ec, network=new_net, tax_id=tax_id,
-                                              tax_search_method=tax_search_method)
-                    new_net.add_reaction(rxn)
-                except:
-                    pass
+        reaction_table = inputs["reaction_table"]
 
-        elif isinstance(table, IDTable):
-            id_list: list = table.get_ids()
-            print(id_list)
-            for rxn_id in id_list:
-                try:
-                    rxn = Reaction.from_biota(rhea_id=rxn_id, network=new_net)
-                    new_net.add_reaction(rxn)
-                except:
-                    pass
+        new_network: Network = ReactionAdderHelper.add_list_of_reactions(
+            network, reaction_table, tax_id, tax_search_method=tax_search_method)
 
-        return {"network": new_net}
+        return {"network": new_network}
