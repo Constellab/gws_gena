@@ -77,6 +77,15 @@ class ECTable(Table):
                 f"Cannot import Table. No ec numbers found (no column with name '{ec_column_name}')")
 
         csv_table.ec_column_name = ec_column_name
+
+        # clean ec data
+        csv_table._data.replace(
+            to_replace = {ec_column_name: r"EC:"}, 
+            value = {ec_column_name: ""}, 
+            regex = True, 
+            inplace=True
+        )
+
         return csv_table
 
 # ####################################################################
