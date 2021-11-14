@@ -877,21 +877,6 @@ class Network(Resource):
 
         del self.reactions[rxn_id]
 
-    @view(view_type=NetworkView, default_view=True, human_name="NetworkView")
-    def view_as_network(self, *args, **kwargs) -> NetworkView:
-        return NetworkView(data=self, *args, **kwargs)
-
-    @view(view_type=JSONView, human_name="JSONView")
-    def view_as_json(self, *args, **kwargs) -> JSONView:
-        json_view: JSONView = super().view_as_json(**kwargs)
-        json_view._data = self.dumps()
-        return json_view
-
-    @view(view_type=TableView, human_name="CompoundStatsTable")
-    def view_compound_stats_as_table(self, *args, **kwargs) -> TableView:
-        table = self.get_compound_stats_as_table()
-        return TableView(data=table, *args, **kwargs)
-
     def get_compound_stats_as_json(self, **kwargs) -> dict:
         return self.stats["compounds"]
 
@@ -902,11 +887,6 @@ class Network(Resource):
         table = DataFrame.from_dict(_dict, columns=["count", "freq", "chebi_id"], orient="index")
         table = table.sort_values(by=['freq'], ascending=False)
         return table
-
-    @view(view_type=TableView, human_name="GapStatsTable")
-    def view_gaps_as_table(self, *args, **kwargs) -> TableView:
-        table = self.get_gaps_as_table()
-        return TableView(data=table, *args, **kwargs)
 
     def get_gaps_as_table(self) -> DataFrame:
         _dict = self._get_gap_info()
@@ -1121,7 +1101,28 @@ class Network(Resource):
         table = table.sort_values(by=['id'])
         return table
 
+    # -- V --
 
+    @view(view_type=TableView, human_name="GapStatsTable")
+    def view_gaps_as_table(self, params: ConfigParams) -> TableView:
+        table = self.get_gaps_as_table()
+        return TableView(data=table)
+
+    @view(view_type=NetworkView, default_view=True, human_name="NetworkView")
+    def view_as_network(self, params: ConfigParams) -> NetworkView:
+        return NetworkView(data=self)
+
+    @view(view_type=JSONView, human_name="JSONView")
+    def view_as_json(self, params: ConfigParams) -> JSONView:
+        json_view: JSONView = super().view_as_json(params)
+        json_view._data = self.dumps()
+        return json_view
+
+    @view(view_type=TableView, human_name="CompoundStatsTable")
+    def view_compound_stats_as_table(self, params: ConfigParams) -> TableView:
+        table = self.get_compound_stats_as_table()
+        return TableView(data=table)
+        
 # ####################################################################
 #
 # Importer class

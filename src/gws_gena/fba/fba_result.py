@@ -8,7 +8,7 @@ import re
 import numpy
 import pandas as pd
 from gws_core import (DictRField, Resource, RField, TableView,
-                      resource_decorator, view)
+                      resource_decorator, view, ConfigParams)
 from pandas import DataFrame
 from scipy import stats
 
@@ -74,12 +74,7 @@ class FBAResult(Resource):
 
     # -- R --
 
-    @view(view_type=TableView, human_name="FluxTable")
-    def view_fluxes_as_table(self, **kwargs) -> TableView:
-        table = self.get_fluxes_as_table()
-        return TableView(data=table, **kwargs)
-
-    def get_fluxes_as_table(self, **kwargs) -> DataFrame:
+    def get_fluxes_as_table(self) -> DataFrame:
         res: OptimizeResult = self.optimize_result
         val = DataFrame(data=res.x, index=res.x_names, columns=["value"])
         lb = DataFrame(data=res.x, index=res.x_names, columns=["lower_bound"])
@@ -91,7 +86,7 @@ class FBAResult(Resource):
         df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
         return df
 
-    def get_total_abs_flux_as_table(self, **kwargs) -> DataFrame:
+    def get_total_abs_flux_as_table(self) -> DataFrame:
         if not self._annotated_twin:
             from ..helper.twin_annotator_helper import TwinAnnotatorHelper
             twin: Twin = self.get_related_twin()
@@ -99,19 +94,26 @@ class FBAResult(Resource):
         net = list(self._annotated_twin.networks.values())[0]
         return net.get_total_abs_flux_as_table()
 
-    def get_annotated_twin_as_json(self, **kwargs) -> dict:
+    def get_annotated_twin_as_json(self) -> dict:
         if not self._annotated_twin:
             from ..helper.twin_annotator_helper import TwinAnnotatorHelper
             twin: Twin = self.get_related_twin()
             self._annotated_twin: Twin = TwinAnnotatorHelper.annotate(twin, self)
         return self._annotated_twin.to_json(deep=True)
 
+    # -- V --
+
+    @view(view_type=TableView, human_name="FluxTable")
+    def view_fluxes_as_table(self, params: ConfigParams) -> TableView:
+        table = self.get_fluxes_as_table()
+        return TableView(data=table)
+
     @view(view_type=TableView, human_name="SVTable")
-    def view_sv_as_table(self, **kwargs) -> TableView:
-        table = self.get_sv_as_table(**kwargs)
-        return TableView(data=table, **kwargs)
+    def view_sv_as_table(self, params: ConfigParams) -> TableView:
+        table = self.get_sv_as_table()
+        return TableView(data=table)
 
     @view(view_type=TableView, human_name="TotalFluxTable", short_description="Absolute total flux")
-    def view_total_abs_flux_as_table(self, **kwargs) -> TableView:
-        table = self.get_total_abs_flux_as_table(**kwargs)
-        return TableView(data=table, **kwargs)
+    def view_total_abs_flux_as_table(self, params: ConfigParams) -> TableView:
+        table = self.get_total_abs_flux_as_table()
+        return TableView(data=table)

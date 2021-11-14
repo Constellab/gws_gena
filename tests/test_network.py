@@ -74,7 +74,21 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "ecoli")
         file_path = os.path.join(data_dir, "ecoli.json")
-        net = Network.import_from_path(File(path=file_path), params=ConfigParams())
-        print("ecoli successffuly imported")
+
+        # import 1
+        net = Network.import_from_path(File(
+            path=file_path), 
+            params=ConfigParams()
+        )
+        self.print("ecoli successffuly imported - skip exchange reactions")
+        self.assertEqual(len(net.compounds), 72)
+        self.assertEqual(len(net.reactions), 75)
+
+        # import 2
+        net = Network.import_from_path(File(
+            path=file_path), 
+            params=ConfigParams({"skip_bigg_exchange_reactions": False})
+        )
+        self.print("ecoli successffuly imported - keep exchange reactions")
         self.assertEqual(len(net.compounds), 72)
         self.assertEqual(len(net.reactions), 95)
