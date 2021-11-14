@@ -40,7 +40,8 @@ class IDTable(Table):
     @classmethod
     @import_from_path(specs={
         **TableImporter.config_specs,
-        'id_column_name': StrParam(default_value=ID_TABLE_DEFAULT_ID_COLUMN_NAME, short_description="The id number column name"),
+        'id_column_name': StrParam(default_value=ID_TABLE_DEFAULT_ID_COLUMN_NAME, short_description="The name of the column containing the ID numbers"),
+        'id_type': StrParam(default_value="", allowed_values=["", "chebi", "rhea"], short_description="The expected ID type"),
     })
     def import_from_path(cls, file: File, params: ConfigParams) -> 'IDTable':
         """

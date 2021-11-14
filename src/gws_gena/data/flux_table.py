@@ -72,7 +72,7 @@ class FluxTable(Table):
     @classmethod
     @import_from_path(specs = {
         **TableImporter.config_specs,
-        'target_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME, human_name="Targer column name", short_description="The name of the target column"),
+        'target_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME, human_name="Target column name", short_description="The name of the target column"),
         'lower_bound_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN_NAME, human_name="Lower bound column name", short_description="The name of the lower-bound column"),
         'upper_bound_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN_NAME, human_name="Upper bound column name", short_description="The name of the upper-bound column"),
         'confidence_score_column_name': StrParam(default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME, human_name="Confidence score column name", short_description="The name of the upper-bound column"),

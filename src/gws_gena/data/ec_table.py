@@ -55,7 +55,7 @@ class ECTable(Table):
     @classmethod
     @import_from_path(specs={
         **TableImporter.config_specs,
-        'ec_column_name': StrParam(default_value=EC_TABLE_DEFAULT_EC_COLUMN_NAME, short_description="The ec number column name"),
+        'ec_column_name': StrParam(default_value=EC_TABLE_DEFAULT_EC_COLUMN_NAME, short_description="The name of the column containing the EC numbers"),
     })
     def import_from_path(cls, file: File, params: ConfigParams) -> 'ECTable':
         """

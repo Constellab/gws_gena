@@ -86,7 +86,7 @@ class ReconHelper:
                 counter += 1
 
             ec = str(ec).strip()
-            is_incomplete_ec = ("-" in ec)
+            is_incomplete_ec = (not ec) or ("-" in ec)
             if is_incomplete_ec:
                 net.set_reaction_tag(ec, {
                     "ec_number": ec,
