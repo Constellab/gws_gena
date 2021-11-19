@@ -4,7 +4,7 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskTester
+from gws_core import ConfigParams, File, Settings, TaskRunner
 from gws_gena import IDTable, KnockOutAnalysis, Network, TwinContext, Twin
 
 settings = Settings.retrieve()
@@ -31,7 +31,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         twin = Twin()
         twin.add_network(network=net, related_context=ctx)
         
-        tester = TaskTester(
+        tester = TaskRunner(
             inputs={
                 'twin': twin,
                 'ko_table': ko_table

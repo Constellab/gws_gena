@@ -178,38 +178,38 @@ class Network(Resource):
 
         # add reaction compounds to the network
         for sub in rxn.substrates.values():
-            # sub = rxn.substrates[k]
             comp = sub["compound"]
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
-                if comp.chebi_id:
-                    existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
-                    if existing_comp:
-                        # the compound already exists
-                        # ... use the existing compound
-                        rxn.add_substrate(existing_comp, stoich)
-                        rxn.remove_substrate(existing_comp)
-                    else:
-                        self.add_compound(comp)
-                else:
-                    self.add_compound(comp)
+                # if comp.chebi_id:
+                #     existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
+                #     if existing_comp:
+                #         # the compound already exists
+                #         # ... use the existing compound
+                #         rxn.add_substrate(existing_comp, stoich)
+                #         rxn.remove_substrate(existing_comp)
+                #     else:
+                #         self.add_compound(comp)
+                # else:
+                #     self.add_compound(comp)
+                self.add_compound(comp)
 
         for prod in rxn.products.values():
-            # prod = rxn.products[k]
             comp = prod["compound"]
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
-                if comp.chebi_id:
-                    existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
-                    if existing_comp:
-                        # the compound already exists
-                        # ... use the existing compound
-                        rxn.add_product(existing_comp, stoich)
-                        rxn.remove_product(existing_comp)
-                    else:
-                        self.add_compound(comp)
-                else:
-                    self.add_compound(comp)
+                # if comp.chebi_id:
+                #     existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
+                #     if existing_comp:
+                #         # the compound already exists
+                #         # ... use the existing compound
+                #         rxn.add_product(existing_comp, stoich)
+                #         rxn.remove_product(existing_comp)
+                #     else:
+                #         self.add_compound(comp)
+                # else:
+                #     self.add_compound(comp)
+                self.add_compound(comp)
 
         # add the reaction
         rxn.network = self
@@ -268,20 +268,26 @@ class Network(Resource):
         names = list(self.get_steady_compounds(ignore_cofactors=ignore_cofactors).keys())
         return S.loc[names, :]
 
-    def create_non_steady_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
+    def create_non_steady_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
         S = self.create_stoichiometric_matrix()
-        names = list(self.get_non_steady_compounds().keys())
+        names = list(self.get_non_steady_compounds(ignore_cofactors=ignore_cofactors).keys())
         return S.loc[names, :]
 
-    def compute_input_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
-        S = self.create_non_steady_stoichiometric_matrix(include_biomass=include_biomass)
+    def create_input_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+        S = self.create_non_steady_stoichiometric_matrix(
+            include_biomass=include_biomass, 
+            ignore_cofactors=ignore_cofactors
+        )
         df = S.sum(axis=1)
         in_sub = df.loc[df < 0]
         names = in_sub.index.values
         return S.loc[names, :]
 
-    def compute_output_stoichiometric_matrix(self, include_biomass=True) -> DataFrame:
-        S = self.create_non_steady_stoichiometric_matrix(include_biomass=include_biomass)
+    def create_output_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+        S = self.create_non_steady_stoichiometric_matrix(
+            include_biomass=include_biomass,
+            ignore_cofactors=ignore_cofactors
+        )
         df = S.sum(axis=1)
         out_prod = df.loc[df > 0]
         names = out_prod.index.values
@@ -626,16 +632,16 @@ class Network(Resource):
         """
 
         comps = {}
-        for name in self.compounds:
-            comp = self.compounds[name]
+        for id in self.compounds:
+            comp = self.compounds[id]
             if comp.is_steady:
                 if ignore_cofactors and comp.is_cofactor:
                     continue
                 else:
-                    comps[name] = self.compounds[name]
+                    comps[id] = self.compounds[id]
         return comps
 
-    def get_non_steady_compounds(self) -> Dict[str, Compound]:
+    def get_non_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
         """
         Get the non-steady compounds
 
@@ -644,10 +650,13 @@ class Network(Resource):
         """
 
         comps = {}
-        for name in self.compounds:
-            comp = self.compounds[name]
+        for id in self.compounds:
+            comp = self.compounds[id]
             if not comp.is_steady:
-                comps[name] = self.compounds[name]
+                if ignore_cofactors and comp.is_cofactor:
+                    continue
+                else:
+                    comps[id] = self.compounds[id]
         return comps
 
     def get_reaction_bounds(self) -> DataFrame:
@@ -766,6 +775,7 @@ class Network(Resource):
 
             _id = val["id"]  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
             comp = None
+
             if chebi_id or inchikey:
                 try:
                     comp = Compound.from_biota(
@@ -778,7 +788,7 @@ class Network(Resource):
                     )
                     if alt_chebi_ids:
                         comp.alt_chebi_ids = alt_chebi_ids
-                except:
+                except Exception as err:
                     pass
 
             if comp is None:
@@ -797,11 +807,12 @@ class Network(Resource):
                     alt_chebi_ids=alt_chebi_ids,
                     kegg_id=val.get("kegg_id", "")
                 )
-                position = val.get("position", {})
-                if position:
-                    comp.position.x = position.get("x", None)
-                    comp.position.y = position.get("y", None)
-                    comp.position.z = position.get("z", None)
+                
+            position = val.get("position", {})
+            if position:
+                comp.position.x = position.get("x", None)
+                comp.position.y = position.get("y", None)
+                comp.position.z = position.get("z", None)
 
             added_comps[_id] = comp
 

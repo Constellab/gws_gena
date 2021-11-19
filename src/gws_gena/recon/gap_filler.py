@@ -15,7 +15,7 @@ from ..network.network import Network
 from ..network.compound import Compound
 from ..network.reaction import Reaction
 from ..twin.twin import Twin
-from ..helper.sink_helper import SinkHelper
+from ..recon.helper.sink_helper import SinkHelper
 
 @task_decorator("GapFiller")
 class GapFiller(Task):

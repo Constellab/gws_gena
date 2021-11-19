@@ -37,7 +37,7 @@ class FBAProto(Protocol):
             (twin_builder >> "twin", twin_annotator << "twin"),
             (fba >> "result", twin_annotator << "fba_result")
         ])
-
+        
         self.add_interface('network_file', network_importer, 'file')
         self.add_interface('context_file', context_importer, 'file')
 

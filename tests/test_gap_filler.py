@@ -1,7 +1,7 @@
 
 import os, json
 
-from gws_core import Settings, TaskTester, File, ConfigParams
+from gws_core import Settings, TaskRunner, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Network, TwinContext, Twin, GapFiller, Compound, Reaction 
 
@@ -33,7 +33,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
                 params.update({'tax_id': "562"})     #ecoli
                 #params.update({'tax_id', "2")})     #bacteria
 
-            tester = TaskTester(
+            tester = TaskRunner(
                 params = params,
                 inputs = {"network": net},
                 task_type = GapFiller

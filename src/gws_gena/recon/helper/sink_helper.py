@@ -5,8 +5,8 @@
 
 from gws_core import Logger
 from gws_core import BadRequestException
-from ..network.compound import Compound
-from ..network.reaction import Reaction
+from ...network.compound import Compound
+from ...network.reaction import Reaction
 
 class SinkHelper:
 

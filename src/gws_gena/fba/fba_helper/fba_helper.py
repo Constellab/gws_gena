@@ -15,10 +15,10 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
 from pandas import DataFrame
 from scipy.optimize import linprog
 
-from ...helper.sink_helper import SinkHelper
+from ...recon.helper.sink_helper import SinkHelper
 from ...network.network import Network
 from ...twin.twin import FlatTwin, Twin
-from ...twin.twin_service import TwinService
+from ...twin.helper.twin_helper import TwinHelper
 from ..fba_result import FBAResult, OptimizeResult
 
 
@@ -71,11 +71,11 @@ class FBAHelper:
             SinkHelper.fill_gaps_with_sinks(flat_net)
 
         # reshape problem
-        obsv_matrix = TwinService.create_observation_matrices(flat_twin)
+        obsv_matrix = TwinHelper.create_observation_matrices(flat_twin)
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
 
-        S_int = TwinService.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
+        S_int = TwinHelper.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
         Y_names = ["v_"+name for name in C.index]
         S_zeros = DataFrame(
             index=S_int.index,

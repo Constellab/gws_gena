@@ -1,7 +1,7 @@
 
 import os
 
-from gws_core import Settings, TaskTester, File
+from gws_core import Settings, TaskRunner, File
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import ECTableImporter
 
@@ -12,7 +12,7 @@ class TestECTableImporter(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         
         # run trainer
-        tester = TaskTester(
+        tester = TaskRunner(
             params = { "ec_column_name": "ECnumber" },
             inputs = {"file": File(path=os.path.join(data_dir, "./data/ECnumber.csv"))},
             task_type = ECTableImporter

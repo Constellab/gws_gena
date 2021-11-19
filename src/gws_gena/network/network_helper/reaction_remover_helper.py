@@ -23,7 +23,7 @@ class ReactionRemoverHelper:
         rxn_dict: dict = new_net.reactions.copy()
         if isinstance(reaction_table, ECTable):
             ec_list: list = reaction_table.get_ec_numbers()
-            for k, rxn in rxn_dict:
+            for k, rxn in rxn_dict.items():
                 ec_number = rxn.enzyme.get("ec_number")
                 is_in_list = (ec_number in ec_list)
                 if reverse_remove:
@@ -33,7 +33,7 @@ class ReactionRemoverHelper:
                     new_net.remove_reaction(rxn.id)
         elif isinstance(reaction_table, IDTable):
             id_list: list = reaction_table.get_ids()
-            for k, rxn in rxn_dict:
+            for k, rxn in rxn_dict.items():
                 is_in_list = (rxn.rhea_id in id_list) or (k in id_list)
                 if reverse_remove:
                     if not is_in_list:

@@ -1,7 +1,7 @@
 
 import os, json
 
-from gws_core import Settings, GTest, Experiment, ExperimentService, TaskTester, File, ConfigParams
+from gws_core import Settings, GTest, Experiment, ExperimentService, TaskRunner, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_biota import Compound as BiotaCompound
 from gws_gena import Network, Compound, Reaction
@@ -45,7 +45,7 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         net = Network.import_from_path(File(path=file_path), params=ConfigParams())
 
         # experiment
-        tester = TaskTester(
+        tester = TaskRunner(
             inputs = {"network": net, "flux_table": flux_data},
             task_type = TwinContextBuilder
         )

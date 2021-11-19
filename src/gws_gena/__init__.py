@@ -38,4 +38,4 @@ from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
 from .twin.twin_context_builder import TwinContext, TwinContextBuilder
 from .twin.twin_flatner import TwinFlattener
-from .twin.twin_service import TwinService
+from .twin.helper.twin_helper import TwinHelper

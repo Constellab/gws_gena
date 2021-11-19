@@ -217,6 +217,9 @@ class Compound:
         "CHEBI:37721": "fructofuranose",
         "CHEBI:57634": "beta-D-fructofuranose 6-phosphate(2-)",
         "CHEBI:138881": "beta-D-fructofuranose 1-phosphate(2-)",
+        "CHEBI:57604": "3-phosphonato-D-glyceroyl phosphate(4-)",
+        "CHEBI:58272": "2,3-bisphosphonato-D-glycerate(5-)",
+        "CHEBI:58289": "2-phosphonato-D-glycerate(3-)",
 
         "CHEBI:57288": "acetyl_CoA(4-)",
 
@@ -231,10 +234,14 @@ class Compound:
         "CHEBI:24996": "lactate",
         "CHEBI:16651": "(S)-lactate",
         "CHEBI:16004": "(R)-lactate",
+        "CHEBI:15589": "(S)-malate",
         "CHEBI:15740": "formate",
         "CHEBI:29806": "fumarate(2-)",
         "CHEBI:30031": "succinate(2-)",
         "CHEBI:57292": "succinyl-CoA(5-)",
+        "CHEBI:83120": "N6-[(R)-S8-succinyldihydrolipoyl]-L-lysine(1−) residue",
+        "CHEBI:15562": "D-threo-isocitrate(3-)",
+        "CHEBI:57384": "malonyl-CoA(5-)",
 
         "CHEBI:30839": "orotate",
 
@@ -275,6 +282,7 @@ class Compound:
         "CHEBI:33384": "L-serine",
 
         "CHEBI:16236": "ethanol",
+        "CHEBI:15343": "acetaldehyde",
         "CHEBI:17790": "methanol",
 
         "CHEBI:57880": "1-phosphatidyl-1D-myo-inositol(1-)",
@@ -359,10 +367,6 @@ class Compound:
 
         if not name:
             name = self.id
-
-        if network:
-            self.add_to_network(network)
-
         self.name = name
         self.charge = charge
         self.mass = mass
@@ -374,6 +378,9 @@ class Compound:
         self.kegg_id = kegg_id
         self.alt_chebi_ids = (alt_chebi_ids if alt_chebi_ids else [])
         self.position = CompoundPosition()
+
+        if network:
+            self.add_to_network(network)
 
     # -- A --
 
@@ -619,7 +626,7 @@ class Compound:
 
         for pattern in self.COFACTOR_NAME_PATTERNS:
             if pattern in self.name:
-                return True
+                return not self.is_major
 
         return self.chebi_id in self.COFACTORS
 

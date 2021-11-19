@@ -3,23 +3,12 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import json
-import math
-
 from gws_core import Task, task_decorator, ConfigParams, TaskInputs, TaskOutputs
-from .twin import Twin
-from ..fba.fba_result import FBAResult
-from .helper.twin_annotator_helper import TwinAnnotatorHelper
+from ..twin.twin import Twin, FlatTwin
 
-# ####################################################################
-#
-# TwinAnnotator class
-#
-# ####################################################################
-
-@task_decorator("TwinAnnotator")
-class TwinAnnotator(Task):
-    input_specs = { 'twin': (Twin,), 'fba_result': (FBAResult,) }
+@task_decorator("TwinReducer")
+class TwinReducer(Task):
+    input_specs = { 'twin': (Twin, FlatTwin), }
     output_specs = { 'twin': (Twin,) }
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

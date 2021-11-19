@@ -62,7 +62,7 @@ class Twin(JSONDict):
         if not isinstance(network, Network):
             raise BadRequestException("The network must an instance of Network")
         if network.uid in self._networks:
-            raise BadRequestException(f"Network uri '{network.uid }'' duplicated")
+            raise BadRequestException(f"Network uid '{network.uid }'' duplicated")
         self._networks[network.uid] = network
         if related_context:
             if not isinstance(related_context, TwinContext):
@@ -167,7 +167,7 @@ class Twin(JSONDict):
         _rxns = []
 
         def __get_network_uname(net):
-            return (net.name if net.name else "network_"+str(net.uri))
+            return (net.name if net.name else "network_"+str(net.id))
 
         _mapping = {}
         _rev_mapping = {}

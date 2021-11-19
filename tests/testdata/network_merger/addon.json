@@ -43,7 +43,7 @@
     ],
     "reactions": [
         {
-            "id": "RHEA:66592_4_2_99_18",
+            "id": "RHEA_66592_4_2_99_18",
             "name": "",
             "metabolites": {
                 "CHEBI:167181_c": -1.0,
@@ -59,7 +59,7 @@
             "upper_bound": 1000.0
         },
         {
-            "id": "RHEA:64596_2_4_1_370",
+            "id": "RHEA_64596_2_4_1_370",
             "name": "",
             "metabolites": {
                 "CHEBI:155926_c": -1.0,

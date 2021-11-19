@@ -4,7 +4,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, Experiment, File, IExperiment, ProcessSpec,
-                      Protocol, Settings, TaskTester, protocol_decorator)
+                      Protocol, Settings, TaskRunner, protocol_decorator)
 from gws_gena import (ECTableImporter, IDTableImporter, NetworkImporter,
                       ReactionAdder, Twin, TwinContext)
 

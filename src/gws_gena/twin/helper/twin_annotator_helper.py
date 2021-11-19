@@ -9,8 +9,8 @@ import math
 from gws_core import Task
 from gws_core import BadRequestException
 
-from ..twin.twin import Twin, FlatTwin
-from ..fba.fba_result import FBAResult
+from ...twin.twin import Twin, FlatTwin
+from ...fba.fba_result import FBAResult
 
 # ####################################################################
 #
@@ -25,13 +25,8 @@ class TwinAnnotatorHelper():
         if isinstance(twin, FlatTwin):
             raise BadRequestException("Cannot annotate a FlatTwin. A non-flat Twin is required")
 
-        print(" ==== start annotator ====")
-
         flat_twin: FlatTwin = twin.flatten()
         flux_rev_mapping = flat_twin.reverse_mapping
-
-        print(" ==== flat ====")
-
         annotated_twin = Twin()
         for k in twin.networks:
             net = twin.networks[k]
@@ -48,7 +43,4 @@ class TwinAnnotatorHelper():
                     "upper_bound": fluxes.loc[flat_rxn_id, "upper_bound"],
                 })
             annotated_twin.add_network(net, related_context=ctx.copy())
-
-        print(" ==== end annotator ====")
-
         return annotated_twin

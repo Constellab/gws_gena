@@ -12,7 +12,6 @@ settings = Settings.retrieve()
 class TestFba(BaseTestCaseUsingFullBiotaDB):
 
     async def test_small_fva(self):
-        return
         self.print("Test FVAProto: Small metwork")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
@@ -153,13 +152,13 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             #bio_json = result.get_annotated_twin_as_json()
             #print(bio_json)
 
-        # ecoli
-        # organism = "ecoli"
-        # GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
-        # await run_fva(organism=organism, solver="highs")
-        # for relax in [True]:
-        #     GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-        #     await run_fva(organism=organism, solver="quad", relax_qssa=relax)
+        #ecoli
+        organism = "ecoli"
+        GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
+        await run_fva(organism=organism, solver="highs")
+        for relax in [True]:
+            GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
+            await run_fva(organism=organism, solver="quad", relax_qssa=relax)
         
         # pcys
         organism = "pcys"

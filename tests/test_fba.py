@@ -4,7 +4,8 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ExperimentService, File, GTest, IExperiment, Settings
+from gws_core import (ExperimentService, File, FileService, GTest, IExperiment,
+                      Settings)
 from gws_gena import FBA, FBAResult, Network, Twin, TwinContext
 from gws_gena.proto import FBAProto
 
@@ -21,10 +22,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
 
-            network_file = File()
-            network_file.path = os.path.join(data_dir, "toy.json")
-            ctx_file = File()
-            ctx_file.path = os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json"))
+            network_file = File(path=os.path.join(data_dir, "toy.json"))
+            ctx_file = File(path=os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json")))
 
             proto.set_input("network_file", network_file)
             proto.set_input("context_file", ctx_file)

@@ -88,7 +88,7 @@ class FBAResult(Resource):
 
     def get_total_abs_flux_as_table(self) -> DataFrame:
         if not self._annotated_twin:
-            from ..helper.twin_annotator_helper import TwinAnnotatorHelper
+            from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
             twin: Twin = self.get_related_twin()
             self._annotated_twin: Twin = TwinAnnotatorHelper.annotate(twin, self)
         net = list(self._annotated_twin.networks.values())[0]
@@ -96,7 +96,7 @@ class FBAResult(Resource):
 
     def get_annotated_twin_as_json(self) -> dict:
         if not self._annotated_twin:
-            from ..helper.twin_annotator_helper import TwinAnnotatorHelper
+            from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
             twin: Twin = self.get_related_twin()
             self._annotated_twin: Twin = TwinAnnotatorHelper.annotate(twin, self)
         return self._annotated_twin.to_json(deep=True)

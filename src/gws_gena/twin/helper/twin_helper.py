@@ -12,12 +12,12 @@ from gws_core import BadRequestException
 from pandas import DataFrame
 from scipy.linalg import null_space
 
-from .twin import FlatTwin
-from .twin_context import Variable
+from ..twin import FlatTwin
+from ..twin_context import Variable
 
 # ####################################################################
 #
-# TwinService class
+# TwinHelper class
 #
 # ####################################################################
 
@@ -39,7 +39,7 @@ ReducedMatrices = TypedDict("ReducedMatrices", {
 })
 
 
-class TwinService:
+class TwinHelper:
 
     @classmethod
     def create_fba_problem(cls, flat_twin: FlatTwin) -> FBAProblem:
@@ -112,7 +112,7 @@ class TwinService:
         return flat_net.create_non_steady_stoichiometric_matrix()
 
     @classmethod
-    def compute_input_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
+    def create_input_stoichiometric_matrix(cls, flat_twin: FlatTwin, ignore_cofactors=False) -> DataFrame:
         """
         Creates the input-substrate stoichiometric matrix using a twin object
 
@@ -125,10 +125,10 @@ class TwinService:
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat model is required")
         flat_net = next(iter(flat_twin.networks.values()))
-        return flat_net.compute_input_stoichiometric_matrix()
+        return flat_net.create_input_stoichiometric_matrix(ignore_cofactors=ignore_cofactors)
 
     @classmethod
-    def compute_output_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
+    def create_output_stoichiometric_matrix(cls, flat_twin: FlatTwin, ignore_cofactors=False) -> DataFrame:
         """
         Creates the output-product stoichiometric matrix using a twin object
 
@@ -141,7 +141,7 @@ class TwinService:
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat model is required")
         flat_net = next(iter(flat_twin.networks.values()))
-        return flat_net.compute_output_stoichiometric_matrix()
+        return flat_net.create_output_stoichiometric_matrix(ignore_cofactors=ignore_cofactors)
 
     @classmethod
     def create_observation_matrices(cls, flat_twin: FlatTwin) -> ObsvMatrices:
@@ -196,10 +196,10 @@ class TwinService:
         return DataFrame(index=N.columns, data=ns)
 
     @classmethod
-    def compute_elementary_flux_modes(cls, flat_twin: FlatTwin, reversibilities=None) -> DataFrame:
+    def compute_elementary_flux_modes(cls, flat_twin: FlatTwin, reversibilities=None, ignore_cofactors=False) -> DataFrame:
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat model is required")
-        N = cls.create_steady_stoichiometric_matrix(flat_twin)
+        N = cls.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
 
         # Nn = cls.create_non_steady_stoichiometric_matrix(flat_twin)
         # idx = Nn.any(axis=0)
@@ -224,15 +224,15 @@ class TwinService:
         return DataFrame(index=N.columns, columns=column_names, data=efms)
 
     @classmethod
-    def compute_reduced_matrices(cls, flat_twin: FlatTwin, use_context: bool = True) -> ReducedMatrices:
-        EFM = TwinService.compute_elementary_flux_modes(flat_twin)
+    def compute_reduced_matrices(cls, flat_twin: FlatTwin, use_context: bool = True, ignore_cofactors=False) -> ReducedMatrices:
+        EFM = TwinHelper.compute_elementary_flux_modes(flat_twin,ignore_cofactors=ignore_cofactors)
 
-        Ns = TwinService.compute_input_stoichiometric_matrix(flat_twin)
-        Np = TwinService.compute_output_stoichiometric_matrix(flat_twin)
+        Ns = TwinHelper.create_input_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
+        Np = TwinHelper.create_output_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
         N = pandas.concat([Ns, Np])
 
         if use_context:
-            obs = TwinService.create_observation_matrices(flat_twin)
+            obs = TwinHelper.create_observation_matrices(flat_twin)
             N = obs["C"]
         else:
             pass
@@ -250,13 +250,13 @@ class TwinService:
 
     # @classmethod
     # def compute_reduced_matrices(cls, flat_twin: FlatTwin) -> DataFrame:
-    #     EFM = TwinService.compute_elementary_flux_modes(flat_twin)
-    #     Ns = TwinService.compute_input_stoichiometric_matrix(flat_twin)
-    #     Np = TwinService.compute_output_stoichiometric_matrix(flat_twin)
+    #     EFM = TwinHelper.compute_elementary_flux_modes(flat_twin)
+    #     Ns = TwinHelper.create_input_stoichiometric_matrix(flat_twin)
+    #     Np = TwinHelper.create_output_stoichiometric_matrix(flat_twin)
     #     N = pandas.concat([Ns, Np])
     #     print(N)
 
-    #     obs = TwinService.create_observation_matrices(flat_twin)
+    #     obs = TwinHelper.create_observation_matrices(flat_twin)
     #     C = obs["C"]
     #     print(C)
 

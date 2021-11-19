@@ -5,7 +5,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, Experiment, File, IExperiment, ProcessSpec,
                       Protocol, Settings, protocol_decorator)
-from gws_gena import NetworkImporter, NetworkMerger, Twin, TwinContext
+from gws_gena import Network, NetworkImporter, NetworkMerger, Twin, TwinContext
 
 settings = Settings.retrieve()
 
@@ -36,38 +36,50 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         merger = proto.get_process("merger")
 
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        proto.set_input('file1', File(path=os.path.join(data_dir, "recon", "recon_net.json")))
-        proto.set_input('file2', File(path=os.path.join(data_dir, "network_merger", "addon.json")))
+        file1 = File(path=os.path.join(data_dir, "recon", "recon_net.json"))
+        file2 = File(path=os.path.join(data_dir, "network_merger", "addon.json"))
+        proto.set_input('file1', file1)
+        proto.set_input('file2', file2)
 
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         result_dir = os.path.join(data_dir, "network_merger")
 
-        async def assert_results(net, file_name):
-            # file_path = os.path.join(result_dir, file_name+"_net.csv")
-            # with open(file_path, 'w') as f:
-            #    f.write(net.to_csv())
-
-            # file_path = os.path.join(result_dir, file_name+"_net.json")
-            # with open(file_path, 'w') as f:
-            #     json.dump(net.dumps(), f)
-
-            file_path = os.path.join(result_dir, file_name+"_net.csv")
-            with open(file_path, 'r') as f:
-                self.assertEqual(net.to_csv(), f.read())
-
-            file_path = os.path.join(result_dir, file_name+"_stats.csv")
-            with open(file_path, 'w') as f:
-                table = net.get_compound_stats_as_table()
-                f.write(table.to_csv())
-
-            file_path = os.path.join(result_dir, file_name+"_gaps.csv")
-            with open(file_path, 'w') as f:
-                table = net.get_gaps_as_table()
-                f.write(table.to_csv())
-
         await experiment.run()
-
         net = merger.get_output("network")
-        file_name = "merger"
 
-        await assert_results(net, file_name)
+        net1 = Network.import_from_path(file1, ConfigParams())
+        net2 = Network.import_from_path(file2, ConfigParams())
+        n1 = len(net1.reactions)
+        n2 = len(net2.reactions)
+        n_total = len(net.reactions)
+        self.assertEqual(n_total, n1+n2)
+
+        self.assertTrue("RHEA_66592_4_2_99_18" in net.reactions)
+        self.assertTrue("RHEA_64596_2_4_1_370" in net.reactions)
+        self.assertTrue("RHEA_66592_4_2_99_18" in net2.reactions)
+        self.assertTrue("RHEA_64596_2_4_1_370" in net2.reactions)
+        self.assertTrue("RHEA_66592_4_2_99_18" not in net1.reactions)
+        self.assertTrue("RHEA_64596_2_4_1_370" not in net1.reactions)
+
+        file_name = "merger"
+        # file_path = os.path.join(result_dir, file_name+"_net.csv")
+        # with open(file_path, 'w') as f:
+        #     f.write(net.to_csv())
+
+        # file_path = os.path.join(result_dir, file_name+"_net.json")
+        # with open(file_path, 'w') as f:
+        #     json.dump(net.dumps(), f)
+
+        file_path = os.path.join(result_dir, file_name+"_net.csv")
+        with open(file_path, 'r') as f:
+            self.assertEqual(net.to_csv(), f.read())
+
+        file_path = os.path.join(result_dir, file_name+"_stats.csv")
+        with open(file_path, 'w') as f:
+            table = net.get_compound_stats_as_table()
+            f.write(table.to_csv())
+
+        file_path = os.path.join(result_dir, file_name+"_gaps.csv")
+        with open(file_path, 'w') as f:
+            table = net.get_gaps_as_table()
+            f.write(table.to_csv())

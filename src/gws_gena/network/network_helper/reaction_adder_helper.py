@@ -28,7 +28,6 @@ class ReactionAdderHelper:
                     pass
         elif isinstance(reaction_table, IDTable):
             id_list: list = reaction_table.get_ids()
-            print(id_list)
             for rxn_id in id_list:
                 try:
                     rxn = Reaction.from_biota(rhea_id=rxn_id, network=new_net)

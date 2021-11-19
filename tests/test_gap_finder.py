@@ -1,6 +1,6 @@
 import os, json
 
-from gws_core import Settings, TaskTester, File, ConfigParams
+from gws_core import Settings, TaskRunner, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Compound, Reaction, Network, TwinContext, Twin, GapFinder
 settings = Settings.retrieve()
@@ -18,7 +18,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
             ConfigParams()
         )
 
-        tester = TaskTester(
+        tester = TaskRunner(
             params = {},
             inputs = {"network": net},
             task_type = GapFinder

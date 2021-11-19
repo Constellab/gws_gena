@@ -7,8 +7,7 @@ import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import FlatTwin, Network, Twin, TwinContext
-from gws_gena.twin.twin_service import TwinService
+from gws_gena import FlatTwin, Network, Twin, TwinContext, TwinHelper
 from pandas import DataFrame
 
 settings = Settings.retrieve()
@@ -48,7 +47,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             self.assertEqual(twin.dumps_flat(), data)
 
         flat_twin = twin.flatten()
-        problem = TwinService.create_fba_problem(flat_twin)
+        problem = TwinHelper.create_fba_problem(flat_twin)
 
         print(problem["S"])
         expected_S = DataFrame({
@@ -111,7 +110,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         twin.add_context(ctx, related_network=net)
 
         flat_twin = twin.flatten()
-        problem = TwinService.create_fba_problem(flat_twin)
+        problem = TwinHelper.create_fba_problem(flat_twin)
 
         print('\n--- S_full ---')
         print(problem["S"])
@@ -123,17 +122,17 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         print(problem["b"])
 
         print('\n--- S_intra ---')
-        Si = TwinService.create_steady_stoichiometric_matrix(flat_twin)
+        Si = TwinHelper.create_steady_stoichiometric_matrix(flat_twin)
         self.assertEqual(Si.shape, (5, 7,))
         print(Si)
 
         print('\n--- S_extra ---')
-        Se = TwinService.create_non_steady_stoichiometric_matrix(flat_twin)
+        Se = TwinHelper.create_non_steady_stoichiometric_matrix(flat_twin)
         self.assertEqual(Se.shape, (5, 7,))
         print(Se)
 
         print('\n--- Ker(S_intra) ---')
-        K = TwinService.compute_nullspace(Si)
+        K = TwinHelper.compute_nullspace(Si)
         self.assertEqual(K.shape, (7, 2,))
         expected_K = numpy.array([
             [-0.428766, 0.204856],
@@ -148,12 +147,12 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         print(K)
 
         print('\n--- Ker( [S_intra; C] ) ---')
-        K = TwinService.compute_nullspace(pd.concat([Si, problem["C"]]))
+        K = TwinHelper.compute_nullspace(pd.concat([Si, problem["C"]]))
         self.assertEqual(K.shape, (7, 0,))
         print(K)
 
         print('\n--- EFM ---')
-        efm = TwinService.compute_elementary_flux_modes(flat_twin)
+        efm = TwinHelper.compute_elementary_flux_modes(flat_twin)
         self.assertEqual(efm.shape, (7, 2,))
         expected_efm = numpy.array([
             [1.0, 0.0],
@@ -168,15 +167,15 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         print(efm)
 
         print('\n--- Input S ---')
-        S = TwinService.compute_input_stoichiometric_matrix(flat_twin)
+        S = TwinHelper.create_input_stoichiometric_matrix(flat_twin)
         print(S)
 
         print('\n--- Output S ---')
-        S = TwinService.compute_output_stoichiometric_matrix(flat_twin)
+        S = TwinHelper.create_output_stoichiometric_matrix(flat_twin)
         print(S)
 
         print('\n--- Reduced Twin ---')
-        mat = TwinService.compute_reduced_matrices(flat_twin)
+        mat = TwinHelper.compute_reduced_matrices(flat_twin)
         print(mat["K"])
 
     def test_bastin_twin(self):
@@ -200,9 +199,9 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
         flat_twin = twin.flatten()
 
-        #efm = TwinService.compute_elementary_flux_modes(flat_twin)
+        #efm = TwinHelper.compute_elementary_flux_modes(flat_twin)
         # print(efm)
-        mat = TwinService.compute_reduced_matrices(flat_twin)
+        mat = TwinHelper.compute_reduced_matrices(flat_twin)
 
         print('\n--- EFM Bastin & Provost ---')
         print(mat["EFM"])

@@ -3,7 +3,7 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import Experiment, File, IExperiment, Settings, TaskTester
+from gws_core import Experiment, File, IExperiment, Settings, TaskRunner
 from gws_gena import DraftRecon, GapFiller, NetworkMerger, TwinContext
 from gws_gena.proto import ReconProto
 
@@ -93,7 +93,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         }
 
         name = "sapiens"
-        tester = TaskTester(
+        tester = TaskRunner(
             task_type=DraftRecon,
             inputs={},
             params={"tax_id": organisms[name]}
