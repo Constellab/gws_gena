@@ -10,7 +10,7 @@ from ...network.network import Network
 
 class ReactionKnockOutHelper:
 
-    FLUX_EPSILON = 1e-6
+    FLUX_EPSILON = 1e-9
 
     @classmethod
     def knockout_list_of_reactions(
@@ -20,6 +20,7 @@ class ReactionKnockOutHelper:
             new_net = network
         else:
             new_net: Network = network.copy()
+
         if isinstance(reaction_table, ECTable):
             ec_list: list = reaction_table.get_ec_numbers()
             for _, rxn in new_net.reactions.items():

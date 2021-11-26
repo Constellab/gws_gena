@@ -15,10 +15,10 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
 from pandas import DataFrame
 from scipy.optimize import linprog
 
-from ...recon.helper.sink_helper import SinkHelper
 from ...network.network import Network
-from ...twin.twin import FlatTwin, Twin
+from ...recon.helper.sink_helper import SinkHelper
 from ...twin.helper.twin_helper import TwinHelper
+from ...twin.twin import FlatTwin, Twin
 from ..fba_result import FBAResult, OptimizeResult
 
 
@@ -28,7 +28,7 @@ class FBAHelper:
     __CVXPY_SOLVER_PRIORITY = [cp.OSQP, cp.ECOS]
 
     @classmethod
-    def run(cls, twin, solver, fluxes_to_maximize, fluxes_to_minimize, fill_gaps_with_sinks: bool,
+    def run(cls, twin: Twin, solver, fluxes_to_maximize, fluxes_to_minimize, fill_gaps_with_sinks: bool,
             ignore_cofactors: bool, relax_qssa: bool, current_task: Task = None) -> FBAResult:
         if current_task:
             current_task.log_info_message(message="Creating problem ...")
@@ -36,8 +36,17 @@ class FBAHelper:
             if current_task:
                 current_task.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
+
+        if not isinstance(twin, Twin):
+            raise BadRequestException("A twin is required")
+
+        if isinstance(twin, FlatTwin):
+            flat_twin = twin
+        else:
+            flat_twin: FlatTwin = twin.flatten()
+
         c, A_eq, b_eq, bounds = cls.build_problem(
-            twin,
+            flat_twin,
             fluxes_to_maximize=fluxes_to_maximize,
             fluxes_to_minimize=fluxes_to_minimize,
             fill_gaps_with_sinks=fill_gaps_with_sinks,
@@ -62,10 +71,13 @@ class FBAHelper:
 
     @classmethod
     def build_problem(
-            cls, twin, fluxes_to_maximize=[],
-            fluxes_to_minimize=[],
-            fill_gaps_with_sinks=True, ignore_cofactors=False):
-        flat_twin: FlatTwin = twin.flatten()
+            cls, flat_twin: FlatTwin, fluxes_to_maximize: list = [],
+            fluxes_to_minimize: list = [],
+            fill_gaps_with_sinks: bool = True, ignore_cofactors: bool = False):
+
+        if not isinstance(flat_twin, FlatTwin):
+            raise BadRequestException("A flat twin is required")
+
         flat_net: Network = flat_twin.get_flat_network()
         if fill_gaps_with_sinks:
             SinkHelper.fill_gaps_with_sinks(flat_net)
@@ -76,7 +88,7 @@ class FBAHelper:
         b = obsv_matrix["b"]
 
         S_int = TwinHelper.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
-        Y_names = ["v_"+name for name in C.index]
+        Y_names = C.index
         S_zeros = DataFrame(
             index=S_int.index,
             columns=Y_names,
@@ -87,7 +99,6 @@ class FBAHelper:
             columns=Y_names,
             data=- np.identity(C.shape[0])
         )
-        Y_names = ["v_"+s for s in C.index]
         Y_zeros = DataFrame(
             index=Y_names,
             columns=S_int.columns,
@@ -99,11 +110,13 @@ class FBAHelper:
             data=np.identity(C.shape[0])
         )
         df = flat_net.get_reaction_bounds()
-        v_lb = df.loc[:, ["lb"]]
-        v_ub = df.loc[:, ["ub"]]
-        y_b = b.loc[:, ["target"]]
-        y_lb = b.loc[:, ["lb"]]
-        y_ub = b.loc[:, ["ub"]]
+        int_flux_lb = df.loc[:, ["lb"]]
+        int_flux_ub = df.loc[:, ["ub"]]
+
+        out_flux_target = b.loc[:, ["target"]]
+        out_flux_lb = b.loc[:, ["lb"]]
+        out_flux_ub = b.loc[:, ["ub"]]
+        out_coef_score = b.loc[:, ["confidence_score"]]
 
         # A_eq
         A_eq_left = pd.concat([S_int, C, Y_zeros], axis=0)  # vert_concat
@@ -113,15 +126,15 @@ class FBAHelper:
         # b_eq
         b_zero_1 = DataFrame(data=np.zeros((S_int.shape[0], 1,)))
         b_zero_2 = DataFrame(data=np.zeros((C.shape[0], 1,)))
-        b_zero_1.columns = y_b.columns
-        b_zero_2.columns = y_b.columns
-        b_eq = pd.concat([b_zero_1, b_zero_2, y_b], axis=0)  # vert_concat
+        b_zero_1.columns = out_flux_target.columns
+        b_zero_2.columns = out_flux_target.columns
+        b_eq = pd.concat([b_zero_1, b_zero_2, out_flux_target], axis=0)  # vert_concat
         b_eq.index = A_eq.index
 
         # lb and ub
-        lb = pd.concat([v_lb, y_lb], axis=0)  # vert_concat
+        lb = pd.concat([int_flux_lb, out_flux_lb], axis=0)  # vert_concat
         lb.index = A_eq.columns
-        ub = pd.concat([v_ub, y_ub], axis=0)  # vert_concat
+        ub = pd.concat([int_flux_ub, out_flux_ub], axis=0)  # vert_concat
         ub.index = A_eq.columns
 
         lb_numpy = lb.to_numpy()
@@ -136,6 +149,8 @@ class FBAHelper:
         c = DataFrame(index=lb.index, data=np.zeros((lb.shape[0], 1)))
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_minimize, direction="min")
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_maximize, direction="max")
+        A_eq, b_eq = cls.__upgrade_Aeq_beq_with_output_coefficient_score(A_eq, b_eq, out_coef_score)
+
         return c, A_eq, b_eq, bounds
 
     # -- C --
@@ -402,6 +417,15 @@ class FBAHelper:
         return OptimizeResult(res)
 
     # -- U --
+
+    @classmethod
+    def __upgrade_Aeq_beq_with_output_coefficient_score(cls, A_eq, b_eq, out_coef_score):
+        for i in range(0, out_coef_score.shape[0]):
+            name = out_coef_score.index[i]
+            score = abs(out_coef_score.iloc[i, 0])
+            b_eq.loc[name, :] = score * b_eq.loc[name, :]
+            A_eq.loc[name, :] = score * A_eq.loc[name, :]
+        return A_eq, b_eq
 
     @classmethod
     def __upgrade_c_with_fluxes_to_min_max(cls, c, flat_net, fluxes_to_minmax, direction):

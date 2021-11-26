@@ -4,8 +4,7 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ExperimentService, File, FileService, GTest, IExperiment,
-                      Settings)
+from gws_core import ExperimentService, File, GTest, IExperiment, Settings
 from gws_gena import FBA, FBAResult, Network, Twin, TwinContext
 from gws_gena.proto import FBAProto
 

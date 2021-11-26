@@ -9,8 +9,9 @@ import uuid
 from pathlib import Path
 from typing import Dict, TypedDict
 
-from gws_core import (BadRequestException, DictRField, JSONDict, JSONView,
-                      ResourceService, StrRField, resource_decorator, view, ConfigParams)
+from gws_core import (BadRequestException, ConfigParams, DictRField, JSONDict,
+                      JSONView, ResourceService, StrRField, resource_decorator,
+                      view)
 
 from ..network.network import Compound, Network, Reaction
 from .twin_context import TwinContext, Variable
@@ -112,7 +113,7 @@ class Twin(JSONDict):
         return self._contexts
 
     def copy(self):
-        twin = Twin()
+        twin = type(self)()
         twin.name = self.name
         twin.description = self.description
         # keep same networks
@@ -349,8 +350,22 @@ class Twin(JSONDict):
 
 @resource_decorator("FlatTwin")
 class FlatTwin(Twin):
-    _mapping: Dict[str, Network] = DictRField()
+    _mapping: Dict[str, dict] = DictRField()
     _reverse_mapping: Dict[str, str] = DictRField()
+
+    def copy(self) -> 'FlatTwin':
+        twin = super().copy()
+        twin._mapping = copy.deepcopy(self._mapping)
+        twin._reverse_mapping = copy.deepcopy(self._reverse_mapping)
+        return twin
+
+    @property
+    def mapping(self) -> Dict[str, dict]:
+        return self._mapping
+
+    @property
+    def reverse_mapping(self) -> Dict[str, str]:
+        return self._reverse_mapping
 
     def dumps(self, *args, **kwargs):
         _json = super().dumps(*args, **kwargs)
@@ -371,8 +386,8 @@ class FlatTwin(Twin):
         twin.add_network(net, related_context=ctx)
         twin.name = flat_data["name"]
         twin.description = flat_data["description"]
-        twin.mapping = flat_data["mapping"]
-        twin.reverse_mapping = flat_data["reverse_mapping"]
+        twin._mapping = flat_data["mapping"]
+        twin._reverse_mapping = flat_data["reverse_mapping"]
         return twin
 
     def dumps_flat(self) -> dict:
