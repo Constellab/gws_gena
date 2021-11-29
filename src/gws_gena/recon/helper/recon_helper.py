@@ -137,14 +137,16 @@ class ReconHelper:
         if "CHEBI" not in chebi_id:
             comp = Compound(name=name, compartment=compartment)
         else:
-            comp = net.get_compound_by_chebi_id(chebi_id, compartment=compartment)
-            if not comp:
+            comps = net.get_compounds_by_chebi_id(chebi_id, compartment=compartment)
+            if not comps:
                 try:
                     comp = Compound.from_biota(chebi_id=chebi_id, compartment=compartment)
                 except:
                     # invalid chebi_id
                     comp = Compound(name=name, compartment=compartment)
-
+            else:
+                comp = comps[0]
+                
         if not net.exists(comp):
             net.add_compound(comp)
         net.set_compound_tag(comp.id, {

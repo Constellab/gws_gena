@@ -4,7 +4,6 @@
 # About us: https://gencovery.com
 
 import copy
-import re
 from typing import List
 
 from gws_biota import Compound as BiotaCompound
@@ -474,10 +473,10 @@ class Compound:
                     pass
 
             if not biota_compound and chebi_id:
-                if isinstance(chebi_id, float) or isinstance(chebi_id, int):
+                if isinstance(chebi_id, (float, int)):
                     chebi_id = f"CHEBI:{chebi_id}"
-                if re.match(r"CHEBI\:\d+$", chebi_id):  # not in chebi_id:
-                    chebi_id = chebi_id
+                # if re.match(r"CHEBI\:\d+$", chebi_id):  # not in chebi_id:
+                #     chebi_id = chebi_id
                 try:
                     biota_compound = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
                 except:
@@ -502,14 +501,21 @@ class Compound:
             id=id,
             name=name,
             compartment=compartment,
+            chebi_id=biota_compound.chebi_id,
+            kegg_id=biota_compound.kegg_id,
+            inchikey=biota_compound.inchikey,
+            charge=biota_compound.charge,
+            formula=biota_compound.formula,
+            mass=biota_compound.mass,
+            monoisotopic_mass=biota_compound.monoisotopic_mass,
             network=network
         )
-        c.chebi_id = biota_compound.chebi_id
-        c.kegg_id = biota_compound.kegg_id
-        c.inchikey = biota_compound.inchikey
-        c.charge = biota_compound.charge
-        c.formula = biota_compound.formula
-        c.mass = biota_compound.mass
+        #c.chebi_id = biota_compound.chebi_id
+        #c.kegg_id = biota_compound.kegg_id
+        #c.inchikey = biota_compound.inchikey
+        #c.charge = biota_compound.charge
+        #c.formula = biota_compound.formula
+        #c.mass = biota_compound.mass
         if biota_compound.position is not None:
             c.position.x = biota_compound.position.x
             c.position.y = biota_compound.position.y

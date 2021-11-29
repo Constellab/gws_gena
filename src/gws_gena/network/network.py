@@ -155,11 +155,11 @@ class Network(Resource):
         self.compounds[comp.id] = comp
         self._stats = {}
         if comp.chebi_id:
-            if not comp.compartment in self._set_of_chebi_ids:
+            if comp.compartment not in self._set_of_chebi_ids:
                 self._set_of_chebi_ids[comp.compartment] = {}
             self._set_of_chebi_ids[comp.compartment][comp.chebi_id] = comp.id
-            for _id in comp.alt_chebi_ids:
-                self._set_of_chebi_ids[comp.compartment][_id] = comp.id
+            for chebi_id in comp.alt_chebi_ids:
+                self._set_of_chebi_ids[comp.compartment][chebi_id] = comp.id
 
     def add_reaction(self, rxn: Reaction):
         """
@@ -182,7 +182,7 @@ class Network(Resource):
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
                 # if comp.chebi_id:
-                #     existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
+                #     existing_comp = self.get_compounds_by_chebi_id(comp.chebi_id)
                 #     if existing_comp:
                 #         # the compound already exists
                 #         # ... use the existing compound
@@ -199,7 +199,7 @@ class Network(Resource):
             stoich = sub["stoichiometry"]
             if not self.exists(comp):
                 # if comp.chebi_id:
-                #     existing_comp = self.get_compound_by_chebi_id(comp.chebi_id)
+                #     existing_comp = self.get_compounds_by_chebi_id(comp.chebi_id)
                 #     if existing_comp:
                 #         # the compound already exists
                 #         # ... use the existing compound
@@ -231,8 +231,8 @@ class Network(Resource):
         net = Network()
         net.name = self.name
         net.description = self.description
-        net.compounds = copy.deepcopy(self.compounds) #/!\ use deepcopy for performance
-        net.reactions = copy.deepcopy(self.reactions) #/!\ use deepcopy for performance
+        net.compounds = copy.deepcopy(self.compounds)  # /!\ use deepcopy for performance
+        net.reactions = copy.deepcopy(self.reactions)  # /!\ use deepcopy for performance
         net.compartments = self.compartments.copy()
         net.tags = copy.deepcopy(self.tags)
 
@@ -275,7 +275,7 @@ class Network(Resource):
 
     def create_input_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
         S = self.create_non_steady_stoichiometric_matrix(
-            include_biomass=include_biomass, 
+            include_biomass=include_biomass,
             ignore_cofactors=ignore_cofactors
         )
         df = S.sum(axis=1)
@@ -410,7 +410,7 @@ class Network(Resource):
         file_format = params.get_value("file_format", ".json")
         file_extension = Path(file_name).suffix or file_format
         file_path = os.path.join(dest_dir, file_name)
-        with open(file_path, 'r') as fp:
+        with open(file_path, 'r', encoding="utf-8") as fp:
             if file_extension in [".json"] or file_format == ".json":
                 data = self.dumps()
                 json.dump(data, fp)
@@ -485,7 +485,7 @@ class Network(Resource):
 
         return self.compounds.get(comp_id)
 
-    def get_compound_by_chebi_id(self, chebi_id: str, compartment: str = None) -> Compound:
+    def get_compounds_by_chebi_id(self, chebi_id: str, compartment: Optional[str] = None) -> List[Compound]:
         """
         Get a compound by its chebi id and compartment.
 
@@ -503,14 +503,21 @@ class Network(Resource):
         if "CHEBI" not in chebi_id:
             chebi_id = f"CHEBI:{chebi_id}"
 
-        if not compartment in self._set_of_chebi_ids:
-            return None
-
-        c_id = self._set_of_chebi_ids[compartment].get(chebi_id)
-        if c_id:
-            return self.compounds[c_id]
+        if compartment:
+            if compartment not in self._set_of_chebi_ids:
+                return []
+            c_id = self._set_of_chebi_ids[compartment].get(chebi_id)
+            if c_id:
+                return [self.compounds[c_id]]
+            else:
+                return []
         else:
-            return None
+            comps = []
+            for d in self._set_of_chebi_ids.values():
+                if chebi_id in d:
+                    comp_id = d[chebi_id]
+                    comps.append(self.compounds[comp_id])
+            return comps
 
         # _list = []
         # for _id in self.compounds:
@@ -572,6 +579,17 @@ class Network(Resource):
             return self.reactions[r_id]
         else:
             return None
+
+    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> List[Reaction]:
+        rxns = []
+        comps = self.get_compounds_by_chebi_id(chebi_id)
+        if not comps:
+            return rxns
+        for rxn in self.reactions.values():
+            for comp in comps:
+                if comp.id in rxn.products or comp.id in rxn.substrates:
+                    rxns.append(rxn)
+        return rxns
 
     def _get_gap_info(self, gap_only=False) -> dict:
         """
@@ -761,8 +779,6 @@ class Network(Resource):
 
             chebi_id = val.get("chebi_id", "")
             inchikey = val.get("inchikey", "")
-            # if re.match(r"CHEBI\:\d+$", val["id"]):
-            #     chebi_id = val["id"]
 
             is_bigg_data_format = ("annotation" in val)
             alt_chebi_ids = []
@@ -786,9 +802,7 @@ class Network(Resource):
                         compartment=compart,
                         network=net
                     )
-                    if alt_chebi_ids:
-                        comp.alt_chebi_ids = alt_chebi_ids
-                except Exception as err:
+                except:
                     pass
 
             if comp is None:
@@ -807,7 +821,10 @@ class Network(Resource):
                     alt_chebi_ids=alt_chebi_ids,
                     kegg_id=val.get("kegg_id", "")
                 )
-                
+
+            if alt_chebi_ids:
+                comp.alt_chebi_ids = alt_chebi_ids
+
             position = val.get("position", {})
             if position:
                 comp.position.x = position.get("x", None)
@@ -845,7 +862,7 @@ class Network(Resource):
                 comp = added_comps[comp_id]
                 # search according to compound ids
                 if re.match(r"CHEBI\:\d+$", comp_id):
-                    comps = net.get_compound_by_chebi_id(comp_id)
+                    comps = net.get_compounds_by_chebi_id(comp_id)
                     # select the compound in the good compartment
                     for c in comps:
                         if c.compartment == comp.compartment:
@@ -1133,12 +1150,13 @@ class Network(Resource):
     def view_compound_stats_as_table(self, params: ConfigParams) -> TableView:
         table = self.get_compound_stats_as_table()
         return TableView(data=table)
-        
+
 # ####################################################################
 #
 # Importer class
 #
 # ####################################################################
+
 
 @importer_decorator("NetworkImporter", resource_type=Network)
 class NetworkImporter(ResourceImporter):

@@ -236,7 +236,7 @@ class Reaction:
 
         self._products[comp.id] = {
             "compound": comp,
-            "stoichiometry": abs(float(stoich))
+            "stoichiometry": abs(float(stoich)),
         }
 
     # -- C --

@@ -13,7 +13,8 @@ from .fba.proto.fba_proto import FBAProto
 from .fba.proto.fva_proto import FVAProto
 # KnockOut
 from .knockout_analysis.knockout_analysis import KnockOutAnalysis
-from .knockout_analysis.knockout_analysis_result import KnockOutAnalysisResult
+from .knockout_analysis.knockout_analysis_result_table import \
+    KnockOutAnalysisResultTable
 # network
 from .network.compound import Compound
 from .network.network import Network, NetworkExporter, NetworkImporter
@@ -32,10 +33,10 @@ from .recon.gap_finder_result import GapFinderResult
 from .recon.helper.recon_helper import ReconHelper
 from .recon.proto.recon_proto import ReconProto
 from .recon.recon import DraftRecon
+from .twin.helper.twin_helper import TwinHelper
 # twin
 from .twin.twin import FlatTwin, Twin
 from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
 from .twin.twin_context_builder import TwinContext, TwinContextBuilder
 from .twin.twin_flatner import TwinFlattener
-from .twin.helper.twin_helper import TwinHelper

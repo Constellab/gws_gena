@@ -262,8 +262,9 @@ class FBAHelper:
                     ],
                 )
             else:
+                #regularizer = cp.sum_squares(x)
                 prob = cp.Problem(
-                    cp.Minimize(c_par.T@x + qssa_cost),
+                    cp.Minimize(c_par.T@x + qssa_cost),  # + 0.0*regularizer,
                     [
                         x >= lb_par,
                         x <= ub_par
