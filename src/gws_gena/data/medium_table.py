@@ -5,8 +5,8 @@
 
 from typing import List
 
-from gws_core import (BadRequestException, ConfigParams, File, StrParam,
-                      StrRField, Table, TableExporter, TableImporter,
+from gws_core import (BadRequestException, ConfigParams, File, ListParam,
+                      StrParam, StrRField, Table, TableExporter, TableImporter,
                       export_to_path, exporter_decorator, import_from_path,
                       importer_decorator, resource_decorator, task_decorator)
 
@@ -16,7 +16,7 @@ from gws_core import (BadRequestException, ConfigParams, File, StrParam,
 #
 # ####################################################################
 
-MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN_NAME = "chebi_id"
+MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN = "chebi_id"
 
 
 @resource_decorator("MediumTable",
@@ -42,25 +42,29 @@ class MediumTable(Table):
     ```
     """
 
-    DEFAULT_CHEBI_COLUMN_NAME = MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN_NAME
-    chebi_column_name: str = StrRField(default_value=DEFAULT_CHEBI_COLUMN_NAME)
+    DEFAULT_CHEBI_COLUMN = MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN
+    chebi_column: str = StrRField(default_value=DEFAULT_CHEBI_COLUMN)
 
     # -- E --
 
     # -- F --
 
     def get_chebi_ids(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.chebi_column_name, rtype)
+        return self.get_column(self.chebi_column, rtype)
 
     # -- I --
 
     @classmethod
     @import_from_path(
         specs={**TableImporter.config_specs,
-               'chebi_column_name':
+               'chebi_column':
                StrParam(
-                   default_value=MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN_NAME, human_name="CheBI column name",
-                   short_description="The CheBI ID column name"), })
+                   default_value=MEDIUM_TABLE_DEFAULT_CHEBI_COLUMN, human_name="CheBI column name",
+                   short_description="The CheBI ID column name"),
+               'index_columns':
+               ListParam(
+                   optional=True,
+                   short_description="Columns to use as the row names. Use None to prevent parsing row names. Only for CSV files"), })
     def import_from_path(cls, file: File, params: ConfigParams) -> 'MediumTable':
         """
         Import from a repository
@@ -79,12 +83,12 @@ class MediumTable(Table):
         params["index_columns"] = index_columns
         csv_table = super().import_from_path(file, params)
 
-        chebi_column_name = params.get_value("chebi_column_name", cls.DEFAULT_CHEBI_COLUMN_NAME)
-        if not csv_table.column_exists(chebi_column_name):
+        chebi_column = params.get_value("chebi_column", cls.DEFAULT_CHEBI_COLUMN)
+        if not csv_table.column_exists(chebi_column):
             raise BadRequestException(
-                f"Cannot import MediumTable. No chebi ids found (no column with name '{chebi_column_name}')")
+                f"Cannot import MediumTable. No chebi ids found (no column with name '{chebi_column}')")
 
-        csv_table.chebi_column_name = chebi_column_name
+        csv_table.chebi_column = chebi_column
         return csv_table
 
     # -- S --
@@ -92,25 +96,25 @@ class MediumTable(Table):
     def select_by_row_indexes(self, indexes: List[int]) -> 'MediumTable':
         table = super().select_by_row_indexes(indexes)
         table = MediumTable(data=table.get_data())
-        table.chebi_column_name = self.chebi_column_name
+        table.chebi_column = self.chebi_column
         return table
 
     def select_by_column_indexes(self, indexes: List[int]) -> 'MediumTable':
         table = super().select_by_column_indexes(indexes)
         table = MediumTable(data=table.get_data())
-        table.chebi_column_name = self.chebi_column_name
+        table.chebi_column = self.chebi_column
         return table
 
     def select_by_row_name(self, name_regex: str) -> 'MediumTable':
         table = super().select_by_row_name(name_regex)
         table = MediumTable(data=table.get_data())
-        table.chebi_column_name = self.chebi_column_name
+        table.chebi_column = self.chebi_column
         return table
 
     def select_by_column_name(self, name_regex: str) -> 'MediumTable':
         table = super().select_by_column_name(name_regex)
         table = MediumTable(data=table.get_data())
-        table.chebi_column_name = self.chebi_column_name
+        table.chebi_column = self.chebi_column
         return table
 
 # ####################################################################

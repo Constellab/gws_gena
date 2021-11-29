@@ -5,8 +5,8 @@
 
 from typing import List
 
-from gws_core import (BadRequestException, ConfigParams, File, StrParam,
-                      StrRField, Table, TableExporter, TableImporter,
+from gws_core import (BadRequestException, ConfigParams, File, ListParam,
+                      StrParam, StrRField, Table, TableExporter, TableImporter,
                       export_to_path, exporter_decorator, import_from_path,
                       importer_decorator, resource_decorator, task_decorator)
 
@@ -16,7 +16,7 @@ from gws_core import (BadRequestException, ConfigParams, File, StrParam,
 #
 # ####################################################################
 
-EC_TABLE_DEFAULT_EC_COLUMN_NAME = "ec_number"
+EC_TABLE_DEFAULT_EC_COLUMN = "ec_number"
 
 
 @resource_decorator("ECTable",
@@ -42,25 +42,29 @@ class ECTable(Table):
     ```
     """
 
-    DEFAULT_EC_COLUMN_NAME = EC_TABLE_DEFAULT_EC_COLUMN_NAME
-    ec_column_name: str = StrRField(default_value=EC_TABLE_DEFAULT_EC_COLUMN_NAME)
+    DEFAULT_EC_COLUMN = EC_TABLE_DEFAULT_EC_COLUMN
+    ec_column: str = StrRField(default_value=EC_TABLE_DEFAULT_EC_COLUMN)
 
     # -- E --
 
     # -- G --
 
     def get_ec_numbers(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.ec_column_name, rtype)
+        return self.get_column(self.ec_column, rtype)
 
     # -- I --
 
     @classmethod
     @import_from_path(
         specs={**TableImporter.config_specs,
-               'ec_column_name':
+               'ec_column':
                StrParam(
-                   default_value=EC_TABLE_DEFAULT_EC_COLUMN_NAME,
-                   short_description="The name of the column containing the EC numbers"), })
+                   default_value=EC_TABLE_DEFAULT_EC_COLUMN,
+                   short_description="The name of the column containing the EC numbers"),
+               'index_columns':
+               ListParam(
+                   optional=True,
+                   short_description="Columns to use as the row names. Use None to prevent parsing row names. Only for CSV files"), })
     def import_from_path(cls, file: File, params: ConfigParams) -> 'ECTable':
         """
         Import from a repository
@@ -74,18 +78,18 @@ class ECTable(Table):
         """
 
         csv_table = super().import_from_path(file, params)
-        ec_column_name = params.get_value("ec_column_name", cls.DEFAULT_EC_COLUMN_NAME)
+        ec_column = params.get_value("ec_column", cls.DEFAULT_EC_COLUMN)
 
-        if not csv_table.column_exists(ec_column_name):
+        if not csv_table.column_exists(ec_column):
             raise BadRequestException(
-                f"Cannot import Table. No ec numbers found (no column with name '{ec_column_name}')")
+                f"Cannot import Table. No ec numbers found (no column with name '{ec_column}')")
 
-        csv_table.ec_column_name = ec_column_name
+        csv_table.ec_column = ec_column
 
         # clean ec data
         csv_table._data.replace(
-            to_replace={ec_column_name: r"EC:"},
-            value={ec_column_name: ""},
+            to_replace={ec_column: r"EC:"},
+            value={ec_column: ""},
             regex=True,
             inplace=True
         )
@@ -97,25 +101,25 @@ class ECTable(Table):
     def select_by_row_indexes(self, indexes: List[int]) -> 'BiomassTable':
         table = super().select_by_row_indexes(indexes)
         table = ECTable(data=table.get_data())
-        table.ec_column_name = self.ec_column_name
+        table.ec_column = self.ec_column
         return table
 
     def select_by_column_indexes(self, indexes: List[int]) -> 'BiomassTable':
         table = super().select_by_column_indexes(indexes)
         table = ECTable(data=table.get_data())
-        table.ec_column_name = self.ec_column_name
+        table.ec_column = self.ec_column
         return table
 
     def select_by_row_name(self, name_regex: str) -> 'BiomassTable':
         table = super().select_by_row_name(name_regex)
         table = ECTable(data=table.get_data())
-        table.ec_column_name = self.ec_column_name
+        table.ec_column = self.ec_column
         return table
 
     def select_by_column_name(self, name_regex: str) -> 'BiomassTable':
         table = super().select_by_column_name(name_regex)
         table = ECTable(data=table.get_data())
-        table.ec_column_name = self.ec_column_name
+        table.ec_column = self.ec_column
         return table
 
 # ####################################################################
@@ -125,7 +129,7 @@ class ECTable(Table):
 # ####################################################################
 
 
-@importer_decorator("ECTableImporter", resource_type=ECTable)
+@ importer_decorator("ECTableImporter", resource_type=ECTable)
 class ECTableImporter(TableImporter):
     pass
 
@@ -136,6 +140,6 @@ class ECTableImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("ECTableExporter", resource_type=ECTable)
+@ exporter_decorator("ECTableExporter", resource_type=ECTable)
 class ECTableExporter(TableExporter):
     pass

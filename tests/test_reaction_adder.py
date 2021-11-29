@@ -67,7 +67,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         proto = experiment.get_protocol()
         adder = proto.get_process("adder")
         id_loader = proto.get_process("id_loader")
-        id_loader.set_param('id_column_name', 'rhea_id')
+        id_loader.set_param('id_column', 'rhea_id')
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         proto.set_input('file1', File(path=os.path.join(data_dir, "toy", "toy.json")))
         proto.set_input('file2', File(path=os.path.join(data_dir, "reaction_adder", "rhea_id_table.csv")))

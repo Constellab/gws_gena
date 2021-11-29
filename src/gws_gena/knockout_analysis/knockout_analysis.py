@@ -50,11 +50,12 @@ class KnockOutAnalysis(Task):
         full_ko_result_df = DataFrame()
         for i in range(0, ko_table.nb_rows):
             current_ko_table = ko_table.select_by_row_indexes([i])
-            ko_name: str = current_ko_table.get_ids()[0]
+            ko_name = current_ko_table.get_data().index[0]
+            ko_id: str = current_ko_table.get_ids()[0]
 
             perc = 100 * (i/ko_table.nb_rows)
             self.update_progress_value(
-                perc, message=f"Step {i+1}/{ko_table.nb_rows}: analyzing knockout '{ko_name}' ...")
+                perc, message=f"Step {i+1}/{ko_table.nb_rows}: analyzing knockout '{ko_id} ({ko_name})' ...")
 
             current_ko_twin = twin.copy()
             for _, net in current_ko_twin.networks.items():
@@ -69,9 +70,9 @@ class KnockOutAnalysis(Task):
                 current_fluxes = current_fluxes.loc[monitored_fluxes, :]
             current_fluxes.columns = ["flux_value", "flux_lower_bound", "flux_upper_bound"]
 
-            ko_name_df = DataFrame(
-                data=[[ko_name]] * current_fluxes.shape[0],
-                columns=["ko"],
+            ko_id_df = DataFrame(
+                data=[[ko_name, ko_id]] * current_fluxes.shape[0],
+                columns=["ko_name", "ko_id"],
                 index=current_fluxes.index
             )
 
@@ -82,7 +83,7 @@ class KnockOutAnalysis(Task):
             )
 
             current_ko_result_df = pandas.concat(
-                [ko_name_df, flux_name_df, current_fluxes],
+                [ko_id_df, flux_name_df, current_fluxes],
                 axis=1
             )
 

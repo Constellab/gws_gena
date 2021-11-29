@@ -146,7 +146,7 @@ class ReconHelper:
                     comp = Compound(name=name, compartment=compartment)
             else:
                 comp = comps[0]
-                
+
         if not net.exists(comp):
             net.add_compound(comp)
         net.set_compound_tag(comp.id, {
@@ -158,7 +158,7 @@ class ReconHelper:
     @classmethod
     def _create_biomass_rxns(cls, net, biomass_comps, biomass_table):
         col_names = biomass_table.column_names
-        chebi_col_name = biomass_table.chebi_column_name
+        chebi_col_name = biomass_table.chebi_column
         for col_name in col_names:
             if col_name == chebi_col_name:
                 continue
@@ -197,7 +197,7 @@ class ReconHelper:
     def _create_biomass_compounds(cls, net, biomass_table):
         row_names = biomass_table.row_names
         chebi_ids = biomass_table.get_chebi_ids()
-        biomass_col_name = biomass_table.biomass_column_name
+        biomass_col_name = biomass_table.biomass_column
         _comps = []
         i = 0
         for chebi_id in chebi_ids:

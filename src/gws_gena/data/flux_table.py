@@ -16,10 +16,10 @@ from gws_core import (BadRequestException, ConfigParams, File, StrParam,
 #
 # ####################################################################
 
-FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME = "target"
-FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN_NAME = "upper_bound"
-FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN_NAME = "lower_bound"
-FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME = "confidence_score"
+FLUX_TABLE_DEFAULT_TARGET_COLUMN = "target"
+FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN = "upper_bound"
+FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN = "lower_bound"
+FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN = "confidence_score"
 
 
 @resource_decorator("FluxTable",
@@ -48,12 +48,12 @@ class FluxTable(Table):
     ```
     """
 
-    DEFAULT_TARGET_COLUMN_NAME = FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME
-    DEFAULT_UPPER_BOUND_COLUMN_NAME = FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN_NAME
-    DEFAULT_LOWER_BOUND_COLUMN_NAME = FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN_NAME
-    DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME = FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME
+    DEFAULT_TARGET_COLUMN = FLUX_TABLE_DEFAULT_TARGET_COLUMN
+    DEFAULT_UPPER_BOUND_COLUMN = FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN
+    DEFAULT_LOWER_BOUND_COLUMN = FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN
+    DEFAULT_CONFIDENCE_SCORE_COLUMN = FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN
 
-    confidence_score_column_name: str = StrRField(default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME)
+    confidence_score_column: str = StrRField(default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN)
 
     # -- C --
 
@@ -69,7 +69,7 @@ class FluxTable(Table):
         return self.get_column(self.lower_bound_column_name, rtype)
 
     def get_confidence_scores(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.confidence_score_column_name, rtype)
+        return self.get_column(self.confidence_score_column, rtype)
 
     # -- I --
 
@@ -78,21 +78,21 @@ class FluxTable(Table):
         specs={**TableImporter.config_specs,
                'target_column_name':
                StrParam(
-                   default_value=FLUX_TABLE_DEFAULT_TARGET_COLUMN_NAME, human_name="Target column name",
+                   default_value=FLUX_TABLE_DEFAULT_TARGET_COLUMN, human_name="Target column name",
                    short_description="The name of the target column"),
                'lower_bound_column_name':
                StrParam(
-                   default_value=FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN_NAME,
+                   default_value=FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN,
                    human_name="Lower bound column name",
                    short_description="The name of the lower-bound column"),
                'upper_bound_column_name':
                StrParam(
-                   default_value=FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN_NAME,
+                   default_value=FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN,
                    human_name="Upper bound column name",
                    short_description="The name of the upper-bound column"),
-               'confidence_score_column_name':
+               'confidence_score_column':
                StrParam(
-                   default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME,
+                   default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN,
                    human_name="Confidence score column name",
                    short_description="The name of the upper-bound column"), })
     def import_from_path(cls, file: File, params: ConfigParams) -> 'FluxTable':
@@ -113,11 +113,11 @@ class FluxTable(Table):
         params["index_columns"] = index_columns
         csv_table = super().import_from_path(file, params)
 
-        target_column_name = params.get_value("target_column_name", cls.DEFAULT_TARGET_COLUMN_NAME)
-        upper_bound_column_name = params.get_value("upper_bound_column_name", cls.DEFAULT_UPPER_BOUND_COLUMN_NAME)
-        lower_bound_column_name = params.get_value("lower_bound_column_name", cls.DEFAULT_LOWER_BOUND_COLUMN_NAME)
-        confidence_score_column_name = params.get_value(
-            "confidence_score_column_name", cls.DEFAULT_CONFIDENCE_SCORE_COLUMN_NAME)
+        target_column_name = params.get_value("target_column_name", cls.DEFAULT_TARGET_COLUMN)
+        upper_bound_column_name = params.get_value("upper_bound_column_name", cls.DEFAULT_UPPER_BOUND_COLUMN)
+        lower_bound_column_name = params.get_value("lower_bound_column_name", cls.DEFAULT_LOWER_BOUND_COLUMN)
+        confidence_score_column = params.get_value(
+            "confidence_score_column", cls.DEFAULT_CONFIDENCE_SCORE_COLUMN)
 
         if not csv_table.column_exists(target_column_name):
             raise BadRequestException(
@@ -128,14 +128,14 @@ class FluxTable(Table):
         if not csv_table.column_exists(lower_bound_column_name):
             raise BadRequestException(
                 f"Cannot import FluxTable. No lower bound found (no column with name '{lower_bound_column_name}')")
-        if not csv_table.column_exists(confidence_score_column_name):
+        if not csv_table.column_exists(confidence_score_column):
             raise BadRequestException(
-                f"Cannot import FluxTable. No confidence score found (no column with name '{confidence_score_column_name}')")
+                f"Cannot import FluxTable. No confidence score found (no column with name '{confidence_score_column}')")
 
         csv_table.target_column_name = target_column_name
         csv_table.upper_bound_column_name = upper_bound_column_name
         csv_table.lower_bound_column_name = lower_bound_column_name
-        csv_table.confidence_score_column_name = confidence_score_column_name
+        csv_table.confidence_score_column = confidence_score_column
         return csv_table
 
     # -- S --
@@ -143,25 +143,25 @@ class FluxTable(Table):
     def select_by_row_indexes(self, indexes: List[int]) -> 'FluxTable':
         table = super().select_by_row_indexes(indexes)
         table = FluxTable(data=table.get_data())
-        table.confidence_score_column_name = self.confidence_score_column_name
+        table.confidence_score_column = self.confidence_score_column
         return table
 
     def select_by_column_indexes(self, indexes: List[int]) -> 'FluxTable':
         table = super().select_by_column_indexes(indexes)
         table = FluxTable(data=table.get_data())
-        table.confidence_score_column_name = self.confidence_score_column_name
+        table.confidence_score_column = self.confidence_score_column
         return table
 
     def select_by_row_name(self, name_regex: str) -> 'FluxTable':
         table = super().select_by_row_name(name_regex)
         table = FluxTable(data=table.get_data())
-        table.confidence_score_column_name = self.confidence_score_column_name
+        table.confidence_score_column = self.confidence_score_column
         return table
 
     def select_by_column_name(self, name_regex: str) -> 'FluxTable':
         table = super().select_by_column_name(name_regex)
         table = FluxTable(data=table.get_data())
-        table.confidence_score_column_name = self.confidence_score_column_name
+        table.confidence_score_column = self.confidence_score_column
         return table
 
 # ####################################################################

@@ -5,8 +5,8 @@
 
 from typing import List
 
-from gws_core import (BadRequestException, ConfigParams, File, StrParam,
-                      StrRField, Table, TableExporter, TableImporter,
+from gws_core import (BadRequestException, ConfigParams, File, ListParam,
+                      StrParam, StrRField, Table, TableExporter, TableImporter,
                       export_to_path, exporter_decorator, import_from_path,
                       importer_decorator, resource_decorator, task_decorator)
 
@@ -16,8 +16,8 @@ from gws_core import (BadRequestException, ConfigParams, File, StrParam,
 #
 # ####################################################################
 
-BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN_NAME = "chebi_id"
-BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN_NAME = "biomass"
+BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN = "chebi_id"
+BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN = "biomass"
 
 
 @resource_decorator("BiomassTable",
@@ -56,26 +56,27 @@ class BiomassTable(Table):
     ```
     """
 
-    DEFAULT_CHEBI_COLUMN_NAME = BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN_NAME
-    DEFAULT_BIOMASS_COLUMN_NAME = BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN_NAME
+    DEFAULT_CHEBI_COLUMN = BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN
+    DEFAULT_BIOMASS_COLUMN = BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN
 
-    biomass_column_name: str = StrRField(default_value=BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN_NAME)
-    chebi_column_name: str = StrRField(default_value=BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN_NAME)
+    biomass_column: str = StrRField(default_value=BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN)
+    chebi_column: str = StrRField(default_value=BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN)
 
     # -- E --
 
     # -- F --
 
     def get_chebi_ids(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.chebi_column_name, rtype)
+        return self.get_column(self.chebi_column, rtype)
 
     # -- I --
 
     @classmethod
     @import_from_path(specs={
         **TableImporter.config_specs,
-        'chebi_column_name': StrParam(default_value=BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN_NAME, short_description="The CheBI ID column name"),
-        'biomass_column_name': StrParam(default_value=BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN_NAME, short_description="The biomass equation column name"),
+        'chebi_column': StrParam(default_value=BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN, short_description="The CheBI ID column name"),
+        'biomass_column': StrParam(default_value=BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN, short_description="The biomass equation column name"),
+        'index_columns': ListParam(default_value=[0], short_description="Columns to use as the row names. Use None to prevent parsing row names. Only for CSV files"),
     })
     def import_from_path(cls, file: File, params: ConfigParams) -> 'BiomassTable':
         """
@@ -91,22 +92,20 @@ class BiomassTable(Table):
         :rtype: BiomassTable
         """
 
-        index_columns = params.get_value("index_columns") or 0
-        params["index_columns"] = index_columns
         csv_table = super().import_from_path(file, params)
 
-        chebi_column_name = params.get_value("chebi_column_name", cls.DEFAULT_CHEBI_COLUMN_NAME)
-        biomass_column_name = params.get_value("biomass_column_name", cls.DEFAULT_BIOMASS_COLUMN_NAME)
-        if not csv_table.column_exists(chebi_column_name):
+        chebi_column = params.get_value("chebi_column", cls.DEFAULT_CHEBI_COLUMN)
+        biomass_column = params.get_value("biomass_column", cls.DEFAULT_BIOMASS_COLUMN)
+        if not csv_table.column_exists(chebi_column):
             raise BadRequestException(
-                f"Cannot import BiomassTable. No CheBI ID column found (no column with name '{chebi_column_name}')")
+                f"Cannot import BiomassTable. No CheBI ID column found (no column with name '{chebi_column}')")
 
-        if not csv_table.column_exists(biomass_column_name):
+        if not csv_table.column_exists(biomass_column):
             raise BadRequestException(
-                f"Cannot import BiomassTable.  No biomass equation found (no column with name '{biomass_column_name}')")
+                f"Cannot import BiomassTable.  No biomass equation found (no column with name '{biomass_column}')")
 
-        csv_table.biomass_column_name = biomass_column_name
-        csv_table.chebi_column_name = chebi_column_name
+        csv_table.biomass_column = biomass_column
+        csv_table.chebi_column = chebi_column
         return csv_table
 
     # -- S --
@@ -114,29 +113,29 @@ class BiomassTable(Table):
     def select_by_row_indexes(self, indexes: List[int]) -> 'BiomassTable':
         table = super().select_by_row_indexes(indexes)
         table = BiomassTable(data=table.get_data())
-        table.biomass_column_name = self.biomass_column_name
-        table.chebi_column_name = self.chebi_column_name
+        table.biomass_column = self.biomass_column
+        table.chebi_column = self.chebi_column
         return table
 
     def select_by_column_indexes(self, indexes: List[int]) -> 'BiomassTable':
         table = super().select_by_column_indexes(indexes)
         table = BiomassTable(data=table.get_data())
-        table.biomass_column_name = self.biomass_column_name
-        table.chebi_column_name = self.chebi_column_name
+        table.biomass_column = self.biomass_column
+        table.chebi_column = self.chebi_column
         return table
 
     def select_by_row_name(self, name_regex: str) -> 'BiomassTable':
         table = super().select_by_row_name(name_regex)
         table = BiomassTable(data=table.get_data())
-        table.biomass_column_name = self.biomass_column_name
-        table.chebi_column_name = self.chebi_column_name
+        table.biomass_column = self.biomass_column
+        table.chebi_column = self.chebi_column
         return table
 
     def select_by_column_name(self, name_regex: str) -> 'BiomassTable':
         table = super().select_by_column_name(name_regex)
         table = BiomassTable(data=table.get_data())
-        table.biomass_column_name = self.biomass_column_name
-        table.chebi_column_name = self.chebi_column_name
+        table.biomass_column = self.biomass_column
+        table.chebi_column = self.chebi_column
         return table
 
 # ####################################################################

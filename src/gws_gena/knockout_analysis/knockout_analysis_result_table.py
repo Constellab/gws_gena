@@ -14,8 +14,8 @@ from gws_core import (BadRequestException, BarPlotView, ConfigParams,
 @resource_decorator("KnockOutAnalysisResultTable")
 class KnockOutAnalysisResultTable(Table):
 
-    def get_ko_names(self) -> List[str]:
-        return self._data.loc[:, "ko"].unique()
+    def get_ko_ids(self) -> List[str]:
+        return self._data.loc[:, "ko_id"].unique()
 
     @view(view_type=MultiViews,
           human_name='KO Summary',
@@ -27,13 +27,13 @@ class KnockOutAnalysisResultTable(Table):
         """
 
         flux_names = params.get_value("flux_names", [])
-        nb_of_ko = len(self.get_ko_names())
+        nb_of_ko = len(self.get_ko_ids())
         nb_cols = 3 if nb_of_ko >= 5 else min(2, nb_of_ko)
         multi_view = MultiViews(nb_of_columns=nb_cols)
         for flux_name in flux_names:
             idx = self._data["flux_name"] == flux_name
             current_data = self._data.loc[idx, :]
-            x_label = "ko"
+            x_label = "ko_id"
             y_label = flux_name
             barplot_view = BarPlotView(current_data)
             multi_view.add_view(
@@ -42,7 +42,7 @@ class KnockOutAnalysisResultTable(Table):
                     "column_names": ["flux_value"],
                     "x_label": x_label,
                     "y_label": y_label,
-                    "x_tick_labels": list(current_data.loc[:, "ko"].to_list())
+                    "x_tick_labels": list(current_data.loc[:, "ko_id"].to_list())
                 })
 
         return multi_view

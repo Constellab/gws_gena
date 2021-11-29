@@ -1,5 +1,5 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
@@ -15,31 +15,32 @@ from ...data.ec_table import ECTableImporter
 from ..recon import DraftRecon
 from ..gap_filler import GapFiller
 
+
 @protocol_decorator("ReconProto")
 class ReconProto(Protocol):
-    
+
     def configure_protocol(self, config_params: ConfigParams) -> None:
         # ec
         ec_importer: ProcessSpec = self.add_process(ECTableImporter, 'ec_importer')
-        ec_importer.set_param("ec_column_name", "EC Number")
+        ec_importer.set_param("ec_column", "EC Number")
         # biomass
         biomass_importer: ProcessSpec = self.add_process(BiomassImporter, 'biomass_importer')
-        biomass_importer.set_param("biomass_column_name", "Biomass")
-        biomass_importer.set_param("chebi_column_name", "Chebi ID")
+        biomass_importer.set_param("biomass_column", "Biomass")
+        biomass_importer.set_param("chebi_column", "Chebi ID")
         # medium
         medium_importer: ProcessSpec = self.add_process(MediumImporter, 'medium_importer')
-        medium_importer.set_param("chebi_column_name", "Chebi ID")
+        medium_importer.set_param("chebi_column", "Chebi ID")
         # other procs
         recon: ProcessSpec = self.add_process(DraftRecon, 'recon')
         gap_filler: ProcessSpec = self.add_process(GapFiller, 'gap_filler')
         sink: ProcessSpec = self.add_process(Sink, 'sink')
-        
+
         self.add_connectors([
-            (ec_importer>>"resource", recon<<"ec_table"),
-            (biomass_importer>>"resource", recon<<"biomass_table"),
-            (medium_importer>>"resource", recon<<"medium_table"),
-            (recon>>"network", gap_filler<<"network"),
-            (gap_filler>>"network", sink<<"resource")
+            (ec_importer >> "resource", recon << "ec_table"),
+            (biomass_importer >> "resource", recon << "biomass_table"),
+            (medium_importer >> "resource", recon << "medium_table"),
+            (recon >> "network", gap_filler << "network"),
+            (gap_filler >> "network", sink << "resource")
         ])
 
         # interface
