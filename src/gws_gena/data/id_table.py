@@ -3,6 +3,8 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from typing import List
+
 from gws_core import (BadRequestException, ConfigParams, File, StrParam,
                       StrRField, Table, TableExporter, TableImporter,
                       export_to_path, exporter_decorator, import_from_path,
@@ -64,6 +66,32 @@ class IDTable(Table):
 
         csv_table.id_column_name = id_column_name
         return csv_table
+
+    # -- S --
+
+    def select_by_row_indexes(self, indexes: List[int]) -> 'IDTable':
+        table = super().select_by_row_indexes(indexes)
+        table = IDTable(data=table.get_data())
+        table.id_column_name = self.id_column_name
+        return table
+
+    def select_by_column_indexes(self, indexes: List[int]) -> 'IDTable':
+        table = super().select_by_column_indexes(indexes)
+        table = IDTable(data=table.get_data())
+        table.id_column_name = self.id_column_name
+        return table
+
+    def select_by_row_name(self, name_regex: str) -> 'IDTable':
+        table = super().select_by_row_name(name_regex)
+        table = IDTable(data=table.get_data())
+        table.id_column_name = self.id_column_name
+        return table
+
+    def select_by_column_name(self, name_regex: str) -> 'IDTable':
+        table = super().select_by_column_name(name_regex)
+        table = IDTable(data=table.get_data())
+        table.id_column_name = self.id_column_name
+        return table
 
 # ####################################################################
 #

@@ -3,6 +3,8 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from typing import List
+
 from gws_core import (BadRequestException, ConfigParams, File, StrParam,
                       StrRField, Table, TableExporter, TableImporter,
                       export_to_path, exporter_decorator, import_from_path,
@@ -53,10 +55,12 @@ class ECTable(Table):
     # -- I --
 
     @classmethod
-    @import_from_path(specs={
-        **TableImporter.config_specs,
-        'ec_column_name': StrParam(default_value=EC_TABLE_DEFAULT_EC_COLUMN_NAME, short_description="The name of the column containing the EC numbers"),
-    })
+    @import_from_path(
+        specs={**TableImporter.config_specs,
+               'ec_column_name':
+               StrParam(
+                   default_value=EC_TABLE_DEFAULT_EC_COLUMN_NAME,
+                   short_description="The name of the column containing the EC numbers"), })
     def import_from_path(cls, file: File, params: ConfigParams) -> 'ECTable':
         """
         Import from a repository
@@ -80,13 +84,39 @@ class ECTable(Table):
 
         # clean ec data
         csv_table._data.replace(
-            to_replace = {ec_column_name: r"EC:"}, 
-            value = {ec_column_name: ""}, 
-            regex = True, 
+            to_replace={ec_column_name: r"EC:"},
+            value={ec_column_name: ""},
+            regex=True,
             inplace=True
         )
 
         return csv_table
+
+    # -- S --
+
+    def select_by_row_indexes(self, indexes: List[int]) -> 'BiomassTable':
+        table = super().select_by_row_indexes(indexes)
+        table = ECTable(data=table.get_data())
+        table.ec_column_name = self.ec_column_name
+        return table
+
+    def select_by_column_indexes(self, indexes: List[int]) -> 'BiomassTable':
+        table = super().select_by_column_indexes(indexes)
+        table = ECTable(data=table.get_data())
+        table.ec_column_name = self.ec_column_name
+        return table
+
+    def select_by_row_name(self, name_regex: str) -> 'BiomassTable':
+        table = super().select_by_row_name(name_regex)
+        table = ECTable(data=table.get_data())
+        table.ec_column_name = self.ec_column_name
+        return table
+
+    def select_by_column_name(self, name_regex: str) -> 'BiomassTable':
+        table = super().select_by_column_name(name_regex)
+        table = ECTable(data=table.get_data())
+        table.ec_column_name = self.ec_column_name
+        return table
 
 # ####################################################################
 #

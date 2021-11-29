@@ -50,9 +50,7 @@ class KnockOutAnalysis(Task):
         full_ko_result_df = DataFrame()
         for i in range(0, ko_table.nb_rows):
             current_ko_table = ko_table.select_by_row_indexes([i])
-            ko_name: str = current_ko_table.get_data().iloc[0, 0]
-
-            print(ko_name)
+            ko_name: str = current_ko_table.get_ids()[0]
 
             perc = 100 * (i/ko_table.nb_rows)
             self.update_progress_value(
