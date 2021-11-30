@@ -59,7 +59,7 @@ class KnockOutAnalysis(Task):
 
             current_ko_twin = twin.copy()
             for _, net in current_ko_twin.networks.items():
-                ReactionKnockOutHelper.knockout_list_of_reactions(net, current_ko_table, inplace=True)
+                ReactionKnockOutHelper.knockout_list_of_reactions(net, current_ko_table, current_task=self, inplace=True)
 
             current_result: FBAResult = FBAHelper.run(
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
