@@ -32,7 +32,7 @@ class ReactionKnockOutHelper:
                     else:
                         if current_task:
                             current_task.log_warning_message(
-                                f"The EC number {ko_ec} is not found. Please check the KO table.")
+                                f"The EC number '{ko_ec}' is not found. Please check the KO table.")
 
         elif isinstance(reaction_table, IDTable):
             # ko using RXN_ID and EC_NUMBER
@@ -57,10 +57,10 @@ class ReactionKnockOutHelper:
                     else:
                         if current_task:
                             current_task.log_warning_message(
-                                f"The ID number {ko_id} is not found. Please check the KO table.")
+                                f"The ID number '{ko_id}' is not found. Please check the KO table.")
                 else:
                     if current_task:
                         current_task.log_warning_message(
-                            f"The ID number {ko_id} is not found. Please check the KO table.")
+                            f"The ID number '{ko_id}' is not found. Please check the KO table.")
 
         return new_net
