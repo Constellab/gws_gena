@@ -39,6 +39,9 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         recon = proto.get_process("recon")
         recon.set_param('tax_id', "263815")  # pcystis murina
 
+        ec_importer = proto.get_process("ec_importer")
+        ec_importer.set_param("ec_column", "EC Number")
+
         gap_filler = proto.get_process("gap_filler")
         gap_filler.set_param('tax_id', "4753")  # pcystis
         # gap_filler.set_param('tax_id', "4751")    #fungi
