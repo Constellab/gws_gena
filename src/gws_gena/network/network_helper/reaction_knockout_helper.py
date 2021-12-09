@@ -14,7 +14,8 @@ class ReactionKnockOutHelper:
 
     @classmethod
     def knockout_list_of_reactions(
-            cls, network: Network, reaction_table: (ECTable, IDTable), current_task=None, inplace=False) -> Network:
+            cls, network: Network, reaction_table: (ECTable, IDTable),
+            ko_delimiter=None, current_task=None, inplace=False) -> Network:
         if inplace:
             new_net = network
         else:
@@ -24,15 +25,20 @@ class ReactionKnockOutHelper:
             # ko using EC_NUMBER only
             ec_list: list = reaction_table.get_ec_numbers()
             for _, rxn in new_net.reactions.items():
-                ec_number = rxn.enzyme.get("ec_number")
-                for ko_ec in ec_list:
-                    if ec_number == ko_ec:
-                        rxn.lower_bound = -cls.FLUX_EPSILON
-                        rxn.upper_bound = cls.FLUX_EPSILON
-                    else:
-                        if current_task:
-                            current_task.log_warning_message(
-                                f"The EC number '{ko_ec}' is not found. Please check the KO table.")
+                ec_number_str = rxn.enzyme.get("ec_number")
+                if ko_delimiter:
+                    ec_numbers = ec_number_str.split(ko_delimiter)
+                else:
+                    ec_numbers = [ec_number_str]
+                for ec_number in ec_numbers:
+                    for ko_ec in ec_list:
+                        if ec_number == ko_ec:
+                            rxn.lower_bound = -cls.FLUX_EPSILON
+                            rxn.upper_bound = cls.FLUX_EPSILON
+                        else:
+                            if current_task:
+                                current_task.log_warning_message(
+                                    f"The EC number '{ko_ec}' is not found. Please check the KO table.")
 
         elif isinstance(reaction_table, IDTable):
             # ko using RXN_ID and EC_NUMBER
@@ -40,27 +46,39 @@ class ReactionKnockOutHelper:
             for rxn_id, rxn in new_net.reactions.items():
                 rhea_id = rxn.rhea_id
                 ec_number = rxn.enzyme.get("ec_number")
-                for i, ko_id in enumerate(id_list):
-                    if ko_id in [rxn_id, rhea_id, ec_number]:
-                        rxn.lower_bound = -cls.FLUX_EPSILON
-                        rxn.upper_bound = cls.FLUX_EPSILON
-                        del id_list[i]
+                for i, ko_id_str in enumerate(id_list):
+                    if ko_delimiter:
+                        ko_ids = ko_id_str.split(ko_delimiter)
+                    else:
+                        ko_ids = [ko_id_str]
 
-            # ko using CHEBI_ID
-            for ko_id in id_list:
-                if ko_id.startswith("CHEBI:"):
-                    rxns = new_net.get_reactions_related_to_chebi_id(ko_id)
-                    if rxns:
-                        for rxn in rxns:
+                    for ko_id in ko_ids:
+                        if ko_id in [rxn_id, rhea_id, ec_number]:
                             rxn.lower_bound = -cls.FLUX_EPSILON
                             rxn.upper_bound = cls.FLUX_EPSILON
+                            del id_list[i]
+
+            # ko using CHEBI_ID
+            for ko_id_str in id_list:
+                if ko_delimiter:
+                    ko_ids = ko_id_str.split(ko_delimiter)
+                else:
+                    ko_ids = [ko_id_str]
+
+                for ko_id in ko_ids:
+                    if ko_id.startswith("CHEBI:"):
+                        rxns = new_net.get_reactions_related_to_chebi_id(ko_id)
+                        if rxns:
+                            for rxn in rxns:
+                                rxn.lower_bound = -cls.FLUX_EPSILON
+                                rxn.upper_bound = cls.FLUX_EPSILON
+                        else:
+                            if current_task:
+                                current_task.log_warning_message(
+                                    f"The ID number '{ko_id}' is not found. Please check the KO table.")
                     else:
                         if current_task:
                             current_task.log_warning_message(
                                 f"The ID number '{ko_id}' is not found. Please check the KO table.")
-                else:
-                    if current_task:
-                        current_task.log_warning_message(
-                            f"The ID number '{ko_id}' is not found. Please check the KO table.")
 
         return new_net

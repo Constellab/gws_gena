@@ -33,8 +33,11 @@ class KnockOutAnalysis(Task):
     output_specs = {'ko_analysis_result': (KnockOutAnalysisResultTable,)}
     config_specs = {
         **FBA.config_specs,
-        'monitored_fluxes': ListParam(optional=True, short_description="The list fluxes to monitor")
-    }
+        'monitored_fluxes': ListParam(optional=True, short_description="The list fluxes to monitor"),
+        'ko_delimiter':
+        StrParam(
+            optional=True, default_value=None,
+            short_description="The delimiter used to separate IDs or EC numbers when multiple KO are performed")}
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         ko_table: ECTable = inputs["ko_table"]
@@ -45,7 +48,8 @@ class KnockOutAnalysis(Task):
         fill_gaps_with_sinks = params["fill_gaps_with_sinks"]
         ignore_cofactors = params["ignore_cofactors"]
         relax_qssa = params["relax_qssa"]
-        monitored_fluxes = params.get("monitored_fluxes", [])
+        monitored_fluxes = params.get_value("monitored_fluxes", [])
+        ko_delimiter = params.get_value("ko_delimiter", None)
 
         full_ko_result_df = DataFrame()
         for i in range(0, ko_table.nb_rows):
@@ -59,7 +63,8 @@ class KnockOutAnalysis(Task):
 
             current_ko_twin = twin.copy()
             for _, net in current_ko_twin.networks.items():
-                ReactionKnockOutHelper.knockout_list_of_reactions(net, current_ko_table, current_task=self, inplace=True)
+                ReactionKnockOutHelper.knockout_list_of_reactions(
+                    net, current_ko_table, ko_delimiter=ko_delimiter, current_task=self, inplace=True)
 
             current_result: FBAResult = FBAHelper.run(
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,

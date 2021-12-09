@@ -10,7 +10,6 @@ settings = Settings.retrieve()
 class TestFba(BaseTestCaseUsingFullBiotaDB):
 
     async def test_toy_koa(self):
-        return
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = Network.import_from_path(
             file=File(path=os.path.join(data_dir, "ko_analysis", "toy", "toy_ko.json")),
@@ -36,7 +35,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             params={
                 "monitored_fluxes": [],  # ["toy_cell_RB"],
                 "fluxes_to_maximize": ["toy_cell_RB"],
-                "relax_qssa": True
+                "relax_qssa": True,
+                "ko_delimiter": ","
             },
             task_type=KnockOutAnalysis
         )
@@ -59,7 +59,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(view_dict["data"]["nb_of_columns"], 2)
         self.assertEqual(len(view_dict["data"]["views"]), 2)
 
-        self.assertEqual(ko_results.get_data().at[0, "ko"], "toy_cell_R1")
+        self.assertEqual(ko_results.get_data().at[0, "ko_id"], "toy_cell_R1")
         self.assertEqual(ko_results.get_data().at[0, "flux_name"], "toy_cell_R1")
         self.assertAlmostEqual(ko_results.get_data().at[0, "flux_value"], 0.000193, delta=1e-6)
 
