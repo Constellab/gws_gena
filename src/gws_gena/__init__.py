@@ -1,9 +1,9 @@
 # table
-from .data.biomass_table import BiomassExporter, BiomassImporter, BiomassTable
+from .data.biomass_table import BiomassTableExporter, BiomassTableImporter, BiomassTable
 from .data.ec_table import ECTable, ECTableExporter, ECTableImporter
-from .data.flux_table import FluxExporter, FluxImporter, FluxTable
+from .data.flux_table import FluxTableExporter, FluxTableImporter, FluxTable
 from .data.id_table import IDTable, IDTableExporter, IDTableImporter
-from .data.medium_table import MediumExporter, MediumImporter, MediumTable
+from .data.medium_table import MediumTableExporter, MediumTableImporter, MediumTable
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult
@@ -33,6 +33,14 @@ from .recon.gap_finder_result import GapFinderResult
 from .recon.helper.recon_helper import ReconHelper
 from .recon.proto.recon_proto import ReconProto
 from .recon.recon import DraftRecon
+# reduction
+from .reduction.twin_efm_table import (TwinEFMTable, TwinEFMTableExporter,
+                                       TwinEFMTableImporter)
+from .reduction.twin_reducer import TwinReducer
+from .reduction.twin_reduction_table import (TwinReductionTable,
+                                             TwinReductionTableExporter,
+                                             TwinReductionTableImporter)
+# helper
 from .twin.helper.twin_helper import TwinHelper
 # twin
 from .twin.twin import FlatTwin, Twin

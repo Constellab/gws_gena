@@ -145,8 +145,8 @@ class BiomassTable(Table):
 # ####################################################################
 
 
-@importer_decorator("BiomassImporter", resource_type=BiomassTable)
-class BiomassImporter(TableImporter):
+@importer_decorator("BiomassTableImporter", resource_type=BiomassTable)
+class BiomassTableImporter(TableImporter):
     pass
 
 # ####################################################################
@@ -156,6 +156,6 @@ class BiomassImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("BiomassExporter", resource_type=BiomassTable)
-class BiomassExporter(TableExporter):
+@exporter_decorator("BiomassTableExporter", resource_type=BiomassTable)
+class BiomassTableExporter(TableExporter):
     pass

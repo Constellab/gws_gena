@@ -177,34 +177,3 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         print('\n--- Reduced Twin ---')
         mat = TwinHelper.compute_reduced_matrices(flat_twin)
         print(mat["K"])
-
-    def test_bastin_twin(self):
-        return
-        self.print("Test Toy Twin")
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
-        data_dir = os.path.join(data_dir, "bastin")
-
-        net = Network.import_from_path(
-            File(path=os.path.join(data_dir, "bastin_network.json")),
-            ConfigParams()
-        )
-        ctx = TwinContext.import_from_path(
-            File(path=os.path.join(data_dir, "bastin_context_reduce.json")),
-            ConfigParams()
-        )
-
-        twin = Twin()
-        twin.add_network(net)
-        twin.add_context(ctx, related_network=net)
-
-        flat_twin = twin.flatten()
-
-        #efm = TwinHelper.compute_elementary_flux_modes(flat_twin)
-        # print(efm)
-        mat = TwinHelper.compute_reduced_matrices(flat_twin)
-
-        print('\n--- EFM Bastin & Provost ---')
-        print(mat["EFM"])
-
-        print('\n--- Reduced Bastin & Provost ---')
-        print(mat["K"])

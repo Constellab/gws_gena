@@ -9,8 +9,8 @@ import math
 from gws_core import Protocol, Task, protocol_decorator, ConfigParams, ProcessSpec
 from gws_core import Settings, Source, Sink, FIFO2, Interface, Outerface
 
-from ...data.biomass_table import BiomassImporter
-from ...data.medium_table import MediumImporter
+from ...data.biomass_table import BiomassTableImporter
+from ...data.medium_table import MediumTableImporter
 from ...data.ec_table import ECTableImporter
 from ..recon import DraftRecon
 from ..gap_filler import GapFiller
@@ -24,11 +24,11 @@ class ReconProto(Protocol):
         ec_importer: ProcessSpec = self.add_process(ECTableImporter, 'ec_importer')
         ec_importer.set_param("ec_column", "EC Number")
         # biomass
-        biomass_importer: ProcessSpec = self.add_process(BiomassImporter, 'biomass_importer')
+        biomass_importer: ProcessSpec = self.add_process(BiomassTableImporter, 'biomass_importer')
         biomass_importer.set_param("biomass_column", "Biomass")
         biomass_importer.set_param("chebi_column", "Chebi ID")
         # medium
-        medium_importer: ProcessSpec = self.add_process(MediumImporter, 'medium_importer')
+        medium_importer: ProcessSpec = self.add_process(MediumTableImporter, 'medium_importer')
         medium_importer.set_param("chebi_column", "Chebi ID")
         # other procs
         recon: ProcessSpec = self.add_process(DraftRecon, 'recon')

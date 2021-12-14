@@ -196,7 +196,8 @@ class TwinHelper:
         return DataFrame(index=N.columns, data=ns)
 
     @classmethod
-    def compute_elementary_flux_modes(cls, flat_twin: FlatTwin, reversibilities=None, ignore_cofactors=False) -> DataFrame:
+    def compute_elementary_flux_modes(
+            cls, flat_twin: FlatTwin, reversibilities=None, ignore_cofactors=False) -> DataFrame:
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat model is required")
         N = cls.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
@@ -224,8 +225,10 @@ class TwinHelper:
         return DataFrame(index=N.columns, columns=column_names, data=efms)
 
     @classmethod
-    def compute_reduced_matrices(cls, flat_twin: FlatTwin, use_context: bool = True, ignore_cofactors=False) -> ReducedMatrices:
-        EFM = TwinHelper.compute_elementary_flux_modes(flat_twin,ignore_cofactors=ignore_cofactors)
+    def compute_reduced_matrices(cls, flat_twin: FlatTwin, use_context: bool = True, reversibilities=None,
+                                 ignore_cofactors=False) -> ReducedMatrices:
+        EFM = TwinHelper.compute_elementary_flux_modes(
+            flat_twin, reversibilities=reversibilities, ignore_cofactors=ignore_cofactors)
 
         Ns = TwinHelper.create_input_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
         Np = TwinHelper.create_output_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)

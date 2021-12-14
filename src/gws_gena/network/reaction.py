@@ -5,7 +5,7 @@
 
 import copy
 import re
-from typing import List
+from typing import List, TypedDict
 
 from gws_biota import Compound as BiotaCompound
 from gws_biota import Enzyme as BiotaEnzyme
@@ -37,6 +37,21 @@ class SubstrateDuplicate(BadRequestException):
 
 class ProductDuplicate(BadRequestException):
     pass
+
+
+# ####################################################################
+#
+# EnzymeDict classes
+#
+# ####################################################################
+
+EnzymeDict = TypedDict("EnzymeDict", {
+    "name": str,
+    "tax": dict,
+    "ec_number": str,
+    "pathway": dict,
+    "related_deprecated_enzyme": dict
+})
 
 # ####################################################################
 #
@@ -105,7 +120,7 @@ class Reaction:
     lower_bound: float = -1000.0
     upper_bound: float = 1000.0
     rhea_id: str = ""
-    enzyme: dict = None
+    enzyme: EnzymeDict = None
     position: ReactionPosition = None
 
     _tax_ids = []
@@ -117,7 +132,7 @@ class Reaction:
 
     def __init__(self, id: str = "", name: str = "", network: 'Network' = None,
                  direction: str = "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0,
-                 enzyme: dict = {}, rhea_id=""):
+                 enzyme: EnzymeDict = None, rhea_id=""):
 
         if id:
             self.id = slugify_id(id)
@@ -125,6 +140,8 @@ class Reaction:
             self.id = slugify_id(name)
 
         self.name = name
+        if enzyme is None:
+            enzyme = {}
         self.enzyme = enzyme
 
         if not self.id:

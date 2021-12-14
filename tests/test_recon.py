@@ -84,33 +84,32 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         file_name = "gapfill"
         await assert_results(gapfill_net, file_name)
 
-    async def test_recon_using_tax_id(self):
-        return
-        self.print("Test Recon using tax_id only")
+    # async def test_recon_using_tax_id(self):
+    #     self.print("Test Recon using tax_id only")
 
-        organisms = {
-            "eukaryota": "2759",
-            "sapiens": "9606",
-            "yeast": "4932",
-            "mus musculus": "10090"
-        }
+    #     organisms = {
+    #         "eukaryota": "2759",
+    #         "sapiens": "9606",
+    #         "yeast": "4932",
+    #         "mus musculus": "10090"
+    #     }
 
-        name = "sapiens"
-        tester = TaskRunner(
-            task_type=DraftRecon,
-            inputs={},
-            params={"tax_id": organisms[name]}
-        )
-        outputs = await tester.run()
-        net = outputs["network"]
+    #     name = "sapiens"
+    #     tester = TaskRunner(
+    #         task_type=DraftRecon,
+    #         inputs={},
+    #         params={"tax_id": organisms[name]}
+    #     )
+    #     outputs = await tester.run()
+    #     net = outputs["network"]
 
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
-        data_dir = os.path.join(data_dir, "recon/build", name)
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
+    #     data_dir = settings.get_variable("gws_gena:testdata_dir")
+    #     data_dir = os.path.join(data_dir, "recon/build", name)
+    #     if not os.path.exists(data_dir):
+    #         os.makedirs(data_dir)
 
-        file_path = os.path.join(data_dir, f"{name}.json")
-        with open(file_path, 'w') as f:
-            json.dump(net.view_as_network().to_dict(), f)
+    #     file_path = os.path.join(data_dir, f"{name}.json")
+    #     with open(file_path, 'w') as f:
+    #         json.dump(net.view_as_network().to_dict(), f)
 
-        # print(len(net.reactions))
+    #     # print(len(net.reactions))

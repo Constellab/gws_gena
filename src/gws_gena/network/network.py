@@ -733,11 +733,11 @@ class Network(Resource):
         skip_bigg_exchange_reactions = params.get_value("skip_bigg_exchange_reactions", True)
         file_extension = Path(file.path).suffix or file_format
         if file_extension in [".json"] or file_format == ".json":
-            with open(file.path, 'r') as fp:
+            with open(file.path, 'r', encoding="utf-8") as fp:
                 try:
                     _json = json.load(fp)
                 except Exception as err:
-                    raise BadRequestException(f"Cannot load JSON file {file.path}. Error: {err}")
+                    raise BadRequestException(f"Cannot load JSON file {file.path}.") from err
 
                 if _json.get("reactions"):
                     # is an unknown dump network (e.g. BiGG database, classical bioinformatics exchange files)

@@ -171,8 +171,8 @@ class FluxTable(Table):
 # ####################################################################
 
 
-@importer_decorator("FluxImporter", resource_type=FluxTable)
-class FluxImporter(TableImporter):
+@importer_decorator("FluxTableImporter", resource_type=FluxTable)
+class FluxTableImporter(TableImporter):
     pass
 
 # ####################################################################
@@ -182,6 +182,6 @@ class FluxImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("FluxExporter", resource_type=FluxTable)
-class FluxExporter(TableExporter):
+@exporter_decorator("FluxTableExporter", resource_type=FluxTable)
+class FluxTableExporter(TableExporter):
     pass

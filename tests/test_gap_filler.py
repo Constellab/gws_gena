@@ -3,7 +3,7 @@ import os, json
 
 from gws_core import Settings, TaskRunner, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import Network, TwinContext, Twin, GapFiller, Compound, Reaction 
+from gws_gena import Network, TwinContext, Twin, GapFiller, Compound, Reaction
 
 settings = Settings.retrieve()
 
@@ -11,6 +11,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
     async def test_gap_finder(self):
         self.print("Test GapFiller")
+        
         async def run_gap_fill(organism):
             data_dir = settings.get_variable("gws_gena:testdata_dir")
             file_path = os.path.join(data_dir, organism, f"{organism}.json")
@@ -18,7 +19,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
                 File(path=file_path),
                 ConfigParams()
             )
-   
+
             nb_gaps = 0
             info = net._get_gap_info()
             for k in info["compounds"]:
@@ -45,7 +46,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
             result_dir = os.path.join(data_dir, 'gap_filler')
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
-            
+
             file_path = os.path.join(result_dir, f"{organism}.json")
             with open(file_path, 'w') as fp:
                 json.dump(result.dumps(), fp)

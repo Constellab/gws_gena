@@ -124,8 +124,8 @@ class MediumTable(Table):
 # ####################################################################
 
 
-@importer_decorator("MediumImporter", resource_type=MediumTable)
-class MediumImporter(TableImporter):
+@importer_decorator("MediumTableImporter", resource_type=MediumTable)
+class MediumTableImporter(TableImporter):
     pass
 
 # ####################################################################
@@ -135,6 +135,6 @@ class MediumImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("MediumExporter", resource_type=MediumTable)
-class MediumExporter(TableExporter):
+@exporter_decorator("MediumTableExporter", resource_type=MediumTable)
+class MediumTableExporter(TableExporter):
     pass
