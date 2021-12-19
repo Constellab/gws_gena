@@ -4,7 +4,9 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner
-from gws_gena import ECTable, IDTable, Network, ReactionAdder
+from gws_gena import (ECTable, ECTableImporter, EntityIDTable,
+                      EntityIDTableImporter, Network, NetworkImporter,
+                      ReactionAdder)
 
 settings = Settings.retrieve()
 
@@ -14,8 +16,8 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
     async def test_reaction_ec_adder(self):
         self.print("Test reaction EC adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = Network.import_from_path(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
-        table = ECTable.import_from_path(
+        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
+        table = ECTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "ec_table.csv")),
             params=ConfigParams())
 
@@ -38,8 +40,8 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
     async def test_reaction_id_adder(self):
         self.print("Test reaction ID adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = Network.import_from_path(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
-        table = IDTable.import_from_path(
+        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
+        table = EntityIDTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "rhea_id_table.csv")),
             params=ConfigParams({'id_column': 'rhea_id'}))
 

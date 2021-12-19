@@ -11,7 +11,7 @@ from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, ConfigParams, OptionalIn, StrParam,
                       Task, TaskInputs, TaskOutputs, task_decorator)
 
-from ..data.biomass_table import BiomassTable
+from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
 from ..data.medium_table import MediumTable
 from ..network.compound import Compound
@@ -44,7 +44,7 @@ class DraftRecon(Task):
 
     input_specs = {
         'ec_table': OptionalIn(ECTable,),
-        'biomass_table': OptionalIn(BiomassTable),
+        'biomass_table': OptionalIn(BiomassReactionTable),
         'medium_table': OptionalIn(MediumTable)
     }
     output_specs = {'network': (Network,)}

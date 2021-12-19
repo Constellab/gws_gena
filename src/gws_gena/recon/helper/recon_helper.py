@@ -10,7 +10,7 @@ from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, ConfigParams, Logger, Task,
                       TaskInputs)
 
-from ...data.biomass_table import BiomassTable
+from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.ec_table import ECTable
 from ...data.medium_table import MediumTable
 from ...network.compound import Compound
@@ -21,7 +21,7 @@ from ...network.reaction import Reaction
 class ReconHelper:
 
     @classmethod
-    def add_biomass_equation_to_network(cls, net: Network, biomass_table: BiomassTable):
+    def add_biomass_equation_to_network(cls, net: Network, biomass_table: BiomassReactionTable):
         biomass_comps = cls._create_biomass_compounds(net, biomass_table)
         cls._create_biomass_rxns(net, biomass_comps, biomass_table)
 

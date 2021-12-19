@@ -1,22 +1,21 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import json
-import math
 
-from gws_core import Task
-from gws_core import BadRequestException
+from gws_core import BadRequestException, Task
 
-from ...twin.twin import Twin, FlatTwin
 from ...fba.fba_result import FBAResult
+from ..flat_twin import FlatTwin
+from ..twin import Twin
 
 # ####################################################################
 #
 # TwinAnnotator class
 #
 # ####################################################################
+
 
 class TwinAnnotatorHelper():
 

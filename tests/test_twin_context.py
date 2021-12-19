@@ -1,14 +1,17 @@
 
-import os, json
+import json
+import os
 
-from gws_core import Settings, GTest, Experiment, ExperimentService, TaskRunner, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_biota import Compound as BiotaCompound
-from gws_gena import Network, Compound, Reaction
-from gws_gena import Twin, TwinContext, TwinContextBuilder
-from gws_gena import FluxTable
+from gws_core import (ConfigParams, Experiment, ExperimentService, File, GTest,
+                      Settings, TaskRunner)
+from gws_gena import (Compound, FluxTable, FluxTableImporter, Network,
+                      NetworkImporter, Reaction, Twin, TwinContext,
+                      TwinContextBuilder, TwinContextImporter)
 
 settings = Settings.retrieve()
+
 
 class TestContext(BaseTestCaseUsingFullBiotaDB):
 
@@ -17,41 +20,41 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
         file_path = os.path.join(data_dir, "toy_context.json")
-        ctx = TwinContext.import_from_path(File(path=file_path), params=ConfigParams())
+        ctx = TwinContextImporter.call(File(path=file_path), params=ConfigParams())
 
-        with open(file_path) as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-              
+
         print(ctx.dumps())
 
-        self.assertEqual( data["measures"][1], ctx.dumps()["measures"][1] )
-        self.assertEqual( data["measures"][0].get("confidence_score"), 1.0 )
-        self.assertEqual( ctx.dumps()["measures"][0].get("confidence_score"), 1.0 )
-        
+        self.assertEqual(data["measures"][1], ctx.dumps()["measures"][1])
+        self.assertEqual(data["measures"][0].get("confidence_score"), 1.0)
+        self.assertEqual(ctx.dumps()["measures"][0].get("confidence_score"), 1.0)
+
         ctx2 = ctx.copy()
-        self.assertEqual( ctx2.dumps(), ctx.dumps() )
-        
+        self.assertEqual(ctx2.dumps(), ctx.dumps())
+
     async def test_context_builder(self):
         self.print("Test TwinContext Builder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
-        
+
         # flux
         file_path = os.path.join(data_dir, "toy_flux_data.csv")
-        flux_data = FluxTable.import_from_path(File(path=file_path), params=ConfigParams({"delimiter":","}))
+        flux_data = FluxTableImporter.call(File(path=file_path), params=ConfigParams({"delimiter": ","}))
 
         # network
         file_path = os.path.join(data_dir, "toy.json")
-        net = Network.import_from_path(File(path=file_path), params=ConfigParams())
+        net = NetworkImporter.call(File(path=file_path), params=ConfigParams())
 
         # experiment
         tester = TaskRunner(
-            inputs = {"network": net, "flux_table": flux_data},
-            task_type = TwinContextBuilder
+            inputs={"network": net, "flux_table": flux_data},
+            task_type=TwinContextBuilder
         )
 
         outputs = await tester.run()
-  
+
         # test results
         ctx = outputs["context"]
         expected_context = {

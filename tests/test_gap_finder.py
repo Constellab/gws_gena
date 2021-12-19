@@ -1,9 +1,13 @@
-import os, json
+import json
+import os
 
-from gws_core import Settings, TaskRunner, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import Compound, Reaction, Network, TwinContext, Twin, GapFinder
+from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_gena import (Compound, GapFinder, Network, NetworkImporter, Reaction,
+                      Twin, TwinContext)
+
 settings = Settings.retrieve()
+
 
 class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
@@ -13,15 +17,15 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         organism_dir = os.path.join(data_dir, organism)
         file_path = os.path.join(organism_dir, f"{organism}.json")
-        net = Network.import_from_path(
+        net = NetworkImporter.call(
             File(path=file_path),
             ConfigParams()
         )
 
         tester = TaskRunner(
-            params = {},
-            inputs = {"network": net},
-            task_type = GapFinder
+            params={},
+            inputs={"network": net},
+            task_type=GapFinder
         )
         outputs = await tester.run()
 
@@ -36,18 +40,18 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         print(result.get_compounds_as_table())
         file_path = os.path.join(result_dir, "compounds.csv")
         with open(file_path, 'w') as fp:
-            fp.write( result.get_compounds_as_table().to_csv() )
+            fp.write(result.get_compounds_as_table().to_csv())
 
         print("Reactions:")
         print("------------")
         print(result.get_reactions_as_table())
         file_path = os.path.join(result_dir, "reactions.csv")
         with open(file_path, 'w') as fp:
-            fp.write( result.get_reactions_as_table().to_csv() )
+            fp.write(result.get_reactions_as_table().to_csv())
 
         print("Pathways:")
         print("------------")
         print(result.get_pathways_as_table())
         file_path = os.path.join(result_dir, "pathways.csv")
         with open(file_path, 'w') as fp:
-            fp.write( result.get_pathways_as_table().to_csv() )
+            fp.write(result.get_pathways_as_table().to_csv())

@@ -5,16 +5,7 @@
 
 from typing import List
 
-from gws_core import (BadRequestException, ConfigParams, File, ListParam,
-                      StrParam, StrRField, Table, TableExporter, TableImporter,
-                      export_to_path, exporter_decorator, import_from_path,
-                      importer_decorator, resource_decorator, task_decorator)
-
-# ####################################################################
-#
-# EC Number Datatable class
-#
-# ####################################################################
+from gws_core import StrRField, Table, TableFile, resource_decorator
 
 EC_TABLE_DEFAULT_EC_COLUMN = "ec_number"
 
@@ -26,9 +17,10 @@ class ECTable(Table):
     """
     Represents an ec number data table
 
-    * The first column the a compound name (official or user-defined name)
+    * The first column is the compound name (official or user-defined name) [REQUIRED]
     * The next columns are:
-      * ec_number: the list of ec numbers
+      * ec_number: the list of ec numbers [REQUIRED]
+      * other user informations [OPTIONAL]
 
     For example:
 
@@ -54,92 +46,31 @@ class ECTable(Table):
 
     # -- I --
 
-    @classmethod
-    @import_from_path(
-        specs={**TableImporter.config_specs,
-               'ec_column':
-               StrParam(
-                   default_value=EC_TABLE_DEFAULT_EC_COLUMN,
-                   short_description="The name of the column containing the EC numbers"),
-               'index_columns':
-               ListParam(
-                   optional=True,
-                   short_description="Columns to use as the row names. Use None to prevent parsing row names. Only for CSV files"), })
-    def import_from_path(cls, file: File, params: ConfigParams) -> 'ECTable':
-        """
-        Import from a repository
-
-        :param file: The file to import
-        :type file: `File`
-        :param params: The config params
-        :type params: `ConfigParams`
-        :returns: the parsed EC data
-        :rtype: ECTable
-        """
-
-        csv_table = super().import_from_path(file, params)
-        ec_column = params.get_value("ec_column", cls.DEFAULT_EC_COLUMN)
-
-        if not csv_table.column_exists(ec_column):
-            raise BadRequestException(
-                f"Cannot import Table. No ec numbers found (no column with name '{ec_column}')")
-
-        csv_table.ec_column = ec_column
-
-        # clean ec data
-        csv_table._data.replace(
-            to_replace={ec_column: r"EC:"},
-            value={ec_column: ""},
-            regex=True,
-            inplace=True
-        )
-
-        return csv_table
-
     # -- S --
 
-    def select_by_row_indexes(self, indexes: List[int]) -> 'BiomassTable':
+    def select_by_row_indexes(self, indexes: List[int]) -> 'ECTable':
         table = super().select_by_row_indexes(indexes)
-        table = ECTable(data=table.get_data())
         table.ec_column = self.ec_column
         return table
 
-    def select_by_column_indexes(self, indexes: List[int]) -> 'BiomassTable':
+    def select_by_column_indexes(self, indexes: List[int]) -> 'ECTable':
         table = super().select_by_column_indexes(indexes)
-        table = ECTable(data=table.get_data())
         table.ec_column = self.ec_column
         return table
 
-    def select_by_row_name(self, name_regex: str) -> 'BiomassTable':
+    def select_by_row_name(self, name_regex: str) -> 'ECTable':
         table = super().select_by_row_name(name_regex)
-        table = ECTable(data=table.get_data())
         table.ec_column = self.ec_column
         return table
 
-    def select_by_column_name(self, name_regex: str) -> 'BiomassTable':
+    def select_by_column_name(self, name_regex: str) -> 'ECTable':
         table = super().select_by_column_name(name_regex)
-        table = ECTable(data=table.get_data())
         table.ec_column = self.ec_column
         return table
 
-# ####################################################################
-#
-# Importer class
-#
-# ####################################################################
 
-
-@ importer_decorator("ECTableImporter", resource_type=ECTable)
-class ECTableImporter(TableImporter):
-    pass
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@ exporter_decorator("ECTableExporter", resource_type=ECTable)
-class ECTableExporter(TableExporter):
+@resource_decorator("ECTableFile",
+                    human_name="ECTableFile",
+                    short_description="CSV table file of EC numbers")
+class ECTableFile(TableFile):
     pass

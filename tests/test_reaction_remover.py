@@ -4,7 +4,9 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner
-from gws_gena import ECTable, IDTable, Network, ReactionRemover
+from gws_gena import (ECTable, ECTableImporter, EntityIDTable,
+                      EntityIDTableImporter, Network, NetworkImporter,
+                      ReactionRemover)
 
 settings = Settings.retrieve()
 
@@ -14,12 +16,12 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
     async def test_reaction_ec_remover(self):
         self.print("Test reaction EC remover")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = Network.import_from_path(
+        net = NetworkImporter.call(
             File(
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
             params=ConfigParams())
-        table = ECTable.import_from_path(
+        table = ECTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "ec_table.csv")),
             params=ConfigParams())
 
@@ -31,7 +33,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
         outputs = await tester.run()
         net = outputs["network"]
 
-        original_net = Network.import_from_path(
+        original_net = NetworkImporter.call(
             File(path=os.path.join(data_dir,  "reaction_remover", "toy_with_added_reactions.json")),
             params=ConfigParams()
         )
@@ -45,12 +47,12 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
     async def test_reaction_id_remover(self):
         self.print("Test reaction ID remover")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = Network.import_from_path(
+        net = NetworkImporter.call(
             File(
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
             params=ConfigParams())
-        table = IDTable.import_from_path(
+        table = EntityIDTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "id_table.csv")),
             params=ConfigParams({'id_column': 'ids'}))
 
@@ -63,7 +65,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
         net = outputs["network"]
         print(net.to_csv())
 
-        original_net = Network.import_from_path(
+        original_net = NetworkImporter.call(
             File(path=os.path.join(data_dir,  "reaction_remover", "toy_with_added_reactions.json")),
             params=ConfigParams()
         )

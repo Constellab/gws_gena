@@ -7,7 +7,7 @@ from gws_core import (ConfigParams, StrParam, Task, TaskInputs, TaskOutputs,
                       task_decorator)
 
 from ...data.ec_table import ECTable
-from ...data.id_table import IDTable
+from ...data.entity_id_table import EntityIDTable
 from ...network.network import Network, Reaction
 from ..network_helper.reaction_adder_helper import ReactionAdderHelper
 
@@ -20,7 +20,7 @@ class ReactionAdder(Task):
     Add a list of reactions to an existing network
     """
 
-    input_specs = {'network': (Network,), 'reaction_table': (ECTable, IDTable,), }
+    input_specs = {'network': (Network,), 'reaction_table': (ECTable, EntityIDTable,), }
     output_specs = {'network': (Network,)}
     config_specs = {
         'tax_id': StrParam(

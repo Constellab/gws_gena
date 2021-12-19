@@ -4,7 +4,7 @@
 # About us: https://gencovery.com
 
 from ...data.ec_table import ECTable
-from ...data.id_table import IDTable
+from ...data.entity_id_table import EntityIDTable
 from ...network.network import Network
 
 
@@ -12,14 +12,14 @@ class ReactionRemoverHelper:
 
     @classmethod
     def remove_list_of_reactions(
-            cls, network: Network, reaction_table: (ECTable, IDTable),
+            cls, network: Network, reaction_table: (ECTable, EntityIDTable),
             reverse_remove: bool = False, inplace=False) -> Network:
 
         if inplace:
             new_net = network
         else:
             new_net: Network = network.copy()
-        
+
         rxn_dict: dict = new_net.reactions.copy()
         if isinstance(reaction_table, ECTable):
             ec_list: list = reaction_table.get_ec_numbers()
@@ -31,7 +31,7 @@ class ReactionRemoverHelper:
                         new_net.remove_reaction(rxn.id)
                 elif is_in_list:
                     new_net.remove_reaction(rxn.id)
-        elif isinstance(reaction_table, IDTable):
+        elif isinstance(reaction_table, EntityIDTable):
             id_list: list = reaction_table.get_ids()
             for k, rxn in rxn_dict.items():
                 is_in_list = (rxn.rhea_id in id_list) or (k in id_list)

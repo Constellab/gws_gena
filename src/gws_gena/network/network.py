@@ -8,25 +8,19 @@ import json
 import os
 import re
 import uuid
-from pathlib import Path
 from typing import Dict, List, Optional, TypedDict
 
 import numpy as np
 from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
-                      File, JSONView, Resource, ResourceExporter,
-                      ResourceImporter, RField, StrParam, StrRField, TableView,
-                      export_to_path, exporter_decorator, import_from_path,
-                      importer_decorator, resource_decorator, task_decorator,
-                      view)
+                      JSONView, Resource, ResourceExporter, RField, StrRField,
+                      TableView, resource_decorator, view)
 from pandas import DataFrame
 
 from .compound import Compound
 from .reaction import Reaction
 from .view.network_view import NetworkView
-
-flattening_delimiter = ":"
 
 # ####################################################################
 #
@@ -394,31 +388,6 @@ class Network(Resource):
 
     # -- E --
 
-    @export_to_path(specs={
-        'file_name': StrParam(default_value="network.json", short_description="File name"),
-        'file_format': StrParam(default_value=".json", short_description="File format"),
-    })
-    def export_to_path(self, dest_dir: str, params: ConfigParams):
-        """
-        Export the network to a repository
-
-        :param file_path: The destination file path
-        :type file_path: str
-        """
-
-        file_name = params.get_value("file_name", "network.json")
-        file_format = params.get_value("file_format", ".json")
-        file_extension = Path(file_name).suffix or file_format
-        file_path = os.path.join(dest_dir, file_name)
-        with open(file_path, 'r', encoding="utf-8") as fp:
-            if file_extension in [".json"] or file_format == ".json":
-                data = self.dumps()
-                json.dump(data, fp)
-            elif file_extension in [".csv", ".txt", ".tsv"] or file_format in [".csv", ".txt", ".tsv"]:
-                fp.write(self.to_csv())
-            else:
-                raise BadRequestException("Invalid file format")
-
     # -- F --
 
     # -- G --
@@ -710,50 +679,6 @@ class Network(Resource):
                 return True
 
     # -- I --
-
-    @classmethod
-    @import_from_path(
-        specs={'file_format': StrParam(default_value=".json", short_description="File format"),
-               "skip_bigg_exchange_reactions":
-               BoolParam(
-                   default_value=True,
-                   short_description="Set True to skip Exchange reaction in while importing BiGG data files; False otherwise")})
-    def import_from_path(cls, file: File, params: ConfigParams) -> 'Network':
-        """
-        Import a network from a repository
-
-        :param file_path: The source file path
-        :type file_path: str
-        :returns: the parsed data
-        :rtype: any
-        """
-
-        net: Network
-        file_format = params.get_value("file_format", ".json")
-        skip_bigg_exchange_reactions = params.get_value("skip_bigg_exchange_reactions", True)
-        file_extension = Path(file.path).suffix or file_format
-        if file_extension in [".json"] or file_format == ".json":
-            with open(file.path, 'r', encoding="utf-8") as fp:
-                try:
-                    _json = json.load(fp)
-                except Exception as err:
-                    raise BadRequestException(f"Cannot load JSON file {file.path}.") from err
-
-                if _json.get("reactions"):
-                    # is an unknown dump network (e.g. BiGG database, classical bioinformatics exchange files)
-                    net = cls.loads(_json, skip_bigg_exchange_reactions=skip_bigg_exchange_reactions)
-                elif _json.get("network"):
-                    # is gws resource
-                    net = cls.loads(_json["network"])
-                elif _json.get("data", {}).get("network"):
-                    # is gws old resource [RETRO COMPATIBILTY]
-                    # TODO: will be deprecated in the future
-                    net = cls.loads(_json["data"]["network"])
-                else:
-                    raise BadRequestException("Invalid network data")
-        else:
-            raise BadRequestException("Invalid file format")
-        return net
 
     # -- L --
 
@@ -1131,14 +1056,14 @@ class Network(Resource):
 
     # -- V --
 
-    @view(view_type=TableView, human_name="GapStatsTable")
-    def view_gaps_as_table(self, params: ConfigParams) -> TableView:
-        table = self.get_gaps_as_table()
-        return TableView(data=table)
-
     @view(view_type=NetworkView, default_view=True, human_name="NetworkView")
     def view_as_network(self, params: ConfigParams) -> NetworkView:
         return NetworkView(data=self)
+
+    @view(view_type=TableView, human_name="TableView")
+    def view_as_table(self, params: ConfigParams) -> TableView:
+        table = Table(data=self.to_table())
+        return TableView(data=table)
 
     @view(view_type=JSONView, human_name="JSONView")
     def view_as_json(self, params: ConfigParams) -> JSONView:
@@ -1146,29 +1071,12 @@ class Network(Resource):
         json_view._data = self.dumps()
         return json_view
 
-    @view(view_type=TableView, human_name="CompoundStatsTable")
+    @view(view_type=TableView, human_name="GapTableView")
+    def view_gaps_as_table(self, params: ConfigParams) -> TableView:
+        table = self.get_gaps_as_table()
+        return TableView(data=table)
+
+    @view(view_type=TableView, human_name="CompoundStatsTableView")
     def view_compound_stats_as_table(self, params: ConfigParams) -> TableView:
         table = self.get_compound_stats_as_table()
         return TableView(data=table)
-
-# ####################################################################
-#
-# Importer class
-#
-# ####################################################################
-
-
-@importer_decorator("NetworkImporter", resource_type=Network)
-class NetworkImporter(ResourceImporter):
-    pass
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@ exporter_decorator("NetworkExporter", resource_type=Network)
-class NetworkExporter(ResourceExporter):
-    pass

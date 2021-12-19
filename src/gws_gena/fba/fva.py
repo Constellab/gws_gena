@@ -3,21 +3,23 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from pandas import DataFrame
-import numpy as np
 import multiprocessing
-from joblib import Parallel, delayed
 from copy import deepcopy
+
 import cvxpy as cp
+import numpy as np
+from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
+                      Logger, StrParam, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
+from joblib import Parallel, delayed
+from pandas import DataFrame
 
-from gws_core import Task, task_decorator, ConfigParams, TaskInputs, TaskOutputs
-from gws_core import BadRequestException, ListParam, StrParam, BoolParam
-from gws_core import Logger
-
+from ..twin.flat_twin import FlatTwin
+from ..twin.twin import Twin
 from .fba_helper.fba_helper import FBAHelper
 from .fba_result import OptimizeResult
 from .fva_result import FVAResult
-from ..twin.twin import Twin, FlatTwin
+
 
 def _do_parallel_loop(kwargs):
     i=kwargs["i"]

@@ -4,14 +4,14 @@
 # About us: https://gencovery.com
 
 from ...data.ec_table import ECTable
-from ...data.id_table import IDTable
+from ...data.entity_id_table import EntityIDTable
 from ...network.network import Network, Reaction
 
 
 class ReactionAdderHelper:
 
     @classmethod
-    def add_list_of_reactions(cls, network: Network, reaction_table: (ECTable, IDTable),
+    def add_list_of_reactions(cls, network: Network, reaction_table: (ECTable, EntityIDTable),
                               tax_id: str, tax_search_method: str = 'bottom_up', inplace=False) -> Network:
         if inplace:
             new_net = network
@@ -26,7 +26,7 @@ class ReactionAdderHelper:
                     new_net.add_reaction(rxn)
                 except:
                     pass
-        elif isinstance(reaction_table, IDTable):
+        elif isinstance(reaction_table, EntityIDTable):
             id_list: list = reaction_table.get_ids()
             for rxn_id in id_list:
                 try:

@@ -18,12 +18,12 @@ class MergerProtocol(Protocol):
         merger: ProcessSpec = self.add_process(NetworkMerger, 'merger')
 
         self.add_connectors([
-            (loader_1 >> "resource", merger << "network_1"),
-            (loader_2 >> "resource", merger << "network_2")
+            (loader_1 >> "target", merger << "network_1"),
+            (loader_2 >> "target", merger << "network_2")
         ])
 
-        self.add_interface('file1', loader_1, 'file')
-        self.add_interface('file2', loader_2, 'file')
+        self.add_interface('file1', loader_1, 'source')
+        self.add_interface('file2', loader_2, 'source')
 
 
 class TestMerge(BaseTestCaseUsingFullBiotaDB):
@@ -47,8 +47,8 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         await experiment.run()
         net = merger.get_output("network")
 
-        net1 = Network.import_from_path(file1, ConfigParams())
-        net2 = Network.import_from_path(file2, ConfigParams())
+        net1 = NetworkImporter.call(file1, ConfigParams())
+        net2 = NetworkImporter.call(file2, ConfigParams())
         n1 = len(net1.reactions)
         n2 = len(net2.reactions)
         n_total = len(net.reactions)

@@ -1,9 +1,16 @@
 # table
-from .data.biomass_table import BiomassTableExporter, BiomassTableImporter, BiomassTable
-from .data.ec_table import ECTable, ECTableExporter, ECTableImporter
-from .data.flux_table import FluxTableExporter, FluxTableImporter, FluxTable
-from .data.id_table import IDTable, IDTableExporter, IDTableImporter
-from .data.medium_table import MediumTableExporter, MediumTableImporter, MediumTable
+from .data.biomass_reaction_table import BiomassReactionTable
+from .data.biomass_reaction_table_task import (BiomassReactionTableExporter,
+                                               BiomassReactionTableImporter)
+from .data.ec_table import ECTable, ECTableFile
+from .data.ec_table_task import ECTableExporter, ECTableImporter
+from .data.entity_id_table import EntityIDTable, EntityIDTableFile
+from .data.entity_id_table_task import (EntityIDTableExporter,
+                                        EntityIDTableImporter)
+from .data.flux_table import FluxTable, FluxTableFile
+from .data.flux_table_task import FluxTableExporter, FluxTableImporter
+from .data.medium_table import MediumTable, MediumTableFile
+from .data.medium_table_task import MediumTableExporter, MediumTableImporter
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult
@@ -17,10 +24,11 @@ from .knockout_analysis.knockout_analysis_result_table import \
     KnockOutAnalysisResultTable
 # network
 from .network.compound import Compound
-from .network.network import Network, NetworkExporter, NetworkImporter
+from .network.network import Network
 from .network.network_helper.reaction_adder_helper import ReactionAdderHelper
 from .network.network_helper.reaction_remover_helper import \
     ReactionRemoverHelper
+from .network.network_task import NetworkExporter, NetworkImporter
 from .network.network_transformer.network_merger import NetworkMerger
 from .network.network_transformer.reaction_adder import ReactionAdder
 from .network.network_transformer.reaction_remover import ReactionRemover
@@ -34,17 +42,16 @@ from .recon.helper.recon_helper import ReconHelper
 from .recon.proto.recon_proto import ReconProto
 from .recon.recon import DraftRecon
 # reduction
-from .reduction.twin_efm_table import (TwinEFMTable, TwinEFMTableExporter,
-                                       TwinEFMTableImporter)
+from .reduction.twin_efm_table import TwinEFMTable
 from .reduction.twin_reducer import TwinReducer
-from .reduction.twin_reduction_table import (TwinReductionTable,
-                                             TwinReductionTableExporter,
-                                             TwinReductionTableImporter)
-# helper
-from .twin.helper.twin_helper import TwinHelper
+from .reduction.twin_reduction_table import TwinReductionTable
 # twin
-from .twin.twin import FlatTwin, Twin
+from .twin.flat_twin import FlatTwin
+from .twin.helper.twin_helper import TwinHelper
+from .twin.twin import Twin
 from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
-from .twin.twin_context_builder import TwinContext, TwinContextBuilder
+from .twin.twin_context import TwinContext
+from .twin.twin_context_builder import TwinContextBuilder
+from .twin.twin_context_task import TwinContextExporter, TwinContextImporter
 from .twin.twin_flatner import TwinFlattener

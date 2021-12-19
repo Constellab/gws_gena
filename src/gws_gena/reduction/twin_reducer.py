@@ -9,13 +9,16 @@ from gws_core import (BoolParam, ConfigParams, ListParam, Task, TaskInputs,
                       TaskOutputs, task_decorator)
 
 from ..network.reaction import Reaction
+from ..twin.flat_twin import FlatTwin
 from ..twin.helper.twin_helper import TwinHelper
-from ..twin.twin import FlatTwin, Twin
+from ..twin.twin import Twin
 from .twin_efm_table import TwinEFMTable
 from .twin_reduction_table import TwinReductionTable
 
 
-@task_decorator("TwinReducer")
+@task_decorator("TwinReducer",
+                human_name="TwinReducer",
+                short_description="Reduction of digital twin")
 class TwinReducer(Task):
     """
     Class digital twin reduction
@@ -68,7 +71,6 @@ class TwinReducer(Task):
                 self.add_warning_message(
                     f"Reversible reactions {not_found_reactions} were not found")
 
-        print(rev)
         reduced_matrices = TwinHelper.compute_reduced_matrices(
             flat_twin,
             ignore_cofactors=params.get("ignore_cofactors"),

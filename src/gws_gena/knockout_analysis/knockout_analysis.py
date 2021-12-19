@@ -10,13 +10,14 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
 from pandas import DataFrame
 
 from ..data.ec_table import ECTable
-from ..data.id_table import IDTable
+from ..data.entity_id_table import EntityIDTable
 from ..fba.fba import FBA
 from ..fba.fba_helper.fba_helper import FBAHelper
 from ..fba.fba_result import FBAResult
 from ..network.network_helper.reaction_knockout_helper import \
     ReactionKnockOutHelper
-from ..twin.twin import FlatTwin, Twin
+from ..twin.flat_twin import FlatTwin
+from ..twin.twin import Twin
 from .knockout_analysis_result_table import KnockOutAnalysisResultTable
 
 
@@ -28,7 +29,7 @@ class KnockOutAnalysis(Task):
 
     input_specs = {
         'twin': (Twin,),
-        'ko_table': (IDTable, ECTable,),
+        'ko_table': (EntityIDTable, ECTable,),
     }
     output_specs = {'ko_analysis_result': (KnockOutAnalysisResultTable,)}
     config_specs = {

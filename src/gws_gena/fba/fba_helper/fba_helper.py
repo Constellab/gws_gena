@@ -17,8 +17,9 @@ from scipy.optimize import linprog
 
 from ...network.network import Network
 from ...recon.helper.sink_helper import SinkHelper
+from ...twin.flat_twin import FlatTwin
 from ...twin.helper.twin_helper import TwinHelper
-from ...twin.twin import FlatTwin, Twin
+from ...twin.twin import Twin
 from ..fba_result import FBAResult, OptimizeResult
 
 

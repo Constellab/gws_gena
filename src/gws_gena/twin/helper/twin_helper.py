@@ -12,7 +12,7 @@ from gws_core import BadRequestException
 from pandas import DataFrame
 from scipy.linalg import null_space
 
-from ..twin import FlatTwin
+from ..flat_twin import FlatTwin
 from ..twin_context import Variable
 
 # ####################################################################

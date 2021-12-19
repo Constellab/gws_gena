@@ -1,12 +1,12 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from gws_core import (BoolParam, DictRField, Resource, TableView,
+                      resource_decorator, view)
 from pandas import DataFrame
 
-from gws_core import Resource, resource_decorator, view, TableView, BoolParam
-from gws_core import DictRField
 
 @resource_decorator("GapFinderResult")
 class GapFinderResult(Resource):
@@ -20,7 +20,7 @@ class GapFinderResult(Resource):
         super().__init__(*args, **kwargs)
         if gaps:
             self.gaps_data = gaps
- 
+
     def get_gaps_as_json(self):
         return self.gaps_data
 
@@ -33,12 +33,12 @@ class GapFinderResult(Resource):
 
     def get_compounds_as_table(self, show_gaps_only=False, **kwargs) -> DataFrame:
         table: DataFrame = DataFrame.from_dict(
-            self.gaps_data["compounds"], 
+            self.gaps_data["compounds"],
             columns=["is_substrate", "is_product", "is_gap"],
             orient="index"
         )
         if show_gaps_only:
-            table = table[ :, table["is_gap"] == True ]
+            table = table[:, table["is_gap"] == True]
         return table
 
     @view(view_type=TableView, specs={
@@ -50,12 +50,12 @@ class GapFinderResult(Resource):
 
     def get_reactions_as_table(self, show_gaps_only=False, **kwargs) -> DataFrame:
         table: DataFrame = DataFrame.from_dict(
-            self.gaps_data["reactions"], 
+            self.gaps_data["reactions"],
             columns=["name", "has_gap"],
             orient="index"
         )
         if show_gaps_only:
-            table = table[ :, table["has_gap"] == True ]
+            table = table[:, table["has_gap"] == True]
         return table
 
     @view(view_type=TableView, specs={
@@ -67,10 +67,10 @@ class GapFinderResult(Resource):
 
     def get_pathways_as_table(self, show_gaps_only=False, **kwargs) -> DataFrame:
         table: DataFrame = DataFrame.from_dict(
-            self.gaps_data["pathways"], 
+            self.gaps_data["pathways"],
             columns=["name", "nb_reactions", "nb_gaps", "gap_ratio"],
             orient="index"
         )
         if show_gaps_only:
-            table = table[ :, table["nb_gaps"] > 0 ]
+            table = table[:, table["nb_gaps"] > 0]
         return table

@@ -7,7 +7,8 @@ import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import FlatTwin, Network, Twin, TwinContext, TwinHelper
+from gws_gena import (FlatTwin, Network, NetworkImporter, Twin, TwinContext,
+                      TwinContextImporter, TwinHelper)
 from pandas import DataFrame
 
 settings = Settings.retrieve()
@@ -22,12 +23,12 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         data_dir = os.path.join(data_dir, "small_net")
 
         file_path = os.path.join(data_dir, "small_net.json")
-        net = Network.import_from_path(
+        net = NetworkImporter.call(
             File(path=file_path),
             params=ConfigParams()
         )
         file_path = os.path.join(data_dir, "small_context.json")
-        ctx = TwinContext.import_from_path(
+        ctx = TwinContextImporter.call(
             File(path=file_path),
             params=ConfigParams()
         )
@@ -97,11 +98,11 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
 
-        net = Network.import_from_path(
+        net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "toy.json")),
             ConfigParams()
         )
-        ctx = TwinContext.import_from_path(
+        ctx = TwinContextImporter.call(
             File(path=os.path.join(data_dir, "toy_context.json")),
             ConfigParams()
         )

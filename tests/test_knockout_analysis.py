@@ -2,7 +2,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner, ViewTester
-from gws_gena import IDTable, KnockOutAnalysis, Network, Twin, TwinContext
+from gws_gena import EntityIDTable, KnockOutAnalysis, Network, Twin, TwinContext
 
 settings = Settings.retrieve()
 
@@ -20,7 +20,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             params=ConfigParams()
         )
 
-        ko_table = IDTable.import_from_path(
+        ko_table = EntityIDTable.import_from_path(
             file=File(path=os.path.join(data_dir, "ko_analysis", "toy", "ko_table.csv")),
             params=ConfigParams()
         )
@@ -74,7 +74,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             params=ConfigParams()
         )
 
-        ko_table = IDTable.import_from_path(
+        ko_table = EntityIDTable.import_from_path(
             file=File(path=os.path.join(data_dir, "ko_analysis", "ecoli", "ko_table.csv")),
             params=ConfigParams()
         )

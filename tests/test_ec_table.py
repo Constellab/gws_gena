@@ -1,9 +1,10 @@
 
 import os
 
-from gws_core import Settings, TaskRunner, File
 from gws_biota import BaseTestCaseUsingFullBiotaDB
+from gws_core import File, Settings, TaskRunner
 from gws_gena import ECTableImporter
+
 
 class TestECTableImporter(BaseTestCaseUsingFullBiotaDB):
 
@@ -13,13 +14,13 @@ class TestECTableImporter(BaseTestCaseUsingFullBiotaDB):
 
         # run trainer
         tester = TaskRunner(
-            params = { "ec_column": "ECnumber" },
-            inputs = {"file": File(path=os.path.join(data_dir, "./data/ECnumber.csv"))},
-            task_type = ECTableImporter
+            params={"ec_column": "ECnumber"},
+            inputs={"source": File(path=os.path.join(data_dir, "./data/ECnumber.csv"))},
+            task_type=ECTableImporter
         )
         outputs = await tester.run()
-        ds = outputs['resource']
+        ds = outputs['target']
 
-        self.assertEqual(ds.get_data().iloc[0,0], "4.1.1.28")
-        self.assertEqual(ds.get_data().iloc[2,0], "1.14.17.1")
+        self.assertEqual(ds.get_data().iloc[0, 0], "4.1.1.28")
+        self.assertEqual(ds.get_data().iloc[2, 0], "1.14.17.1")
         print(ds)

@@ -4,7 +4,7 @@
 # About us: https://gencovery.com
 
 from ...data.ec_table import ECTable
-from ...data.id_table import IDTable
+from ...data.entity_id_table import EntityIDTable
 from ...network.network import Network
 
 
@@ -14,7 +14,7 @@ class ReactionKnockOutHelper:
 
     @classmethod
     def knockout_list_of_reactions(
-            cls, network: Network, reaction_table: (ECTable, IDTable),
+            cls, network: Network, reaction_table: (ECTable, EntityIDTable),
             ko_delimiter=None, current_task=None, inplace=False) -> Network:
         if inplace:
             new_net = network
@@ -42,7 +42,7 @@ class ReactionKnockOutHelper:
                             rxn.upper_bound = cls.FLUX_EPSILON
                             found_id.append(ec_number)
 
-        elif isinstance(reaction_table, IDTable):
+        elif isinstance(reaction_table, EntityIDTable):
             # ko using RXN_ID and EC_NUMBER
             id_list: list = reaction_table.get_ids()
             for rxn_id, rxn in new_net.reactions.items():

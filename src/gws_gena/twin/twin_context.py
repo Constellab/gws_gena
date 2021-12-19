@@ -13,8 +13,7 @@ from typing import Dict, List, TypedDict
 from gws_core import (BadRequestException, ConfigParams, DictRField, File,
                       Resource, ResourceExporter, ResourceImporter, StrParam,
                       StrRField, Utils, export_to_path, exporter_decorator,
-                      import_from_path, importer_decorator, resource_decorator,
-                      task_decorator)
+                      resource_decorator, task_decorator)
 
 
 def slugify_id(_id):
@@ -206,24 +205,6 @@ class TwinContext(Resource):
 
     # -- E --
 
-    @export_to_path(specs={
-        'file_name': StrParam(default_value="context.json", short_description="File name"),
-        # 'file_format': StrParam(default_value=".json", short_description="File format"),
-    })
-    def export_to_path(self, dest_dir: str, params: ConfigParams):
-        """
-        Export to a give repository
-
-        :param file_path: The destination file path
-        :type file_path: File
-        """
-
-        file_name = params.get_value("file_name", "context.json")
-        #file_format = params.get_value("file_format", ".json")
-        file_path = os.path.join(dest_dir, file_name)
-        with open(file_path, "w") as f:
-            json.dump(self.dumps(), f)
-
     # -- G --
 
     def get_measure_ids(self) -> List[str]:
@@ -240,26 +221,6 @@ class TwinContext(Resource):
         return id.replace(cls._flattening_delim, "_")
 
     # -- I --
-
-    @classmethod
-    @import_from_path(specs={
-        'file_format': StrParam(default_value=".json", short_description="File format"),
-    })
-    def import_from_path(cls, file: File, params: ConfigParams) -> 'TwinContext':
-        """
-        Import from a repository
-
-        :returns: the imported cotnext
-        :rtype: TwinContext
-        """
-
-        file_format = params.get_value("file_format", ".json")
-        file_extension = Path(file.path).suffix or file_format
-        file_extension = Path(file.path).suffix
-        if file_extension in [".json"] or file_format in [".json"]:
-            with open(file.path, "r") as f:
-                data = json.load(f)
-        return cls.loads(data)
 
     # -- L --
 
@@ -287,25 +248,3 @@ class TwinContext(Resource):
         ctx.name = cls._format(data.get("name", "TwinContext"))
         ctx.description = data.get("description", "")
         return ctx
-
-
-# ####################################################################
-#
-# Importer class
-#
-# ####################################################################
-
-@importer_decorator("ContextImporter", resource_type=TwinContext)
-class ContextImporter(ResourceImporter):
-    pass
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@exporter_decorator("ContextExporter", resource_type=TwinContext)
-class ContextExporter(ResourceExporter):
-    pass

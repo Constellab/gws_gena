@@ -1,21 +1,24 @@
 
-import os, json
+import json
+import os
 
-from gws_core import Settings, TaskRunner, File, ConfigParams
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import Network, TwinContext, Twin, GapFiller, Compound, Reaction
+from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_gena import (Compound, GapFiller, Network, NetworkImporter, Reaction,
+                      Twin, TwinContext)
 
 settings = Settings.retrieve()
+
 
 class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
     async def test_gap_finder(self):
         self.print("Test GapFiller")
-        
+
         async def run_gap_fill(organism):
             data_dir = settings.get_variable("gws_gena:testdata_dir")
             file_path = os.path.join(data_dir, organism, f"{organism}.json")
-            net = Network.import_from_path(
+            net = NetworkImporter.call(
                 File(path=file_path),
                 ConfigParams()
             )
@@ -29,15 +32,15 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
             params = {'add_sink_reactions': True}
             if organism == "pcys":
-                params.update({'tax_id': "4751"})    #fungi
+                params.update({'tax_id': "4751"})  # fungi
             else:
-                params.update({'tax_id': "562"})     #ecoli
-                #params.update({'tax_id', "2")})     #bacteria
+                params.update({'tax_id': "562"})  # ecoli
+                # params.update({'tax_id', "2")})     #bacteria
 
             tester = TaskRunner(
-                params = params,
-                inputs = {"network": net},
-                task_type = GapFiller
+                params=params,
+                inputs={"network": net},
+                task_type=GapFiller
             )
             outputs = await tester.run()
 
@@ -57,4 +60,3 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
             #     self.assertEquals(result.dumps(), expected_json)
 
         await run_gap_fill("ecoli_gap")
-
