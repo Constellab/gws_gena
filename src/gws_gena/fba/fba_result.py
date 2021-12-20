@@ -47,8 +47,8 @@ class FBAResult(Resource):
     _annotated_twin = None
     _default_zero_flux_threshold = 0.01
 
-    def __init__(self, *args, twin: Twin = None, optimize_result: OptimizeResult = None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, twin: Twin = None, optimize_result: OptimizeResult = None):
+        super().__init__()
         if twin is not None:
             self.twin_data = twin.dumps(deep=True)
             self.optimize_result = optimize_result

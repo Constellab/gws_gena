@@ -16,8 +16,8 @@ class GapFinderResult(Resource):
 
     gaps_data = DictRField()
 
-    def __init__(self, *args, gaps=None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, gaps=None):
+        super().__init__()
         if gaps:
             self.gaps_data = gaps
 
