@@ -10,7 +10,7 @@
             {
                 "source": "https://pypi.python.org/simple",
                 "packages":[
-                    "efmtool"
+                    {"name": "efmtool"}
                 ]
             },
             {
@@ -22,9 +22,9 @@
             {
                 "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core",
                 "packages":[
-                    "gws_biota[commit=latest, branch=develop]",
-                    "gws_ode[commit=latest, branch=develop]",
-                    "gws_stats[commit=latest, branch=develop]"
+                    {"name": "gws_biota", "commit": "latest", "branch": "", "is_brick": true},
+                    {"name": "gws_ode", "commit": "latest", "branch": "", "is_brick": true},
+                    {"name": "gws_stats", "commit": "latest", "branch": "", "is_brick": true}
                 ]
             },
             {
