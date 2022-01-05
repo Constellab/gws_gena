@@ -7,11 +7,6 @@ from typing import List
 
 from gws_core import StrRField, Table, TableFile, resource_decorator
 
-FLUX_TABLE_DEFAULT_TARGET_COLUMN = "target"
-FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN = "upper_bound"
-FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN = "lower_bound"
-FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN = "confidence_score"
-
 
 @resource_decorator("FluxTable",
                     human_name="FluxTable",
@@ -39,16 +34,24 @@ class FluxTable(Table):
     ```
     """
 
-    DEFAULT_TARGET_COLUMN = FLUX_TABLE_DEFAULT_TARGET_COLUMN
-    DEFAULT_UPPER_BOUND_COLUMN = FLUX_TABLE_DEFAULT_UPPER_BOUND_COLUMN
-    DEFAULT_LOWER_BOUND_COLUMN = FLUX_TABLE_DEFAULT_LOWER_BOUND_COLUMN
-    DEFAULT_CONFIDENCE_SCORE_COLUMN = FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN
+    DEFAULT_REACTION_ID_COLUMN = "reaction_id"
+    DEFAULT_TARGET_COLUMN = "target"
+    DEFAULT_UPPER_BOUND_COLUMN = "upper_bound"
+    DEFAULT_LOWER_BOUND_COLUMN = "lower_bound"
+    DEFAULT_CONFIDENCE_SCORE_COLUMN = "confidence_score"
 
-    confidence_score_column: str = StrRField(default_value=FLUX_TABLE_DEFAULT_CONFIDENCE_SCORE_COLUMN)
+    reaction_id_column_name: str = StrRField(default_value=DEFAULT_REACTION_ID_COLUMN)
+    target_column_name: str = StrRField(default_value=DEFAULT_TARGET_COLUMN)
+    lower_bound_column_name: str = StrRField(default_value=DEFAULT_LOWER_BOUND_COLUMN)
+    upper_bound_column_name: str = StrRField(default_value=DEFAULT_UPPER_BOUND_COLUMN)
+    confidence_score_column: str = StrRField(default_value=DEFAULT_CONFIDENCE_SCORE_COLUMN)
 
     # -- C --
 
     # -- G --
+
+    def get_reaction_ids(self, rtype='list') -> ('DataFrame', list):
+        return self.get_column(self.reaction_id_column_name, rtype)
 
     def get_targets(self, rtype='list') -> ('DataFrame', list):
         return self.get_column(self.target_column_name, rtype)
@@ -66,13 +69,13 @@ class FluxTable(Table):
 
     # -- S --
 
-    def select_by_row_indexes(self, indexes: List[int]) -> 'FluxTable':
-        table = super().select_by_row_indexes(indexes)
+    def select_by_row_positions(self, indexes: List[int]) -> 'FluxTable':
+        table = super().select_by_row_positions(indexes)
         table.confidence_score_column = self.confidence_score_column
         return table
 
-    def select_by_column_indexes(self, indexes: List[int]) -> 'FluxTable':
-        table = super().select_by_column_indexes(indexes)
+    def select_by_column_positions(self, indexes: List[int]) -> 'FluxTable':
+        table = super().select_by_column_positions(indexes)
         table.confidence_score_column = self.confidence_score_column
         return table
 

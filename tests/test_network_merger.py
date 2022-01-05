@@ -45,41 +45,44 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         result_dir = os.path.join(data_dir, "network_merger")
 
         await experiment.run()
-        net = merger.get_output("network")
+        net_merged = merger.get_output("network")
 
         net1 = NetworkImporter.call(file1, ConfigParams())
         net2 = NetworkImporter.call(file2, ConfigParams())
         n1 = len(net1.reactions)
         n2 = len(net2.reactions)
-        n_total = len(net.reactions)
+        n_total = len(net_merged.reactions)
         self.assertEqual(n_total, n1+n2)
 
-        self.assertTrue("RHEA_66592_4_2_99_18" in net.reactions)
-        self.assertTrue("RHEA_64596_2_4_1_370" in net.reactions)
+        self.assertTrue("RHEA_66592_4_2_99_18" in net_merged.reactions)
+        self.assertTrue("RHEA_64596_2_4_1_370" in net_merged.reactions)
+
         self.assertTrue("RHEA_66592_4_2_99_18" in net2.reactions)
         self.assertTrue("RHEA_64596_2_4_1_370" in net2.reactions)
+
         self.assertTrue("RHEA_66592_4_2_99_18" not in net1.reactions)
         self.assertTrue("RHEA_64596_2_4_1_370" not in net1.reactions)
 
+        for k in net1.reactions:
+            self.assertTrue(k in net_merged.reactions)
+        for k in net2.reactions:
+            self.assertTrue(k in net_merged.reactions)
+
         file_name = "merger"
-        # file_path = os.path.join(result_dir, file_name+"_net.csv")
-        # with open(file_path, 'w') as f:
-        #     f.write(net.to_csv())
-
-        # file_path = os.path.join(result_dir, file_name+"_net.json")
-        # with open(file_path, 'w') as f:
-        #     json.dump(net.dumps(), f)
-
         file_path = os.path.join(result_dir, file_name+"_net.csv")
-        with open(file_path, 'r') as f:
-            self.assertEqual(net.to_csv(), f.read())
+        with open(file_path, 'w', encoding="utf-8") as f:
+            f.write(net_merged.to_csv())
+
+        file_path = os.path.join(result_dir, file_name+"_net.json")
+        with open(file_path, 'w', encoding="utf-8") as f:
+            json.dump(net_merged.dumps(), f)
 
         file_path = os.path.join(result_dir, file_name+"_stats.csv")
-        with open(file_path, 'w') as f:
-            table = net.get_compound_stats_as_table()
+        with open(file_path, 'w', encoding="utf-8") as f:
+            table = net_merged.get_compound_stats_as_table()
             f.write(table.to_csv())
 
         file_path = os.path.join(result_dir, file_name+"_gaps.csv")
-        with open(file_path, 'w') as f:
-            table = net.get_gaps_as_table()
+        with open(file_path, 'w', encoding="utf-8") as f:
+            table = net_merged.get_gaps_as_table()
             f.write(table.to_csv())

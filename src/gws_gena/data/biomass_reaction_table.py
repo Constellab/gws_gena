@@ -7,9 +7,6 @@ from typing import List
 
 from gws_core import StrRField, Table, TableFile, resource_decorator
 
-BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN = "chebi_id"
-BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN = "biomass"
-
 
 @resource_decorator("BiomassReactionTable",
                     human_name="BiomassReactionTable",
@@ -47,11 +44,13 @@ class BiomassReactionTable(Table):
     ```
     """
 
-    DEFAULT_CHEBI_COLUMN = BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN
-    DEFAULT_BIOMASS_COLUMN = BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN
+    DEFAULT_CHEBI_COLUMN = "chebi_id"
+    DEFAULT_BIOMASS_COLUMN = "biomass"
+    DEFAULT_ENTITY_COLUMN = "entity"
 
-    biomass_column: str = StrRField(default_value=BIOMASS_TABLE_DEFAULT_BIOMASS_COLUMN)
-    chebi_column: str = StrRField(default_value=BIOMASS_TABLE_DEFAULT_CHEBI_COLUMN)
+    biomass_column: str = StrRField(default_value=DEFAULT_BIOMASS_COLUMN)
+    chebi_column: str = StrRField(default_value=DEFAULT_CHEBI_COLUMN)
+    entity_column: str = StrRField(default_value=DEFAULT_ENTITY_COLUMN)
 
     # -- E --
 
@@ -60,32 +59,39 @@ class BiomassReactionTable(Table):
     def get_chebi_ids(self, rtype='list') -> ('DataFrame', list):
         return self.get_column(self.chebi_column, rtype)
 
+    def get_entities(self, rtype='list') -> ('DataFrame', list):
+        return self.get_column(self.entity_column, rtype)
+
     # -- I --
 
     # -- S --
 
-    def select_by_row_indexes(self, indexes: List[int]) -> 'BiomassReactionTable':
-        table = super().select_by_row_indexes(indexes)
+    def select_by_row_positions(self, indexes: List[int]) -> 'BiomassReactionTable':
+        table = super().select_by_row_positions(indexes)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
+        table.entity_column = self.entity_column
         return table
 
-    def select_by_column_indexes(self, indexes: List[int]) -> 'BiomassReactionTable':
-        table = super().select_by_column_indexes(indexes)
+    def select_by_column_positions(self, indexes: List[int]) -> 'BiomassReactionTable':
+        table = super().select_by_column_positions(indexes)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
+        table.entity_column = self.entity_column
         return table
 
     def select_by_row_name(self, name_regex: str) -> 'BiomassReactionTable':
         table = super().select_by_row_name(name_regex)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
+        table.entity_column = self.entity_column
         return table
 
     def select_by_column_name(self, name_regex: str) -> 'BiomassReactionTable':
         table = super().select_by_column_name(name_regex)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
+        table.entity_column = self.entity_column
         return table
 
 

@@ -19,14 +19,13 @@ class TwinContextBuilder(Task):
 
     async def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         ctx = TwinContext()
-        flux = inputs["flux_table"]
+        flux: FluxTable = inputs["flux_table"]
         net: Network = inputs["network"]
         targets = flux.get_targets()
         ubounds = flux.get_upper_bounds()
         lbounds = flux.get_lower_bounds()
         scores = flux.get_confidence_scores()
-        i = 0
-        for ref_id in flux.row_names:
+        for i, ref_id in enumerate(flux.get_reaction_ids()):
             ref = net.get_reaction_by_id(ref_id)
             ref_type = Variable.REACTION_REFERENCE_TYPE
             if ref is not None:
@@ -50,7 +49,6 @@ class TwinContextBuilder(Task):
                 )
                 measure.add_variable(variable)
                 ctx.add_measure(measure)
-                i += 1
             else:
                 self.log_warning_message(f"No reference reaction found with id {ref_id}")
                 #raise BadRequestException(f"No reference reaction found with id {ref_id}")

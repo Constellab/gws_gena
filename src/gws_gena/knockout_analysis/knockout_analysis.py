@@ -37,7 +37,7 @@ class KnockOutAnalysis(Task):
         'monitored_fluxes': ListParam(optional=True, short_description="The list fluxes to monitor"),
         'ko_delimiter':
         StrParam(
-            optional=True, default_value=None,
+            default_value=",",
             short_description="The delimiter used to separate IDs or EC numbers when multiple KO are performed")}
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
@@ -50,11 +50,11 @@ class KnockOutAnalysis(Task):
         ignore_cofactors = params["ignore_cofactors"]
         relax_qssa = params["relax_qssa"]
         monitored_fluxes = params.get_value("monitored_fluxes", [])
-        ko_delimiter = params.get_value("ko_delimiter", None)
+        ko_delimiter = params.get_value("ko_delimiter", ",")
 
         full_ko_result_df = DataFrame()
         for i in range(0, ko_table.nb_rows):
-            current_ko_table = ko_table.select_by_row_indexes([i])
+            current_ko_table = ko_table.select_by_row_positions([i])
             ko_name = current_ko_table.get_data().index[0]
             ko_id: str = current_ko_table.get_ids()[0]
 

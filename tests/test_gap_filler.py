@@ -51,7 +51,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
                 os.makedirs(result_dir)
 
             file_path = os.path.join(result_dir, f"{organism}.json")
-            with open(file_path, 'w') as fp:
+            with open(file_path, 'w', encoding="utf-8") as fp:
                 json.dump(result.dumps(), fp)
 
             # file_path = os.path.join(result_dir, f"{organism}.json")

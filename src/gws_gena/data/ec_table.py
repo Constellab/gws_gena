@@ -7,9 +7,6 @@ from typing import List
 
 from gws_core import StrRField, Table, TableFile, resource_decorator
 
-EC_TABLE_DEFAULT_EC_COLUMN = "ec_number"
-
-
 @resource_decorator("ECTable",
                     human_name="ECTable",
                     short_description="CSV table of EC numbers")
@@ -34,8 +31,9 @@ class ECTable(Table):
     ```
     """
 
-    DEFAULT_EC_COLUMN = EC_TABLE_DEFAULT_EC_COLUMN
-    ec_column: str = StrRField(default_value=EC_TABLE_DEFAULT_EC_COLUMN)
+
+    DEFAULT_EC_COLUMN = "ec_number"
+    ec_column: str = StrRField(default_value=DEFAULT_EC_COLUMN)
 
     # -- E --
 
@@ -48,13 +46,13 @@ class ECTable(Table):
 
     # -- S --
 
-    def select_by_row_indexes(self, indexes: List[int]) -> 'ECTable':
-        table = super().select_by_row_indexes(indexes)
+    def select_by_row_positions(self, indexes: List[int]) -> 'ECTable':
+        table = super().select_by_row_positions(indexes)
         table.ec_column = self.ec_column
         return table
 
-    def select_by_column_indexes(self, indexes: List[int]) -> 'ECTable':
-        table = super().select_by_column_indexes(indexes)
+    def select_by_column_positions(self, indexes: List[int]) -> 'ECTable':
+        table = super().select_by_column_positions(indexes)
         table.ec_column = self.ec_column
         return table
 

@@ -1,4 +1,3 @@
-
 import json
 import os
 
@@ -39,6 +38,15 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         recon = proto.get_process("recon")
         recon.set_param('tax_id', "263815")  # pcystis murina
 
+        medium_importer = proto.get_process("medium_importer")
+        medium_importer.set_param("entity_column", "Name of the metabolite")
+        medium_importer.set_param("chebi_column", "Chebi ID")
+
+        biomass_importer = proto.get_process("biomass_importer")
+        biomass_importer.set_param("entity_column", "Component")
+        biomass_importer.set_param("chebi_column", "Chebi ID")
+        biomass_importer.set_param("biomass_column", "Biomass")
+
         ec_importer = proto.get_process("ec_importer")
         ec_importer.set_param("ec_column", "EC Number")
 
@@ -51,7 +59,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         async def assert_results(net, file_name):
             # file_path = os.path.join(data_dir, file_name+"_net.csv")
-            # with open(file_path, 'w') as f:
+            # with open(file_path, 'w', encoding="utf-8") as f:
             #     f.write(net.to_csv())
 
             # file_path = os.path.join(data_dir, file_name+"_net.json")
@@ -59,16 +67,17 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             #     json.dump(net.dumps(), f)
 
             file_path = os.path.join(data_dir, file_name+"_net.csv")
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding="utf-8") as f:
+                print(net.to_csv())
                 self.assertEqual(net.to_csv(), f.read())
 
             file_path = os.path.join(data_dir, file_name+"_stats.csv")
-            with open(file_path, 'w') as f:
+            with open(file_path, 'w', encoding="utf-8") as f:
                 table = net.get_compound_stats_as_table()
                 f.write(table.to_csv())
 
             file_path = os.path.join(data_dir, file_name+"_gaps.csv")
-            with open(file_path, 'w') as f:
+            with open(file_path, 'w', encoding="utf-8") as f:
                 table = net.get_gaps_as_table()
                 f.write(table.to_csv())
 

@@ -19,7 +19,12 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         data_dir = os.path.join(data_dir, "small_net")
 
         file_path = os.path.join(data_dir, "small_net.json")
-        net = Network.import_from_path(File(path=file_path), params=ConfigParams())
+
+        net = NetworkImporter.call(
+            File(path=file_path),
+            {}
+        )
+
         json_data = net.dumps()
         print(json_data)
         print(net.loads(json_data))
@@ -81,8 +86,8 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "ecoli.json")
 
         # import 1
-        net = NetworkImporter.call(File(
-            path=file_path),
+        net = NetworkImporter.call(
+            File(path=file_path),
             params=ConfigParams()
         )
         self.print("ecoli successffuly imported - skip exchange reactions")
@@ -90,8 +95,8 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(len(net.reactions), 75)
 
         # import 2
-        net = NetworkImporter.call(File(
-            path=file_path),
+        net = NetworkImporter.call(
+            File(path=file_path),
             params=ConfigParams({"skip_bigg_exchange_reactions": False})
         )
         self.print("ecoli successffuly imported - keep exchange reactions")

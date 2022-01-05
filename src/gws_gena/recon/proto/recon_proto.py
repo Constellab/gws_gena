@@ -20,14 +20,14 @@ class ReconProto(Protocol):
     def configure_protocol(self, config_params: ConfigParams) -> None:
         # ec
         ec_importer: ProcessSpec = self.add_process(ECTableImporter, 'ec_importer')
-        ec_importer.set_param("ec_column", "EC Number")
+        ec_importer.set_param("ec_column", "ec_number")
         # biomass
         biomass_importer: ProcessSpec = self.add_process(BiomassReactionTableImporter, 'biomass_importer')
-        biomass_importer.set_param("biomass_column", "Biomass")
-        biomass_importer.set_param("chebi_column", "Chebi ID")
+        biomass_importer.set_param("biomass_column", "biomass")
+        biomass_importer.set_param("chebi_column", "chebi_id")
         # medium
         medium_importer: ProcessSpec = self.add_process(MediumTableImporter, 'medium_importer')
-        medium_importer.set_param("chebi_column", "Chebi ID")
+        medium_importer.set_param("chebi_column", "chebi_id")
         # other procs
         recon: ProcessSpec = self.add_process(DraftRecon, 'recon')
         gap_filler: ProcessSpec = self.add_process(GapFiller, 'gap_filler')

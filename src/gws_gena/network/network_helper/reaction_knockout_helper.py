@@ -48,7 +48,7 @@ class ReactionKnockOutHelper:
             for rxn_id, rxn in new_net.reactions.items():
                 rhea_id = rxn.rhea_id
                 ec_number = rxn.enzyme.get("ec_number")
-                for i, ko_id_str in enumerate(id_list):
+                for _, ko_id_str in enumerate(id_list):
                     if ko_delimiter:
                         ko_ids = ko_id_str.split(ko_delimiter)
                     else:
@@ -61,29 +61,29 @@ class ReactionKnockOutHelper:
                             rxn.upper_bound = cls.FLUX_EPSILON
                             found_id.append(ko_id)
 
-            # ko using CHEBI_ID
-            for ko_id_str in id_list:
-                if ko_delimiter:
-                    ko_ids = ko_id_str.split(ko_delimiter)
-                else:
-                    ko_ids = [ko_id_str]
-                all_ids.extend(ko_ids)
+            # # ko using CHEBI_ID
+            # for ko_id_str in id_list:
+            #     if ko_delimiter:
+            #         ko_ids = ko_id_str.split(ko_delimiter)
+            #     else:
+            #         ko_ids = [ko_id_str]
+            #     all_ids.extend(ko_ids)
 
-                for ko_id in ko_ids:
-                    if ko_id.startswith("CHEBI:"):
-                        rxns = new_net.get_reactions_related_to_chebi_id(ko_id)
-                        if rxns:
-                            for rxn in rxns:
-                                rxn.lower_bound = -cls.FLUX_EPSILON
-                                rxn.upper_bound = cls.FLUX_EPSILON
-                                found_id.append(ko_id)
+            #     # for ko_id in ko_ids:
+            #     #     if ko_id.startswith("CHEBI:"):
+            #     #         rxns = new_net.get_reactions_related_to_chebi_id(ko_id)
+            #     #         if rxns:
+            #     #             for rxn in rxns:
+            #     #                 rxn.lower_bound = -cls.FLUX_EPSILON
+            #     #                 rxn.upper_bound = cls.FLUX_EPSILON
+            #     #                 found_id.append(ko_id)
 
-                # write warnings
-                all_ids = list(set(all_ids))
-                for ko_id in all_ids:
-                    if ko_id not in found_id:
-                        if current_task:
-                            current_task.log_warning_message(
-                                f"The KO ID '{ko_id}' is not found. Please check the KO table.")
+            # write warnings
+            all_ids = list(set(all_ids))
+            for ko_id in all_ids:
+                if ko_id not in found_id:
+                    if current_task:
+                        current_task.log_warning_message(
+                            f"The KO ID '{ko_id}' is not found. Please check the KO table.")
 
         return new_net

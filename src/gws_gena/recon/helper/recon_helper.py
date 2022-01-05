@@ -106,12 +106,10 @@ class ReconHelper:
 
     @classmethod
     def add_medium_to_network(cls, net: Network, medium_table: MediumTable):
-        row_names = medium_table.row_names
-        #col_names = medium_table.column_names
+        entities = medium_table.get_entities()
         chebi_ids = medium_table.get_chebi_ids()
-        i = 0
-        for chebi_id in chebi_ids:
-            name = row_names[i]
+        for i, chebi_id in enumerate(chebi_ids):
+            name = entities[i]
             subs = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_EXTRACELL)
             prod = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
             try:
@@ -126,8 +124,6 @@ class ReconHelper:
                 pass
             except Exception as err:
                 raise BadRequestException(f"Cannot create culture medium reactions. Exception: {err}") from err
-
-            i += 1
 
     @staticmethod
     def _retrieve_or_create_comp(net, chebi_id, name, compartment):
@@ -165,20 +161,20 @@ class ReconHelper:
             rxn = Reaction(id=col_name, direction="R", lower_bound=0.0)
             coefs = biomass_table.get_column(col_name)
             error_message = "The reaction is empty"
-            for i in range(0, len(coefs)):
-                if isinstance(coefs[i], str):
-                    coefs[i] = coefs[i].strip()
-                    if not coefs[i]:
+            for i, coef in enumerate(coefs):
+                if isinstance(coef, str):
+                    coef = coef.strip()
+                    if not coef:
                         continue
                     try:
-                        stoich = float(coefs[i])
+                        stoich = float(coef)
                     except:
-                        error_message = f"Coefficient '{coefs[i]}' is not a valid float"
+                        error_message = f"Coefficient '{coef}' is not a valid float"
                         break
                 else:
-                    if math.isnan(coefs[i]):
+                    if math.isnan(coef):
                         continue
-                    stoich = coefs[i]
+                    stoich = coef
                 comp = biomass_comps[i]
                 if stoich > 0:
                     rxn.add_product(comp, stoich)
@@ -195,20 +191,18 @@ class ReconHelper:
 
     @classmethod
     def _create_biomass_compounds(cls, net, biomass_table):
-        row_names = biomass_table.row_names
+        entities = biomass_table.get_entities()
         chebi_ids = biomass_table.get_chebi_ids()
         biomass_col_name = biomass_table.biomass_column
         _comps = []
-        i = 0
-        for chebi_id in chebi_ids:
-            name = row_names[i]
+        for i, chebi_id in enumerate(chebi_ids):
+            name = entities[i]
             if name == biomass_col_name:
                 comp = Compound(name=name, compartment=Compound.COMPARTMENT_BIOMASS)
                 _comps.append(comp)
             else:
                 comp = cls._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
                 _comps.append(comp)
-            i += 1
         if not net.exists(comp):
             net.add_compound(comp)
         return _comps

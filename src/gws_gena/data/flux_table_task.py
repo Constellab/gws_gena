@@ -22,6 +22,10 @@ from .flux_table import FluxTable, FluxTableFile
 class FluxTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
+        'reaction_id_column':
+        StrParam(
+            default_value=FluxTable.DEFAULT_REACTION_ID_COLUMN, human_name="Reaction ID column name",
+            short_description="The name of the reaction id column"),
         'target_column_name':
         StrParam(
             default_value=FluxTable.DEFAULT_TARGET_COLUMN, human_name="Target column name",
@@ -53,15 +57,18 @@ class FluxTableImporter(TableImporter):
         :rtype: FluxTable
         """
 
-        index_columns = params.get_value("index_columns") or 0
-        params["index_columns"] = index_columns
+        params["index_columns"] = None
         csv_table = await super().import_from_path(file, params, target_type)
 
+        reaction_id_column = params.get_value("reaction_id_column", FluxTable.DEFAULT_REACTION_ID_COLUMN)
         target_column_name = params.get_value("target_column_name", FluxTable.DEFAULT_TARGET_COLUMN)
         upper_bound_column_name = params.get_value("upper_bound_column_name", FluxTable.DEFAULT_UPPER_BOUND_COLUMN)
         lower_bound_column_name = params.get_value("lower_bound_column_name", FluxTable.DEFAULT_LOWER_BOUND_COLUMN)
         confidence_score_column = params.get_value("confidence_score_column", FluxTable.DEFAULT_CONFIDENCE_SCORE_COLUMN)
 
+        if not csv_table.column_exists(reaction_id_column):
+            raise BadRequestException(
+                f"Cannot import FluxTable. No reaction id found (no column with name '{reaction_id_column}')")
         if not csv_table.column_exists(target_column_name):
             raise BadRequestException(
                 f"Cannot import FluxTable. No target found (no column with name '{target_column_name}')")
@@ -75,6 +82,7 @@ class FluxTableImporter(TableImporter):
             raise BadRequestException(
                 f"Cannot import FluxTable. No confidence score found (no column with name '{confidence_score_column}')")
 
+        csv_table.reaction_id_column = reaction_id_column
         csv_table.target_column_name = target_column_name
         csv_table.upper_bound_column_name = upper_bound_column_name
         csv_table.lower_bound_column_name = lower_bound_column_name

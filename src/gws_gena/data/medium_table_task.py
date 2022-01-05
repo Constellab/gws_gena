@@ -24,14 +24,14 @@ from .medium_table import MediumTable, MediumTableFile
 class MediumTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
+        'entity_column':
+        StrParam(
+            default_value=MediumTable.DEFAULT_ENTITY_COLUMN,
+            short_description="The name of the column containing the entities"),
         'chebi_column':
         StrParam(
             default_value=MediumTable.DEFAULT_CHEBI_COLUMN, human_name="CheBI column name",
-            short_description="The CheBI ID column name"),
-        'index_columns':
-        ListParam(
-            optional=True,
-            short_description="Columns to use as the row names. Use None to prevent parsing row names. Only for CSV files")
+            short_description="The CheBI ID column name")
     }
 
     async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[MediumTable]) -> MediumTable:
@@ -48,15 +48,20 @@ class MediumTableImporter(TableImporter):
         :rtype: MediumTable
         """
 
-        index_columns = params.get_value("index_columns") or 0
-        params["index_columns"] = index_columns
+        params["index_column"] = None
         csv_table = await super().import_from_path(file, params, target_type)
 
+        entity_column = params.get_value("entity_column", MediumTable.DEFAULT_ENTITY_COLUMN)
         chebi_column = params.get_value("chebi_column", MediumTable.DEFAULT_CHEBI_COLUMN)
+
+        if not csv_table.column_exists(entity_column):
+            raise BadRequestException(
+                f"Cannot import MediumTable. No entity column found (no column with name '{entity_column}')")
         if not csv_table.column_exists(chebi_column):
             raise BadRequestException(
-                f"Cannot import MediumTable. No chebi ids found (no column with name '{chebi_column}')")
+                f"Cannot import MediumTable. No CheBI ID column found (no column with name '{chebi_column}')")
 
+        csv_table.entity_column = entity_column
         csv_table.chebi_column = chebi_column
         return csv_table
 

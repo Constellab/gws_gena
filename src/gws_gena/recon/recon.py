@@ -14,8 +14,7 @@ from gws_core import (BadRequestException, ConfigParams, OptionalIn, StrParam,
 from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
 from ..data.medium_table import MediumTable
-from ..network.compound import Compound
-from ..network.network import CompoundDuplicate, Network, ReactionDuplicate
+from ..network.network import Network
 from ..network.reaction import Reaction
 from .helper.recon_helper import ReconHelper
 

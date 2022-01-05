@@ -38,10 +38,8 @@ class ECTableImporter(TableImporter):
         :rtype: ECTable
         """
 
+        params["index_column"] = None
         csv_table: ECTable = await super().import_from_path(file, params, target_type)
-
-        print(csv_table)
-
         ec_column = params.get_value("ec_column", ECTable.DEFAULT_EC_COLUMN)
 
         if not csv_table.column_exists(ec_column):

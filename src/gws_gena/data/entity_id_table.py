@@ -8,9 +8,6 @@ from typing import List
 
 from gws_core import StrRField, Table, TableFile, resource_decorator
 
-ID_TABLE_DEFAULT_NAME = "name"
-ID_TABLE_DEFAULT_ID_COLUMN = "id"
-
 
 @resource_decorator("EntityIDTable",
                     human_name="EntityIDTable",
@@ -34,9 +31,8 @@ class EntityIDTable(Table):
     ```
     """
 
-    DEFAULT_ID_COLUMN = ID_TABLE_DEFAULT_ID_COLUMN
-    DEFAULT_NAME_COLUMN = ID_TABLE_DEFAULT_NAME
-    id_column: str = StrRField(default_value=ID_TABLE_DEFAULT_ID_COLUMN)
+    DEFAULT_ID_COLUMN = "id"
+    id_column: str = StrRField(default_value=DEFAULT_ID_COLUMN)
 
     # -- E --
 
@@ -49,13 +45,13 @@ class EntityIDTable(Table):
 
     # -- S --
 
-    def select_by_row_indexes(self, indexes: List[int]) -> 'EntityIDTable':
-        table = super().select_by_row_indexes(indexes)
+    def select_by_row_positions(self, indexes: List[int]) -> 'EntityIDTable':
+        table = super().select_by_row_positions(indexes)
         table.id_column = self.id_column
         return table
 
-    def select_by_column_indexes(self, indexes: List[int]) -> 'EntityIDTable':
-        table = super().select_by_column_indexes(indexes)
+    def select_by_column_positions(self, indexes: List[int]) -> 'EntityIDTable':
+        table = super().select_by_column_positions(indexes)
         table.id_column = self.id_column
         return table
 

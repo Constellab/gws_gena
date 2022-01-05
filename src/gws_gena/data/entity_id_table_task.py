@@ -40,6 +40,7 @@ class EntityIDTableImporter(TableImporter):
         :rtype: EntityIDTable
         """
 
+        params["index_column"] = None
         csv_table = await super().import_from_path(file, params, target_type)
         id_column = params.get_value("id_column", EntityIDTable.DEFAULT_ID_COLUMN)
 
