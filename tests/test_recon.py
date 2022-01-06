@@ -4,7 +4,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import Experiment, File, IExperiment, Settings, TaskRunner
 from gws_gena import DraftRecon, GapFiller, NetworkMerger, TwinContext
-from gws_gena.proto import ReconProto
+from gws_gena import ReconProto
 
 settings = Settings.retrieve()
 

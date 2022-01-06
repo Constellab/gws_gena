@@ -4,14 +4,14 @@
 # About us: https://gencovery.com
 
 import pandas as pd
-from gws_core import resource_decorator, ConfigParams
+from gws_core import ConfigParams, resource_decorator
 from pandas import DataFrame
 from scipy.optimize import OptimizeResult as SciPyOptimizeResult
 
 from .fba_result import FBAResult, OptimizeResult
 
 
-@resource_decorator("FVAResult")
+@resource_decorator("FVAResult", human_name="FVA", short_description="Flux variability Analysis Result")
 class FVAResult(FBAResult):
     """
     FVAResult class

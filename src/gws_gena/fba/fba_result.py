@@ -7,8 +7,8 @@ import re
 
 import numpy
 import pandas as pd
-from gws_core import (DictRField, Resource, RField, TableView,
-                      resource_decorator, view, ConfigParams)
+from gws_core import (ConfigParams, DictRField, Resource, RField, TableView,
+                      resource_decorator, view)
 from pandas import DataFrame
 from scipy import stats
 
@@ -35,7 +35,7 @@ class OptimizeResult:
         self.status = res["status"]
 
 
-@resource_decorator("FBAResult")
+@resource_decorator("FBAResult", human_name="FBAResult", short_description="Flux Balance Analysis Result")
 class FBAResult(Resource):
     """
     FBAResult class

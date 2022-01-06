@@ -6,7 +6,7 @@ from gws_core import Settings, GTest, IExperiment, ExperimentService, File
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Network
 from gws_gena import Twin, TwinContext
-from gws_gena.proto import FBAProto
+from gws_gena import FBAProto
 
 settings = Settings.retrieve()
 
@@ -43,7 +43,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             sv = result.get_sv_as_table()
             print(fluxes)
             print(sv)
-            
+
             fill_dir = "sink" if fill_gaps_with_sinks else "no_sink"
             relax_dir = "relax" if relax_steady_state else "no_relax"
 
@@ -58,14 +58,14 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 file_path = os.path.join(result_dir,"flux.csv")
                 with open(file_path, 'w') as fp:
                     fp.write(fluxes.to_csv())
-                
+
                 table = fluxes.to_numpy()
                 file_path = os.path.join(result_dir,"flux.csv")
                 expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
                 table = numpy.array(table, dtype=float)
                 expected_table = numpy.array(expected_table, dtype=float)
                 #self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-02).all() )
-            
+
             bio = proto.get_output("annotated_twin")
             net = list(bio.networks.values())[0]
             tflux = net.get_total_abs_flux_as_table()
@@ -75,8 +75,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         self.print("Test FBAProto: Small network (toy + context + linprog)")
         await run_fba(context=True,solver="highs", fill_gaps_with_sinks=True)
         self.print("Test FBAProto: Small network (toy + context + quad)")
-        await run_fba(context=True,solver="quad", fill_gaps_with_sinks=True) 
+        await run_fba(context=True,solver="quad", fill_gaps_with_sinks=True)
 
         # fill_with_sink = False, relax = True
         self.print("Test FBAProto: Small network (toy + context + quad)")
-        await run_fba(context=True,solver="quad", fill_gaps_with_sinks=False, relax_steady_state=True) 
+        await run_fba(context=True,solver="quad", fill_gaps_with_sinks=False, relax_steady_state=True)

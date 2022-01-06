@@ -61,23 +61,6 @@ class ReactionKnockOutHelper:
                             rxn.upper_bound = cls.FLUX_EPSILON
                             found_id.append(ko_id)
 
-            # # ko using CHEBI_ID
-            # for ko_id_str in id_list:
-            #     if ko_delimiter:
-            #         ko_ids = ko_id_str.split(ko_delimiter)
-            #     else:
-            #         ko_ids = [ko_id_str]
-            #     all_ids.extend(ko_ids)
-
-            #     # for ko_id in ko_ids:
-            #     #     if ko_id.startswith("CHEBI:"):
-            #     #         rxns = new_net.get_reactions_related_to_chebi_id(ko_id)
-            #     #         if rxns:
-            #     #             for rxn in rxns:
-            #     #                 rxn.lower_bound = -cls.FLUX_EPSILON
-            #     #                 rxn.upper_bound = cls.FLUX_EPSILON
-            #     #                 found_id.append(ko_id)
-
             # write warnings
             all_ids = list(set(all_ids))
             for ko_id in all_ids:

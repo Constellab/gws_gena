@@ -22,18 +22,18 @@ from .fva_result import FVAResult
 
 
 def _do_parallel_loop(kwargs):
-    i=kwargs["i"]
-    c=kwargs["c"]
-    A_eq=kwargs["A_eq"]
-    b_eq=kwargs["b_eq"]
-    bounds=kwargs["bounds"]
-    x0=kwargs["x0"]
-    indexes_of_fluxes_to_minimize=kwargs["indexes_of_fluxes_to_minimize"]
-    indexes_of_fluxes_to_maximize=kwargs["indexes_of_fluxes_to_maximize"]
-    step=kwargs["step"]
-    m=kwargs["m"]
-    solver=kwargs["solver"]
-    relax_qssa=kwargs["relax_qssa"]
+    i = kwargs["i"]
+    c = kwargs["c"]
+    A_eq = kwargs["A_eq"]
+    b_eq = kwargs["b_eq"]
+    bounds = kwargs["bounds"]
+    x0 = kwargs["x0"]
+    indexes_of_fluxes_to_minimize = kwargs["indexes_of_fluxes_to_minimize"]
+    indexes_of_fluxes_to_maximize = kwargs["indexes_of_fluxes_to_maximize"]
+    step = kwargs["step"]
+    m = kwargs["m"]
+    solver = kwargs["solver"]
+    relax_qssa = kwargs["relax_qssa"]
 
     if (i % step) == 0:
         Logger.progress(f" flux {i+1}/{m} ...")
@@ -54,7 +54,7 @@ def _do_parallel_loop(kwargs):
             bounds[k][1] = x0[k]*1.025
 
         # min
-        cf.iloc[i,0] = 1.0
+        cf.iloc[i, 0] = 1.0
         if solver == "quad":
             res_fva, _ = FBAHelper.solve_cvxpy(
                 cf, A_eq, b_eq, bounds,
@@ -69,7 +69,7 @@ def _do_parallel_loop(kwargs):
         xmin = res_fva.x[i]
 
         # max
-        cf.iloc[i,0] = -1.0
+        cf.iloc[i, 0] = -1.0
         if solver == "quad":
             res_fva, _ = FBAHelper.solve_cvxpy(
                 cf, A_eq, b_eq, bounds,
@@ -84,7 +84,8 @@ def _do_parallel_loop(kwargs):
         xmax = res_fva.x[i]
     return xmin, xmax
 
-@task_decorator("FVA")
+
+@task_decorator("FVA", human_name="FVA", short_description="Flux variability Analysis")
 class FVA(Task):
     """
     FVA class
@@ -96,8 +97,8 @@ class FVA(Task):
         https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
     """
 
-    input_specs = { 'twin': (Twin,) }
-    output_specs = { 'result': (FVAResult,) }
+    input_specs = {'twin': (Twin,)}
+    output_specs = {'result': (FVAResult,)}
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The list of fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value="[]", human_name="Fluxes to minimize", short_description="The list of fluxes to minimize"),
@@ -151,77 +152,78 @@ class FVA(Task):
         if not res.success:
             raise BadRequestException(f"Convergence error. Optimization message: '{res.message}'")
 
-        self.log_info_message(message=f"Peforming variability analysis around the optimal value using solver '{solver}' ...")
+        self.log_info_message(
+            message=f"Peforming variability analysis around the optimal value using solver '{solver}' ...")
         x0 = res.x
         m = x0.shape[0]
-        step = max(1, int(m/10)) # plot only 10 iterations on screen
+        step = max(1, int(m/10))  # plot only 10 iterations on screen
 
         if solver == "quad":
-            xmin, xmax = self.__solve_with_cvxpy_using_warm_solver( warm_solver,
-                                                                    c, A_eq, b_eq, bounds, x0,
-                                                                    fluxes_to_maximize,
-                                                                    fluxes_to_minimize,
-                                                                    step, m, solver, relax_qssa)
+            xmin, xmax = self.__solve_with_cvxpy_using_warm_solver(warm_solver,
+                                                                   c, A_eq, b_eq, bounds, x0,
+                                                                   fluxes_to_maximize,
+                                                                   fluxes_to_minimize,
+                                                                   step, m, solver, relax_qssa)
             # xmin, xmax = self.__solve_with_parloop( c, A_eq, b_eq, bounds, x0,
             #                                         fluxes_to_maximize,
             #                                         fluxes_to_minimize,
             #                                         step, m, solver, relax_qssa)
         else:
-            xmin, xmax = self.__solve_with_parloop( c, A_eq, b_eq, bounds, x0,
-                                                    fluxes_to_maximize,
-                                                    fluxes_to_minimize,
-                                                    step, m, solver, relax_qssa)
+            xmin, xmax = self.__solve_with_parloop(c, A_eq, b_eq, bounds, x0,
+                                                   fluxes_to_maximize,
+                                                   fluxes_to_minimize,
+                                                   step, m, solver, relax_qssa)
         res.xmin = xmin
         res.xmax = xmax
         result = FVAResult(twin=twin, optimize_result=res)
         return {"result": result}
 
     @staticmethod
-    def __solve_with_parloop(   c, A_eq, b_eq, bounds, x0,
-                                fluxes_to_maximize,
-                                fluxes_to_minimize,
-                                step, m, solver, relax_qssa):
+    def __solve_with_parloop(c, A_eq, b_eq, bounds, x0,
+                             fluxes_to_maximize,
+                             fluxes_to_minimize,
+                             step, m, solver, relax_qssa):
 
-        max_idx = [ c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
-        min_idx = [ c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
+        max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
+        min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
         # run parallel optimization
         Logger.progress("Open parallel pool for each flux.")
         pool = multiprocessing.Pool()
-        params = [ ]
-        for i in range(0,m):
-            params.append( dict(
-                    i=i,
-                    c=c,
-                    A_eq=A_eq,
-                    b_eq=b_eq,
-                    bounds=bounds,
-                    x0=x0,
-                    indexes_of_fluxes_to_minimize=min_idx,
-                    indexes_of_fluxes_to_maximize=max_idx,
-                    step=step,
-                    m=m,
-                    solver=solver,
-                    relax_qssa=relax_qssa
-                )
+        params = []
+        for i in range(0, m):
+            params.append(dict(
+                i=i,
+                c=c,
+                A_eq=A_eq,
+                b_eq=b_eq,
+                bounds=bounds,
+                x0=x0,
+                indexes_of_fluxes_to_minimize=min_idx,
+                indexes_of_fluxes_to_maximize=max_idx,
+                step=step,
+                m=m,
+                solver=solver,
+                relax_qssa=relax_qssa
+            )
             )
         result = pool.map(_do_parallel_loop, params)
         # gather results
         xmin = np.zeros(x0.shape)
         xmax = np.zeros(x0.shape)
-        for i in range(0,m):
+        for i in range(0, m):
             xmin[i] = result[i][0]
             xmax[i] = result[i][1]
         return xmin, xmax
 
     @staticmethod
-    def __solve_with_cvxpy_using_warm_solver( warm_solver,
-                            c, A_eq, b_eq, bounds, x0,
-                            fluxes_to_maximize,
-                            fluxes_to_minimize,
-                            step, m, solver, relax_qssa):
+    def __solve_with_cvxpy_using_warm_solver(warm_solver,
+                                             c, A_eq, b_eq, bounds, x0,
+                                             fluxes_to_maximize,
+                                             fluxes_to_minimize,
+                                             step, m, solver, relax_qssa):
 
-        max_idx = [ c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
-        min_idx = [ c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
+        max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
+        min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
         lb = warm_solver["lb_par"]
         ub = warm_solver["ub_par"]
         for k in max_idx:
@@ -236,7 +238,7 @@ class FVA(Task):
         x = warm_solver["x"]
         c_par = warm_solver["c_par"]
         prob = warm_solver["prob"]
-        for i in range(0,m):
+        for i in range(0, m):
             if (i % step) == 0:
                 Logger.progress(f" flux {i+1}/{m} ...")
                 #self.progress_bar.set_value(i, message=f" flux {i+1}/{m} ...")
@@ -246,7 +248,7 @@ class FVA(Task):
                 xmax[i] = x0[i]
             else:
                 # min
-                cf.iloc[i,0] = 1.0
+                cf.iloc[i, 0] = 1.0
                 c_update = cf.to_numpy()
                 c_update.shape = c_par.shape
                 c_par.value = c_update
@@ -258,7 +260,7 @@ class FVA(Task):
                 xmin[i] = x.value[i]
 
                 # max
-                cf.iloc[i,0] = -1.0
+                cf.iloc[i, 0] = -1.0
                 c_update = cf.to_numpy()
                 c_update.shape = c_par.shape
                 c_par.value = c_update

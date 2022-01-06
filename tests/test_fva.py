@@ -6,7 +6,7 @@ from gws_core import Settings, GTest, IExperiment, ExperimentService, File
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_gena import Network
 from gws_gena import Twin, TwinContext
-from gws_gena.proto import FVAProto
+from gws_gena import FVAProto
 settings = Settings.retrieve()
 
 class TestFba(BaseTestCaseUsingFullBiotaDB):
@@ -15,7 +15,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         self.print("Test FVAProto: Small metwork")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
-        
+
         async def run_fva(solver="highs", relax_qssa=False):
             experiment = IExperiment(FVAProto)
             proto = experiment.get_protocol()
@@ -92,7 +92,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             importer = proto.get_process("network_importer")
             importer.set_param("skip_bigg_exchange_reactions", False)
-            
+
             fva = proto.get_process("fva")
             fva.set_param('solver', solver)
             fva.set_param('relax_qssa', relax_qssa)
@@ -105,7 +105,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             await experiment.run()
 
             print("Done =======")
-            
+
             relax_dir = ""
             if solver == "quad":
                 relax_dir = "relax" if relax_qssa else "no-relax"
@@ -128,11 +128,11 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             result_dir = os.path.join(organism_dir, 'fva', solver, relax_dir)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
-            
+
             # file_path = os.path.join(result_dir,"flux.csv")
             # with open(file_path, 'w') as fp:
             #     fp.write( fluxes.to_csv() )
-            
+
             # file_path = os.path.join(result_dir,"sv.csv")
             # with open(file_path, 'w') as fp:
             #     fp.write( sv.to_csv() )
@@ -159,7 +159,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         for relax in [True]:
             GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             await run_fva(organism=organism, solver="quad", relax_qssa=relax)
-        
+
         # pcys
         organism = "pcys"
         GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")

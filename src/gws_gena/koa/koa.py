@@ -18,20 +18,20 @@ from ..network.network_helper.reaction_knockout_helper import \
     ReactionKnockOutHelper
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
-from .knockout_analysis_result_table import KnockOutAnalysisResultTable
+from .koa_result_table import KOAResultTable
 
 
-@task_decorator("KnockOutAnalysis")
-class KnockOutAnalysis(Task):
+@task_decorator("KOA", human_name="KOA", short_description="Knockout Analysis")
+class KOA(Task):
     """
-    KnockOutAnalysis class.
+    KOA class.
     """
 
     input_specs = {
         'twin': (Twin,),
         'ko_table': (EntityIDTable, ECTable,),
     }
-    output_specs = {'ko_analysis_result': (KnockOutAnalysisResultTable,)}
+    output_specs = {'result': (KOAResultTable,)}
     config_specs = {
         **FBA.config_specs,
         'monitored_fluxes': ListParam(optional=True, short_description="The list fluxes to monitor"),
@@ -99,5 +99,5 @@ class KnockOutAnalysis(Task):
             )
             full_ko_result_df.index = range(0, full_ko_result_df.shape[0])
 
-        ko_analysis_result = KnockOutAnalysisResultTable(data=full_ko_result_df)
-        return {"ko_analysis_result": ko_analysis_result}
+        koa_result = KOAResultTable(data=full_ko_result_df)
+        return {"result": koa_result}

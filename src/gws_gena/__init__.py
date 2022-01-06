@@ -16,12 +16,10 @@ from .fba.fba import FBA
 from .fba.fba_result import FBAResult
 from .fba.fva import FVA
 from .fba.fva_result import FVAResult
-from .fba.proto.fba_proto import FBAProto
-from .fba.proto.fva_proto import FVAProto
 # KnockOut
-from .knockout_analysis.knockout_analysis import KnockOutAnalysis
-from .knockout_analysis.knockout_analysis_result_table import \
-    KnockOutAnalysisResultTable
+from .koa.koa import KOA
+from .koa.koa_result_table import \
+    KOAResultTable
 # network
 from .network.compound import Compound
 from .network.network import Network
@@ -34,12 +32,16 @@ from .network.network_transformer.reaction_adder import ReactionAdder
 from .network.network_transformer.reaction_remover import ReactionRemover
 from .network.reaction import Reaction
 from .network.view.network_view import NetworkView
+# proto
+from .proto.fba_proto import FBAProto
+from .proto.fva_proto import FVAProto
+from .proto.koa_proto import KOAProto
+from .proto.recon_proto import ReconProto
 # recon
 from .recon.gap_filler import GapFiller
 from .recon.gap_finder import GapFinder
 from .recon.gap_finder_result import GapFinderResult
 from .recon.helper.recon_helper import ReconHelper
-from .recon.proto.recon_proto import ReconProto
 from .recon.recon import DraftRecon
 # reduction
 from .reduction.twin_efm_table import TwinEFMTable

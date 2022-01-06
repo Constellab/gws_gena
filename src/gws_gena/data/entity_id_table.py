@@ -9,25 +9,26 @@ from typing import List
 from gws_core import StrRField, Table, TableFile, resource_decorator
 
 
-@resource_decorator("EntityIDTable",
-                    human_name="EntityIDTable",
-                    short_description="Generic table of entity IDs (e.g. CheBI, Rhea IDs, ...)")
+@resource_decorator("EntityIDTable", human_name="EntityIDTable",
+                    short_description="Generic table of entity IDs (e.g. CheBI IDs, Rhea IDs, EC Numbers, reaction IDs, ...)")
 class EntityIDTable(Table):
     """
-    Generic table of entity IDs (e.g. CheBI, Rhea IDs, ...)
+    Generic table of entity IDs (e.g. CheBI, Rhea IDs, reaction ID, EC Numbers...)
 
-    * The first column the a compound name (official or user-defined name) [REQUIRED]
+    * The first column the ID of the entity (official or user-defined ID) [REQUIRED]
     * The next columns are optional [OPTIONAL]
 
     For example:
 
     ```
-    ---------------------------------
+    -------------------------------------
     id           |  name
-    ---------------------------------
+    -------------------------------------
     CHEBI:57972  |  L-alanine
     CHEBI:32682  |  L-argininium(1+)
-    ---------------------------------
+    EC:1.1.1.1   |  alcohol dehydrogenase
+    RHEA:16505   |  Chorismate lysis
+    -------------------------------------
     ```
     """
 

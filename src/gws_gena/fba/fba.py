@@ -12,7 +12,7 @@ from .fba_helper.fba_helper import FBAHelper
 from .fba_result import FBAResult
 
 
-@task_decorator("FBA")
+@task_decorator("FBA", human_name="FBA", short_description="Flux balance Analysis")
 class FBA(Task):
     """
     FBA class
