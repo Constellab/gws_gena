@@ -4,8 +4,7 @@
 # About us: https://gencovery.com
 
 from gws_core import (FIFO2, ConfigParams, Interface, Outerface, ProcessSpec,
-                      Protocol, Settings, Sink, Source, Task,
-                      protocol_decorator)
+                      Protocol, Settings, Source, Task, protocol_decorator)
 
 from ..data.biomass_reaction_table_task import BiomassReactionTableImporter
 from ..data.ec_table_task import ECTableImporter
@@ -31,14 +30,12 @@ class ReconProto(Protocol):
         # other procs
         recon: ProcessSpec = self.add_process(DraftRecon, 'recon')
         gap_filler: ProcessSpec = self.add_process(GapFiller, 'gap_filler')
-        sink: ProcessSpec = self.add_process(Sink, 'sink')
 
         self.add_connectors([
             (ec_importer >> "target", recon << "ec_table"),
             (biomass_importer >> "target", recon << "biomass_table"),
             (medium_importer >> "target", recon << "medium_table"),
             (recon >> "network", gap_filler << "network"),
-            (gap_filler >> "network", sink << "resource")
         ])
 
         # interface

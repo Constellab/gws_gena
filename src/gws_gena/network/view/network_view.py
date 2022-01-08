@@ -6,7 +6,6 @@
 from typing import Dict
 
 from gws_core import BadRequestException, View, ViewSpecs
-from pandas import DataFrame
 
 
 class NetworkView(View):
