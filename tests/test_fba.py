@@ -14,7 +14,6 @@ settings = Settings.retrieve()
 class TestFba(BaseTestCaseUsingFullBiotaDB):
 
     async def test_toy_fba(self):
-        return
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
 
