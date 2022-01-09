@@ -1,13 +1,14 @@
-import os, json
-import pandas
-import numpy
+import json
+import os
 
-from gws_core import Settings, GTest, IExperiment, ExperimentService, File
+import numpy
+import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import Network
-from gws_gena import Twin, TwinContext
-from gws_gena import FVAProto
+from gws_core import ExperimentService, File, GTest, IExperiment, Settings
+from gws_gena import FVAProto, Network, Twin, TwinContext
+
 settings = Settings.retrieve()
+
 
 class TestFba(BaseTestCaseUsingFullBiotaDB):
 
@@ -40,31 +41,34 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            fluxes = result.get_fluxes_as_table()
-            sv = result.get_sv_as_table()
+            fluxes = result.get_fluxes_as_table().get_data()
+            sv = result.get_sv_as_table().get_data()
             print(fluxes)
             print(sv)
             th, p = result.compute_zero_flux_threshold()
-            print(f"sv_mean = {sv.mean()}, sv_std = {sv.std()}, sv_th={th}, sv_p = {p}")
+            print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
 
             result_dir = os.path.join(data_dir, 'fva', solver, relax_dir)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
 
-            # #write test results in files
-            # file_path = os.path.join(result_dir,"sv.csv")
-            # with open(file_path, 'w') as fp:
+            # # write test results in files
+            # file_path = os.path.join(result_dir, "sv.csv")
+            # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(sv.to_csv())
-            # file_path = os.path.join(result_dir,"flux.csv")
-            # with open(file_path, 'w') as fp:
+            # file_path = os.path.join(result_dir, "flux.csv")
+            # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(fluxes.to_csv())
 
-            table = fluxes.to_numpy()
-            file_path = os.path.join(result_dir,"flux.csv")
-            expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
+            table = fluxes.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
             table = numpy.array(table, dtype=float)
+
+            file_path = os.path.join(result_dir, "flux.csv")
+            expected_table = pandas.read_csv(file_path, index_col=0, header=0)
+            expected_table = expected_table.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
-            self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-02).all() )
+
+            self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-02).all())
 
         GTest.print(f"Test FVAProto: Small network (toy + linprog)")
         await run_fva(solver="highs")
@@ -112,47 +116,51 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            fluxes = result.get_fluxes_as_table()
-            sv = result.get_sv_as_table()
+            fluxes = result.get_fluxes_as_table().get_data()
+            sv = result.get_sv_as_table().get_data()
+
             if organism == 'ecoli':
-                biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"],:]
+                biomass_flux = result.get_fluxes_by_reaction_ids(["ecoli_BIOMASS_Ecoli_core_w_GAM"])
             else:
-                biomass_flux = fluxes.loc[["pcys_Biomass"],:]
+                biomass_flux = result.get_fluxes_by_reaction_ids(["pcys_Biomass"])
 
             print(fluxes)
             print(sv)
             print(biomass_flux)
             th, p = result.compute_zero_flux_threshold()
-            print(f"sv_mean = {sv.mean()}, sv_std = {sv.std()}, sv_th={th}, sv_p = {p}")
+            print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
 
             result_dir = os.path.join(organism_dir, 'fva', solver, relax_dir)
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
 
-            # file_path = os.path.join(result_dir,"flux.csv")
-            # with open(file_path, 'w') as fp:
-            #     fp.write( fluxes.to_csv() )
+            # file_path = os.path.join(result_dir, "flux.csv")
+            # with open(file_path, 'w', encoding="utf-8") as fp:
+            #     fp.write(fluxes.to_csv())
 
-            # file_path = os.path.join(result_dir,"sv.csv")
-            # with open(file_path, 'w') as fp:
-            #     fp.write( sv.to_csv() )
+            # file_path = os.path.join(result_dir, "sv.csv")
+            # with open(file_path, 'w', encoding="utf-8") as fp:
+            #     fp.write(sv.to_csv())
 
-            table = fluxes.to_numpy()
-            file_path = os.path.join(result_dir,"flux.csv")
-            expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
+            table = fluxes.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
             table = numpy.array(table, dtype=float)
+
+            file_path = os.path.join(result_dir, "flux.csv")
+            expected_table = pandas.read_csv(file_path, index_col=0, header=0)
+            expected_table = expected_table.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
-            self.assertTrue( numpy.isclose(table,expected_table,rtol=1e-02).all() )
+
+            self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-02).all())
 
             bio = result.get_related_twin()
             net = list(bio.networks.values())[0]
-            tflux = net.get_total_abs_flux_as_table()
+            tflux = net.get_total_abs_flux_as_table().get_data()
             print(tflux)
 
             #bio_json = result.get_annotated_twin_as_json()
-            #print(bio_json)
+            # print(bio_json)
 
-        #ecoli
+        # ecoli
         organism = "ecoli"
         GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
         await run_fva(organism=organism, solver="highs")

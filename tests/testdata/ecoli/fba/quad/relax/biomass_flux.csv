@@ -1,2 +1,2 @@
-,value,lower_bound,upper_bound
-ecoli_BIOMASS_Ecoli_core_w_GAM,51.26207180764542,51.26207180764542,51.26207180764542
+,reaction_id,value,lower_bound,upper_bound,brenda,kegg,metacyc
+R24,ecoli_BIOMASS_Ecoli_core_w_GAM,51.26207180764542,51.26207180764542,51.26207180764542,,,

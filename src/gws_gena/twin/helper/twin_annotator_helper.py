@@ -35,11 +35,11 @@ class TwinAnnotatorHelper():
                 rxn = net.reactions[rnx_id]
                 net_name = net.name
                 flat_rxn_id = flux_rev_mapping[net_name][rnx_id]
-                fluxes = fba_result.get_fluxes_as_table()
+                fluxes = fba_result.get_fluxes_by_reaction_ids( [flat_rxn_id] )
                 rxn.set_estimate({
-                    "value": fluxes.loc[flat_rxn_id, "value"],
-                    "lower_bound": fluxes.loc[flat_rxn_id, "lower_bound"],
-                    "upper_bound": fluxes.loc[flat_rxn_id, "upper_bound"],
+                    "value": fluxes.loc[:, "value"],
+                    "lower_bound": fluxes.loc[:, "lower_bound"],
+                    "upper_bound": fluxes.loc[:, "upper_bound"],
                 })
             annotated_twin.add_network(net, related_context=ctx.copy())
         return annotated_twin

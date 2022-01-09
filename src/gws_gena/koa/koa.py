@@ -71,9 +71,13 @@ class KOA(Task):
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
                 fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
 
-            current_fluxes = current_result.get_fluxes_as_table()
+
             if len(monitored_fluxes):
-                current_fluxes = current_fluxes.loc[monitored_fluxes, :]
+                current_fluxes = current_result.get_fluxes_by_reaction_ids(monitored_fluxes)
+            else:
+                current_fluxes = current_result.get_fluxes_as_table().get_data()
+
+            current_fluxes = current_fluxes.loc[:, ["value", "lower_bound", "upper_bound"]]
             current_fluxes.columns = ["flux_value", "flux_lower_bound", "flux_upper_bound"]
 
             ko_id_df = DataFrame(

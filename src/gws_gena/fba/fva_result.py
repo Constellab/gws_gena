@@ -4,7 +4,7 @@
 # About us: https://gencovery.com
 
 import pandas as pd
-from gws_core import ConfigParams, resource_decorator
+from gws_core import ConfigParams, Table, resource_decorator
 from pandas import DataFrame
 from scipy.optimize import OptimizeResult as SciPyOptimizeResult
 
@@ -17,14 +17,4 @@ class FVAResult(FBAResult):
     FVAResult class
     """
 
-    def get_fluxes_as_table(self) -> DataFrame:
-        res: OptimizeResult = self.optimize_result
-        val = DataFrame(data=res.x, index=res.x_names, columns=["value"])
-        lb = DataFrame(data=res.xmin, index=res.x_names, columns=["lower_bound"])
-        ub = DataFrame(data=res.xmax, index=res.x_names, columns=["upper_bound"])
-        return pd.concat([val, lb, ub], axis=1)
-
-    def get_sv_as_table(self) -> DataFrame:
-        res: OptimizeResult = self.optimize_result
-        df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
-        return df
+    pass

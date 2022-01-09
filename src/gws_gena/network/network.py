@@ -833,28 +833,31 @@ class Network(Resource):
     def get_compound_stats_as_json(self, **kwargs) -> dict:
         return self.stats["compounds"]
 
-    def get_compound_stats_as_table(self) -> DataFrame:
+    def get_compound_stats_as_table(self) -> Table:
         _dict = self.stats["compounds"]
         for comp_id in _dict:
             _dict[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
-        table = DataFrame.from_dict(_dict, columns=["count", "freq", "chebi_id"], orient="index")
-        table = table.sort_values(by=['freq'], ascending=False)
-        return table
+        df = DataFrame.from_dict(_dict, columns=["count", "freq", "chebi_id"], orient="index")
+        df = df.sort_values(by=['freq'], ascending=False)
+        return Table(data=df)
 
-    def get_gaps_as_table(self) -> DataFrame:
+    def get_gaps_as_table(self) -> Table:
         _dict = self._get_gap_info()
-        return DataFrame.from_dict(_dict, columns=["is_substrate", "is_product", "is_gap"], orient="index")
+        df = DataFrame.from_dict(_dict, columns=["is_substrate", "is_product", "is_gap"], orient="index")
+        return Table(data=df)
 
-    def get_gaps_as_json(self) -> DataFrame:
-        return self._get_gap_info()
+    def get_gaps_as_json(self) -> Table:
+        df = self._get_gap_info()
+        return Table(data=df)
 
-    def get_total_abs_flux_as_table(self) -> DataFrame:
+    def get_total_abs_flux_as_table(self) -> Table:
         total_flux = 0
         for k in self.reactions:
             rxn = self.reactions[k]
             if rxn._estimate:
                 total_flux += abs(rxn.estimate["value"])
-        return DataFrame.from_dict({"0": [total_flux]}, columns=["total_abs_flux"], orient="index")
+        df = DataFrame.from_dict({"0": [total_flux]}, columns=["total_abs_flux"], orient="index")
+        return Table(data=df)
 
     def get_stats_as_json(self) -> dict:
         return self.stats
@@ -924,9 +927,12 @@ class Network(Resource):
         :rtype: `str`
         """
 
-        return self.to_table().to_csv()
+        return self.to_dataframe().to_csv()
 
-    def to_table(self) -> DataFrame:
+    def to_table(self) -> Table:
+        return Table(data=self.to_dataframe())
+
+    def to_dataframe(self) -> DataFrame:
         """
         Returns a DataFrame representation of the network
         """
@@ -953,7 +959,7 @@ class Network(Resource):
         for k in column_names:
             rxn_row[k] = ""
 
-        table = []
+        data = []
         rxn_count = 1
         for k in self.reactions:
             rxn = self.reactions[k]
@@ -979,9 +985,9 @@ class Network(Resource):
                 deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
                     comment.append(deprecated_enz["ec_number"] + " (" + deprecated_enz["reason"] + ")")
-                if rxn.enzyme.get("pathway"):
+                if rxn.enzyme.get("pathways"):
                     bkms = ['brenda', 'kegg', 'metacyc']
-                    pw = rxn.enzyme.get("pathway")
+                    pw = rxn.enzyme.get("pathways")
                     if pw:
                         for db in bkms:
                             if pw.get(db):
@@ -1027,7 +1033,7 @@ class Network(Resource):
             _rxn_row["charge_balance"] = balance["charge"]
             _rxn_row = {**_rxn_row, **tax_cols, **pathway_cols}
             rxn_count += 1
-            table.append(list(_rxn_row.values()))
+            data.append(list(_rxn_row.values()))
 
         # add the errored ec numbers
         for k in self.tags:
@@ -1047,23 +1053,23 @@ class Network(Resource):
                 except:
                     pass
             rxn_count += 1
-            table.append(list(_rxn_row.values()))
+            data.append(list(_rxn_row.values()))
 
         # export
-        table = DataFrame(table, columns=column_names)
-        table = table.sort_values(by=['id'])
-        return table
+        data = DataFrame(data, columns=column_names)
+        data = data.sort_values(by=['id'])
+        return data
 
     # -- V --
 
-    @view(view_type=NetworkView, default_view=True, human_name="NetworkView")
+    @view(view_type=NetworkView, human_name="NetworkView")
     def view_as_network(self, params: ConfigParams) -> NetworkView:
         return NetworkView(data=self)
 
-    @view(view_type=TableView, human_name="TableView")
+    @view(view_type=TableView, default_view=True, human_name="TableView")
     def view_as_table(self, params: ConfigParams) -> TableView:
-        table = Table(data=self.to_table())
-        return TableView(data=table)
+        table: Table = Table(data=self.to_dataframe())
+        return TableView(table=table)
 
     @view(view_type=JSONView, human_name="JSONView")
     def view_as_json(self, params: ConfigParams) -> JSONView:
@@ -1073,10 +1079,10 @@ class Network(Resource):
 
     @view(view_type=TableView, human_name="GapTableView")
     def view_gaps_as_table(self, params: ConfigParams) -> TableView:
-        table = self.get_gaps_as_table()
-        return TableView(data=table)
+        table: Table = self.get_gaps_as_table()
+        return TableView(table=table)
 
     @view(view_type=TableView, human_name="CompoundStatsTableView")
     def view_compound_stats_as_table(self, params: ConfigParams) -> TableView:
-        table = self.get_compound_stats_as_table()
-        return TableView(data=table)
+        table: Table = self.get_compound_stats_as_table()
+        return TableView(table=table)

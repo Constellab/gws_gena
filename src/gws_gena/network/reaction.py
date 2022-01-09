@@ -5,7 +5,7 @@
 
 import copy
 import re
-from typing import List, TypedDict
+from typing import Dict, List, TypedDict
 
 from gws_biota import Compound as BiotaCompound
 from gws_biota import Enzyme as BiotaEnzyme
@@ -41,7 +41,7 @@ class ProductDuplicate(BadRequestException):
 
 # ####################################################################
 #
-# EnzymeDict classes
+# EnzymeDict class
 #
 # ####################################################################
 
@@ -49,8 +49,34 @@ EnzymeDict = TypedDict("EnzymeDict", {
     "name": str,
     "tax": dict,
     "ec_number": str,
-    "pathway": dict,
+    "pathways": dict,
     "related_deprecated_enzyme": dict
+})
+
+# ####################################################################
+#
+# Pathway class
+#
+# ####################################################################
+
+"""
+    For example:
+    {
+        'kegg': {
+            'id': 'rn00290; rn01110',
+            'name': 'Valine, leucine and isoleucine biosynthesis; Biosynthesis of secondary metabolites'
+        }
+    }
+"""
+Pathway = TypedDict("Pathway", {
+    "id": list,
+    "name": list,
+})
+
+ReactionPathways = TypedDict("ReactionPathways", {
+    "brenda": Pathway,
+    "kegg": Pathway,
+    "metacyc": Pathway,
 })
 
 # ####################################################################
@@ -442,7 +468,7 @@ class Reaction:
                     }
                 pwy = enzyme.pathway
                 if pwy:
-                    e["pathway"] = pwy.data
+                    e["pathways"] = pwy.data
             else:
                 e = {}
 
@@ -644,11 +670,24 @@ class Reaction:
 
     # -- G --
 
-    def get_pathways(self):
-        if self.enzyme.get("pathway"):
-            return self.enzyme.get("pathway")
+    def get_pathways(self) -> ReactionPathways:
+        if self.enzyme.get("pathways"):
+            return self.enzyme.get("pathways")
 
-        return {}
+        return ReactionPathways()
+
+    def get_pathways_as_flat_dict(self) -> Dict:
+        pw_dict = {}
+        pw = self.get_pathways()
+        if pw:
+            bkms = ['brenda', 'kegg', 'metacyc']
+            for db_name in bkms:
+                if pw.get(db_name):
+                    pw_dict[db_name] = pw[db_name]["name"] + \
+                        " (" + (pw[db_name]["id"] if pw[db_name]["id"] else "--") + ")"
+            return pw_dict
+        else:
+            return {"kegg": "", "brenda": "", "metacyc": ""}
 
     # -- I --
 
