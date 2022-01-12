@@ -10,7 +10,7 @@ from gws_core import StrRField, Table, TableFile, resource_decorator
 
 @resource_decorator("BiomassReactionTable",
                     human_name="BiomassReactionTable",
-                    short_description="Stoichiometry table describint the biomass composition")
+                    short_description="Stoichiometry table describing the biomass composition")
 class BiomassReactionTable(Table):
     """
     Represents biomass data table

@@ -4,14 +4,11 @@
 # About us: https://gencovery.com
 
 import copy
-import json
-import uuid
-from pathlib import Path
 from typing import Dict, TypedDict
 
 from gws_core import (BadRequestException, ConfigParams, DictRField, JSONDict,
-                      JSONView, ResourceService, StrRField, resource_decorator,
-                      view)
+                      JSONView, ResourceService, StrRField, TextView,
+                      resource_decorator, view)
 
 from ..network.network import Compound, Network, Reaction
 from .twin_context import TwinContext, Variable
@@ -314,4 +311,29 @@ class Twin(JSONDict):
 
     # -- T --
 
-    # -- U --
+    # -- V --
+
+    @view(view_type=TextView, default_view=True, human_name="InfoText")
+    def view_as_table(self, params: ConfigParams) -> TextView:
+        text = []
+        text.append("Networks")
+        text.append("--------")
+        for net_id, net in enumerate(self.networks):
+            text.append(f"Network: {net_id}")
+            text.append(f"- name: {net.name}")
+            text.append(f"- description: {net.description}")
+            text.append(f"- number of reactions: {len(net.reactions)}")
+            text.append(f"- number of compounds: {len(net.compounds)}")
+            text.append("")
+
+        text.append("")
+        text.append("Contexts")
+        text.append("--------")
+        for ctx_id, ctx in enumerate(self.contexts):
+            text.append(f"Context: {ctx_id}")
+            text.append(f"- name: {ctx.name}")
+            text.append(f"- description: {ctx.description}")
+            text.append(f"- number of variables: {len(ctx.measures)}")
+            text.append("")
+
+        return TextView("\n".join(text))

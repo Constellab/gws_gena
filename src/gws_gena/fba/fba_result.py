@@ -4,9 +4,9 @@
 # About us: https://gencovery.com
 
 import pandas as pd
-from gws_core import (BadRequestException, ConfigParams, HeatmapView, Resource,
-                      ResourceRField, RField, StrParam, Table, TableView,
-                      resource_decorator, view)
+from gws_core import (BadRequestException, ConfigParams, HeatmapView,
+                      HistogramView, Resource, ResourceRField, RField,
+                      StrParam, Table, TableView, resource_decorator, view)
 from pandas import DataFrame
 from scipy import stats
 
@@ -94,7 +94,7 @@ class FBAResult(Resource):
         idx = df.index[df['compound_id'].isin(compound_ids)]
         return df.loc[idx, :]
 
-    def get_fluxes_as_table(self) -> Table:
+    def get_fluxes_as_table(self, drop_index=True) -> Table:
         if self._flux_table:
             return self._flux_table
 
@@ -139,16 +139,18 @@ class FBAResult(Resource):
         kegg_pw = DataFrame(data=kegg_pw, index=res.x_names, columns=["kegg"])
         metacyc_pw = DataFrame(data=metacyc_pw, index=res.x_names, columns=["metacyc"])
         df = pd.concat([val, lb, ub, brenda_pw, kegg_pw, metacyc_pw], axis=1)
-        df.reset_index(inplace=True)
-        df.rename(columns={'index': 'reaction_id'}, inplace=True)
+        if drop_index:
+            df.reset_index(inplace=True)
+            df.rename(columns={'index': 'reaction_id'}, inplace=True)
         self._flux_table = Table(data=df)
         return self._flux_table
 
-    def get_sv_as_table(self) -> Table:
+    def get_sv_as_table(self, drop_index=True) -> Table:
         res: OptimizeResult = self.optimize_result
         df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
-        df.reset_index(inplace=True)
-        df.rename(columns={'index': 'compound_id'}, inplace=True)
+        if drop_index:
+            df.reset_index(inplace=True)
+            df.rename(columns={'index': 'compound_id'}, inplace=True)
         return Table(data=df)
 
     def get_annotated_twin_as_json(self) -> dict:
@@ -162,46 +164,43 @@ class FBAResult(Resource):
 
     @view(view_type=TableView, human_name="TableView",
           specs={
-              "view_type":
+              "type":
               StrParam(
-                  default_value="fluxes", allowed_values=["fluxes", "QSSA SxV"],
+                  default_value="fluxes", allowed_values=["fluxes", "SV"],
                   human_name="View type")})
     def view_as_table(self, params: ConfigParams) -> TableView:
-        view_type = params.get("view_type", "fluxes")
+        view_type = params.get("type", "fluxes")
         if view_type == "fluxes":
             table: Table = self.get_fluxes_as_table()
-        elif view_type == "QSSA SxV":
+        elif view_type == "SV":
             table: Table = self.get_sv_as_table()
         return TableView(table=table)
 
     @view(view_type=HeatmapView, human_name="HeatmapView",
           specs={
-              "view_type":
+              "type":
               StrParam(
-                  default_value="fluxes", allowed_values=["fluxes", "QSSA SxV"],
+                  default_value="fluxes", allowed_values=["fluxes", "SV"],
                   human_name="View type")})
     def view_as_heatmap(self, params: ConfigParams) -> HeatmapView:
-        view_type = params.get("view_type", "fluxes")
+        view_type = params.get("type", "fluxes")
         if view_type == "fluxes":
             table: Table = self.get_fluxes_as_table()
             data = table.get_data().loc[:, ["value", "lower_bound", "upper_bound"]]
             data.index = table.get_data()["reaction_id"] + " [" + table.get_data()["kegg"] + "]"
             table = Table(data=data)
-        elif view_type == "QSSA SxV":
+        elif view_type == "SV":
             table: Table = self.get_sv_as_table()
             data = table.get_data().loc[:, ["value"]]
             data.index = table.get_data()["compound_id"]
             table = Table(data=data)
 
-        print(table)
         return HeatmapView(table=table)
 
-    # @view(view_type=TableView, human_name="FluxTable")
-    # def view_fluxes_as_table(self, params: ConfigParams) -> TableView:
-    #     table: Table = self.get_fluxes_as_table()
-    #     return TableView(table=table)
-
-    # @view(view_type=TableView, human_name="SVTable")
-    # def view_sv_as_table(self, params: ConfigParams) -> TableView:
-    #     table: Table = self.get_sv_as_table()
-    #     return TableView(table=table)
+    @view(view_type=HistogramView, human_name="SV HistogramView", short_description="Steady states distribution")
+    def view_sv_as_table(self, params: ConfigParams) -> HistogramView:
+        table: Table = self.get_sv_as_table()
+        data = table.get_data().loc[:, "value"].tolist()
+        hist_view = HistogramView()
+        hist_view.add_series(data=data, name="SV Distribution")
+        return hist_view

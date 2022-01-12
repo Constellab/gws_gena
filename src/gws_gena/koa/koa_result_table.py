@@ -35,7 +35,10 @@ class KOAResultTable(Table):
             current_data = self._data.loc[idx, :]
             x_label = "ko_id"
             y_label = flux_name
-            barplot_view = BarPlotView(current_data)
+            barplot_view = BarPlotView()
+            barplot_view.add_series(
+                y=current_data
+            )
             multi_view.add_view(
                 barplot_view,
                 params={

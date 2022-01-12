@@ -3,12 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import pandas as pd
-from gws_core import ConfigParams, Table, resource_decorator
-from pandas import DataFrame
-from scipy.optimize import OptimizeResult as SciPyOptimizeResult
+from gws_core import resource_decorator
 
-from .fba_result import FBAResult, OptimizeResult
+from .fba_result import FBAResult
 
 
 @resource_decorator("FVAResult", human_name="FVA", short_description="Flux variability Analysis Result")

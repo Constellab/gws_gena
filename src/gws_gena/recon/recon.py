@@ -3,8 +3,6 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import math
-
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
