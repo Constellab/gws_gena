@@ -8,7 +8,7 @@ from typing import List, Union
 import pandas as pd
 from gws_core import (BadRequestException, ConfigParams, HeatmapView,
                       HistogramView, Resource, ResourceRField, RField,
-                      StrParam, Table, TableView, resource_decorator, view)
+                      StrParam, Table, TabularView, resource_decorator, view)
 from pandas import DataFrame
 from scipy import stats
 
@@ -63,8 +63,8 @@ class FBAResult(Resource):
     # -- C --
 
     def compute_zero_flux_threshold(self) -> (float, float):
-        df = self.get_sv_as_table().get_data()
-        val = df["value"]
+        data = self.get_sv_as_dataframe()
+        val = data["value"]
         try:
             if val.shape[0] >= 20:
                 _, p = stats.normaltest(val)
@@ -87,35 +87,36 @@ class FBAResult(Resource):
             reaction_ids = [reaction_ids]
         if not isinstance(reaction_ids, list):
             raise BadRequestException("A str or a list of str is required")
-        df = self.get_fluxes_as_table().get_data()
-        #idx = df.index[df['reaction_id'].isin(reaction_ids)]
-        return df.loc[reaction_ids, :]
+        data = self.get_fluxes_as_dataframe()
+        return data.loc[reaction_ids, :]
 
     def get_sv_by_compound_ids(self, compound_ids: Union[List, str]) -> DataFrame:
         if isinstance(compound_ids, str):
             compound_ids = [compound_ids]
         if not isinstance(compound_ids, list):
             raise BadRequestException("A str or a list of str is required")
-        df = self.get_sv_as_table().get_data()
-        #idx = df.index[df['compound_id'].isin(compound_ids)]
-        return df.loc[compound_ids, :]
+        data = self.get_sv_as_dataframe()
+        return data.loc[compound_ids, :]
 
-    def get_fluxes_as_table(self) -> Table:
+    def get_fluxes_as_dataframe(self) -> DataFrame:
         if self._flux_table:
             return self._flux_table
-
         res: OptimizeResult = self.optimize_result
         val = DataFrame(data=res.x, index=res.x_names, columns=["value"])
-
         if res.xmin is None:
             lb = DataFrame(data=res.x, index=res.x_names, columns=["lower_bound"])
         else:
             lb = DataFrame(data=res.xmin, index=res.x_names, columns=["lower_bound"])
-
         if res.xmax is None:
             ub = DataFrame(data=res.x, index=res.x_names, columns=["upper_bound"])
         else:
             ub = DataFrame(data=res.xmax, index=res.x_names, columns=["upper_bound"])
+
+        data = pd.concat([val, lb, ub], axis=1)
+        return data
+
+    def get_pathways_as_dataframe(self) -> DataFrame:
+        res: OptimizeResult = self.optimize_result
 
         kegg_pw = []
         brenda_pw = []
@@ -144,20 +145,16 @@ class FBAResult(Resource):
         brenda_pw = DataFrame(data=brenda_pw, index=res.x_names, columns=["brenda"])
         kegg_pw = DataFrame(data=kegg_pw, index=res.x_names, columns=["kegg"])
         metacyc_pw = DataFrame(data=metacyc_pw, index=res.x_names, columns=["metacyc"])
-        df = pd.concat([val, lb, ub, brenda_pw, kegg_pw, metacyc_pw], axis=1)
-        # if drop_index:
-        #     df.reset_index(inplace=True)
-        #     df.rename(columns={'index': 'reaction_id'}, inplace=True)
-        self._flux_table = Table(data=df)
-        return self._flux_table
+        data = pd.concat([brenda_pw, kegg_pw, metacyc_pw], axis=1)
+        return data
 
-    def get_sv_as_table(self) -> Table:
+    def get_fluxes_and_pathwyas_as_dataframe(self) -> DataFrame:
+        return pd.concat([self.get_fluxes_as_dataframe(), self.get_pathways_as_dataframe()], axis=1)
+
+    def get_sv_as_dataframe(self) -> DataFrame:
         res: OptimizeResult = self.optimize_result
-        df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
-        # if drop_index:
-        #     df.reset_index(inplace=True)
-        #     df.rename(columns={'index': 'compound_id'}, inplace=True)
-        return Table(data=df)
+        data = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
+        return data
 
     def get_annotated_twin_as_json(self) -> dict:
         if not self._annotated_twin:
@@ -168,48 +165,45 @@ class FBAResult(Resource):
 
     # -- V --
 
-    @view(view_type=TableView, human_name="TableView",
-          specs={
-              "type":
-              StrParam(
-                  default_value="fluxes", allowed_values=["fluxes", "SV"],
-                  human_name="View type")})
-    def view_as_table(self, params: ConfigParams) -> TableView:
-        view_type = params.get("type", "fluxes")
-        if view_type == "fluxes":
-            table: Table = self.get_fluxes_as_table()
-        elif view_type == "SV":
-            table: Table = self.get_sv_as_table()
-        return TableView(table=table)
+    def _get_fluxes_table(self, params: ConfigParams) -> Table:
+        data: DataFrame = self.get_fluxes_and_pathwyas_as_dataframe()
+        data.index = data.index + " [" + data["kegg"] + "]"
+        return data
 
-    @view(view_type=HeatmapView, human_name="HeatmapView",
-          specs={
-              "type":
-              StrParam(
-                  default_value="fluxes", allowed_values=["fluxes", "SV"],
-                  human_name="View type")})
-    def view_as_heatmap(self, params: ConfigParams) -> HeatmapView:
-        view_type = params.get("type", "fluxes")
-        if view_type == "fluxes":
-            table: Table = self.get_fluxes_as_table()
-            data = table.get_data()
-            data.index = data.index + " [" + table.get_data()["kegg"] + "]"
-            data = data.loc[:, ["value", "lower_bound", "upper_bound"]]
+    @view(view_type=TabularView, human_name="FluxTable", specs={})
+    def view_fluxes_as_table(self, params: ConfigParams) -> TabularView:
+        data = self._get_fluxes_table(params)
+        t_view = TabularView()
+        t_view.set_data(data)
+        return t_view.to_dict(params)
 
-            #data.index = table.get_data()["reaction_id"] + " [" + table.get_data()["kegg"] + "]"
-            table = Table(data=data)
-        elif view_type == "SV":
-            table: Table = self.get_sv_as_table()
-            data = table.get_data().loc[:, ["value"]]
-            #data.index = table.get_data()["compound_id"]
-            table = Table(data=data)
+    @view(view_type=TabularView, human_name="SVTable", specs={})
+    def view_sv_as_table(self, params: ConfigParams) -> TabularView:
+        data: DataFrame = self.get_sv_as_dataframe()
+        t_view = TabularView()
+        t_view.set_data(data)
+        return t_view
 
-        return HeatmapView(table=table)
+    @view(view_type=HeatmapView, human_name="FluxHeatmap", specs={})
+    def view_fluxes_as_heatmap(self, params: ConfigParams) -> HeatmapView:
+        data = self._get_fluxes_table(params)
+        data = data.loc[:, ["value", "lower_bound", "upper_bound"]]
+        h_view = HeatmapView()
+        h_view.set_data(data)
+        return h_view
 
-    @view(view_type=HistogramView, human_name="SV HistogramView", short_description="Steady states distribution")
+    @view(view_type=HeatmapView, human_name="SVHeatmap", specs={})
+    def view_sv_as_heatmap(self, params: ConfigParams) -> HeatmapView:
+        data: DataFrame = self.get_sv_as_dataframe()
+        data = data.loc[:, ["value"]]
+        h_view = HeatmapView()
+        h_view.set_data(data)
+        return h_view
+
+    @view(view_type=HistogramView, human_name="SVHistogram", short_description="Steady states distribution")
     def view_sv_as_table(self, params: ConfigParams) -> HistogramView:
-        table: Table = self.get_sv_as_table()
-        data = table.get_data().loc[:, "value"].tolist()
+        data: DataFrame = self.get_sv_as_dataframe()
+        data = data.loc[:, "value"].tolist()
         hist_view = HistogramView()
-        hist_view.add_series(data=data, name="SV Distribution")
+        hist_view.add_series(data=data, name="SVDistribution")
         return hist_view

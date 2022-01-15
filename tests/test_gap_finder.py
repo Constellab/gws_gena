@@ -37,21 +37,21 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
         print("Compounds:")
         print("------------")
-        print(result.get_compounds_as_table())
+        print(result.get_compounds_as_dataframe())
         file_path = os.path.join(result_dir, "compounds.csv")
         with open(file_path, 'w', encoding="utf-8") as fp:
-            fp.write(result.get_compounds_as_table().to_csv())
+            fp.write(result.get_compounds_as_dataframe().to_csv())
 
         print("Reactions:")
         print("------------")
-        print(result.get_reactions_as_table())
+        print(result.get_reactions_as_dataframe())
         file_path = os.path.join(result_dir, "reactions.csv")
         with open(file_path, 'w', encoding="utf-8") as fp:
-            fp.write(result.get_reactions_as_table().to_csv())
+            fp.write(result.get_reactions_as_dataframe().to_csv())
 
         print("Pathways:")
         print("------------")
-        print(result.get_pathways_as_table())
+        print(result.get_pathways_as_dataframe())
         file_path = os.path.join(result_dir, "pathways.csv")
         with open(file_path, 'w', encoding="utf-8") as fp:
-            fp.write(result.get_pathways_as_table().to_csv())
+            fp.write(result.get_pathways_as_dataframe().to_csv())

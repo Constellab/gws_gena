@@ -15,7 +15,7 @@ from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
                       File, JSONFile, JSONView, Resource, ResourceExporter,
-                      RField, StrRField, Table, TableView, resource_decorator,
+                      RField, StrRField, Table, TabularView, resource_decorator,
                       view)
 from pandas import DataFrame
 
@@ -838,8 +838,8 @@ class Network(Resource):
         _dict = self.stats["compounds"]
         for comp_id in _dict:
             _dict[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
-        df = DataFrame.from_dict(_dict, columns=["count", "freq", "chebi_id"], orient="index")
-        df = df.sort_values(by=['freq'], ascending=False)
+        df = DataFrame.from_dict(_dict, columns=["count", "frequency", "chebi_id"], orient="index")
+        df = df.sort_values(by=['frequency'], ascending=False)
         return Table(data=df)
 
     def get_gaps_as_table(self) -> Table:
@@ -1063,14 +1063,14 @@ class Network(Resource):
 
     # -- V --
 
-    @view(view_type=NetworkView, human_name="NetworkView")
+    @view(view_type=NetworkView, human_name="Network")
     def view_as_network(self, params: ConfigParams) -> NetworkView:
         return NetworkView(data=self)
 
-    @view(view_type=TableView, default_view=True, human_name="TableView")
-    def view_as_table(self, params: ConfigParams) -> TableView:
+    @view(view_type=TabularView, default_view=True, human_name="ReactionTable")
+    def view_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = Table(data=self.to_dataframe())
-        return TableView(table=table)
+        return TabularView(table=table)
 
     @view(view_type=JSONView, human_name="JSONView")
     def view_as_json(self, params: ConfigParams) -> JSONView:
@@ -1078,15 +1078,15 @@ class Network(Resource):
         json_view._data = self.dumps()
         return json_view
 
-    @view(view_type=TableView, human_name="GapTableView")
-    def view_gaps_as_table(self, params: ConfigParams) -> TableView:
+    @view(view_type=TabularView, human_name="ReactionGaps")
+    def view_gaps_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = self.get_gaps_as_table()
-        return TableView(table=table)
+        return TabularView(table=table)
 
-    @view(view_type=TableView, human_name="CompoundStatsTableView")
-    def view_compound_stats_as_table(self, params: ConfigParams) -> TableView:
+    @view(view_type=TabularView, human_name="CompoundDistrib")
+    def view_compound_stats_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = self.get_compound_stats_as_table()
-        return TableView(table=table)
+        return TabularView(table=table)
 
 
 # ####################################################################

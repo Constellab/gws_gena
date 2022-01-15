@@ -33,8 +33,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-            fluxes = result.get_fluxes_as_table().get_data()
-            sv = result.get_sv_as_table().get_data()
+            fluxes = result.get_fluxes_as_dataframe()
+            sv = result.get_sv_as_dataframe()
             print(fluxes)
             print(sv)
             th, p = result.compute_zero_flux_threshold()
@@ -57,17 +57,18 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 # with open(file_path, 'w', encoding="utf-8") as fp:
                 #     fp.write(fluxes.to_csv())
 
-                table = fluxes.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
+                table = fluxes.to_numpy()
                 table = numpy.array(table, dtype=float)
 
                 file_path = os.path.join(result_dir, "flux.csv")
                 expected_table = pandas.read_csv(file_path, index_col=0, header=0)
-                expected_table = expected_table.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
+                print(expected_table)
+                expected_table = expected_table.to_numpy()
                 expected_table = numpy.array(expected_table, dtype=float)
                 self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-02).all())
 
             # view
-            heat_view = result.view_as_heatmap(ConfigParams())
+            heat_view = result.view_fluxes_as_heatmap(ConfigParams())
             tester = ViewTester(
                 view=heat_view
             )
@@ -122,13 +123,13 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-            sv = result.get_sv_as_table().get_data()
-            fluxes = result.get_fluxes_as_table().get_data()
+            sv = result.get_sv_as_dataframe()
+            fluxes = result.get_fluxes_as_dataframe()
 
             if organism == 'ecoli':
-                biomass_flux = fluxes.loc["ecoli_BIOMASS_Ecoli_core_w_GAM", :]
+                biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"], :]
             else:
-                biomass_flux = fluxes.loc["pcys_Biomass", :]
+                biomass_flux = fluxes.loc[["pcys_Biomass"], :]
 
             print(fluxes)
             print(sv)
@@ -149,12 +150,12 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(biomass_flux.to_csv())
 
-            table = fluxes.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
+            table = fluxes.to_numpy()
             table = numpy.array(table, dtype=float)
 
             file_path = os.path.join(result_dir, "flux.csv")
             expected_table = pandas.read_csv(file_path, index_col=0, header=0)
-            expected_table = expected_table.loc[:, ["value", "lower_bound", "upper_bound"]].to_numpy()
+            expected_table = expected_table.to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
             self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
@@ -164,7 +165,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             # print(bio_json)
 
             # view
-            heat_view = result.view_as_heatmap(ConfigParams())
+            heat_view = result.view_fluxes_as_heatmap(ConfigParams())
             tester = ViewTester(
                 view=heat_view
             )

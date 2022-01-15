@@ -2,9 +2,10 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import Experiment, File, IExperiment, Settings, TaskRunner
-from gws_gena import (ConfigParams, DraftRecon, GapFiller, NetworkMerger,
-                      ReconProto, TwinContext)
+from gws_core import (ConfigParams, Experiment, File, IExperiment, Settings,
+                      TaskRunner)
+from gws_gena import (DraftRecon, GapFiller, NetworkMerger, ReconProto,
+                      TwinContext)
 
 settings = Settings.retrieve()
 

@@ -1,2 +1,2 @@
-,reaction_id,value,lower_bound,upper_bound,brenda,kegg,metacyc
-R875,pcys_Biomass,1.9817151808901694,1.9817151808901694,1.9817151808901694,,,
+,value,lower_bound,upper_bound
+pcys_Biomass,1.9817151808901694,1.9817151808901694,1.9817151808901694

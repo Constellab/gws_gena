@@ -1,4 +1,5 @@
-import os, json
+import os
+import json
 import pandas
 import numpy
 
@@ -9,6 +10,7 @@ from gws_gena import Twin, TwinContext
 from gws_gena import FBAProto
 
 settings = Settings.retrieve()
+
 
 class TestFba(BaseTestCaseUsingFullBiotaDB):
 
@@ -39,8 +41,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-            fluxes = result.get_fluxes_as_table()
-            sv = result.get_sv_as_table()
+            fluxes = result.get_fluxes_as_dataframe()
+            sv = result.get_sv_as_dataframe()
             print(fluxes)
             print(sv)
 
@@ -51,16 +53,16 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 result_dir = os.path.join(data_dir, 'fba', solver, fill_dir, relax_dir)
                 if not os.path.exists(result_dir):
                     os.makedirs(result_dir)
-                #write test results in files
-                file_path = os.path.join(result_dir,"sv.csv")
+                # write test results in files
+                file_path = os.path.join(result_dir, "sv.csv")
                 with open(file_path, 'w') as fp:
                     fp.write(sv.to_csv())
-                file_path = os.path.join(result_dir,"flux.csv")
+                file_path = os.path.join(result_dir, "flux.csv")
                 with open(file_path, 'w') as fp:
                     fp.write(fluxes.to_csv())
 
                 table = fluxes.to_numpy()
-                file_path = os.path.join(result_dir,"flux.csv")
+                file_path = os.path.join(result_dir, "flux.csv")
                 expected_table = pandas.read_csv(file_path, index_col=0, header=0).to_numpy()
                 table = numpy.array(table, dtype=float)
                 expected_table = numpy.array(expected_table, dtype=float)
@@ -73,10 +75,10 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
         # fill_with_sink = True, relax = False
         self.print("Test FBAProto: Small network (toy + context + linprog)")
-        await run_fba(context=True,solver="highs", fill_gaps_with_sinks=True)
+        await run_fba(context=True, solver="highs", fill_gaps_with_sinks=True)
         self.print("Test FBAProto: Small network (toy + context + quad)")
-        await run_fba(context=True,solver="quad", fill_gaps_with_sinks=True)
+        await run_fba(context=True, solver="quad", fill_gaps_with_sinks=True)
 
         # fill_with_sink = False, relax = True
         self.print("Test FBAProto: Small network (toy + context + quad)")
-        await run_fba(context=True,solver="quad", fill_gaps_with_sinks=False, relax_steady_state=True)
+        await run_fba(context=True, solver="quad", fill_gaps_with_sinks=False, relax_steady_state=True)

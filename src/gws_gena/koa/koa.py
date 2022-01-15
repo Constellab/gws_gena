@@ -52,6 +52,7 @@ class KOA(Task):
         monitored_fluxes = params.get_value("monitored_fluxes", [])
         ko_delimiter = params.get_value("ko_delimiter", ",")
 
+        is_monitored_fluxes_expanded = False
         full_ko_result_df = DataFrame()
         for i in range(0, ko_table.nb_rows):
             current_ko_table = ko_table.select_by_row_positions([i])
@@ -71,15 +72,16 @@ class KOA(Task):
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
                 fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
 
+            current_fluxes = current_result.get_fluxes_as_dataframe()
+            if monitored_fluxes:
+                if not is_monitored_fluxes_expanded:
+                    monitored_fluxes = FBAHelper._expand_fluxes_by_names(
+                        current_fluxes,
+                        current_ko_twin.get_flat_network()
+                    )
+                current_fluxes = current_fluxes.loc[monitored_fluxes, :]
 
-            if len(monitored_fluxes):
-                current_fluxes = current_result.get_fluxes_by_reaction_ids(monitored_fluxes)
-            else:
-                current_fluxes = current_result.get_fluxes_as_table().get_data()
-
-            current_fluxes = current_fluxes.loc[:, ["value", "lower_bound", "upper_bound"]]
             current_fluxes.columns = ["flux_value", "flux_lower_bound", "flux_upper_bound"]
-
             ko_id_df = DataFrame(
                 data=[[ko_name, ko_id]] * current_fluxes.shape[0],
                 columns=["ko_name", "ko_id"],

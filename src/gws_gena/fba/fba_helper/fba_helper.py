@@ -170,12 +170,12 @@ class FBAHelper:
             tab = k.split(":")
             rxn_name = tab[0]
             weight = tab[1] if len(tab) == 2 else '1.0'
-            if rxn_name == "biomass":
+            if rxn_name.lower() == "biomass":
                 biomass_rxn = flat_net.get_biomass_reaction()
                 if biomass_rxn:
                     expanded_fluxes_to_minmax.append(biomass_rxn.id + ":" + weight)
                 else:
-                    raise BadRequestException(f"Invalid reactions to  minimize. No reaction found with id '{k}'")
+                    raise BadRequestException("The biomass reaction is not found")
             else:
                 if "*" in rxn_name:
                     rxn_name = rxn_name.replace("*", ".*")
