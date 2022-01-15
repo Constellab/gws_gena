@@ -9,7 +9,7 @@ from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       ResourceExporter, ResourceImporter, StrParam,
-                      exporter_decorator, importer_decorator)
+                      exporter_decorator, importer_decorator, JSONDict)
 
 from .twin_context import TwinContext
 

@@ -72,10 +72,14 @@ class FBAHelper:
 
     @classmethod
     def build_problem(
-            cls, flat_twin: FlatTwin, fluxes_to_maximize: list = [],
-            fluxes_to_minimize: list = [],
+            cls, flat_twin: FlatTwin, fluxes_to_maximize: list = None,
+            fluxes_to_minimize: list = None,
             fill_gaps_with_sinks: bool = True, ignore_cofactors: bool = False):
 
+        if fluxes_to_maximize is None:
+            fluxes_to_maximize = []
+        if fluxes_to_minimize is None:
+            fluxes_to_minimize = []
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat twin is required")
 
@@ -143,8 +147,8 @@ class FBAHelper:
         bounds = []
         for i in range(lb_numpy.shape[0]):
             bounds.append([lb_numpy[i, 0], ub_numpy[i, 0]])
-        fluxes_to_minimize = cls.__expand_fluxes_by_names(fluxes_to_minimize, flat_net)
-        fluxes_to_maximize = cls.__expand_fluxes_by_names(fluxes_to_maximize, flat_net)
+        fluxes_to_minimize = cls._expand_fluxes_by_names(fluxes_to_minimize, flat_net)
+        fluxes_to_maximize = cls._expand_fluxes_by_names(fluxes_to_maximize, flat_net)
 
         # vector c
         c = DataFrame(index=lb.index, data=np.zeros((lb.shape[0], 1)))
@@ -159,7 +163,7 @@ class FBAHelper:
     # -- E --
 
     @classmethod
-    def __expand_fluxes_by_names(cls, fluxes_to_minmax, flat_net):
+    def _expand_fluxes_by_names(cls, fluxes_to_minmax, flat_net):
         expanded_fluxes_to_minmax = []
         list_of_rxn_names = list(flat_net.reactions.keys())
         for k in fluxes_to_minmax:
@@ -174,8 +178,9 @@ class FBAHelper:
                     raise BadRequestException(f"Invalid reactions to  minimize. No reaction found with id '{k}'")
             else:
                 if "*" in rxn_name:
+                    rxn_name = rxn_name.replace("*", ".*")
                     for tmp_rxn_name in list_of_rxn_names:
-                        if re.match(rxn_name, tmp_rxn_name):
+                        if re.match(rxn_name, tmp_rxn_name, re.IGNORECASE):
                             expanded_fluxes_to_minmax.append(tmp_rxn_name+":"+weight)
                 else:
                     if rxn_name in list_of_rxn_names:

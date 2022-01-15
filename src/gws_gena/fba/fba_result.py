@@ -3,6 +3,8 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from typing import List, Union
+
 import pandas as pd
 from gws_core import (BadRequestException, ConfigParams, HeatmapView,
                       HistogramView, Resource, ResourceRField, RField,
@@ -80,21 +82,25 @@ class FBAResult(Resource):
     def get_related_twin(self):
         return self.twin
 
-    def get_fluxes_by_reaction_ids(self, reaction_ids: list) -> DataFrame:
+    def get_fluxes_by_reaction_ids(self, reaction_ids: Union[List, str]) -> DataFrame:
+        if isinstance(reaction_ids, str):
+            reaction_ids = [reaction_ids]
         if not isinstance(reaction_ids, list):
-            raise BadRequestException("A list is required")
+            raise BadRequestException("A str or a list of str is required")
         df = self.get_fluxes_as_table().get_data()
-        idx = df.index[df['reaction_id'].isin(reaction_ids)]
-        return df.loc[idx, :]
+        #idx = df.index[df['reaction_id'].isin(reaction_ids)]
+        return df.loc[reaction_ids, :]
 
-    def get_sv_by_compound_ids(self, compound_ids: list) -> DataFrame:
+    def get_sv_by_compound_ids(self, compound_ids: Union[List, str]) -> DataFrame:
+        if isinstance(compound_ids, str):
+            compound_ids = [compound_ids]
         if not isinstance(compound_ids, list):
-            raise BadRequestException("A list is required")
+            raise BadRequestException("A str or a list of str is required")
         df = self.get_sv_as_table().get_data()
-        idx = df.index[df['compound_id'].isin(compound_ids)]
-        return df.loc[idx, :]
+        #idx = df.index[df['compound_id'].isin(compound_ids)]
+        return df.loc[compound_ids, :]
 
-    def get_fluxes_as_table(self, drop_index=True) -> Table:
+    def get_fluxes_as_table(self) -> Table:
         if self._flux_table:
             return self._flux_table
 
@@ -139,18 +145,18 @@ class FBAResult(Resource):
         kegg_pw = DataFrame(data=kegg_pw, index=res.x_names, columns=["kegg"])
         metacyc_pw = DataFrame(data=metacyc_pw, index=res.x_names, columns=["metacyc"])
         df = pd.concat([val, lb, ub, brenda_pw, kegg_pw, metacyc_pw], axis=1)
-        if drop_index:
-            df.reset_index(inplace=True)
-            df.rename(columns={'index': 'reaction_id'}, inplace=True)
+        # if drop_index:
+        #     df.reset_index(inplace=True)
+        #     df.rename(columns={'index': 'reaction_id'}, inplace=True)
         self._flux_table = Table(data=df)
         return self._flux_table
 
-    def get_sv_as_table(self, drop_index=True) -> Table:
+    def get_sv_as_table(self) -> Table:
         res: OptimizeResult = self.optimize_result
         df = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
-        if drop_index:
-            df.reset_index(inplace=True)
-            df.rename(columns={'index': 'compound_id'}, inplace=True)
+        # if drop_index:
+        #     df.reset_index(inplace=True)
+        #     df.rename(columns={'index': 'compound_id'}, inplace=True)
         return Table(data=df)
 
     def get_annotated_twin_as_json(self) -> dict:
@@ -186,13 +192,16 @@ class FBAResult(Resource):
         view_type = params.get("type", "fluxes")
         if view_type == "fluxes":
             table: Table = self.get_fluxes_as_table()
-            data = table.get_data().loc[:, ["value", "lower_bound", "upper_bound"]]
-            data.index = table.get_data()["reaction_id"] + " [" + table.get_data()["kegg"] + "]"
+            data = table.get_data()
+            data.index = data.index + " [" + table.get_data()["kegg"] + "]"
+            data = data.loc[:, ["value", "lower_bound", "upper_bound"]]
+
+            #data.index = table.get_data()["reaction_id"] + " [" + table.get_data()["kegg"] + "]"
             table = Table(data=data)
         elif view_type == "SV":
             table: Table = self.get_sv_as_table()
             data = table.get_data().loc[:, ["value"]]
-            data.index = table.get_data()["compound_id"]
+            #data.index = table.get_data()["compound_id"]
             table = Table(data=data)
 
         return HeatmapView(table=table)

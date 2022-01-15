@@ -7,7 +7,7 @@ from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, ConfigParams, OptionalIn, StrParam,
-                      Task, TaskInputs, TaskOutputs, task_decorator)
+                      Task, TaskInputs, TaskOutputs, Utils, task_decorator)
 
 from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
@@ -46,6 +46,8 @@ class DraftRecon(Task):
     }
     output_specs = {'network': (Network,)}
     config_specs = {
+        'unique_name': StrParam(
+            default_value=Utils.generate_random_chars(4), human_name="Network name", short_description="The name of the network. Usefull to uniquely identify networks when simulating cell communities"),
         'tax_id': StrParam(
             default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id"),
         'tax_search_method':
@@ -66,9 +68,11 @@ class DraftRecon(Task):
         return {"network": net}
 
     def _create_network(self, params, inputs):
+        unique_name = params["unique_name"]
         tax_id = params['tax_id']
         if 'ec_table' in inputs:
             return ReconHelper.create_network_with_ec_table(
+                unique_name=unique_name,
                 ec_table=inputs['ec_table'],
                 tax_id=params['tax_id'],
                 tax_search_method=params['tax_search_method'],
@@ -76,6 +80,7 @@ class DraftRecon(Task):
             )
         elif tax_id:
             return ReconHelper.create_network_with_taxonomy(
+                unique_name=unique_name,
                 tax_id=params['tax_id'],
                 tax_search_method=params['tax_search_method'],
                 running_task=self

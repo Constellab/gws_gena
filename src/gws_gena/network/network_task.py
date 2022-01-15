@@ -8,11 +8,11 @@ import os
 from typing import Type
 
 from gws_core import (BadRequestException, BoolParam, ConfigParams,
-                      ConfigSpecs, File, ResourceExporter, ResourceImporter,
+                      ConfigSpecs, ResourceExporter, ResourceImporter,
                       StrParam, exporter_decorator, importer_decorator)
 from pandas import DataFrame
 
-from .network import Network
+from .network import Network, NetworkFile
 
 # ####################################################################
 #
@@ -21,7 +21,7 @@ from .network import Network
 # ####################################################################
 
 
-@importer_decorator("NetworkImporter", source_type=File, target_type=Network)
+@importer_decorator("NetworkImporter", source_type=NetworkFile, target_type=Network)
 class NetworkImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
         'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format"),
@@ -31,7 +31,7 @@ class NetworkImporter(ResourceImporter):
             short_description="Set True to skip Exchange reaction in while importing BiGG data files; False otherwise")
     }
 
-    async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Network]) -> Network:
+    async def import_from_path(self, file: NetworkFile, params: ConfigParams, target_type: Type[Network]) -> Network:
         """
         Import a network from a repository
 
@@ -74,7 +74,7 @@ class NetworkImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator(unique_name="NetworkExporter", source_type=Network, target_type=File)
+@exporter_decorator(unique_name="NetworkExporter", source_type=Network, target_type=NetworkFile)
 class NetworkExporter(ResourceExporter):
     ALLOWED_FILE_FORMATS = [".json", ".csv", ".tsv", ".txt", ".xls", ".xlsx"]
     DEFAULT_FILE_FORMAT = ".json"
@@ -84,9 +84,9 @@ class NetworkExporter(ResourceExporter):
         StrParam(
             allowed_values=ALLOWED_FILE_FORMATS,
             default_value=DEFAULT_FILE_FORMAT,
-            short_description="File format.")}
+            short_description="File format")}
 
-    async def export_to_path(self, resource: Network, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
+    async def export_to_path(self, resource: Network, dest_dir: str, params: ConfigParams, target_type: Type[NetworkFile]) -> NetworkFile:
         """
         Export the network to a repository
 
@@ -94,7 +94,7 @@ class NetworkExporter(ResourceExporter):
         :type file_path: str
         """
 
-        file_name = params.get_value("file_name", "network")
+        file_name = params.get_value("file_name", resource.name or "network")
         file_format = params.get_value("file_format", ".json")
         file_path = os.path.join(dest_dir, file_name + file_format)
         with open(file_path, 'r', encoding="utf-8") as fp:

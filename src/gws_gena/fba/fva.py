@@ -14,6 +14,7 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
 from joblib import Parallel, delayed
 from pandas import DataFrame
 
+from ..network.network import Network
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
 from .fba_helper.fba_helper import FBAHelper
@@ -101,11 +102,11 @@ class FVA(Task):
     output_specs = {'result': (FVAResult,)}
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The list of fluxes to maximize"),
-        "fluxes_to_minimize": ListParam(default_value="[]", human_name="Fluxes to minimize", short_description="The list of fluxes to minimize"),
-        "solver": StrParam(default_value="highs", visibility="protected", allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"], human_name="Solver", short_description="The optimization solver"),
-        "fill_gaps_with_sinks": BoolParam(default_value=False, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
-        "relax_qssa": BoolParam(default_value=False, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain (quad solver is used). False otherwise."),
-        "ignore_cofactors": BoolParam(default_value=False, human_name="Ignore cofactors", short_description="True to ignore cofactors quasi-steady state for cofactors. False otherwise.")
+        "fluxes_to_minimize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The list of fluxes to minimize"),
+        "solver": StrParam(default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY, allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"], human_name="Solver", short_description="The optimization solver"),
+        "fill_gaps_with_sinks": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
+        "relax_qssa": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain (quad solver is used). False otherwise."),
+        "ignore_cofactors": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Ignore cofactors", short_description="True to ignore cofactors quasi-steady state for cofactors. False otherwise.")
     }
     __CVXPY_MAX_ITER = 100000
 
@@ -157,6 +158,10 @@ class FVA(Task):
         x0 = res.x
         m = x0.shape[0]
         step = max(1, int(m/10))  # plot only 10 iterations on screen
+
+        flat_net: Network = flat_twin.get_flat_network()
+        fluxes_to_minimize = FBAHelper._expand_fluxes_by_names(fluxes_to_minimize, flat_net)
+        fluxes_to_maximize = FBAHelper._expand_fluxes_by_names(fluxes_to_maximize, flat_net)
 
         if solver == "quad":
             xmin, xmax = self.__solve_with_cvxpy_using_warm_solver(warm_solver,

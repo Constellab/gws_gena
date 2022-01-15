@@ -318,7 +318,7 @@ class Twin(JSONDict):
         text = []
         text.append("Networks")
         text.append("--------")
-        for net_id, net in enumerate(self.networks):
+        for net_id, net in self.networks.items():
             text.append(f"Network: {net_id}")
             text.append(f"- name: {net.name}")
             text.append(f"- description: {net.description}")
@@ -329,7 +329,7 @@ class Twin(JSONDict):
         text.append("")
         text.append("Contexts")
         text.append("--------")
-        for ctx_id, ctx in enumerate(self.contexts):
+        for ctx_id, ctx in self.contexts.items():
             text.append(f"Context: {ctx_id}")
             text.append(f"- name: {ctx.name}")
             text.append(f"- description: {ctx.description}")

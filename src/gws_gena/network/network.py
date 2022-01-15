@@ -14,8 +14,9 @@ import numpy as np
 from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
-                      JSONView, Resource, ResourceExporter, RField, StrRField,
-                      Table, TableView, resource_decorator, view)
+                      File, JSONFile, JSONView, Resource, ResourceExporter,
+                      RField, StrRField, Table, TableView, resource_decorator,
+                      view)
 from pandas import DataFrame
 
 from .compound import Compound
@@ -173,7 +174,7 @@ class Network(Resource):
         # add reaction compounds to the network
         for sub in rxn.substrates.values():
             comp = sub["compound"]
-            stoich = sub["stoichiometry"]
+            # stoich = sub["stoichiometry"]
             if not self.exists(comp):
                 # if comp.chebi_id:
                 #     existing_comp = self.get_compounds_by_chebi_id(comp.chebi_id)
@@ -190,7 +191,7 @@ class Network(Resource):
 
         for prod in rxn.products.values():
             comp = prod["compound"]
-            stoich = sub["stoichiometry"]
+            # stoich = sub["stoichiometry"]
             if not self.exists(comp):
                 # if comp.chebi_id:
                 #     existing_comp = self.get_compounds_by_chebi_id(comp.chebi_id)
@@ -1086,3 +1087,17 @@ class Network(Resource):
     def view_compound_stats_as_table(self, params: ConfigParams) -> TableView:
         table: Table = self.get_compound_stats_as_table()
         return TableView(table=table)
+
+
+# ####################################################################
+#
+# Network class
+#
+# ####################################################################
+
+
+@resource_decorator("NetworkFile",
+                    human_name="NetworkFile",
+                    short_description="Metabolic network file")
+class NetworkFile(JSONFile):
+    pass

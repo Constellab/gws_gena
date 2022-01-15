@@ -122,14 +122,14 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-
-            if organism == 'ecoli':
-                biomass_flux = result.get_fluxes_by_reaction_ids(["ecoli_BIOMASS_Ecoli_core_w_GAM"])
-            else:
-                biomass_flux = result.get_fluxes_by_reaction_ids(["pcys_Biomass"])
-
             sv = result.get_sv_as_table().get_data()
             fluxes = result.get_fluxes_as_table().get_data()
+
+            if organism == 'ecoli':
+                biomass_flux = fluxes.loc["ecoli_BIOMASS_Ecoli_core_w_GAM", :]
+            else:
+                biomass_flux = fluxes.loc["pcys_Biomass", :]
+
             print(fluxes)
             print(sv)
             print(biomass_flux)

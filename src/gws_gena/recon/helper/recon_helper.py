@@ -26,7 +26,8 @@ class ReconHelper:
         cls._create_biomass_rxns(net, biomass_comps, biomass_table)
 
     @classmethod
-    def create_network_with_taxonomy(cls, tax_id: str, tax_search_method: str, running_task: Task = None) -> Network:
+    def create_network_with_taxonomy(
+            cls, unique_name: str, tax_id: str, tax_search_method: str, running_task: Task = None) -> Network:
         try:
             tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
         except Exception as err:
@@ -36,10 +37,12 @@ class ReconHelper:
             getattr(BiotaEnzyme, "tax_"+tax.rank) == tax.tax_id,
         )
 
+        net = Network()
+        net.name = unique_name
+
         if running_task is not None:
             total_enzymes = len(enzymes)
             running_task.log_info_message(f"{total_enzymes} enzymes found")
-            net = Network()
             counter = 1
             nb_interval = int(total_enzymes/10) + 1
             perc = 0
@@ -66,9 +69,10 @@ class ReconHelper:
 
     @classmethod
     def create_network_with_ec_table(
-            cls, ec_table: ECTable, tax_id: str, tax_search_method: str, running_task: Task = None) -> Network:
+            cls, unique_name: str, ec_table: ECTable, tax_id: str, tax_search_method: str, running_task: Task = None) -> Network:
         ec_list = ec_table.get_ec_numbers(rtype="list")
         net = Network()
+        net.name = unique_name
 
         if running_task is not None:
             total_enzymes = len(ec_list)
