@@ -1,6 +1,6 @@
-id
-ecoli_PGK
-ecoli_glu_L_c
+id,name
+ecoli_PGK,First_KO
+ecoli_glu_L_c,Second KO
 ecoli_o2_c
 ecoli_PPC
 ecoli_BIOMASS_Ecoli_core_w_GAM
@@ -9,4 +9,4 @@ ecoli_NADH16
 ecoli_PGM
 ecoli_PYK
 ecoli_GLNS
-ecoli_invalid
+ecoli_invalid,Invalid_ko

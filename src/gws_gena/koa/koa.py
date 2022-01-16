@@ -56,12 +56,13 @@ class KOA(Task):
         full_ko_result_df = DataFrame()
         for i in range(0, ko_table.nb_rows):
             current_ko_table = ko_table.select_by_row_positions([i])
-            ko_name = current_ko_table.get_data().index[0]
+
+            ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
             ko_id: str = current_ko_table.get_ids()[0]
 
             perc = 100 * (i/ko_table.nb_rows)
             self.update_progress_value(
-                perc, message=f"Step {i+1}/{ko_table.nb_rows}: analyzing knockout '{ko_id} ({ko_name})' ...")
+                perc, message=f"Step {i+1}/{ko_table.nb_rows}: analyzing knockout '{ko_id}' ...")
 
             current_ko_twin = twin.copy()
             for _, net in current_ko_twin.networks.items():
@@ -76,15 +77,16 @@ class KOA(Task):
             if monitored_fluxes:
                 if not is_monitored_fluxes_expanded:
                     monitored_fluxes = FBAHelper._expand_fluxes_by_names(
-                        current_fluxes,
+                        monitored_fluxes,
                         current_ko_twin.get_flat_network()
                     )
-                current_fluxes = current_fluxes.loc[monitored_fluxes, :]
+                monitored_fluxes_names = [x.split(":")[0] for x in monitored_fluxes]
+                current_fluxes = current_fluxes.loc[monitored_fluxes_names, :]
 
             current_fluxes.columns = ["flux_value", "flux_lower_bound", "flux_upper_bound"]
             ko_id_df = DataFrame(
-                data=[[ko_name, ko_id]] * current_fluxes.shape[0],
-                columns=["ko_name", "ko_id"],
+                data=[ko_info] * current_fluxes.shape[0],
+                columns=current_ko_table.column_names,
                 index=current_fluxes.index
             )
 
@@ -105,5 +107,8 @@ class KOA(Task):
             )
             full_ko_result_df.index = range(0, full_ko_result_df.shape[0])
 
+        full_ko_result_df.rename(
+            columns={ko_table.id_column: "ko_id"},
+            inplace=True)  # rename the `id_column` to `ko_id`
         koa_result = KOAResultTable(data=full_ko_result_df)
         return {"result": koa_result}

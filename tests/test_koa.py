@@ -13,7 +13,6 @@ settings = Settings.retrieve()
 class TestFba(BaseTestCaseUsingFullBiotaDB):
 
     async def test_toy_koa(self):
-        return
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko.json")),
@@ -65,9 +64,9 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
         print(ko_results)
 
-        self.assertEqual(ko_results.get_data().at["R0", "ko_id"], "toy_cell_R1")
-        self.assertEqual(ko_results.get_data().at["R0", "flux_name"], "toy_cell_R1")
-        self.assertAlmostEqual(ko_results.get_data().at["R0", "flux_value"], 0.000193, delta=1e-6)
+        self.assertEqual(ko_results.get_data().at[0, "ko_id"], "toy_cell_R1")
+        self.assertEqual(ko_results.get_data().at[0, "flux_name"], "toy_cell_R1")
+        self.assertAlmostEqual(ko_results.get_data().at[0, "flux_value"], 0.000193, delta=1e-6)
 
     async def test_ecoli_koa(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
@@ -124,5 +123,5 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
         print(ko_results)
 
-        self.assertAlmostEqual(ko_results.get_data().at["R0", "flux_value"], 37.137627, delta=1e-6)
-        self.assertAlmostEqual(ko_results.get_data().at["R1", "flux_value"], 51.262072, delta=1e-6)
+        self.assertAlmostEqual(ko_results.get_data().at[0, "flux_value"], 37.137627, delta=1e-6)
+        self.assertAlmostEqual(ko_results.get_data().at[1, "flux_value"], 51.262072, delta=1e-6)

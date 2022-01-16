@@ -37,7 +37,7 @@ class KOAResultTable(Table):
             y_label = flux_name
             barplot_view = BarPlotView()
             barplot_view.add_series(
-                y=current_data
+                y=current_data.values.tolist()
             )
             multi_view.add_view(
                 barplot_view,
