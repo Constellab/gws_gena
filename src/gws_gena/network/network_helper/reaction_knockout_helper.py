@@ -61,12 +61,14 @@ class ReactionKnockOutHelper:
                             rxn.upper_bound = cls.FLUX_EPSILON
                             found_id.append(ko_id)
 
-            # write warnings
-            all_ids = list(set(all_ids))
-            for ko_id in all_ids:
-                if ko_id not in found_id:
-                    if current_task:
-                        current_task.log_warning_message(
-                            f"The KO ID '{ko_id}' is not found. Please check the KO table.")
+        # write warnings
+        not_found_id = []
+        all_ids = list(set(all_ids))
+        for ko_id in all_ids:
+            if ko_id not in found_id:
+                not_found_id.append(ko_id)
+                if current_task:
+                    current_task.log_warning_message(
+                        f"The KO ID '{ko_id}' is not found. Please check the KO table.")
 
-        return new_net
+        return new_net, not_found_id

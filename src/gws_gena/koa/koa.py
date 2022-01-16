@@ -66,7 +66,7 @@ class KOA(Task):
 
             current_ko_twin = twin.copy()
             for _, net in current_ko_twin.networks.items():
-                ReactionKnockOutHelper.knockout_list_of_reactions(
+                _, not_found_ids = ReactionKnockOutHelper.knockout_list_of_reactions(
                     net, current_ko_table, ko_delimiter=ko_delimiter, current_task=self, inplace=True)
 
             current_result: FBAResult = FBAHelper.run(
@@ -96,8 +96,14 @@ class KOA(Task):
                 index=current_fluxes.index
             )
 
+            not_found_df = DataFrame(
+                data=[", ".join(not_found_ids)] * current_fluxes.shape[0],
+                columns=["not_found_ids"],
+                index=current_fluxes.index
+            )
+
             current_ko_result_df = pandas.concat(
-                [ko_id_df, flux_name_df, current_fluxes],
+                [ko_id_df, flux_name_df, current_fluxes, not_found_df],
                 axis=1
             )
 
