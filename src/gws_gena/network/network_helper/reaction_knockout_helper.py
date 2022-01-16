@@ -3,6 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+from gws_core import Logger
 from ...data.ec_table import ECTable
 from ...data.entity_id_table import EntityIDTable
 from ...network.network import Network
@@ -68,7 +69,10 @@ class ReactionKnockOutHelper:
             if ko_id not in found_id:
                 not_found_id.append(ko_id)
                 if current_task:
-                    current_task.log_warning_message(
-                        f"The KO ID '{ko_id}' is not found. Please check the KO table.")
+                    message = f"The KO ID '{ko_id}' is not found. Please check the KO table."
+                    if current_task:
+                        current_task.log_warning_message(message)
+                    else:
+                        Logger.warning(message)
 
         return new_net, not_found_id
