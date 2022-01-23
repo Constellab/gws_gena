@@ -13,7 +13,7 @@ from ..twin.twin_builder import TwinBuilder
 from ..twin.twin_context_task import TwinContextImporter
 
 
-@protocol_decorator("FBAProto")
+@protocol_decorator("FBAProto", human_name="FBA protocol", short_description="Flux balance analysis protocol")
 class FBAProto(Protocol):
 
     def configure_protocol(self, _: ConfigParams) -> None:

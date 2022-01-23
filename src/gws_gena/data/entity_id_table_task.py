@@ -18,7 +18,8 @@ from .entity_id_table import EntityIDTable, EntityIDTableFile
 # ####################################################################
 
 
-@importer_decorator("EntityIDTableImporter", source_type=EntityIDTableFile, target_type=EntityIDTable)
+@importer_decorator("EntityIDTableImporter", human_name="EntityIDTable importer", source_type=EntityIDTableFile,
+                    target_type=EntityIDTable)
 class EntityIDTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -59,6 +60,7 @@ class EntityIDTableImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("EntityIDTableExporter", source_type=EntityIDTable, target_type=EntityIDTableFile)
+@exporter_decorator("EntityIDTableExporter", human_name="EntityIDTable exporter", source_type=EntityIDTable,
+                    target_type=EntityIDTableFile)
 class EntityIDTableExporter(TableExporter):
     pass

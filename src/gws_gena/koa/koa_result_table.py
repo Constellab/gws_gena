@@ -11,7 +11,7 @@ from gws_core import (BadRequestException, BarPlotView, ConfigParams,
                       view)
 
 
-@resource_decorator("KOAResultTable", human_name="KOAResultTable", short_description="Knockout Analysis Result Table")
+@resource_decorator("KOAResultTable", human_name="KOA result table", short_description="Knockout analysis result table", hide=True)
 class KOAResultTable(Table):
 
     def get_ko_ids(self) -> List[str]:

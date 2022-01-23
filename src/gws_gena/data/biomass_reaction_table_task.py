@@ -19,7 +19,8 @@ from .biomass_reaction_table import (BiomassReactionTable,
 # ####################################################################
 
 
-@importer_decorator("BiomassReactionTableImporter", source_type=BiomassReactionTableFile,
+@importer_decorator("BiomassReactionTableImporter", human_name="BiomassReactionTable importer",
+                    source_type=BiomassReactionTableFile,
                     target_type=BiomassReactionTable)
 class BiomassReactionTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
@@ -80,7 +81,8 @@ class BiomassReactionTableImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("BiomassReactionTableExporter", source_type=BiomassReactionTable,
+@exporter_decorator("BiomasssReactionTableExporter", human_name="BiomassReactionTable importer",
+                    source_type=BiomassReactionTable,
                     target_type=BiomassReactionTableFile)
 class BiomassReactionTableExporter(TableExporter):
     pass

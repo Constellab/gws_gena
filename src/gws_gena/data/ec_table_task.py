@@ -18,7 +18,7 @@ from .ec_table import ECTable, ECTableFile
 # ####################################################################
 
 
-@importer_decorator("ECTableImporter", source_type=ECTableFile, target_type=ECTable)
+@importer_decorator("ECTableImporter", human_name="ECTable importer", source_type=ECTableFile, target_type=ECTable)
 class ECTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -66,6 +66,6 @@ class ECTableImporter(TableImporter):
 # ####################################################################
 
 
-@ exporter_decorator("ECTableExporter", source_type=ECTable, target_type=ECTableFile)
+@ exporter_decorator("ECTableExporter", human_name="ECTable exporter", source_type=ECTable, target_type=ECTableFile)
 class ECTableExporter(TableExporter):
     pass

@@ -8,8 +8,8 @@ import os
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      ResourceExporter, ResourceImporter, StrParam,
-                      exporter_decorator, importer_decorator, JSONDict)
+                      JSONDict, ResourceExporter, ResourceImporter, StrParam,
+                      exporter_decorator, importer_decorator)
 
 from .twin_context import TwinContext
 
@@ -20,7 +20,8 @@ from .twin_context import TwinContext
 # ####################################################################
 
 
-@importer_decorator("TwinContextImporter", source_type=File, target_type=TwinContext)
+@importer_decorator("TwinContextImporter", human_name="Twin context importer", source_type=File,
+                    target_type=TwinContext)
 class TwinContextImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
         'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format")
@@ -50,7 +51,7 @@ class TwinContextImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator("TwinContextExporter", source_type=TwinContext, target_type=File)
+@exporter_decorator("TwinContextExporter", human_name="Twin context exporter", source_type=TwinContext, target_type=File)
 class TwinContextExporter(ResourceExporter):
     config_specs: ConfigSpecs = {
         'file_name': StrParam(default_value="context", short_description="File name (without extension)"),

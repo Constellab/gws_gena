@@ -17,8 +17,8 @@ from .twin_reduction_table import TwinReductionTable
 
 
 @task_decorator("TwinReducer",
-                human_name="TwinReducer",
-                short_description="Reduction of digital twin")
+                human_name="Twin reducer",
+                short_description="Perform model reduction based on a digital twin")
 class TwinReducer(Task):
     """
     Class digital twin reduction

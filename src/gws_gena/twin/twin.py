@@ -6,8 +6,8 @@
 import copy
 from typing import Dict, TypedDict
 
-from gws_core import (BadRequestException, ConfigParams, DictRField, JSONDict,
-                      JSONView, ResourceService, StrRField, TextView,
+from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
+                      Resource, ResourceService, StrRField, TextView,
                       resource_decorator, view)
 
 from ..network.network import Compound, Network, Reaction
@@ -27,8 +27,8 @@ TwinDict = TypedDict("TwinDict", {
 # ####################################################################
 
 
-@resource_decorator("Twin")
-class Twin(JSONDict):
+@resource_decorator("Twin", human_name="Twin", short_description="Twin of cell metabolism")
+class Twin(Resource):
     """
     Class that represents a twin.
 
@@ -42,8 +42,6 @@ class Twin(JSONDict):
     _networks: Dict[str, Network] = DictRField()
     _contexts: Dict[str, TwinContext] = DictRField()
     _network_contexts: Dict[str, str] = DictRField()
-
-    _table_name = "gena_twin"
 
     # -- A --
 

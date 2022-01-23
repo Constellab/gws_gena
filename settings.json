@@ -10,7 +10,7 @@
             {
                 "source": "https://pypi.python.org/simple",
                 "packages":[
-                    {"name": "efmtool"}
+                    {"name": "efmtool", "version": "0.2.0"}
                 ]
             },
             {

@@ -14,7 +14,8 @@ from .twin import Twin
 from .twin_context import TwinContext
 
 
-@resource_decorator("FlatTwin")
+@resource_decorator("FlatTwin", human_name="Flat twin",
+                    short_description="Flat twin of cell metabolism")
 class FlatTwin(Twin):
     _mapping: Dict[str, dict] = DictRField()
     _reverse_mapping: Dict[str, str] = DictRField()

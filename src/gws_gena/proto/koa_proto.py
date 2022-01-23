@@ -14,7 +14,7 @@ from ..twin.twin_builder import TwinBuilder
 from ..twin.twin_context_task import TwinContextImporter
 
 
-@protocol_decorator("KOAProto", short_description="Protocol for knockout analysis")
+@protocol_decorator("KOAProto", human_name="KOA protocol", short_description="KnockOut analysis protocol")
 class KOAProto(Protocol):
 
     def configure_protocol(self, config_params: ConfigParams) -> None:

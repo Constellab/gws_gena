@@ -20,7 +20,7 @@ from .twin import Twin
 # ####################################################################
 
 
-@importer_decorator("TwinImporter", source_type=File, target_type=Twin)
+@importer_decorator("TwinImporter", human_name="Twin importer", source_type=File, target_type=Twin)
 class TwinImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
         'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format")
@@ -63,7 +63,7 @@ class TwinImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator("TwinExporter", source_type=Twin, target_type=File)
+@exporter_decorator("TwinExporter", human_name="Twin exporter", source_type=Twin, target_type=File)
 class TwinExporter(ResourceExporter):
     config_specs: ConfigSpecs = {
         'file_name': StrParam(default_value="twin", short_description="File name (without extension)"),

@@ -20,7 +20,8 @@ from .medium_table import MediumTable, MediumTableFile
 # ####################################################################
 
 
-@importer_decorator("MediumTableImporter", source_type=MediumTableFile, target_type=MediumTable)
+@importer_decorator("MediumTableImporter", human_name="MediumTable importer", source_type=MediumTableFile,
+                    target_type=MediumTable)
 class MediumTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -72,6 +73,7 @@ class MediumTableImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("MediumTableExporter", source_type=MediumTable, target_type=MediumTableFile)
+@exporter_decorator("MediumTableExporter", human_name="MediumTable exporter", source_type=MediumTable,
+                    target_type=MediumTableFile)
 class MediumTableExporter(TableExporter):
     pass

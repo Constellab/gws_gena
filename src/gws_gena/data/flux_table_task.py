@@ -18,7 +18,8 @@ from .flux_table import FluxTable, FluxTableFile
 # ####################################################################
 
 
-@importer_decorator("FluxTableImporter", source_type=FluxTableFile, target_type=FluxTable)
+@importer_decorator("FluxTableImporter", human_name="FluxTable importer", source_type=FluxTableFile,
+                    target_type=FluxTable)
 class FluxTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -96,6 +97,7 @@ class FluxTableImporter(TableImporter):
 # ####################################################################
 
 
-@exporter_decorator("FluxTableExporter", source_type=FluxTable, target_type=FluxTableFile)
+@exporter_decorator("FluxTableExporter", human_name="FluxTable exporter", source_type=FluxTable,
+                    target_type=FluxTableFile)
 class FluxTableExporter(TableExporter):
     pass

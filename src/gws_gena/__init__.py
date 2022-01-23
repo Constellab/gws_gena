@@ -56,4 +56,4 @@ from .twin.twin_builder import TwinBuilder
 from .twin.twin_context import TwinContext
 from .twin.twin_context_builder import TwinContextBuilder
 from .twin.twin_context_task import TwinContextExporter, TwinContextImporter
-from .twin.twin_flatner import TwinFlattener
+from .twin.twin_flattener import TwinFlattener

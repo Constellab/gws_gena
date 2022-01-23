@@ -38,7 +38,7 @@ class OptimizeResult:
         self.status = res["status"]
 
 
-@resource_decorator("FBAResult", human_name="FBAResult", short_description="Flux Balance Analysis Result")
+@resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True)
 class FBAResult(Resource):
     """
     FBAResult class

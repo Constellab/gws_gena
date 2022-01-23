@@ -8,11 +8,11 @@ from gws_core import (ConfigParams, StrParam, Task, TaskInputs, TaskOutputs,
 
 from ...data.ec_table import ECTable
 from ...data.entity_id_table import EntityIDTable
-from ...network.network import Network, Reaction
+from ...network.network import Network
 from ..network_helper.reaction_adder_helper import ReactionAdderHelper
 
 
-@task_decorator("ReactionAdder")
+@task_decorator("ReactionAdder", human_name="Reaction adder", short_description="Add a list of reactions to a network")
 class ReactionAdder(Task):
     """
     ReactionAdder class.

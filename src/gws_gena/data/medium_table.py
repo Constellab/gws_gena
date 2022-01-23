@@ -82,7 +82,7 @@ class MediumTable(Table):
 
 
 @resource_decorator("MediumTableFile",
-                    human_name="MediumTableFile",
+                    human_name="MediumTable file",
                     short_description="Table file of culture medium composition")
 class MediumTableFile(TableFile):
     pass
