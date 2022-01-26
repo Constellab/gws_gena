@@ -1086,8 +1086,6 @@ class Network(Resource):
         t_view.set_data(data=table.to_dataframe())
         return t_view
 
-        return TabularView(table=table)
-
     @view(view_type=TabularView, human_name="Compound distrib.")
     def view_compound_stats_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = self.get_compound_stats_as_table()
