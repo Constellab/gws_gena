@@ -24,14 +24,14 @@ class GapFinderResult(Resource):
     def get_gaps_as_json(self):
         return self.gaps_data
 
-    @view(view_type=TabularView, specs={
+    @view(view_type=TabularView, human_name="Compound table", specs={
         "show_gaps_only": BoolParam(default_value=False)
     })
     def view_compounds_as_table(self, show_gaps_only=False, **kwargs) -> TabularView:
         data = self.get_compounds_as_dataframe(show_gaps_only=show_gaps_only, **kwargs)
         t_view = TabularView()
-        t_view.add_data(data)
-        return t_view.to_dict(params)
+        t_view.set_data(data=data)
+        return t_view
 
     def get_compounds_as_dataframe(self, show_gaps_only=False, **kwargs) -> DataFrame:
         df: DataFrame = DataFrame.from_dict(
@@ -43,14 +43,14 @@ class GapFinderResult(Resource):
             df = df[:, df["is_gap"] == True]
         return df
 
-    @view(view_type=TabularView, specs={
+    @view(view_type=TabularView, human_name="Reaction table", specs={
         "show_gaps_only": BoolParam(default_value=False, short_description="True to only see reactions having gaps")
     })
     def view_reactions_as_table(self, show_gaps_only=False, **kwargs) -> TabularView:
         data = self.get_reactions_as_dataframe(show_gaps_only=show_gaps_only, **kwargs)
         t_view = TabularView()
-        t_view.add_data(data)
-        return t_view.to_dict(params)
+        t_view.set_data(data=data)
+        return t_view
 
     def get_reactions_as_dataframe(self, show_gaps_only=False, **kwargs) -> Table:
         df: DataFrame = DataFrame.from_dict(
@@ -62,14 +62,14 @@ class GapFinderResult(Resource):
             df = df[:, df["has_gap"] == True]
         return df
 
-    @view(view_type=TabularView, specs={
+    @view(view_type=TabularView, human_name="Pathway table", specs={
         "show_gaps_only": BoolParam(default_value=False, short_description="True to only see pathways having gaps")
     })
     def view_pathways_as_table(self, show_gaps_only=False, **kwargs) -> TabularView:
         data = self.get_pathways_as_dataframe(show_gaps_only=show_gaps_only, **kwargs)
         t_view = TabularView()
-        t_view.add_data(data)
-        return t_view.to_dict(params)
+        t_view.set_data(data=data)
+        return t_view
 
     def get_pathways_as_dataframe(self, show_gaps_only=False, **kwargs) -> Table:
         df: DataFrame = DataFrame.from_dict(

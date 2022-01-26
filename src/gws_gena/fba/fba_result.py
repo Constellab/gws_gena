@@ -170,40 +170,40 @@ class FBAResult(Resource):
         data.index = data.index + " [" + data["kegg"] + "]"
         return data
 
-    @view(view_type=TabularView, human_name="FluxTable", specs={})
+    @view(view_type=TabularView, human_name="Flux table", specs={})
     def view_fluxes_as_table(self, params: ConfigParams) -> TabularView:
         data = self._get_fluxes_table(params)
         t_view = TabularView()
-        t_view.set_data(data)
+        t_view.set_data(data=data)
         return t_view.to_dict(params)
 
-    @view(view_type=TabularView, human_name="SVTable", specs={})
+    @view(view_type=TabularView, human_name="SV table", specs={})
     def view_sv_as_table(self, params: ConfigParams) -> TabularView:
         data: DataFrame = self.get_sv_as_dataframe()
         t_view = TabularView()
-        t_view.set_data(data)
+        t_view.set_data(data=data)
         return t_view
 
-    @view(view_type=HeatmapView, human_name="FluxHeatmap", specs={})
+    @view(view_type=HeatmapView, human_name="Flux heatmap", specs={})
     def view_fluxes_as_heatmap(self, params: ConfigParams) -> HeatmapView:
         data = self._get_fluxes_table(params)
         data = data.loc[:, ["value", "lower_bound", "upper_bound"]]
         h_view = HeatmapView()
-        h_view.set_data(data)
+        h_view.set_data(data=data)
         return h_view
 
-    @view(view_type=HeatmapView, human_name="SVHeatmap", specs={})
+    @view(view_type=HeatmapView, human_name="SV heatmap", specs={})
     def view_sv_as_heatmap(self, params: ConfigParams) -> HeatmapView:
         data: DataFrame = self.get_sv_as_dataframe()
         data = data.loc[:, ["value"]]
         h_view = HeatmapView()
-        h_view.set_data(data)
+        h_view.set_data(data=data)
         return h_view
 
-    @view(view_type=HistogramView, human_name="SVHistogram", short_description="Steady states distribution")
+    @view(view_type=HistogramView, human_name="SV histogram", short_description="Steady states distribution")
     def view_sv_as_table(self, params: ConfigParams) -> HistogramView:
         data: DataFrame = self.get_sv_as_dataframe()
         data = data.loc[:, "value"].tolist()
         hist_view = HistogramView()
-        hist_view.add_series(data=data, name="SVDistribution")
+        hist_view.add_series(data=data, name="SV distribution")
         return hist_view

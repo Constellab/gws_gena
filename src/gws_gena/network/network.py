@@ -1067,27 +1067,33 @@ class Network(Resource):
     def view_as_network(self, params: ConfigParams) -> NetworkView:
         return NetworkView(data=self)
 
-    @view(view_type=TabularView, default_view=True, human_name="ReactionTable")
+    @view(view_type=TabularView, default_view=True, human_name="Reaction table")
     def view_as_table(self, params: ConfigParams) -> TabularView:
-        table: Table = Table(data=self.to_dataframe())
-        return TabularView(table=table)
+        t_view = TabularView()
+        t_view.set_data(data=self.to_dataframe())
+        return t_view
 
-    @view(view_type=JSONView, human_name="JSONView")
+    @view(view_type=JSONView, human_name="JSON view")
     def view_as_json(self, params: ConfigParams) -> JSONView:
         json_view: JSONView = super().view_as_json(params)
         json_view._data = self.dumps()
         return json_view
 
-    @view(view_type=TabularView, human_name="ReactionGaps")
+    @view(view_type=TabularView, human_name="Reaction gaps")
     def view_gaps_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = self.get_gaps_as_table()
+        t_view = TabularView()
+        t_view.set_data(data=table.to_dataframe())
+        return t_view
+
         return TabularView(table=table)
 
-    @view(view_type=TabularView, human_name="CompoundDistrib")
+    @view(view_type=TabularView, human_name="Compound distrib.")
     def view_compound_stats_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = self.get_compound_stats_as_table()
-        return TabularView(table=table)
-
+        t_view = TabularView()
+        t_view.set_data(data=table.to_dataframe())
+        return t_view
 
 # ####################################################################
 #
