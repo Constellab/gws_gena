@@ -13,7 +13,7 @@ from ..twin.twin_builder import TwinBuilder
 from ..twin.twin_context_task import TwinContextImporter
 
 
-@protocol_decorator("FVAProto", short_description="Protocol for flux variability analysis")
+@protocol_decorator("FVAProto", human_name="FVA protocol", short_description="Flux variability analysis protocol")
 class FVAProto(Protocol):
 
     def configure_protocol(self, config_params: ConfigParams) -> None:

@@ -9,7 +9,7 @@ from gws_core import (ConfigParams, Task, TaskInputs, TaskOutputs,
 from ..network import Network
 
 
-@task_decorator("NetworkMerger")
+@task_decorator("NetworkMerger", human_name="Network merger", short_description="Merge two networks")
 class NetworkMerger(Task):
     """
     NetworkMerger class.

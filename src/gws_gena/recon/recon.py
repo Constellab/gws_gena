@@ -17,7 +17,7 @@ from ..network.reaction import Reaction
 from .helper.recon_helper import ReconHelper
 
 
-@task_decorator("DraftRecon")
+@task_decorator("DraftRecon", human_name="Draft recon", short_description="Draft network reconstruction")
 class DraftRecon(Task):
     """
     DraftRecon class.

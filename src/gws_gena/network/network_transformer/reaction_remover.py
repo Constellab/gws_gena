@@ -12,7 +12,8 @@ from ...network.network import Network
 from ..network_helper.reaction_remover_helper import ReactionRemoverHelper
 
 
-@task_decorator("ReactionRemover")
+@task_decorator("ReactionRemover", human_name="Reaction remover",
+                short_description="Remove a list of reactions from a network")
 class ReactionRemover(Task):
 
     input_specs = {'network': (Network,), 'reaction_table': (ECTable, EntityIDTable,), }

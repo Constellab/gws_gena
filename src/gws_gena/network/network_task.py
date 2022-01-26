@@ -21,7 +21,7 @@ from .network import Network, NetworkFile
 # ####################################################################
 
 
-@importer_decorator("NetworkImporter", source_type=NetworkFile, target_type=Network)
+@importer_decorator("NetworkImporter", human_name="Network importer", source_type=NetworkFile, target_type=Network)
 class NetworkImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
         'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format"),
@@ -74,7 +74,8 @@ class NetworkImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator(unique_name="NetworkExporter", source_type=Network, target_type=NetworkFile)
+@exporter_decorator(unique_name="NetworkExporter", human_name="Network exporter", source_type=Network,
+                    target_type=NetworkFile)
 class NetworkExporter(ResourceExporter):
     ALLOWED_FILE_FORMATS = [".json", ".csv", ".tsv", ".txt", ".xls", ".xlsx"]
     DEFAULT_FILE_FORMAT = ".json"

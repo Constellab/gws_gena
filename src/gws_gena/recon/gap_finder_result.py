@@ -8,7 +8,7 @@ from gws_core import (BoolParam, DictRField, Resource, Table, TabularView,
 from pandas import DataFrame
 
 
-@resource_decorator("GapFinderResult")
+@resource_decorator("GapFinderResult", human_name="Gap finder result", hide=True)
 class GapFinderResult(Resource):
     """
     GapFinderResult class

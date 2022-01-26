@@ -91,7 +91,7 @@ class FluxTable(Table):
 
 
 @resource_decorator("FluxTableFile",
-                    human_name="FluxTableFile",
+                    human_name="FluxTable file",
                     short_description="Table file of metabolic flux measurements")
 class FluxTableFile(TableFile):
     pass

@@ -155,7 +155,7 @@ TwinContextDict = TypedDict("TwinContextDict", {
 })
 
 
-@resource_decorator("TwinContext")
+@resource_decorator("TwinContext", human_name="Twin context")
 class TwinContext(Resource):
     """
     TwinContext class

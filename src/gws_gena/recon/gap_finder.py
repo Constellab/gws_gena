@@ -1,30 +1,34 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import Task, task_decorator, ConfigParams, TaskInputs, TaskOutputs
+from gws_core import (ConfigParams, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
+
 from ..network.network import Network
 from .gap_finder_result import GapFinderResult
 
-@task_decorator("GapFinder")
+
+@task_decorator("GapFinder", human_name="Gap finder",
+                short_description="Find all the gaps (related to dead-end metabolites) in a network")
 class GapFinder(Task):
     """
     GapFinder class.
     """
-    
-    input_specs = { 'network': (Network,) }
-    output_specs = { 'result': (GapFinderResult,) }
-    config_specs = { }
-        
+
+    input_specs = {'network': (Network,)}
+    output_specs = {'result': (GapFinderResult,)}
+    config_specs = {}
+
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
         gaps = self.extract_gaps(net)
-        result = GapFinderResult(gaps = gaps)
-        return { "result": result }
+        result = GapFinderResult(gaps=gaps)
+        return {"result": result}
 
-    @staticmethod
-    def extract_gaps(net)->dict:
+    @ staticmethod
+    def extract_gaps(net) -> dict:
         """
         Get gap information
         """
@@ -40,7 +44,7 @@ class GapFinder(Task):
                 "is_gap": False,
                 "is_orphan": False,
             }
- 
+
         for k in net.reactions:
             rxn = net.reactions[k]
             for c_id in rxn._substrates:
@@ -53,14 +57,14 @@ class GapFinder(Task):
                 compounds[c_id]["is_product"] += 1
 
         # collect gaps
-        for k in compounds: 
+        for k in compounds:
             is_orphan = False
             if compounds[k]["is_product"] and compounds[k]["is_substrate"]:
                 is_gap = False
             elif compounds[k]["is_product"] > 1:
-                is_gap = False #is linked to more than 1 reactions
+                is_gap = False  # is linked to more than 1 reactions
             elif compounds[k]["is_substrate"] > 1:
-                is_gap = False #is linked to more than 1 reactions
+                is_gap = False  # is linked to more than 1 reactions
             else:
                 is_gap = True
                 if not compounds[k]["is_product"] and not compounds[k]["is_substrate"]:
@@ -89,7 +93,7 @@ class GapFinder(Task):
                     reactions[k]["has_gap"] = True
                     break
 
-            rxn_pathways = rxn.get_pathways() 
+            rxn_pathways = rxn.get_pathways()
             if rxn_pathways:
                 kegg_pathway = rxn_pathways.get("kegg")
                 if kegg_pathway:

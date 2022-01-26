@@ -16,14 +16,14 @@ from ..network.reaction import Reaction
 from ..recon.helper.sink_helper import SinkHelper
 
 
-@task_decorator("GapFiller")
+@task_decorator("GapFiller", human_name="Gap filler", short_description="Fills gaps in a networks")
 class GapFiller(Task):
     """
     GapFiller class.
 
-    This process iteratively fills gaps realted to dead-end compound using the biota DB.
-    A gap is detected when an steady compound is a dead-end compound.
-    The gap filling process consists in the follwing algorithm:
+    This process iteratively fills gaps related to dead-end compounds using the biota DB.
+    A gap is detected if a steady compound is a dead-end compound.
+    The gap filling algorithm consists in the following steps:
 
     * set `N` = the network
     * Loop
@@ -32,8 +32,8 @@ class GapFiller(Task):
       * if `nb_gaps == 0`, we exit the Loop
       * set `nb_filled = 0`
       * for each gap compound, we search for the putative biota reactions in which it is involved
-        * for earch reaction, we loop on all the enzymes related to the reaction
-          * if `tax_id` parameter is given, we fill the gap with the corresponding reaction only if the enzyme exists at this taxonomy level (i.e. the reaction is added to `N`). The reaction is not added otherwise. Set `nb_filled = nb_filled+1`.
+        * for each reaction, we loop on all the enzymes related to the reaction
+          * if `tax_id` parameter is given, we fill the gaps with the reactions if the reaction is found at this taxonomy. Set `nb_filled = nb_filled+1`.
           * if `tax_id` is not given, we do not check the taxonomy tree, we fill the gap with this reaction and the reaction is added to `N`. Set `nb_filled = nb_filled+1`.
       * if `nb_filled == 0`, we exit the Loop
     *

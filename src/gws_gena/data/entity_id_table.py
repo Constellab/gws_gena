@@ -68,7 +68,7 @@ class EntityIDTable(Table):
 
 
 @resource_decorator("EntityIDTableFile",
-                    human_name="EntityIDTableFile",
+                    human_name="EntityIDTable file",
                     short_description="Generic table file of entity IDs (e.g. CheBI, Rhea IDs, ...)")
 class EntityIDTableFile(TableFile):
     pass
