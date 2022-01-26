@@ -17,31 +17,17 @@ from ..recon.recon import DraftRecon
 class ReconProto(Protocol):
 
     def configure_protocol(self, config_params: ConfigParams) -> None:
-        # ec
-        ec_importer: ProcessSpec = self.add_process(ECTableImporter, 'ec_importer')
-        ec_importer.set_param("ec_column", "ec_number")
-        # biomass
-        biomass_importer: ProcessSpec = self.add_process(BiomassReactionTableImporter, 'biomass_importer')
-        biomass_importer.set_param("biomass_column", "biomass")
-        biomass_importer.set_param("chebi_column", "chebi_id")
-        # medium
-        medium_importer: ProcessSpec = self.add_process(MediumTableImporter, 'medium_importer')
-        medium_importer.set_param("chebi_column", "chebi_id")
-        # other procs
         recon: ProcessSpec = self.add_process(DraftRecon, 'recon')
         gap_filler: ProcessSpec = self.add_process(GapFiller, 'gap_filler')
 
         self.add_connectors([
-            (ec_importer >> "target", recon << "ec_table"),
-            (biomass_importer >> "target", recon << "biomass_table"),
-            (medium_importer >> "target", recon << "medium_table"),
             (recon >> "network", gap_filler << "network"),
         ])
 
         # interface
-        self.add_interface('ec_file', ec_importer, 'source')
-        self.add_interface('biomass_file', biomass_importer, 'source')
-        self.add_interface('medium_file', medium_importer, 'source')
+        self.add_interface('ec_table', recon, 'ec_table')
+        self.add_interface('biomass_table', recon, 'biomass_table')
+        self.add_interface('medium_table', recon, 'medium_table')
         # outerface
         self.add_outerface('draft_recon_network', recon, 'network')
         self.add_outerface('gap_filler_network', gap_filler, 'network')

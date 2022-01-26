@@ -5,7 +5,8 @@ import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, ExperimentService, File, GTest,
                       IExperiment, Settings, ViewTester)
-from gws_gena import FBA, FBAProto, FBAResult, Network, Twin, TwinContext
+from gws_gena import (FBA, FBAProto, FBAResult, Network, NetworkImporter, Twin,
+                      TwinContext, TwinContextImporter)
 
 settings = Settings.retrieve()
 
@@ -20,11 +21,15 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
 
-            network_file = File(path=os.path.join(data_dir, "toy.json"))
-            ctx_file = File(path=os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json")))
+            net = NetworkImporter.call(File(
+                path=os.path.join(data_dir, "toy.json"))
+            )
+            ctx = TwinContextImporter.call(
+                File(path=os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json")))
+            )
 
-            proto.set_input("network_file", network_file)
-            proto.set_input("context_file", ctx_file)
+            proto.set_input("network", net)
+            proto.set_input("context", ctx)
 
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
@@ -96,16 +101,18 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             proto = experiment.get_protocol()
 
             organism_dir = os.path.join(data_dir, organism)
-            network_file = File()
-            network_file.path = os.path.join(organism_dir, f"{organism}.json")
-            ctx_file = File()
-            ctx_file.path = os.path.join(organism_dir, f"{organism}_context.json")
 
-            proto.set_input("network_file", network_file)
-            proto.set_input("context_file", ctx_file)
+            net = NetworkImporter.call(
+                File(os.path.join(organism_dir, f"{organism}.json")),
+                {"skip_bigg_exchange_reactions": False}
+            )
 
-            importer = proto.get_process("network_importer")
-            importer.set_param("skip_bigg_exchange_reactions", False)
+            ctx = TwinContextImporter.call(File(
+                os.path.join(organism_dir, f"{organism}_context.json")
+            ))
+
+            proto.set_input("network", net)
+            proto.set_input("context", ctx)
 
             fba = proto.get_process("fba")
             fba.set_param('solver', solver)

@@ -5,7 +5,8 @@ import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ExperimentService, File, GTest, IExperiment, Settings
-from gws_gena import FVAProto, Network, Twin, TwinContext
+from gws_gena import (FVAProto, Network, NetworkImporter, Twin, TwinContext,
+                      TwinContextImporter)
 
 settings = Settings.retrieve()
 
@@ -26,8 +27,15 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             ctx_file = File()
             ctx_file.path = os.path.join(data_dir, "toy_context.json")
 
-            proto.set_input("network_file", network_file)
-            proto.set_input("context_file", ctx_file)
+            net = NetworkImporter.call(File(
+                path=os.path.join(data_dir, "toy.json")
+            ))
+            ctx = TwinContextImporter.call(File(
+                path=os.path.join(data_dir, "toy_context.json")
+            ))
+
+            proto.set_input("network", net)
+            proto.set_input("context", ctx)
 
             fva = proto.get_process("fva")
             fva.set_param("solver", solver)
@@ -86,16 +94,16 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             proto = experiment.get_protocol()
 
             organism_dir = os.path.join(data_dir, organism)
-            network_file = File()
-            network_file.path = os.path.join(organism_dir, f"{organism}.json")
-            ctx_file = File()
-            ctx_file.path = os.path.join(organism_dir, f"{organism}_context.json")
+            net = NetworkImporter.call(
+                File(path=os.path.join(organism_dir, f"{organism}.json")),
+                {"skip_bigg_exchange_reactions": False}
+            )
+            ctx = TwinContextImporter.call(File(
+                path=os.path.join(organism_dir, f"{organism}_context.json")
+            ))
 
-            proto.set_input("network_file", network_file)
-            proto.set_input("context_file", ctx_file)
-
-            importer = proto.get_process("network_importer")
-            importer.set_param("skip_bigg_exchange_reactions", False)
+            proto.set_input("network", net)
+            proto.set_input("context", ctx)
 
             fva = proto.get_process("fva")
             fva.set_param('solver', solver)
@@ -107,8 +115,6 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 fva.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
             await experiment.run()
-
-            print("Done =======")
 
             relax_dir = ""
             if solver == "quad":
@@ -156,7 +162,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             tflux = net.get_total_abs_flux_as_table().get_data()
             print(tflux)
 
-            #bio_json = result.get_annotated_twin_as_json()
+            # bio_json = result.get_annotated_twin_as_json()
             # print(bio_json)
 
         # ecoli

@@ -4,8 +4,9 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, Experiment, File, IExperiment, Settings,
                       TaskRunner)
-from gws_gena import (DraftRecon, GapFiller, NetworkMerger, ReconProto,
-                      TwinContext)
+from gws_gena import (BiomassReactionTableImporter, DraftRecon,
+                      ECTableImporter, GapFiller, MediumTableImporter,
+                      NetworkMerger, ReconProto, TwinContext)
 
 settings = Settings.retrieve()
 
@@ -17,43 +18,44 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
 
-        file_path = os.path.join(data_dir, "recon_ec_table.csv")
-        ec_file = File()
-        ec_file.path = file_path
+        ec_table = ECTableImporter.call(File(
+            path=os.path.join(data_dir, "recon_ec_table.csv")),
+            {
+                "ec_column": "EC Number"
+        }
+        )
 
-        file_path = os.path.join(data_dir, "recon_medium.csv")
-        medium_file = File()
-        medium_file.path = file_path
+        biomass_table = BiomassReactionTableImporter.call(File(
+            path=os.path.join(data_dir, "recon_biomass.csv")),
+            {
+                "entity_column": "Component",
+                "chebi_column": "Chebi ID",
+                "biomass_column": "Biomass"
+        }
+        )
 
-        file_path = os.path.join(data_dir, "recon_biomass.csv")
-        biomass_file = File()
-        biomass_file.path = file_path
+        medium_table = MediumTableImporter.call(File(
+            path=os.path.join(data_dir, "recon_medium.csv")),
+            {
+                "entity_column": "Name of the metabolite",
+                "chebi_column": "Chebi ID"
+        }
+        )
 
         experiment = IExperiment(ReconProto)
         proto = experiment.get_protocol()
 
-        proto.set_input("ec_file", ec_file)
-        proto.set_input("biomass_file", biomass_file)
-        proto.set_input("medium_file", medium_file)
+        proto.set_input("ec_table", ec_table)
+        proto.set_input("biomass_table", biomass_table)
+        proto.set_input("medium_table", medium_table)
 
         recon = proto.get_process("recon")
         recon.set_param('tax_id', "263815")  # pcystis murina
 
-        medium_importer = proto.get_process("medium_importer")
-        medium_importer.set_param("entity_column", "Name of the metabolite")
-        medium_importer.set_param("chebi_column", "Chebi ID")
-
-        biomass_importer = proto.get_process("biomass_importer")
-        biomass_importer.set_param("entity_column", "Component")
-        biomass_importer.set_param("chebi_column", "Chebi ID")
-        biomass_importer.set_param("biomass_column", "Biomass")
-
-        ec_importer = proto.get_process("ec_importer")
-        ec_importer.set_param("ec_column", "EC Number")
-
         gap_filler = proto.get_process("gap_filler")
         gap_filler.set_param('tax_id', "4753")  # pcystis
-        # gap_filler.set_param('tax_id', "4751")    #fungi
+        # gap_filler.set_param('tax_id', "4751")
+        # #fungi
         # gap_filler.set_param('tax_id', "2759")    #eukaryota
         gap_filler.set_param('biomass_and_medium_gaps_only', True)
         gap_filler.set_param('add_sink_reactions', True)

@@ -74,13 +74,22 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         experiment = IExperiment(KOAProto)
         proto = experiment.get_protocol()
 
-        network_file = File(path=os.path.join(data_dir, "ecoli", "ecoli.json"))
-        ctx_file = File(path=os.path.join(data_dir, "ecoli", "ecoli_context.json"))
-        ko_table_file = File(path=os.path.join(data_dir, "koa", "ecoli", "ko_table.csv"))
+        net = NetworkImporter.call(
+            File(os.path.join(data_dir, "ecoli", "ecoli.json")),
+            {}
+        )
+        ctx = TwinContextImporter.call(
+            File(path=os.path.join(data_dir, "ecoli", "ecoli_context.json")),
+            {}
+        )
+        ko_table = EntityIDTableImporter.call(
+            File(path=os.path.join(data_dir, "koa", "ecoli", "ko_table.csv")),
+            {}
+        )
 
-        proto.set_input("network_file", network_file)
-        proto.set_input("context_file", ctx_file)
-        proto.set_input("ko_table_file", ko_table_file)
+        proto.set_input("network", net)
+        proto.set_input("context", ctx)
+        proto.set_input("ko_table", ko_table)
 
         koa = proto.get_process("koa")
         koa.set_param("monitored_fluxes", ["ecoli_BIOMASS_Ecoli_core_w_GAM"])
@@ -89,37 +98,6 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
         koa.set_param("relax_qssa", True)
         await experiment.run()
         ko_results = proto.get_output("ko_result")
-
-        # net = NetworkImporter.call(
-        #     File(path=os.path.join(data_dir, "ecoli", "ecoli.json")),
-        #     {}
-        # )
-        # ctx = TwinContextImporter.call(
-        #     File(path=os.path.join(data_dir, "ecoli", "ecoli_context.json")),
-        #     {}
-        # )
-        # ko_table = EntityIDTableImporter.call(
-        #     File(path=os.path.join(data_dir, "koa", "ecoli", "ko_table.csv")),
-        #     {}
-        # )
-
-        # twin = Twin()
-        # twin.add_network(network=net, related_context=ctx)
-        # tester = TaskRunner(
-        #     inputs={
-        #         'twin': twin,
-        #         'ko_table': ko_table
-        #     },
-        #     params={
-        #         "monitored_fluxes": ["ecoli_BIOMASS_Ecoli_core_w_GAM"],
-        #         "fluxes_to_maximize": ["ecoli_BIOMASS_Ecoli_core_w_GAM"],
-        #         "solver": "quad",
-        #         "relax_qssa": True
-        #     },
-        #     task_type=KOA
-        # )
-        # outputs = await tester.run()
-        # ko_results = outputs["result"]
 
         print(ko_results)
 
