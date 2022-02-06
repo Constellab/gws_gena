@@ -25,12 +25,14 @@ class CompoundPosition:
     x: float = None
     y: float = None
     z: float = None
+    is_major: bool = False
 
     def copy(self) -> 'CompoundPosition':
         p = CompoundPosition()
         p.x = self.x
         p.y = self.y
         p.z = self.z
+        p.is_major = self.is_major
         return p
 
 # ####################################################################
@@ -201,103 +203,103 @@ class Compound:
         "CHEBI:29969": "L-lysinium residue",
     }
 
-    MAJOR_NAME_PATTERNS = []
-    MAJORS = {
-        "CHEBI:17925": "alpha-D-glucose",
-        "CHEBI:15903": "beta-D-glucose",
-        "CHEBI:58225": "alpha-D-glucose 6-phosphate(2-)",
+    # MAJOR_NAME_PATTERNS = []
+    # MAJORS = {
+    #     "CHEBI:17925": "alpha-D-glucose",
+    #     "CHEBI:15903": "beta-D-glucose",
+    #     "CHEBI:58225": "alpha-D-glucose 6-phosphate(2-)",
 
-        "CHEBI:17378": "D-glyceraldehyde",
-        "CHEBI:59776": "D-glyceraldehyde 3-phosphate(2-)",
-        "CHEBI:16016": "dihydroxyacetone",
-        "CHEBI:57642": "glycerone phosphate(2-)",
+    #     "CHEBI:17378": "D-glyceraldehyde",
+    #     "CHEBI:59776": "D-glyceraldehyde 3-phosphate(2-)",
+    #     "CHEBI:16016": "dihydroxyacetone",
+    #     "CHEBI:57642": "glycerone phosphate(2-)",
 
-        "CHEBI:32966": "beta-D-fructofuranose 1,6-bisphosphate(4-)",
-        "CHEBI:37721": "fructofuranose",
-        "CHEBI:57634": "beta-D-fructofuranose 6-phosphate(2-)",
-        "CHEBI:138881": "beta-D-fructofuranose 1-phosphate(2-)",
-        "CHEBI:57604": "3-phosphonato-D-glyceroyl phosphate(4-)",
-        "CHEBI:58272": "2,3-bisphosphonato-D-glycerate(5-)",
-        "CHEBI:58289": "2-phosphonato-D-glycerate(3-)",
+    #     "CHEBI:32966": "beta-D-fructofuranose 1,6-bisphosphate(4-)",
+    #     "CHEBI:37721": "fructofuranose",
+    #     "CHEBI:57634": "beta-D-fructofuranose 6-phosphate(2-)",
+    #     "CHEBI:138881": "beta-D-fructofuranose 1-phosphate(2-)",
+    #     "CHEBI:57604": "3-phosphonato-D-glyceroyl phosphate(4-)",
+    #     "CHEBI:58272": "2,3-bisphosphonato-D-glycerate(5-)",
+    #     "CHEBI:58289": "2-phosphonato-D-glycerate(3-)",
 
-        "CHEBI:57288": "acetyl_CoA(4-)",
+    #     "CHEBI:57288": "acetyl_CoA(4-)",
 
-        "CHEBI:15361": "pyruvate",
-        "CHEBI:17180": "3-hydroxypyruvate",
-        "CHEBI:58702": "phosphonatoenolpyruvate",
-        "CHEBI:30089": "acetate",
-        "CHEBI:13705": "acetoacetate",
-        "CHEBI:16452": "oxaloacetate(2-)",
-        "CHEBI:16947": "citrate(3-)",
-        "CHEBI:16810": "2-oxoglutarate(2-)",
-        "CHEBI:24996": "lactate",
-        "CHEBI:16651": "(S)-lactate",
-        "CHEBI:16004": "(R)-lactate",
-        "CHEBI:15589": "(S)-malate",
-        "CHEBI:15740": "formate",
-        "CHEBI:29806": "fumarate(2-)",
-        "CHEBI:30031": "succinate(2-)",
-        "CHEBI:57292": "succinyl-CoA(5-)",
-        "CHEBI:83120": "N6-[(R)-S8-succinyldihydrolipoyl]-L-lysine(1−) residue",
-        "CHEBI:15562": "D-threo-isocitrate(3-)",
-        "CHEBI:57384": "malonyl-CoA(5-)",
+    #     "CHEBI:15361": "pyruvate",
+    #     "CHEBI:17180": "3-hydroxypyruvate",
+    #     "CHEBI:58702": "phosphonatoenolpyruvate",
+    #     "CHEBI:30089": "acetate",
+    #     "CHEBI:13705": "acetoacetate",
+    #     "CHEBI:16452": "oxaloacetate(2-)",
+    #     "CHEBI:16947": "citrate(3-)",
+    #     "CHEBI:16810": "2-oxoglutarate(2-)",
+    #     "CHEBI:24996": "lactate",
+    #     "CHEBI:16651": "(S)-lactate",
+    #     "CHEBI:16004": "(R)-lactate",
+    #     "CHEBI:15589": "(S)-malate",
+    #     "CHEBI:15740": "formate",
+    #     "CHEBI:29806": "fumarate(2-)",
+    #     "CHEBI:30031": "succinate(2-)",
+    #     "CHEBI:57292": "succinyl-CoA(5-)",
+    #     "CHEBI:83120": "N6-[(R)-S8-succinyldihydrolipoyl]-L-lysine(1−) residue",
+    #     "CHEBI:15562": "D-threo-isocitrate(3-)",
+    #     "CHEBI:57384": "malonyl-CoA(5-)",
 
-        "CHEBI:30839": "orotate",
+    #     "CHEBI:30839": "orotate",
 
-        "CHEBI:10983": "(R)-3-hydroxybutyrate",
-        "CHEBI:11047": "(S)-3-hydroxybutyrate",
+    #     "CHEBI:10983": "(R)-3-hydroxybutyrate",
+    #     "CHEBI:11047": "(S)-3-hydroxybutyrate",
 
-        "CHEBI:32372": "palmitoleate",
-        "CHEBI:17268": "myo-inositol",
-        "CHEBI:15354": "choline",
-        "CHEBI:295975": "choline phosphate(1-)",
-        "CHEBI:57643": "1,2-diacyl-sn-glycero-3-phosphocholine",
+    #     "CHEBI:32372": "palmitoleate",
+    #     "CHEBI:17268": "myo-inositol",
+    #     "CHEBI:15354": "choline",
+    #     "CHEBI:295975": "choline phosphate(1-)",
+    #     "CHEBI:57643": "1,2-diacyl-sn-glycero-3-phosphocholine",
 
-        "CHEBI:17754": "glycerol",
-        "CHEBI:64615": "triacyl-sn-glycerol",
-        "CHEBI:17815": "1,2-diacyl-sn-glycerol",
-        "CHEBI:58608": "1,2-diacyl-sn-glycerol 3-phosphate(2-)",
-        "CHEBI:57262": "3-sn-phosphatidyl-L-serine(1-)",
+    #     "CHEBI:17754": "glycerol",
+    #     "CHEBI:64615": "triacyl-sn-glycerol",
+    #     "CHEBI:17815": "1,2-diacyl-sn-glycerol",
+    #     "CHEBI:58608": "1,2-diacyl-sn-glycerol 3-phosphate(2-)",
+    #     "CHEBI:57262": "3-sn-phosphatidyl-L-serine(1-)",
 
-        "CHEBI:59996": "1,2-diacyl-sn-glycerol 3-diphosphate(3-)",
-        "CHEBI:57597": "sn-glycerol 3-phosphate(2-)",
+    #     "CHEBI:59996": "1,2-diacyl-sn-glycerol 3-diphosphate(3-)",
+    #     "CHEBI:57597": "sn-glycerol 3-phosphate(2-)",
 
-        "CHEBI:16113": "cholesterol",
-        "CHEBI:62237": "cardiolipin(2-)",
+    #     "CHEBI:16113": "cholesterol",
+    #     "CHEBI:62237": "cardiolipin(2-)",
 
-        "CHEBI:58359": "L-glutamine zwitterion",
-        "CHEBI:29985": "L-glutamate(1-)",
-        "CHEBI:60039": "L-proline zwitterion",
-        "CHEBI:29991": "L-aspartate(1-)",
-        "CHEBI:57844": "L-methionine zwitterion",
-        "CHEBI:58048": "L-asparagine zwitterion",
-        "CHEBI:57972": "L-alanine zwitterion",
-        "CHEBI:57762": "L-valine zwitterion",
-        "CHEBI:57427": "L-leucine zwitterion",
-        "CHEBI:58045": "L-isoleucine zwitterion",
-        "CHEBI:57305": "glycine zwitterion",
-        "CHEBI:57926": "L-threonine zwitterion",
-        "CHEBI:16467": "L-arginine",
-        "CHEBI:33384": "L-serine",
+    #     "CHEBI:58359": "L-glutamine zwitterion",
+    #     "CHEBI:29985": "L-glutamate(1-)",
+    #     "CHEBI:60039": "L-proline zwitterion",
+    #     "CHEBI:29991": "L-aspartate(1-)",
+    #     "CHEBI:57844": "L-methionine zwitterion",
+    #     "CHEBI:58048": "L-asparagine zwitterion",
+    #     "CHEBI:57972": "L-alanine zwitterion",
+    #     "CHEBI:57762": "L-valine zwitterion",
+    #     "CHEBI:57427": "L-leucine zwitterion",
+    #     "CHEBI:58045": "L-isoleucine zwitterion",
+    #     "CHEBI:57305": "glycine zwitterion",
+    #     "CHEBI:57926": "L-threonine zwitterion",
+    #     "CHEBI:16467": "L-arginine",
+    #     "CHEBI:33384": "L-serine",
 
-        "CHEBI:16236": "ethanol",
-        "CHEBI:15343": "acetaldehyde",
-        "CHEBI:17790": "methanol",
+    #     "CHEBI:16236": "ethanol",
+    #     "CHEBI:15343": "acetaldehyde",
+    #     "CHEBI:17790": "methanol",
 
-        "CHEBI:57880": "1-phosphatidyl-1D-myo-inositol(1-)",
+    #     "CHEBI:57880": "1-phosphatidyl-1D-myo-inositol(1-)",
 
-        "CHEBI:16199": "urea",
-        "CHEBI:57743": "L-citrulline zwitterion",
-        "CHEBI:32682": "L-ornithinium(1+)",
-        "CHEBI:32682": "L-argininium(1+)",
+    #     "CHEBI:16199": "urea",
+    #     "CHEBI:57743": "L-citrulline zwitterion",
+    #     "CHEBI:32682": "L-ornithinium(1+)",
+    #     "CHEBI:32682": "L-argininium(1+)",
 
-        "CHEBI:58273": "aldehydo-D-ribose 5-phosphate(2-)",
-        "CHEBI:58121": "D-ribulose 5-phosphate(2-)",
-        "CHEBI:57737": "D-xylulose 5-phosphate(2-)",
-        "CHEBI:17140": "D-xylulose",
-        "CHEBI:57483": "sedoheptulose 7-phosphate(2-)",
-        "CHEBI:16897": "D-erythrose 4-phosphate(2-)"
-    }
+    #     "CHEBI:58273": "aldehydo-D-ribose 5-phosphate(2-)",
+    #     "CHEBI:58121": "D-ribulose 5-phosphate(2-)",
+    #     "CHEBI:57737": "D-xylulose 5-phosphate(2-)",
+    #     "CHEBI:17140": "D-xylulose",
+    #     "CHEBI:57483": "sedoheptulose 7-phosphate(2-)",
+    #     "CHEBI:16897": "D-erythrose 4-phosphate(2-)"
+    # }
 
     def __init__(self, id="", name="", compartment=None,
                  network: 'Network' = None, formula="",
@@ -520,6 +522,7 @@ class Compound:
             c.position.x = biota_compound.position.x
             c.position.y = biota_compound.position.y
             c.position.z = biota_compound.position.z
+            c.position.is_major = biota_compound.position.is_major
 
         return c
 
@@ -645,11 +648,13 @@ class Compound:
         :rtype: `bool`
         """
 
-        for pattern in self.MAJOR_NAME_PATTERNS:
-            if pattern in self.name:
-                return True
+        return self.position.is_major
 
-        return self.chebi_id in self.MAJORS
+    #     for pattern in self.MAJOR_NAME_PATTERNS:
+    #         if pattern in self.name:
+    #             return True
+
+    #     return self.chebi_id in self.MAJORS
 
     @property
     def is_minor(self) -> bool:

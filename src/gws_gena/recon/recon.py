@@ -47,13 +47,13 @@ class DraftRecon(Task):
     output_specs = {'network': (Network,)}
     config_specs = {
         'unique_name': StrParam(
-            default_value=Utils.generate_random_chars(4), human_name="Network name", short_description="The name of the network. Usefull to uniquely identify networks when simulating cell communities"),
+            default_value=Utils.generate_random_chars(4), human_name="Network name", short_description="The unique name of the network. Required to uniquely identify taxa in microbial communities"),
         'tax_id': StrParam(
-            default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id"),
+            default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id. For example: `tax_id = 562` for E. Coli"),
         'tax_search_method':
         StrParam(
-            default_value='bottom_up', human_name="Taxonomy search method",
-            short_description="If 'bottom_up', the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found. If 'none', the algorithm will only search at the given taxonomy level given by `tax_id`")}
+            default_value='bottom_up', allowed_values=['none','bottom_up'], human_name="Taxonomy search method",
+            short_description="If 'bottom_up', the algorithm will to traverse the taxonomy tree to search at higher taxonomy levels until a reaction is found. If `none`, the algorithm will only search at the given taxonomy level given by `tax_id`")}
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = self._create_network(params, inputs)
@@ -70,19 +70,22 @@ class DraftRecon(Task):
     def _create_network(self, params, inputs):
         unique_name = params["unique_name"]
         tax_id = params['tax_id']
+        tax_search_method = params['tax_search_method']
+        if not tax_search_method:
+            tax_search_method = None
         if 'ec_table' in inputs:
             return ReconHelper.create_network_with_ec_table(
                 unique_name=unique_name,
                 ec_table=inputs['ec_table'],
                 tax_id=params['tax_id'],
-                tax_search_method=params['tax_search_method'],
+                tax_search_method=tax_search_method,
                 running_task=self
             )
         elif tax_id:
             return ReconHelper.create_network_with_taxonomy(
                 unique_name=unique_name,
                 tax_id=params['tax_id'],
-                tax_search_method=params['tax_search_method'],
+                tax_search_method=tax_search_method,
                 running_task=self
             )
         else:

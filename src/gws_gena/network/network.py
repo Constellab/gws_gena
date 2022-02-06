@@ -15,8 +15,8 @@ from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
                       File, JSONFile, JSONView, Resource, ResourceExporter,
-                      RField, StrRField, Table, TabularView, resource_decorator,
-                      view)
+                      RField, StrRField, Table, TabularView,
+                      resource_decorator, view)
 from pandas import DataFrame
 
 from .compound import Compound
@@ -1092,16 +1092,3 @@ class Network(Resource):
         t_view = TabularView()
         t_view.set_data(data=table.to_dataframe())
         return t_view
-
-# ####################################################################
-#
-# Network class
-#
-# ####################################################################
-
-
-@resource_decorator("NetworkFile",
-                    human_name="NetworkFile",
-                    short_description="Metabolic network file")
-class NetworkFile(JSONFile):
-    pass

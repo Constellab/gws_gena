@@ -18,11 +18,11 @@ from .fba.fva import FVA
 from .fba.fva_result import FVAResult
 # KnockOut
 from .koa.koa import KOA
-from .koa.koa_result_table import \
-    KOAResultTable
+from .koa.koa_result_table import KOAResultTable
 # network
 from .network.compound import Compound
 from .network.network import Network
+from .network.network_file import NetworkFile
 from .network.network_helper.reaction_adder_helper import ReactionAdderHelper
 from .network.network_helper.reaction_remover_helper import \
     ReactionRemoverHelper

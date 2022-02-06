@@ -12,7 +12,8 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams,
                       StrParam, exporter_decorator, importer_decorator)
 from pandas import DataFrame
 
-from .network import Network, NetworkFile
+from .network import Network
+from .network_file import NetworkFile
 
 # ####################################################################
 #
