@@ -11,6 +11,7 @@ import uuid
 from typing import Dict, List, Optional, TypedDict
 
 import numpy as np
+from gws_biota import CompoundPosition as BiotaCompoundPosition
 from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
@@ -299,6 +300,11 @@ class Network(Resource):
         _rxn_json = []
 
         for _met in self.compounds.values():
+
+            # refresh position
+            if _met.chebi_id:
+                _met.position = BiotaCompoundPosition.get_by_chebi_id(chebi_id=_met.chebi_id)
+
             _met_json.append({
                 "id": _met.id,
                 "name": _met.name,
