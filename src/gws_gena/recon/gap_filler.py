@@ -52,29 +52,44 @@ class GapFiller(Task):
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         output_net = inputs["network"].copy()
-        _nb_filled = True
+        nb_gaps_filled = True
         i = 0
+        max_gaps_filled = 0
         while True:
             i += 1
-            self.log_info_message(f"Doing pass {i} ...")
-            _nb_filled = self.__fill_gaps_with_tax(output_net, params)
-            if _nb_filled <= 1:
-                message = f"Pass {i} done: {_nb_filled} gap filled."
+            done = max_gaps_filled-nb_gaps_filled
+            if max_gaps_filled == 0:
+                perc = 0
             else:
-                message = f"Pass {i} done: {_nb_filled} gaps filled."
-            self.log_info_message(message)
-            if not _nb_filled:
+                perc = 100 * done/max_gaps_filled
+            if perc < 0:
+                perc = 0
+
+            #self.log_info_message(f"Doing pass {i} ...")
+            self.update_progress_value(perc, message=f"Doing pass {i} ...")
+            nb_gaps_filled = self.__fill_gaps_with_tax(output_net, params)
+            if nb_gaps_filled <= 1:
+                message = f"Pass {i} done: {nb_gaps_filled} gap filled."
+            else:
+                message = f"Pass {i} done: {nb_gaps_filled} gaps filled."
+            # self.log_info_message(message)
+            self.update_progress_value(perc, message=message)
+            if not nb_gaps_filled:
                 break
+            max_gaps_filled = max(max_gaps_filled, nb_gaps_filled)
+
         add_sink_reactions = params["add_sink_reactions"]
         if add_sink_reactions:
-            self.log_info_message(f"Adding sink reactions ...")
+            self.log_info_message(99.8, f"Adding sink reactions ...")
+            #self.update_progress_value(0, message=f"Adding sink reactions ...")
             tf = params["biomass_and_medium_gaps_only"]
-            _nb_filled = SinkHelper.fill_gaps_with_sinks(output_net, biomass_and_medium_gaps_only=tf)
-            self.log_info_message(f"Done: {_nb_filled} gaps filled with sink reactions.")
+            nb_gaps_filled = SinkHelper.fill_gaps_with_sinks(output_net, biomass_and_medium_gaps_only=tf)
+            #self.log_info_message(f"Done: {nb_gaps_filled} gaps filled with sink reactions.")
+            self.update_progress_value(99.9, message=f"Done: {nb_gaps_filled} gaps filled with sink reactions.")
         return {"network": output_net}
 
     def __fill_gaps_with_tax(self, net, params):
-        _nb_filled = 0
+        nb_gaps_filled = 0
         _gap_info = net._get_gap_info()
         tax_id = params["tax_id"]
         biomass_and_medium_gaps_only = params["biomass_and_medium_gaps_only"]
@@ -140,10 +155,10 @@ class GapFiller(Task):
                                         "id": rxn.id,
                                         "is_from_gap_fillering": True
                                     })
-                                    _nb_filled += 1
+                                    nb_gaps_filled += 1
                                     _is_filled_once = True
                                     break  # > select only one reaction
 
                         if fill_each_gap_once and _is_filled_once:
                             break
-        return _nb_filled
+        return nb_gaps_filled

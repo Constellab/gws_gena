@@ -96,6 +96,7 @@ class Compound:
     COMPARTMENT_BIOMASS = "b"
     COMPARTMENT_EXTRACELL = "e"
     COMPARTMENT_SINK = "s"
+    COMPARTMENT_PERIPLASM = "p"
 
     # Use BiGG nomenclature for compartments
     COMPARTMENTS = {
@@ -108,7 +109,8 @@ class Compound:
         "r": {"name": "endoplasmic reticulum", "is_steady": True},
         "v": {"name": "vacuole", "is_steady": True},
         "x": {"name": "peroxisome/glyoxysome", "is_steady": True},
-        "g": {"name": "golgi apparatus", "is_steady": True}
+        "g": {"name": "golgi apparatus", "is_steady": True},
+        "p": {"name": "periplasm", "is_steady": True}
     }
 
     LEVEL_MAJOR = "major"
