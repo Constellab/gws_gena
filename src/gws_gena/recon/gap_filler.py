@@ -80,7 +80,7 @@ class GapFiller(Task):
 
         add_sink_reactions = params["add_sink_reactions"]
         if add_sink_reactions:
-            self.log_info_message(99.8, f"Adding sink reactions ...")
+            self.update_progress_value(99.8, f"Adding sink reactions ...")
             #self.update_progress_value(0, message=f"Adding sink reactions ...")
             tf = params["biomass_and_medium_gaps_only"]
             nb_gaps_filled = SinkHelper.fill_gaps_with_sinks(output_net, biomass_and_medium_gaps_only=tf)

@@ -8,7 +8,7 @@ import math
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, ConfigParams, Logger, Task,
-                      TaskInputs)
+                      TaskHelper, TaskInputs)
 
 from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.ec_table import ECTable
@@ -18,16 +18,14 @@ from ...network.network import Network, ReactionDuplicate
 from ...network.reaction import Reaction
 
 
-class ReconHelper:
+class ReconHelper(TaskHelper):
 
-    @classmethod
-    def add_biomass_equation_to_network(cls, net: Network, biomass_table: BiomassReactionTable):
-        biomass_comps = cls._create_biomass_compounds(net, biomass_table)
-        cls._create_biomass_rxns(net, biomass_comps, biomass_table)
+    def add_biomass_equation_to_network(self, net: Network, biomass_table: BiomassReactionTable):
+        biomass_comps = self._create_biomass_compounds(net, biomass_table)
+        self._create_biomass_rxns(net, biomass_comps, biomass_table)
 
-    @classmethod
     def create_network_with_taxonomy(
-            cls, unique_name: str, tax_id: str, tax_search_method: str, running_task: Task = None) -> Network:
+            self, unique_name: str, tax_id: str, tax_search_method: str) -> Network:
         try:
             tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
         except Exception as err:
@@ -40,20 +38,18 @@ class ReconHelper:
         net = Network()
         net.name = unique_name
 
-        if running_task is not None:
-            total_enzymes = len(enzymes)
-            running_task.log_info_message(f"{total_enzymes} enzymes found")
-            counter = 1
-            nb_interval = int(total_enzymes/10) + 1
-            perc = 0
-            running_task.update_progress_value(perc, message=f"enzyme {counter} ...")
+        total_enzymes = len(enzymes)
+        self.notify_info_message(f"{total_enzymes} enzymes found")
+        counter = 1
+        nb_interval = int(total_enzymes/10) + 1
+        perc = 0
+        self.notify_progress_value(perc, message=f"enzyme {counter} ...")
 
         for enzyme in enzymes:
-            if running_task is not None:
-                if (counter % nb_interval) == 0:
-                    perc = 100*(counter/total_enzymes)
-                    running_task.update_progress_value(perc, message=f"enzyme {counter} ...")
-                counter += 1
+            if (counter % nb_interval) == 0:
+                perc = 100*(counter/total_enzymes)
+                self.notify_progress_value(perc, message=f"enzyme {counter} ...")
+            counter += 1
 
             try:
                 Reaction.from_biota(ec_number=enzyme.ec_number, network=net,
@@ -67,27 +63,24 @@ class ReconHelper:
 
         return net
 
-    @classmethod
     def create_network_with_ec_table(
-            cls, unique_name: str, ec_table: ECTable, tax_id: str, tax_search_method: str, running_task: Task = None) -> Network:
+            self, unique_name: str, ec_table: ECTable, tax_id: str, tax_search_method: str) -> Network:
         ec_list = ec_table.get_ec_numbers(rtype="list")
         net = Network()
         net.name = unique_name
 
-        if running_task is not None:
-            total_enzymes = len(ec_list)
-            running_task.log_info_message(f"{total_enzymes} enzymes to process")
-            counter = 1
-            nb_interval = int(total_enzymes/10) + 1
-            perc = 0
-            running_task.update_progress_value(perc, message=f"enzyme {counter} ...")
+        total_enzymes = len(ec_list)
+        self.notify_info_message(f"{total_enzymes} enzymes to process")
+        counter = 1
+        nb_interval = int(total_enzymes/10) + 1
+        perc = 0
+        self.notify_progress_value(perc, message=f"enzyme {counter} ...")
 
         for ec in ec_list:
-            if running_task is not None:
-                if (counter % nb_interval) == 0:
-                    perc = 100*(counter/total_enzymes)
-                    running_task.update_progress_value(perc, message=f"enzyme {counter} ...")
-                counter += 1
+            if (counter % nb_interval) == 0:
+                perc = 100*(counter/total_enzymes)
+                self.notify_progress_value(perc, message=f"enzyme {counter} ...")
+            counter += 1
 
             ec = str(ec).strip()
             is_incomplete_ec = (not ec) or ("-" in ec)
@@ -108,8 +101,7 @@ class ReconHelper:
 
         return net
 
-    @classmethod
-    def add_medium_to_network(cls, net: Network, medium_table: MediumTable):
+    def add_medium_to_network(self, net: Network, medium_table: MediumTable):
         entities = medium_table.get_entities()
         chebi_ids = medium_table.get_chebi_ids()
         for i, chebi_id in enumerate(chebi_ids):
@@ -155,8 +147,7 @@ class ReconHelper:
         })
         return comp
 
-    @classmethod
-    def _create_biomass_rxns(cls, net, biomass_comps, biomass_table):
+    def _create_biomass_rxns(self, net, biomass_comps, biomass_table):
         col_names = biomass_table.column_names
         chebi_col_name = biomass_table.chebi_column
         for col_name in col_names:
@@ -193,8 +184,7 @@ class ReconHelper:
                     "error": error_message
                 })
 
-    @classmethod
-    def _create_biomass_compounds(cls, net, biomass_table):
+    def _create_biomass_compounds(self, net, biomass_table):
         entities = biomass_table.get_entities()
         chebi_ids = biomass_table.get_chebi_ids()
         biomass_col_name = biomass_table.biomass_column
@@ -205,7 +195,7 @@ class ReconHelper:
                 comp = Compound(name=name, compartment=Compound.COMPARTMENT_BIOMASS)
                 _comps.append(comp)
             else:
-                comp = cls._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
+                comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
                 _comps.append(comp)
         if not net.exists(comp):
             net.add_compound(comp)

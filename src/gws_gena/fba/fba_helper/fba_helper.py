@@ -9,9 +9,7 @@ import re
 import cvxpy as cp
 import numpy as np
 import pandas as pd
-from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
-                      Logger, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import BadRequestException, Logger, TaskHelper
 from pandas import DataFrame
 from scipy.optimize import linprog
 
@@ -23,19 +21,17 @@ from ...twin.twin import Twin
 from ..fba_result import FBAResult, OptimizeResult
 
 
-class FBAHelper:
+class FBAHelper(TaskHelper):
 
     __CVXPY_MAX_ITER = 100000
     __CVXPY_SOLVER_PRIORITY = [cp.OSQP, cp.ECOS]
 
-    @classmethod
-    def run(cls, twin: Twin, solver, fluxes_to_maximize, fluxes_to_minimize, fill_gaps_with_sinks: bool,
-            ignore_cofactors: bool, relax_qssa: bool, current_task: Task = None) -> FBAResult:
-        if current_task:
-            current_task.log_info_message(message="Creating problem ...")
+    def run(self, twin: Twin, solver, fluxes_to_maximize, fluxes_to_minimize, fill_gaps_with_sinks: bool,
+            ignore_cofactors: bool, relax_qssa: bool) -> FBAResult:
+        cls = type(self)
+        self.notify_info_message(message="Creating problem ...")
         if relax_qssa and solver != "quad":
-            if current_task:
-                current_task.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
+            self.notify_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
 
         if not isinstance(twin, Twin):
@@ -53,8 +49,7 @@ class FBAHelper:
             fill_gaps_with_sinks=fill_gaps_with_sinks,
             ignore_cofactors=ignore_cofactors,
         )
-        if current_task:
-            current_task.update_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
+        self.notify_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
             res, _ = cls.solve_cvxpy(
                 c, A_eq, b_eq, bounds,
@@ -65,8 +60,7 @@ class FBAHelper:
                 c, A_eq, b_eq, bounds,
                 solver=solver
             )
-        if current_task:
-            current_task.update_progress_value(90, message=res.message)
+        self.notify_progress_value(90, message=res.message)
         result = FBAResult(twin=twin, optimize_result=res)
         return result
 

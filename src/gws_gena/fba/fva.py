@@ -11,7 +11,7 @@ import numpy as np
 from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
                       Logger, StrParam, Task, TaskInputs, TaskOutputs,
                       task_decorator)
-from joblib import Parallel, delayed
+#from joblib import Parallel, delayed
 from pandas import DataFrame
 
 from ..network.network import Network

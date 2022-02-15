@@ -79,7 +79,9 @@ class FBA(Task):
         ignore_cofactors = params["ignore_cofactors"]
         relax_qssa = params["relax_qssa"]
 
-        result: FBAResult = FBAHelper.run(
+        helper = FBAHelper()
+        helper.attach(self)
+        result: FBAResult = helper.run(
             twin, solver, fluxes_to_maximize, fluxes_to_minimize, fill_gaps_with_sinks=fill_gaps_with_sinks,
             ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
         return {"result": result}

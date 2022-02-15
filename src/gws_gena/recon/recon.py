@@ -57,36 +57,39 @@ class DraftRecon(Task):
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = self._create_network(params, inputs)
+        helper = ReconHelper()
+        helper.attach(self)
+
         if 'biomass_table' in inputs:
             biomass_table = inputs['biomass_table']
-            ReconHelper.add_biomass_equation_to_network(net, biomass_table)
+            helper.add_biomass_equation_to_network(net, biomass_table)
 
         if 'medium_table' in inputs:
             medium_table = inputs['medium_table']
-            ReconHelper.add_medium_to_network(net, medium_table)
+            helper.add_medium_to_network(net, medium_table)
 
         return {"network": net}
 
     def _create_network(self, params, inputs):
+        helper = ReconHelper()
+        helper.attach(self)
         unique_name = params["unique_name"]
         tax_id = params['tax_id']
         tax_search_method = params['tax_search_method']
         if not tax_search_method:
             tax_search_method = None
         if 'ec_table' in inputs:
-            return ReconHelper.create_network_with_ec_table(
+            return helper.create_network_with_ec_table(
                 unique_name=unique_name,
                 ec_table=inputs['ec_table'],
                 tax_id=params['tax_id'],
-                tax_search_method=tax_search_method,
-                running_task=self
+                tax_search_method=tax_search_method
             )
         elif tax_id:
-            return ReconHelper.create_network_with_taxonomy(
+            return helper.create_network_with_taxonomy(
                 unique_name=unique_name,
                 tax_id=params['tax_id'],
-                tax_search_method=tax_search_method,
-                running_task=self
+                tax_search_method=tax_search_method
             )
         else:
             raise BadRequestException("A list of EC numbers or a taxonomy ID is required")
