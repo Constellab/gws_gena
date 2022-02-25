@@ -7,6 +7,7 @@ from typing import List
 
 from gws_core import StrRField, Table, TableFile, resource_decorator
 
+
 @resource_decorator("ECTable",
                     human_name="ECTable",
                     short_description="CSV table of EC numbers")
@@ -31,7 +32,6 @@ class ECTable(Table):
     ```
     """
 
-
     DEFAULT_EC_COLUMN = "ec_number"
     ec_column: str = StrRField(default_value=DEFAULT_EC_COLUMN)
 
@@ -46,23 +46,23 @@ class ECTable(Table):
 
     # -- S --
 
-    def select_by_row_positions(self, indexes: List[int]) -> 'ECTable':
-        table = super().select_by_row_positions(indexes)
+    def select_by_row_positions(self, positions: List[int]) -> 'ECTable':
+        table = super().select_by_row_positions(positions)
         table.ec_column = self.ec_column
         return table
 
-    def select_by_column_positions(self, indexes: List[int]) -> 'ECTable':
-        table = super().select_by_column_positions(indexes)
+    def select_by_column_positions(self, positions: List[int]) -> 'ECTable':
+        table = super().select_by_column_positions(positions)
         table.ec_column = self.ec_column
         return table
 
-    def select_by_row_name(self, name_regex: str) -> 'ECTable':
-        table = super().select_by_row_name(name_regex)
+    def select_by_row_names(self, names: List[str], use_regex=False) -> 'ECTable':
+        table = super().select_by_row_names(names, use_regex)
         table.ec_column = self.ec_column
         return table
 
-    def select_by_column_name(self, name_regex: str) -> 'ECTable':
-        table = super().select_by_column_name(name_regex)
+    def select_by_column_names(self, names: List[str], use_regex=False) -> 'ECTable':
+        table = super().select_by_column_names(names, use_regex)
         table.ec_column = self.ec_column
         return table
 

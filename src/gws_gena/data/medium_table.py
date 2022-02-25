@@ -56,26 +56,26 @@ class MediumTable(Table):
 
     # -- S --
 
-    def select_by_row_positions(self, indexes: List[int]) -> 'MediumTable':
-        table = super().select_by_row_positions(indexes)
+    def select_by_row_positions(self, positions: List[int]) -> 'MediumTable':
+        table = super().select_by_row_positions(positions)
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
 
-    def select_by_column_positions(self, indexes: List[int]) -> 'MediumTable':
-        table = super().select_by_column_positions(indexes)
+    def select_by_column_positions(self, positions: List[int]) -> 'MediumTable':
+        table = super().select_by_column_positions(positions)
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
 
-    def select_by_row_name(self, name_regex: str) -> 'MediumTable':
-        table = super().select_by_row_name(name_regex)
+    def select_by_row_names(self, names: List[str], use_regex=False) -> 'MediumTable':
+        table = super().select_by_row_names(names, use_regex)
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
 
-    def select_by_column_name(self, name_regex: str) -> 'MediumTable':
-        table = super().select_by_column_name(name_regex)
+    def select_by_column_names(self, names: List[str], use_regex=False) -> 'MediumTable':
+        table = super().select_by_column_names(name_regex)
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table

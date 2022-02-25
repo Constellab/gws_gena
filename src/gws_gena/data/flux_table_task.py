@@ -58,7 +58,7 @@ class FluxTableImporter(TableImporter):
         :rtype: FluxTable
         """
 
-        params["index_columns"] = None
+        params["index_column"] = None
         csv_table = await super().import_from_path(file, params, target_type)
 
         reaction_id_column = params.get_value("reaction_id_column", FluxTable.DEFAULT_REACTION_ID_COLUMN)

@@ -46,23 +46,23 @@ class EntityIDTable(Table):
 
     # -- S --
 
-    def select_by_row_positions(self, indexes: List[int]) -> 'EntityIDTable':
-        table = super().select_by_row_positions(indexes)
+    def select_by_row_positions(self, positions: List[int]) -> 'EntityIDTable':
+        table = super().select_by_row_positions(positions)
         table.id_column = self.id_column
         return table
 
-    def select_by_column_positions(self, indexes: List[int]) -> 'EntityIDTable':
-        table = super().select_by_column_positions(indexes)
+    def select_by_column_positions(self, positions: List[int]) -> 'EntityIDTable':
+        table = super().select_by_column_positions(positions)
         table.id_column = self.id_column
         return table
 
-    def select_by_row_name(self, name_regex: str) -> 'EntityIDTable':
-        table = super().select_by_row_name(name_regex)
+    def select_by_row_names(self, names: List[str], use_regex=False) -> 'EntityIDTable':
+        table = super().select_by_row_names(names, use_regex)
         table.id_column = self.id_column
         return table
 
-    def select_by_column_name(self, name_regex: str) -> 'EntityIDTable':
-        table = super().select_by_column_name(name_regex)
+    def select_by_column_names(self, names: List[str], use_regex=False) -> 'EntityIDTable':
+        table = super().select_by_column_names(names, use_regex)
         table.id_column = self.id_column
         return table
 

@@ -22,9 +22,10 @@ from .ec_table import ECTable, ECTableFile
 class ECTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
-        'ec_column': StrParam(default_value=ECTable.DEFAULT_EC_COLUMN, short_description="The name of the column containing the EC numbers"),
-        'index_columns': ListParam(optional=True, short_description="Columns to use as the row names. Use None to prevent parsing row names. Only for CSV files")
-    }
+        'ec_column':
+        StrParam(
+            default_value=ECTable.DEFAULT_EC_COLUMN,
+            short_description="The name of the column containing the EC numbers"), }
 
     async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[ECTable]) -> ECTable:
         """

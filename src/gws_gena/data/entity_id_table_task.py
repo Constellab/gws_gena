@@ -26,7 +26,6 @@ class EntityIDTableImporter(TableImporter):
         'id_column': StrParam(default_value=EntityIDTable.DEFAULT_ID_COLUMN, short_description="The column containing the IDs entities"),
         'name_column': StrParam(optional=True, short_description="The column containing the names of the entities"),
         'id_type': StrParam(default_value="", allowed_values=["", "chebi", "rhea"], short_description="The expected ID type"),
-        'index_columns': ListParam(optional=True, short_description="Columns to use as the row names. Use None to prevent parsing row names. Only for CSV files")
     }
 
     async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[EntityIDTable]) -> EntityIDTable:

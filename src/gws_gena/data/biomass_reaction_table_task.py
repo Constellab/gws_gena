@@ -72,6 +72,10 @@ class BiomassReactionTableImporter(TableImporter):
         csv_table.entity_column = entity_column
         csv_table.biomass_column = biomass_column
         csv_table.chebi_column = chebi_column
+
+        # set table index
+        # csv_table.get_data().set_index(csv_table.chebi_column)
+
         return csv_table
 
 # ####################################################################

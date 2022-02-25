@@ -649,8 +649,7 @@ class Reaction:
             else:
                 Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
                 if not Q:
-                    raise BadRequestException("gena.reaction.Reaction", "from_biota",
-                                              f"No enzyme found with ec number {ec_number}")
+                    raise BadRequestException(f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
                 for e in Q:
                     for rhea_rxn in e.reactions:
@@ -664,7 +663,7 @@ class Reaction:
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")
         else:
-            raise BadRequestException("gena.reaction.Reaction", "from_biota", "Invalid arguments")
+            raise BadRequestException("Invalid arguments")
 
         return rxns
 

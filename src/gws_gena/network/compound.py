@@ -6,6 +6,7 @@
 import copy
 from typing import List
 
+from gws_biota import Cofactor as BiotaCofactor
 from gws_biota import Compound as BiotaCompound
 from gws_core import BadRequestException, Utils
 
@@ -124,86 +125,7 @@ class Compound:
     }
 
     COFACTOR_NAME_PATTERNS = ["residue"]
-    COFACTORS = {
-        "CHEBI:15378": "hydron",
-        "CHEBI:15377": "water",
-        "CHEBI:16240": "hydrogen_peroxide",
-        "CHEBI:43474": "hydrogenphosphate",
-        "CHEBI:33019": "diphosphate_3",
-
-        "CHEBI:57540": "NAD_1",
-        "CHEBI:57945": "NADH_2",
-        "CHEBI:18009": "NADP",
-        "CHEBI:16474": "NADPH",
-        "CHEBI:58349": "NADP_3",
-        "CHEBI:57783": "NADPH_4",
-        "CHEBI:63528": "dTMP_2",
-        "CHEBI:35924": "peroxol",
-        "CHEBI:30879": "alcohol",
-
-        "CHEBI:456216": "ADP(3-)",
-        "CHEBI:30616": "ATP(4-)",
-
-        "CHEBI:57667": "dADP(3-)",
-        "CHEBI:61404": "dATP(4-)",
-
-        "CHEBI:456215": "AMP",
-        "CHEBI:60377": "CMP, cytidine 5'-monophosphate(2-)",
-
-        "CHEBI:57692": "FAD_3",
-        "CHEBI:58307": "FADH2_2",
-        "CHEBI:58210": "FMN_3",
-        "CHEBI:57618": "FMNH2_2",
-
-        "CHEBI:28938": "ammonium",
-        "CHEBI:15379": "dioxygen",
-        "CHEBI:16526": "carbon_dioxide",
-        "CHEBI:29108": "ca2+",
-
-        "CHEBI:57287": "coenzyme A(4-)",
-
-        "CHEBI:59789": "S_adenosyl_L_methionine",
-        "CHEBI:57856": "S_adenosyl_L_homocysteine",
-
-        "CHEBI:29033": "iron_2",
-        "CHEBI:29034": "iron_3",
-
-        "CHEBI:61402": "ITP(4-)",
-        "CHEBI:58280": "IDP(3-)",
-
-        "CHEBI:58189": "GDP(3-)",
-        "CHEBI:37565": "GTP(4-)",
-        "CHEBI:61429": "dGTP(4-)",
-
-        "CHEBI:58223": "UDP(3-)",
-        "CHEBI:46398": "UTP(4-)",
-        "CHEBI:61555": "dUTP(4-)",
-
-        "CHEBI:58280": "IDP(3-)",
-        "CHEBI:61402": "ITP(4-)",
-        "CHEBI:61382": "dITP(4-)",
-
-        "CHEBI:58069": "CDP(3-)",
-        "CHEBI:37563": "CTP(4-)",
-        "CHEBI:61481": "dCTP(4-)",
-
-        "CHEBI:58223": "UDP(3-)",
-        "CHEBI:46398": "UTP(4-)",
-        "CHEBI:61555": "dUTP(4-)",
-
-        "CHEBI:16389": "ubiquinones",
-        "CHEBI:17976": "ubiquinol",
-        "CHEBI:61683": "ubiquinone-8",
-        "CHEBI:61682": "ubiquinol-8",
-        "CHEBI:24646": "hydroquinones",
-        "CHEBI:132124": "1,4-benzoquinones",
-
-        "CHEBI:17499": "hydrogen donor",
-        "CHEBI:13193": "hydrogen acceptor",
-
-        "CHEBI:29950": "L-cysteine residue",
-        "CHEBI:29969": "L-lysinium residue",
-    }
+    COFACTORS = BiotaCofactor.get_factors_as_list()
 
     def __init__(self, id="", name="", compartment=None,
                  network: 'Network' = None, formula="",
@@ -535,7 +457,7 @@ class Compound:
         for pattern in self.COFACTOR_NAME_PATTERNS:
             if pattern in self.name:
                 return not self.is_major
-
+        
         return self.chebi_id in self.COFACTORS
 
     @property

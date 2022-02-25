@@ -66,29 +66,29 @@ class BiomassReactionTable(Table):
 
     # -- S --
 
-    def select_by_row_positions(self, indexes: List[int]) -> 'BiomassReactionTable':
-        table = super().select_by_row_positions(indexes)
+    def select_by_row_positions(self, positions: List[int]) -> 'BiomassReactionTable':
+        table = super().select_by_row_positions(positions)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
 
-    def select_by_column_positions(self, indexes: List[int]) -> 'BiomassReactionTable':
-        table = super().select_by_column_positions(indexes)
+    def select_by_column_positions(self, positions: List[int]) -> 'BiomassReactionTable':
+        table = super().select_by_column_positions(positions)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
 
-    def select_by_row_name(self, name_regex: str) -> 'BiomassReactionTable':
-        table = super().select_by_row_name(name_regex)
+    def select_by_row_names(self, names: List[str], use_regex=False) -> 'BiomassReactionTable':
+        table = super().select_by_row_names(names, use_regex)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
 
-    def select_by_column_name(self, name_regex: str) -> 'BiomassReactionTable':
-        table = super().select_by_column_name(name_regex)
+    def select_by_column_names(self, names: List[str], use_regex=False) -> 'BiomassReactionTable':
+        table = super().select_by_column_names(names, use_regex)
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column

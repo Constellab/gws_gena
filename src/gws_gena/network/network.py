@@ -175,36 +175,12 @@ class Network(Resource):
         # add reaction compounds to the network
         for sub in rxn.substrates.values():
             comp = sub["compound"]
-            # stoich = sub["stoichiometry"]
             if not self.exists(comp):
-                # if comp.chebi_id:
-                #     existing_comp = self.get_compounds_by_chebi_id(comp.chebi_id)
-                #     if existing_comp:
-                #         # the compound already exists
-                #         # ... use the existing compound
-                #         rxn.add_substrate(existing_comp, stoich)
-                #         rxn.remove_substrate(existing_comp)
-                #     else:
-                #         self.add_compound(comp)
-                # else:
-                #     self.add_compound(comp)
                 self.add_compound(comp)
 
         for prod in rxn.products.values():
             comp = prod["compound"]
-            # stoich = sub["stoichiometry"]
             if not self.exists(comp):
-                # if comp.chebi_id:
-                #     existing_comp = self.get_compounds_by_chebi_id(comp.chebi_id)
-                #     if existing_comp:
-                #         # the compound already exists
-                #         # ... use the existing compound
-                #         rxn.add_product(existing_comp, stoich)
-                #         rxn.remove_product(existing_comp)
-                #     else:
-                #         self.add_compound(comp)
-                # else:
-                #     self.add_compound(comp)
                 self.add_compound(comp)
 
         # add the reaction
@@ -231,7 +207,6 @@ class Network(Resource):
         net.reactions = copy.deepcopy(self.reactions)  # /!\ use deepcopy for performance
         net.compartments = self.compartments.copy()
         net.tags = copy.deepcopy(self.tags)
-
         net._stats = copy.deepcopy(self._stats)
         net._set_of_chebi_ids = copy.deepcopy(self._set_of_chebi_ids)
         net._set_of_ec_numbers = copy.deepcopy(self._set_of_ec_numbers)
@@ -303,7 +278,8 @@ class Network(Resource):
 
             # refresh position
             if _met.chebi_id:
-                _met.position = BiotaCompoundPosition.get_by_chebi_id(chebi_id=_met.chebi_id)
+                _met.position = BiotaCompoundPosition.get_by_chebi_id(
+                    chebi_id=_met.chebi_id, compartment=_met.compartment)
 
             _met_json.append({
                 "id": _met.id,
@@ -690,7 +666,7 @@ class Network(Resource):
     # -- L --
 
     @classmethod
-    def loads(cls, data: NetworkDict, skip_bigg_exchange_reactions: bool = True):
+    def loads(cls, data: NetworkDict, skip_bigg_exchange_reactions: bool = True, loads_biota_info: False = False):
         if not data.get("compartments"):
             raise BadRequestException("Invalid network dump. Compartment field not found")
         if not data.get("metabolites"):
@@ -724,18 +700,19 @@ class Network(Resource):
             _id = val["id"]  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
             comp = None
 
-            if chebi_id or inchikey:
-                try:
-                    comp = Compound.from_biota(
-                        id=_id,
-                        name=val.get("name", ""),
-                        chebi_id=chebi_id,
-                        inchikey=inchikey,
-                        compartment=compart,
-                        network=net
-                    )
-                except:
-                    pass
+            if loads_biota_info:
+                if chebi_id or inchikey:
+                    try:
+                        comp = Compound.from_biota(
+                            id=_id,
+                            name=val.get("name", ""),
+                            chebi_id=chebi_id,
+                            inchikey=inchikey,
+                            compartment=compart,
+                            network=net
+                        )
+                    except:
+                        pass
 
             if comp is None:
                 comp = Compound(
