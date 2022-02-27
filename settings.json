@@ -3,7 +3,7 @@
     "author"        : "Gencovery",
     "author_email"  : "admin@gencovery.com",
     "description"   : "Genome-based Analytics (GENA)",
-    "version"       : "0.1.0",
+    "version"       : "0.2.0",
     "variables":{
         "gws_gena:testdata_dir" : "${CURRENT_DIR}/tests/testdata"
     },
@@ -24,9 +24,9 @@
             {
                 "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core",
                 "packages":[
-                    {"name": "gws_biota", "commit": "latest", "branch": "", "is_brick": true},
-                    {"name": "gws_ode", "commit": "latest", "branch": "", "is_brick": true},
-                    {"name": "gws_stats", "commit": "latest", "branch": "", "is_brick": true}
+                    {"name": "gws_biota", "version": "0.2.0", "commit": "", "branch": "", "is_brick": true},
+                    {"name": "gws_ode", "version": "0.2.0", "commit": "", "branch": "", "is_brick": true},
+                    {"name": "gws_stats", "version": "0.2.0", "commit": "", "branch": "", "is_brick": true}
                 ]
             },
             {
