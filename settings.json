@@ -2,7 +2,7 @@
     "name"          : "gws_gena",
     "author"        : "Gencovery",
     "author_email"  : "admin@gencovery.com",
-    "description"   : "Genome-based Analytics (GENA)",
+    "description"   : "GEnome-based regulatory Network Analytics (GENA)",
     "version"       : "0.2.0",
     "variables":{
         "gws_gena:testdata_dir" : "${CURRENT_DIR}/tests/testdata"
