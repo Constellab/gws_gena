@@ -88847,7 +88847,7 @@
                 "n": "nucleus",
                 "b": "biomass"
             },
-            "tags": {
+            "recon_tags": {
                 "reactions": {
                     "2.4.1.370": {
                         "ec_number": "2.4.1.370",
@@ -90858,7 +90858,7 @@
                 }
             }
         },
-        "tags": {
+        "recon_tags": {
             "reactions": {
                 "2.4.1.370": {
                     "ec_number": "2.4.1.370",

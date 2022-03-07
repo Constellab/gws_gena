@@ -112,7 +112,7 @@ class GapFiller(Task):
                     raise BadRequestException("Coherence check. A sink reaction compound should not be a gap compound.")
 
                 if biomass_and_medium_gaps_only:
-                    is_in_biomass_or_medium = net.get_compound_tag(comp.id, "is_in_biomass_or_medium")
+                    is_in_biomass_or_medium = net.get_compound_recon_tag(comp.id, "is_in_biomass_or_medium")
                     if not is_in_biomass_or_medium:
                         # skip this compound
                         continue
@@ -121,7 +121,7 @@ class GapFiller(Task):
                     try:
                         biota_c = BiotaCompound.get(BiotaCompound.chebi_id == comp.chebi_id)
                     except Exception as _:
-                        net.set_compound_tag(comp.id, {
+                        net.set_compound_recon_tag(comp.id, {
                             "id": comp.id,
                             "is_chebi_not_found": True,
                             "error": "Chebi id not found"
@@ -151,7 +151,7 @@ class GapFiller(Task):
                             for rxn in rxns:
                                 if not net.exists(rxn):  # an existing reaction may be given by biota
                                     net.add_reaction(rxn)
-                                    net.set_reaction_tag(rxn.id, {
+                                    net.set_reaction_recon_tag(rxn.id, {
                                         "id": rxn.id,
                                         "is_from_gap_fillering": True
                                     })

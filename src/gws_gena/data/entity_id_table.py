@@ -53,6 +53,8 @@ class EntityIDTable(Table):
 
     def select_by_column_positions(self, positions: List[int]) -> 'EntityIDTable':
         table = super().select_by_column_positions(positions)
+        if not self.id_column in table.id_column:
+            raise BadRequestException("The id_column is required and must be selected")
         table.id_column = self.id_column
         return table
 
@@ -63,6 +65,8 @@ class EntityIDTable(Table):
 
     def select_by_column_names(self, names: List[str], use_regex=False) -> 'EntityIDTable':
         table = super().select_by_column_names(names, use_regex)
+        if not self.id_column in table.id_column:
+            raise BadRequestException("The id_column is required and must be selected")
         table.id_column = self.id_column
         return table
 

@@ -75,6 +75,12 @@ class BiomassReactionTable(Table):
 
     def select_by_column_positions(self, positions: List[int]) -> 'BiomassReactionTable':
         table = super().select_by_column_positions(positions)
+        if not self.biomass_column in table.column_names:
+            raise BadRequestException("The biomass_column is required and must be selected")
+        if not table.chebi_column in table.column_names:
+            raise BadRequestException("The chebi_column is required and must be selected")
+        if not table.entity_column in table.column_names:
+            raise BadRequestException("The entity_column is required and must be selected")
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
@@ -89,6 +95,12 @@ class BiomassReactionTable(Table):
 
     def select_by_column_names(self, names: List[str], use_regex=False) -> 'BiomassReactionTable':
         table = super().select_by_column_names(names, use_regex)
+        if not self.biomass_column in table.column_names:
+            raise BadRequestException("The biomass_column is required and must be selected")
+        if not table.chebi_column in table.column_names:
+            raise BadRequestException("The chebi_column is required and must be selected")
+        if not table.entity_column in table.column_names:
+            raise BadRequestException("The entity_column is required and must be selected")
         table.biomass_column = self.biomass_column
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column

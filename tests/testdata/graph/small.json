@@ -6,13 +6,13 @@
                 "id": "Myriel",
                 "ref": "Myriel",
                 "name": "Myriel", 
-                "tags": {
+                "recon_tags": {
                     "gender": "F"
                 }
             },
-            {"id": "Napoleon.1", "ref": "Napoleon", "name": "Napoleon", "tags": {"gender": "M"}},
-            {"id": "Mlle.Baptistine", "ref": "Baptistine", "name": "Mlle Baptistine", "tags": {"gender": "F"}},
-            {"id": "Napoleon.2", "ref": "Napoleon", "name": "Napoleon", "tags": {"gender": "M"}}
+            {"id": "Napoleon.1", "ref": "Napoleon", "name": "Napoleon", "recon_tags": {"gender": "M"}},
+            {"id": "Mlle.Baptistine", "ref": "Baptistine", "name": "Mlle Baptistine", "recon_tags": {"gender": "F"}},
+            {"id": "Napoleon.2", "ref": "Napoleon", "name": "Napoleon", "recon_tags": {"gender": "M"}}
         ],
         "links": [
             {
@@ -24,13 +24,13 @@
                 "value": 1, 
                 "min_value": 0, 
                 "max_value": 2,
-                "tags": {
+                "recon_tags": {
                     "relation": "guard"
                 }
             },
-            {"id": "2", "ref": "Baptistine.Myriel", "name": "Mlle.Baptistine <> Myriel", "source": "Mlle.Baptistine", "target": "Myriel", "value": 8, "min_value": 7, "max_value": 9, "tags": {}},
-            {"id": "3", "ref": "Napoleon.Myriel", "name": "Napoleon <> Myriel", "source": "Napoleon.1", "target": "Myriel", "value": 10, "min_value": 7, "max_value": 11, "tags": {}},
-            {"id": "4", "ref": "Napoleon.Baptistine", "name": "Napoleon <> Mlle.Baptistine", "source": "Napoleon.2", "target": "Mlle.Baptistine", "value": 6, "min_value": 4, "max_value": 10, "tags": {}}
+            {"id": "2", "ref": "Baptistine.Myriel", "name": "Mlle.Baptistine <> Myriel", "source": "Mlle.Baptistine", "target": "Myriel", "value": 8, "min_value": 7, "max_value": 9, "recon_tags": {}},
+            {"id": "3", "ref": "Napoleon.Myriel", "name": "Napoleon <> Myriel", "source": "Napoleon.1", "target": "Myriel", "value": 10, "min_value": 7, "max_value": 11, "recon_tags": {}},
+            {"id": "4", "ref": "Napoleon.Baptistine", "name": "Napoleon <> Mlle.Baptistine", "source": "Napoleon.2", "target": "Mlle.Baptistine", "value": 6, "min_value": 4, "max_value": 10, "recon_tags": {}}
         ],
         "styles":{
             "node":{

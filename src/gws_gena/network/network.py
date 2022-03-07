@@ -43,7 +43,7 @@ class ReactionDuplicate(BadRequestException):
     pass
 
 
-NetworkTagDict = TypedDict("NetworkTagDict", {
+NetworkReconTagDict = TypedDict("NetworkReconTagDict", {
     "reactions": dict,
     "compounds": dict
 })
@@ -82,12 +82,13 @@ ReactionDict = TypedDict("ReactionDict", {
     "position": PositionDict,
 })
 
+""" Tags generated during network reconstruction to annotated the reactions """
 NetworkDict = TypedDict("NetworkDict", {
     "name": str,
     "metabolites": CompoundDict,
     "reactions": ReactionDict,
     "compartments": dict,
-    "tags": NetworkTagDict
+    "recon_tags": NetworkReconTagDict
 })
 
 # ####################################################################
@@ -113,10 +114,10 @@ class Network(Resource):
     compounds: Dict[str, Compound] = DictRField()
     reactions: Dict[str, Reaction] = DictRField()
     compartments: Dict[str, str] = DictRField()
-    tags: Dict[str, NetworkTagDict] = DictRField(
-        default_value=NetworkTagDict(reactions={}, compounds={})
-    )
 
+    _recon_tags: Dict[str, NetworkReconTagDict] = DictRField(
+        default_value=NetworkReconTagDict(reactions={}, compounds={})
+    )
     _stats: Dict[str, str] = DictRField()
     _set_of_chebi_ids: Dict[str, str] = DictRField()
     _set_of_ec_numbers: Dict[str, str] = DictRField()
@@ -206,7 +207,7 @@ class Network(Resource):
         net.compounds = copy.deepcopy(self.compounds)  # /!\ use deepcopy for performance
         net.reactions = copy.deepcopy(self.reactions)  # /!\ use deepcopy for performance
         net.compartments = self.compartments.copy()
-        net.tags = copy.deepcopy(self.tags)
+        net._recon_tags = copy.deepcopy(self._recon_tags)
         net._stats = copy.deepcopy(self._stats)
         net._set_of_chebi_ids = copy.deepcopy(self._set_of_chebi_ids)
         net._set_of_ec_numbers = copy.deepcopy(self._set_of_ec_numbers)
@@ -343,7 +344,7 @@ class Network(Resource):
             "metabolites": _met_json,
             "reactions": _rxn_json,
             "compartments": self.compartments,
-            "tags": self.tags
+            "recon_tags": self._recon_tags
         }
 
         return _json
@@ -375,32 +376,32 @@ class Network(Resource):
 
     # -- G --
 
-    def get_compound_tag(self, comp_id: str, tag_name: str = None):
+    def get_compound_recon_tag(self, comp_id: str, tag_name: str = None):
         """
-        Get a compound tag value a compound id and a tag name.
+        Get a compound recon_tag value a compound id and a recon_tag name.
 
         :param comp_id: The compound id
         :type comp_id: `str`
-        :param tag_name: The tag name
+        :param tag_name: The recon_tag name
         :type tag_name: `str`
-        :return: The tag value
+        :return: The recon_tag value
         :rtype: `str`
         """
 
         if tag_name:
-            return self.get_compound_tags().get(comp_id, {}).get(tag_name)
+            return self.get_compound_recon_tags().get(comp_id, {}).get(tag_name)
         else:
-            return self.get_compound_tags().get(comp_id, {})
+            return self.get_compound_recon_tags().get(comp_id, {})
 
-    def get_compound_tags(self) -> dict:
+    def get_compound_recon_tags(self) -> dict:
         """
-        Get all the compound tags
+        Get all the compound recon_tags
 
-        :return: The tags
+        :return: The recon_tags
         :rtype: `dict`
         """
 
-        return self.tags["compounds"]
+        return self._recon_tags["compounds"]
 
     def get_compound_ids(self) -> List[str]:
         return [_id for _id in self.compounds]
@@ -408,7 +409,7 @@ class Network(Resource):
     def get_reaction_ids(self) -> List[str]:
         return [_id for _id in self.reactions]
 
-    def get_reaction_tag(self, rxn_id: str, tag_name: str = None):
+    def get_reaction_recon_tag(self, rxn_id: str, tag_name: str = None):
         """
         Get a reaction tag value a compound id and a tag name.
 
@@ -416,14 +417,14 @@ class Network(Resource):
         :type rxn_id: `str`
         :param tag_name: The tag name
         :type tag_name: `str`
-        :return: The tags
+        :return: The recon_tag
         :rtype: `dict`
         """
 
         if tag_name:
-            return self.tags.get(rxn_id, {}).get(tag_name)
+            return self._recon_tags.get(rxn_id, {}).get(tag_name)
         else:
-            return self.tags.get(rxn_id, {})
+            return self._recon_tags.get(rxn_id, {})
 
     def get_compound_by_id(self, comp_id: str) -> Compound:
         """
@@ -876,19 +877,19 @@ class Network(Resource):
         self._stats = stats
         return stats
 
-    def set_reaction_tag(self, tag_id, tag: dict):
+    def set_reaction_recon_tag(self, tag_id, tag: dict):
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self.tags["reactions"]:
-            self.tags["reactions"][tag_id] = {}
-        self.tags["reactions"][tag_id].update(tag)
+        if not tag_id in self._recon_tags["reactions"]:
+            self._recon_tags["reactions"][tag_id] = {}
+        self._recon_tags["reactions"][tag_id].update(tag)
 
-    def set_compound_tag(self, tag_id, tag: dict):
+    def set_compound_recon_tag(self, tag_id, tag: dict):
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self.tags["compounds"]:
-            self.tags["compounds"][tag_id] = {}
-        self.tags["compounds"][tag_id].update(tag)
+        if not tag_id in self._recon_tags["compounds"]:
+            self._recon_tags["compounds"][tag_id] = {}
+        self._recon_tags["compounds"][tag_id].update(tag)
 
     # -- T --
 
@@ -960,7 +961,7 @@ class Network(Resource):
             for f in BiotaTaxo._tax_tree:
                 tax_cols[f] = ""
 
-            flag = self.get_reaction_tag(rxn.id, "is_from_gap_filling")
+            flag = self.get_reaction_recon_tag(rxn.id, "is_from_gap_filling")
             if flag:
                 is_from_gap_filling = True
             if rxn.enzyme:
@@ -1020,8 +1021,8 @@ class Network(Resource):
             data.append(list(_rxn_row.values()))
 
         # add the errored ec numbers
-        for k in self.tags:
-            t = self.tags[k]
+        for k in self._recon_tags:
+            t = self._recon_tags[k]
             ec = t.get("ec_number")
             is_partial_ec_number = t.get("is_partial_ec_number")
             error = t.get("error")

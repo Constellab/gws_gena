@@ -5,8 +5,8 @@ import numpy
 
 from gws_core import Settings, GTest, IExperiment, ExperimentService, File
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import Network
-from gws_gena import Twin, TwinContext
+from gws_gena import Network, NetworkImporter
+from gws_gena import Twin, TwinContext, TwinContextImporter
 from gws_gena import FBAProto
 
 settings = Settings.retrieve()
@@ -22,16 +22,15 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
 
-            network_file = File()
-            network_file.path = os.path.join(data_dir, "toy_network.json")
-            ctx_file = File()
-            ctx_file.path = os.path.join(data_dir, "toy_context.json")
+            net = NetworkImporter.call(File(
+                path=os.path.join(data_dir, "toy_network.json"))
+            )
+            ctx = TwinContextImporter.call(
+                File(path=os.path.join(data_dir, "toy_context.json"))
+            )
 
-            proto.set_input("network_file", network_file)
-            proto.set_input("context_file", ctx_file)
-
-            proto.set_input("network_file", network_file)
-            proto.set_input("context_file", ctx_file)
+            proto.set_input("network", net)
+            proto.set_input("context", ctx)
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
             fba.set_param("fill_gaps_with_sinks", fill_gaps_with_sinks)

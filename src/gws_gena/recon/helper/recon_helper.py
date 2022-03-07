@@ -56,7 +56,7 @@ class ReconHelper(TaskHelper):
                                     tax_id=tax_id, tax_search_method=tax_search_method)
             except Exception as err:
                 pass
-                # net.set_reaction_tag(enzyme.ec_number, {
+                # net.set_reaction_recon_tag(enzyme.ec_number, {
                 #     "ec_number": enzyme.ec_number,
                 #     "error": str(err)
                 # })
@@ -85,7 +85,7 @@ class ReconHelper(TaskHelper):
             ec = str(ec).strip()
             is_incomplete_ec = (not ec) or ("-" in ec)
             if is_incomplete_ec:
-                net.set_reaction_tag(ec, {
+                net.set_reaction_recon_tag(ec, {
                     "ec_number": ec,
                     "is_partial_ec_number": True,
                     "error": "Partial ec number"
@@ -94,7 +94,7 @@ class ReconHelper(TaskHelper):
                 try:
                     Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id, tax_search_method=tax_search_method)
                 except Exception as err:
-                    net.set_reaction_tag(ec, {
+                    net.set_reaction_recon_tag(ec, {
                         "ec_number": ec,
                         "error": str(err)
                     })
@@ -141,7 +141,7 @@ class ReconHelper(TaskHelper):
 
         if not net.exists(comp):
             net.add_compound(comp)
-        net.set_compound_tag(comp.id, {
+        net.set_compound_recon_tag(comp.id, {
             "id": comp.id,
             "is_in_biomass_or_medium": True
         })
@@ -179,7 +179,7 @@ class ReconHelper(TaskHelper):
                 net.add_reaction(rxn)
             else:
                 ec = col_name
-                net.set_reaction_tag(ec, {
+                net.set_reaction_recon_tag(ec, {
                     "ec_number": ec,
                     "error": error_message
                 })

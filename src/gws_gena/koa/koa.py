@@ -69,7 +69,9 @@ class KOA(Task):
                 _, not_found_ids = ReactionKnockOutHelper.knockout_list_of_reactions(
                     net, current_ko_table, ko_delimiter=ko_delimiter, current_task=self, inplace=True)
 
-            current_result: FBAResult = FBAHelper.run(
+            fba_helper = FBAHelper()
+            fba_helper.attach(self)
+            current_result: FBAResult = fba_helper.run(
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
                 fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
 

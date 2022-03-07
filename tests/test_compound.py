@@ -6,6 +6,7 @@ from pandas import DataFrame
 
 from gws_core import Settings, GTest
 from gws_biota import BaseTestCaseUsingFullBiotaDB
+from gws_biota import Compound as BiotaCompound
 from gws_gena import Compound, Reaction, Network, TwinContext, Twin, BiomassReactionTable
 
 
@@ -13,7 +14,6 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
     def test_compound(self):
         self.print("Test Compound")
-
         t = Network()
         comp1 = Compound(name="gluc", network=t, compartment=Compound.COMPARTMENT_CYTOSOL, chebi_id="CHEBI:17234")
 

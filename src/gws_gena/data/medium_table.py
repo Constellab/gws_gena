@@ -64,6 +64,10 @@ class MediumTable(Table):
 
     def select_by_column_positions(self, positions: List[int]) -> 'MediumTable':
         table = super().select_by_column_positions(positions)
+        if not self.chebi_column in table.chebi_column:
+            raise BadRequestException("The chebi_column is required and must be selected")
+        if not self.entity_column in table.entity_column:
+            raise BadRequestException("The entity_column is required and must be selected")
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
@@ -76,6 +80,10 @@ class MediumTable(Table):
 
     def select_by_column_names(self, names: List[str], use_regex=False) -> 'MediumTable':
         table = super().select_by_column_names(name_regex)
+        if not self.chebi_column in table.chebi_column:
+            raise BadRequestException("The chebi_column is required and must be selected")
+        if not self.entity_column in table.entity_column:
+            raise BadRequestException("The entity_column is required and must be selected")
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table

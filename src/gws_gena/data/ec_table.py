@@ -53,6 +53,8 @@ class ECTable(Table):
 
     def select_by_column_positions(self, positions: List[int]) -> 'ECTable':
         table = super().select_by_column_positions(positions)
+        if not self.ec_column in table.ec_column:
+            raise BadRequestException("The ec_column is required and must be selected")
         table.ec_column = self.ec_column
         return table
 
@@ -63,6 +65,8 @@ class ECTable(Table):
 
     def select_by_column_names(self, names: List[str], use_regex=False) -> 'ECTable':
         table = super().select_by_column_names(names, use_regex)
+        if not self.ec_column in table.ec_column:
+            raise BadRequestException("The ec_column is required and must be selected")
         table.ec_column = self.ec_column
         return table
 
