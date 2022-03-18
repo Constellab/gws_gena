@@ -5,7 +5,7 @@
 
 from typing import List
 
-from gws_core import StrRField, Table, TableFile, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator
 
 # ####################################################################
 #
@@ -15,7 +15,7 @@ from gws_core import StrRField, Table, TableFile, resource_decorator
 
 
 @resource_decorator("MediumTable",
-                    human_name="MediumTable",
+                    human_name="Medium table",
                     short_description="Table of culture medium composition")
 class MediumTable(Table):
     """
@@ -79,7 +79,7 @@ class MediumTable(Table):
         return table
 
     def select_by_column_names(self, names: List[str], use_regex=False) -> 'MediumTable':
-        table = super().select_by_column_names(name_regex)
+        table = super().select_by_column_names(names, use_regex)
         if not self.chebi_column in table.chebi_column:
             raise BadRequestException("The chebi_column is required and must be selected")
         if not self.entity_column in table.entity_column:
@@ -87,10 +87,3 @@ class MediumTable(Table):
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
-
-
-@resource_decorator("MediumTableFile",
-                    human_name="MediumTable file",
-                    short_description="Table file of culture medium composition")
-class MediumTableFile(TableFile):
-    pass

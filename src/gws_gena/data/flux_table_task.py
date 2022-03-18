@@ -6,10 +6,9 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      ListParam, StrParam, TableExporter, TableImporter,
-                      exporter_decorator, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator)
 
-from .flux_table import FluxTable, FluxTableFile
+from .flux_table import FluxTable
 
 # ####################################################################
 #
@@ -18,8 +17,8 @@ from .flux_table import FluxTable, FluxTableFile
 # ####################################################################
 
 
-@importer_decorator("FluxTableImporter", human_name="FluxTable importer", source_type=FluxTableFile,
-                    target_type=FluxTable)
+@importer_decorator("FluxTableImporter", human_name="Flux table importer",
+                    target_type=FluxTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class FluxTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -89,15 +88,3 @@ class FluxTableImporter(TableImporter):
         csv_table.lower_bound_column_name = lower_bound_column_name
         csv_table.confidence_score_column = confidence_score_column
         return csv_table
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@exporter_decorator("FluxTableExporter", human_name="FluxTable exporter", source_type=FluxTable,
-                    target_type=FluxTableFile)
-class FluxTableExporter(TableExporter):
-    pass

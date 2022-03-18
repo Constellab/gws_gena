@@ -6,10 +6,8 @@
 import copy
 from typing import Dict, List, TypedDict
 
-from gws_core import (BadRequestException, ConfigParams, DictRField, JSONFile,
-                      Resource, ResourceExporter, ResourceImporter, StrParam,
-                      StrRField, Utils, export_to_path, exporter_decorator,
-                      resource_decorator, task_decorator)
+from gws_core import (BadRequestException, DictRField, Resource, StrRField,
+                      Utils, resource_decorator)
 
 
 def slugify_id(_id):
@@ -244,14 +242,3 @@ class TwinContext(Resource):
         ctx.name = cls._format(data.get("name", "TwinContext"))
         ctx.description = data.get("description", "")
         return ctx
-
-# ####################################################################
-#
-# TwinContextImporterFile class
-#
-# ####################################################################
-
-
-@resource_decorator("TwinContextFile", human_name="TwinContextFile")
-class TwinContextFile(JSONFile):
-    pass

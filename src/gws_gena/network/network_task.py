@@ -8,12 +8,13 @@ import os
 from typing import Type
 
 from gws_core import (BadRequestException, BoolParam, ConfigParams,
-                      ConfigSpecs, ResourceExporter, ResourceImporter,
+                      ConfigSpecs, File, ResourceExporter, ResourceImporter,
                       StrParam, exporter_decorator, importer_decorator)
 from pandas import DataFrame
 
 from .network import Network
-from .network_file import NetworkFile
+
+#from .network_file import NetworkFile
 
 # ####################################################################
 #
@@ -22,12 +23,10 @@ from .network_file import NetworkFile
 # ####################################################################
 
 
-@importer_decorator("NetworkImporter", human_name="Network importer", source_type=NetworkFile, target_type=Network)
+@importer_decorator("NetworkImporter", human_name="Network importer", source_type=File,
+                    target_type=Network, supported_extensions=[".json"])
 class NetworkImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
-        'file_format': StrParam(
-            allowed_values=[".json"],
-            default_value=".json", short_description="File format"),
         "loads_biota_info":
         BoolParam(
             default_value=False,
@@ -39,7 +38,7 @@ class NetworkImporter(ResourceImporter):
             visibility=BoolParam.PROTECTED_VISIBILITY,
             short_description="Set True to skip `exchange reactions` when importing BiGG data files; False otherwise")}
 
-    async def import_from_path(self, file: NetworkFile, params: ConfigParams, target_type: Type[Network]) -> Network:
+    async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Network]) -> Network:
         """
         Import a network from a repository
 
@@ -50,32 +49,30 @@ class NetworkImporter(ResourceImporter):
         """
 
         net: Network
-        file_format = params.get_value("file_format", ".json")
         loads_biota_info = params.get_value("loads_biota_info", False)
         skip_bigg_exchange_reactions = params.get_value("skip_bigg_exchange_reactions", True)
-        if file_format == ".json":
-            with open(file.path, 'r', encoding="utf-8") as fp:
-                try:
-                    _json = json.load(fp)
-                except Exception as err:
-                    raise BadRequestException(f"Cannot load JSON file {file.path}.") from err
 
-                if _json.get("reactions"):
-                    # is an unknown dump network (e.g. BiGG database, classical bioinformatics exchange files)
-                    net = target_type.loads(
-                        _json, skip_bigg_exchange_reactions=skip_bigg_exchange_reactions,
-                        loads_biota_info=loads_biota_info)
-                elif _json.get("network"):
-                    # is gws resource
-                    net = target_type.loads(_json["network"])
-                elif _json.get("data", {}).get("network"):
-                    # is gws old resource [RETRO COMPATIBILTY]
-                    # TODO: will be deprecated in the future
-                    net = target_type.loads(_json["data"]["network"])
-                else:
-                    raise BadRequestException("Invalid network data")
-        else:
-            raise BadRequestException("Invalid file format. Only .json files can be imported.")
+        with open(file.path, 'r', encoding="utf-8") as fp:
+            try:
+                _json = json.load(fp)
+            except Exception as err:
+                raise BadRequestException(f"Cannot load JSON file {file.path}.") from err
+
+            if _json.get("reactions"):
+                # is an unknown dump network (e.g. BiGG database, classical bioinformatics exchange files)
+                net = target_type.loads(
+                    _json, skip_bigg_exchange_reactions=skip_bigg_exchange_reactions,
+                    loads_biota_info=loads_biota_info)
+            elif _json.get("network"):
+                # is gws resource
+                net = target_type.loads(_json["network"])
+            elif _json.get("data", {}).get("network"):
+                # is gws old resource [RETRO COMPATIBILTY]
+                # TODO: will be deprecated in the future
+                net = target_type.loads(_json["data"]["network"])
+            else:
+                raise BadRequestException("Invalid network data")
+
         return net
 
 # ####################################################################
@@ -86,7 +83,7 @@ class NetworkImporter(ResourceImporter):
 
 
 @exporter_decorator(unique_name="NetworkExporter", human_name="Network exporter", source_type=Network,
-                    target_type=NetworkFile)
+                    target_type=File)
 class NetworkExporter(ResourceExporter):
     ALLOWED_FILE_FORMATS = [".json", ".csv", ".tsv", ".txt", ".xls", ".xlsx"]
     DEFAULT_FILE_FORMAT = ".json"
@@ -98,7 +95,7 @@ class NetworkExporter(ResourceExporter):
             default_value=DEFAULT_FILE_FORMAT,
             short_description="File format")}
 
-    async def export_to_path(self, resource: Network, dest_dir: str, params: ConfigParams, target_type: Type[NetworkFile]) -> NetworkFile:
+    async def export_to_path(self, resource: Network, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
         """
         Export the network to a repository
 

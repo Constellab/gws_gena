@@ -6,11 +6,9 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      StrParam, TableExporter, TableImporter,
-                      exporter_decorator, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator)
 
-from .biomass_reaction_table import (BiomassReactionTable,
-                                     BiomassReactionTableFile)
+from .biomass_reaction_table import BiomassReactionTable
 
 # ####################################################################
 #
@@ -19,9 +17,8 @@ from .biomass_reaction_table import (BiomassReactionTable,
 # ####################################################################
 
 
-@importer_decorator("BiomassReactionTableImporter", human_name="BiomassReactionTable importer",
-                    source_type=BiomassReactionTableFile,
-                    target_type=BiomassReactionTable)
+@importer_decorator("BiomassReactionTableImporter", human_name="Biomass reaction table importer",
+                    target_type=BiomassReactionTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class BiomassReactionTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -77,16 +74,3 @@ class BiomassReactionTableImporter(TableImporter):
         # csv_table.get_data().set_index(csv_table.chebi_column)
 
         return csv_table
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@exporter_decorator("BiomasssReactionTableExporter", human_name="BiomassReactionTable importer",
-                    source_type=BiomassReactionTable,
-                    target_type=BiomassReactionTableFile)
-class BiomassReactionTableExporter(TableExporter):
-    pass

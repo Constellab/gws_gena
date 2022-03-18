@@ -15,9 +15,8 @@ from gws_biota import CompoundPosition as BiotaCompoundPosition
 from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
-                      File, JSONFile, JSONView, Resource, ResourceExporter,
-                      RField, StrRField, Table, TabularView,
-                      resource_decorator, view)
+                      File, JSONView, Resource, ResourceExporter, RField,
+                      StrRField, Table, TabularView, resource_decorator, view)
 from pandas import DataFrame
 
 from .compound import Compound

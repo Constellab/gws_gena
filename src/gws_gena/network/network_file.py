@@ -3,10 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
-                      File, JSONFile, JSONView, Resource, ResourceExporter,
-                      RField, StrRField, Table, TabularView,
-                      resource_decorator, view)
+from gws_core import ConfigParams, File, TabularView, resource_decorator, view
 
 from .view.network_view import NetworkView
 
@@ -14,7 +11,7 @@ from .view.network_view import NetworkView
 @resource_decorator("NetworkFile",
                     human_name="NetworkFile",
                     short_description="Metabolic network file")
-class NetworkFile(JSONFile):
+class NetworkFile(File):
 
     @view(view_type=NetworkView, human_name="Network")
     def view_as_network(self, params: ConfigParams) -> NetworkView:

@@ -6,10 +6,9 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      ListParam, StrParam, TableExporter, TableImporter,
-                      exporter_decorator, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator)
 
-from .entity_id_table import EntityIDTable, EntityIDTableFile
+from .entity_id_table import EntityIDTable
 
 # ####################################################################
 #
@@ -18,8 +17,8 @@ from .entity_id_table import EntityIDTable, EntityIDTableFile
 # ####################################################################
 
 
-@importer_decorator("EntityIDTableImporter", human_name="EntityIDTable importer", source_type=EntityIDTableFile,
-                    target_type=EntityIDTable)
+@importer_decorator("EntityIDTableImporter", human_name="Entity ID table importer",
+                    target_type=EntityIDTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class EntityIDTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -50,16 +49,3 @@ class EntityIDTableImporter(TableImporter):
 
         csv_table.id_column = id_column
         return csv_table
-
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@exporter_decorator("EntityIDTableExporter", human_name="EntityIDTable exporter", source_type=EntityIDTable,
-                    target_type=EntityIDTableFile)
-class EntityIDTableExporter(TableExporter):
-    pass

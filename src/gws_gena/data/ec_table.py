@@ -5,11 +5,11 @@
 
 from typing import List
 
-from gws_core import StrRField, Table, TableFile, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator
 
 
 @resource_decorator("ECTable",
-                    human_name="ECTable",
+                    human_name="EC number table",
                     short_description="CSV table of EC numbers")
 class ECTable(Table):
     """
@@ -69,10 +69,3 @@ class ECTable(Table):
             raise BadRequestException("The ec_column is required and must be selected")
         table.ec_column = self.ec_column
         return table
-
-
-@resource_decorator("ECTableFile",
-                    human_name="ECTableFile",
-                    short_description="CSV table file of EC numbers")
-class ECTableFile(TableFile):
-    pass

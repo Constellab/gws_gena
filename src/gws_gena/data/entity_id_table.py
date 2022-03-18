@@ -6,11 +6,11 @@
 
 from typing import List
 
-from gws_core import StrRField, Table, TableFile, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator
 
 
-@resource_decorator("EntityIDTable", human_name="EntityIDTable",
-                    short_description="Generic table of entity IDs (e.g. CheBI IDs, Rhea IDs, EC Numbers, reaction IDs, ...)")
+@resource_decorator("EntityIDTable", human_name="Entity ID table",
+                    short_description="Table of entity IDs (e.g. CheBI IDs, Rhea IDs, EC Numbers, reaction IDs, ...)")
 class EntityIDTable(Table):
     """
     Generic table of entity IDs (e.g. CheBI, Rhea IDs, reaction ID, EC Numbers...)
@@ -69,10 +69,3 @@ class EntityIDTable(Table):
             raise BadRequestException("The id_column is required and must be selected")
         table.id_column = self.id_column
         return table
-
-
-@resource_decorator("EntityIDTableFile",
-                    human_name="EntityIDTable file",
-                    short_description="Generic table file of entity IDs (e.g. CheBI, Rhea IDs, ...)")
-class EntityIDTableFile(TableFile):
-    pass

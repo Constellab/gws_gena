@@ -5,11 +5,11 @@
 
 from typing import List
 
-from gws_core import StrRField, Table, TableFile, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator
 
 
 @resource_decorator("BiomassReactionTable",
-                    human_name="BiomassReactionTable",
+                    human_name="Biomass reaction table",
                     short_description="Stoichiometry table describing the biomass composition")
 class BiomassReactionTable(Table):
     """
@@ -105,10 +105,3 @@ class BiomassReactionTable(Table):
         table.chebi_column = self.chebi_column
         table.entity_column = self.entity_column
         return table
-
-
-@resource_decorator("BiomassReactionTableFile",
-                    human_name="BiomassReactionTableFile",
-                    short_description="Stoichiometric table file describing biomass reactions")
-class BiomassReactionTableFile(TableFile):
-    pass

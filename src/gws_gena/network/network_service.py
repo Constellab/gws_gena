@@ -1,12 +1,11 @@
 # Gencovery software - All rights reserved
-# This software is the exclusive property of Gencovery SAS. 
+# This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
 import numpy as np
 from scipy.linalg import null_space
 from pandas import DataFrame
-from typing import Dict
 
 from gws_core import BadRequestException
 from .network import Network
@@ -32,7 +31,7 @@ class NetworkService:
 
         if not isinstance(net, Network):
             raise BadRequestException("A network is required")
-        
+
         return net.create_stoichiometric_matrix()
 
     @classmethod

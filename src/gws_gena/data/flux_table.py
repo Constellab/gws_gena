@@ -5,11 +5,11 @@
 
 from typing import List
 
-from gws_core import StrRField, Table, TableFile, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator
 
 
 @resource_decorator("FluxTable",
-                    human_name="FluxTable",
+                    human_name="Flux table",
                     short_description="Table of metabolic flux measurements")
 class FluxTable(Table):
     """
@@ -92,10 +92,3 @@ class FluxTable(Table):
             raise BadRequestException("The confidence_score_column is required and must be selected")
         table.confidence_score_column = self.confidence_score_column
         return table
-
-
-@resource_decorator("FluxTableFile",
-                    human_name="FluxTable file",
-                    short_description="Table file of metabolic flux measurements")
-class FluxTableFile(TableFile):
-    pass

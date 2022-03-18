@@ -21,9 +21,9 @@ from .twin_context import TwinContext
 
 
 @importer_decorator("TwinContextImporter", human_name="Twin context importer", source_type=File,
-                    target_type=TwinContext)
+                    target_type=TwinContext, supported_extensions=[".json"])
 class TwinContextImporter(ResourceImporter):
-    config_specs: ConfigSpecs = {
+    config_specs: ConfigSpecs={
         'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format")
     }
 

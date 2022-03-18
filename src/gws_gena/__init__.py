@@ -1,16 +1,26 @@
+# deprecated
+from .deprecated.dep_table import ECTableFile
+from .deprecated.dep_table import ECTableExporter
+from .deprecated.dep_table import EntityIDTableFile
+from .deprecated.dep_table import EntityIDTableExporter
+from .deprecated.dep_table import BiomassReactionTableFile
+from .deprecated.dep_table import BiomassReactionTableExporter
+from .deprecated.dep_table import FluxTableFile
+from .deprecated.dep_table import FluxTableExporter
+from .deprecated.dep_table import MediumTableFile
+from .deprecated.dep_table import MediumTableExporter
+
 # table
 from .data.biomass_reaction_table import BiomassReactionTable
-from .data.biomass_reaction_table_task import (BiomassReactionTableExporter,
-                                               BiomassReactionTableImporter)
-from .data.ec_table import ECTable, ECTableFile
-from .data.ec_table_task import ECTableExporter, ECTableImporter
-from .data.entity_id_table import EntityIDTable, EntityIDTableFile
-from .data.entity_id_table_task import (EntityIDTableExporter,
-                                        EntityIDTableImporter)
-from .data.flux_table import FluxTable, FluxTableFile
-from .data.flux_table_task import FluxTableExporter, FluxTableImporter
-from .data.medium_table import MediumTable, MediumTableFile
-from .data.medium_table_task import MediumTableExporter, MediumTableImporter
+from .data.biomass_reaction_table_task import BiomassReactionTableImporter
+from .data.ec_table import ECTable
+from .data.ec_table_task import ECTableImporter
+from .data.entity_id_table import EntityIDTable
+from .data.entity_id_table_task import EntityIDTableImporter
+from .data.flux_table import FluxTable
+from .data.flux_table_task import FluxTableImporter
+from .data.medium_table import MediumTable
+from .data.medium_table_task import MediumTableImporter
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult

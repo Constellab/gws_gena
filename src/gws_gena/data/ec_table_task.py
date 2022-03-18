@@ -6,10 +6,9 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      ListParam, StrParam, TableExporter, TableImporter,
-                      exporter_decorator, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator)
 
-from .ec_table import ECTable, ECTableFile
+from .ec_table import ECTable
 
 # ####################################################################
 #
@@ -18,7 +17,8 @@ from .ec_table import ECTable, ECTableFile
 # ####################################################################
 
 
-@importer_decorator("ECTableImporter", human_name="ECTable importer", source_type=ECTableFile, target_type=ECTable)
+@importer_decorator("ECTableImporter", human_name="EC number table importer",
+                    target_type=ECTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class ECTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -58,15 +58,3 @@ class ECTableImporter(TableImporter):
         )
 
         return csv_table
-
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@ exporter_decorator("ECTableExporter", human_name="ECTable exporter", source_type=ECTable, target_type=ECTableFile)
-class ECTableExporter(TableExporter):
-    pass

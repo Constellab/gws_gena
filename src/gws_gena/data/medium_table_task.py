@@ -6,12 +6,9 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      ListParam, StrParam, StrRField, Table, TableExporter,
-                      TableFile, TableImporter, export_to_path,
-                      exporter_decorator, importer_decorator,
-                      resource_decorator, task_decorator)
+                      StrParam, Table, TableImporter, importer_decorator)
 
-from .medium_table import MediumTable, MediumTableFile
+from .medium_table import MediumTable
 
 # ####################################################################
 #
@@ -20,8 +17,8 @@ from .medium_table import MediumTable, MediumTableFile
 # ####################################################################
 
 
-@importer_decorator("MediumTableImporter", human_name="MediumTable importer", source_type=MediumTableFile,
-                    target_type=MediumTable)
+@importer_decorator("MediumTableImporter", human_name="Medium table importer",
+                    target_type=MediumTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class MediumTableImporter(TableImporter):
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
@@ -65,15 +62,3 @@ class MediumTableImporter(TableImporter):
         csv_table.entity_column = entity_column
         csv_table.chebi_column = chebi_column
         return csv_table
-
-# ####################################################################
-#
-# Exporter class
-#
-# ####################################################################
-
-
-@exporter_decorator("MediumTableExporter", human_name="MediumTable exporter", source_type=MediumTable,
-                    target_type=MediumTableFile)
-class MediumTableExporter(TableExporter):
-    pass

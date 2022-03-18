@@ -20,7 +20,8 @@ from .twin import Twin
 # ####################################################################
 
 
-@importer_decorator("TwinImporter", human_name="Twin importer", source_type=File, target_type=Twin)
+@importer_decorator("TwinImporter", human_name="Twin importer", source_type=File, target_type=Twin,
+                    supported_extensions=[".json"])
 class TwinImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
         'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format")
@@ -36,14 +37,14 @@ class TwinImporter(ResourceImporter):
         :rtype: Twin
         """
 
-        twin: Network
+        twin: Twin
         file_format = params.get_value("file_format", ".json")
         if file_format == ".json":
-            with open(file_path, 'r') as fp:
+            with open(file.path, 'r', encoding="utf-8") as fp:
                 try:
                     _json = json.load(fp)
                 except Exception as _:
-                    raise BadRequestException(f"Cannot load JSON file {file_path}")
+                    raise BadRequestException(f"Cannot load JSON file {file.path}")
                 if _json.get("networks"):
                     # is a raw dump twin
                     twin = target_type.loads(_json)
