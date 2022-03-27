@@ -1,14 +1,3 @@
-# deprecated
-from .deprecated.dep_table import ECTableFile
-from .deprecated.dep_table import ECTableExporter
-from .deprecated.dep_table import EntityIDTableFile
-from .deprecated.dep_table import EntityIDTableExporter
-from .deprecated.dep_table import BiomassReactionTableFile
-from .deprecated.dep_table import BiomassReactionTableExporter
-from .deprecated.dep_table import FluxTableFile
-from .deprecated.dep_table import FluxTableExporter
-from .deprecated.dep_table import MediumTableFile
-from .deprecated.dep_table import MediumTableExporter
 
 # table
 from .data.biomass_reaction_table import BiomassReactionTable
