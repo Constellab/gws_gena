@@ -111,7 +111,8 @@ class Compound:
         "v": {"name": "vacuole", "is_steady": True},
         "x": {"name": "peroxisome/glyoxysome", "is_steady": True},
         "g": {"name": "golgi apparatus", "is_steady": True},
-        "p": {"name": "periplasm", "is_steady": True}
+        "p": {"name": "periplasm", "is_steady": True},
+        "l": {"name": "lysosome", "is_steady": True}
     }
 
     LEVEL_MAJOR = "major"
@@ -457,7 +458,7 @@ class Compound:
         for pattern in self.COFACTOR_NAME_PATTERNS:
             if pattern in self.name:
                 return not self.is_major
-        
+
         return self.chebi_id in self.COFACTORS
 
     @property
