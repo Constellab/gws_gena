@@ -153,7 +153,7 @@ ContextDict = TypedDict("ContextDict", {
 })
 
 
-@resource_decorator("TwinContext", human_name="Context", short_description="Context of metabolic network")
+@resource_decorator("Context", human_name="Network context", short_description="Context of metabolic network")
 class Context(Resource):
     """
     Context class

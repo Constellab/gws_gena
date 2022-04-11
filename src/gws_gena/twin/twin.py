@@ -318,7 +318,6 @@ class Twin(ResourceSet):
         for net in self.networks.values():
             text.append("Network")
             text.append(f"- name: {net.name}")
-            text.append(f"- description: {net.description}")
             text.append(f"- number of reactions: {len(net.reactions)}")
             text.append(f"- number of compounds: {len(net.compounds)}")
             text.append("")
@@ -329,7 +328,6 @@ class Twin(ResourceSet):
         for ctx in self.contexts.values():
             text.append("Context")
             text.append(f"- name: {ctx.name}")
-            text.append(f"- description: {ctx.description}")
             text.append(f"- number of variables: {len(ctx.measures)}")
             text.append("")
 

@@ -11,8 +11,8 @@ from ..network.network import Network
 from .context import Measure, Context, Variable
 
 
-@task_decorator("TwinContextBuilder", human_name="Twin context builder",
-                short_description="Build a twin context of metabolic network using a flux table")
+@task_decorator("ContextBuilder", human_name="Network context builder",
+                short_description="Build a context of metabolic network using a flux table")
 class ContextBuilder(Task):
     input_specs = {'network': Network, 'flux_table': FluxTable}
     output_specs = {'context': Context}

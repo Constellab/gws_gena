@@ -20,7 +20,7 @@ from .context import Context
 # ####################################################################
 
 
-@importer_decorator("TwinContextImporter", human_name="Twin context importer", source_type=File,
+@importer_decorator("ContextImporter", human_name="Network context importer", source_type=File,
                     target_type=Context, supported_extensions=[".json"])
 class ContextImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
@@ -51,7 +51,7 @@ class ContextImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator("TwinContextExporter", human_name="Twin context exporter", source_type=Context, target_type=File)
+@exporter_decorator("ContextExporter", human_name="Network context exporter", source_type=Context, target_type=File)
 class ContextExporter(ResourceExporter):
     config_specs: ConfigSpecs = {
         'file_name': StrParam(default_value="context", short_description="File name (without extension)"),
