@@ -45,9 +45,9 @@ class CompoundPosition:
 
 class Compound:
     """
-    Class that represents a network compound.
+    Class that represents a compound of a network.
 
-    Network compounds are proxy of biota compounds (i.e. Chebi compounds).
+    Networks' compounds are proxy of biota compounds (i.e. Chebi compounds).
     They a used to build reconstructed digital twins.
 
     :property id: The id of the compound
@@ -76,7 +76,6 @@ class Compound:
 
     id = ""
     name = ""
-    network = None
     charge = None
     mass = None
     monoisotopic_mass = None
@@ -129,7 +128,7 @@ class Compound:
     COFACTORS = BiotaCofactor.get_factors_as_list()
 
     def __init__(self, id="", name="", compartment=None,
-                 network: 'Network' = None, formula="",
+                 formula="",
                  charge="", mass="", monoisotopic_mass="", inchi="",
                  inchikey="", chebi_id="", alt_chebi_ids: List = None, kegg_id=""):
 
@@ -207,26 +206,12 @@ class Compound:
         self.alt_chebi_ids = (alt_chebi_ids if alt_chebi_ids else [])
         self.position = CompoundPosition()
 
-        if network:
-            self.add_to_network(network)
-
     # -- A --
-
-    def add_to_network(self, net: 'Network'):
-        """
-        Adds the compound to a newtork
-
-        :param net: The network
-        :type net: `gena.network.Network`
-        """
-
-        net.add_compound(self)
 
     # -- C --
 
     def copy(self) -> 'Compound':
         c = Compound(id=self.id, name=self.name, compartment=self.compartment)
-        c.network = self.network
         c.charge = self.charge
         c.mass = self.mass
         c.monoisotopic_mass = self.monoisotopic_mass
@@ -250,7 +235,6 @@ class Compound:
             compartment=Compound.COMPARTMENT_SINK,
             chebi_id=related_compound.chebi_id,
             inchikey=related_compound.inchikey,
-            network=related_compound.network
         )
 
     # -- F --
@@ -279,8 +263,7 @@ class Compound:
 
     @classmethod
     def from_biota(
-            cls, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="", compartment="",
-            network=None) -> 'Compound':
+            cls, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="", compartment="") -> 'Compound':
         """
         Create a network compound from a ChEBI of Kegg id
 
@@ -290,7 +273,7 @@ class Compound:
         :type chebi_id: `str`
         :param kegg_id: The Kegg id
         :type kegg_id: `str`
-        :return: The network compound
+        :return: The compound
         :rtype: `gena.compound.Compound`
         """
 
@@ -337,7 +320,6 @@ class Compound:
             formula=biota_compound.formula,
             mass=biota_compound.mass,
             monoisotopic_mass=biota_compound.monoisotopic_mass,
-            network=network
         )
 
         # if biota_compound.position is not None:

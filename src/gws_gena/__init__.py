@@ -1,4 +1,8 @@
 
+#context
+from .context.context import Context
+from .context.context_builder import ContextBuilder
+from .context.context_task import ContextExporter, ContextImporter
 # table
 from .data.biomass_reaction_table import BiomassReactionTable
 from .data.biomass_reaction_table_task import BiomassReactionTableImporter
@@ -52,7 +56,4 @@ from .twin.helper.twin_helper import TwinHelper
 from .twin.twin import Twin
 from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
-from .twin.twin_context import TwinContext
-from .twin.twin_context_builder import TwinContextBuilder
-from .twin.twin_context_task import TwinContextExporter, TwinContextImporter
 from .twin.twin_flattener import TwinFlattener

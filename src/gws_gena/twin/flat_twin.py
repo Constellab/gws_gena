@@ -9,9 +9,9 @@ from typing import Dict
 from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
                       resource_decorator, view)
 
+from ..context.context import Context
 from ..network.network import Network
 from .twin import Twin
-from .twin_context import TwinContext
 
 
 @resource_decorator("FlatTwin", human_name="Flat twin",
@@ -47,9 +47,10 @@ class FlatTwin(Twin):
         if len(flat_data["contexts"]) > 1:
             raise BadRequestException("More than one context found. The data are not compatible with a FlatTwin.")
 
-        twin = cls()
+        twin: Twin = cls()
+
         net = Network.loads(flat_data["networks"][0])
-        ctx = TwinContext.loads(flat_data["contexts"][0])
+        ctx = Context.loads(flat_data["contexts"][0])
         twin.add_network(net, related_context=ctx)
         twin.name = flat_data["name"]
         twin.description = flat_data["description"]
@@ -61,10 +62,10 @@ class FlatTwin(Twin):
         return self.dumps()
 
     def get_flat_network(self):
-        return list(self._networks.values())[0]
+        return list(self.networks.values())[0]
 
     def get_flat_context(self):
-        return list(self._contexts.values())[0]
+        return list(self.contexts.values())[0]
 
     # -- V --
 

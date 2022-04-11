@@ -116,17 +116,15 @@ class ReactionPosition:
 
 class Reaction:
     """
-    Class that represents a network reaction.
+    Class that represents a reaction of a network.
 
-    Network reactions are proxy of biota reaction (i.e. Rhea compounds).
+    Networks' reactions are proxy of biota reaction (i.e. Rhea compounds).
     They a used to build reconstructed digital twins.
 
     :property id: The id of the reaction
     :type id: `str`
     :property name: The name of the reaction
     :type name: `str`
-    :property network: The network of the reaction
-    :type network: `gena.network.Network`
     :property direction: The direction of the reaction. Bidirectional (B), Left direction (L), Righ direction (R)
     :type direction: `str`
     :property lower_bound: The lower bound of the reaction flux (metabolic flux)
@@ -141,7 +139,6 @@ class Reaction:
 
     id: str = ""
     name: str = ""
-    network: 'Network' = None
     direction: str = "B"
     lower_bound: float = -1000.0
     upper_bound: float = 1000.0
@@ -156,7 +153,7 @@ class Reaction:
 
     _FLATTENING_DELIMITER = FLATTENING_DELIMITER
 
-    def __init__(self, id: str = "", name: str = "", network: 'Network' = None,
+    def __init__(self, id: str = "", name: str = "",
                  direction: str = "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0,
                  enzyme: EnzymeDict = None, rhea_id=""):
 
@@ -187,23 +184,10 @@ class Reaction:
         self._substrates = {}
         self._products = {}
 
-        if network:
-            self.add_to_network(network)
-
         self.rhea_id = rhea_id
         self.position = ReactionPosition()
 
     # -- A --
-
-    def add_to_network(self, net: 'Network'):
-        """
-        Adds the reaction to a newtork
-
-        :param net: The network
-        :type net: `gena.network.Network`
-        """
-
-        net.add_reaction(self)
 
     def add_substrate(self, comp: Compound, stoich: float, update_if_exists=False):
         """
@@ -233,11 +217,6 @@ class Reaction:
                 raise SubstrateDuplicate(
                     "gena.reaction.Reaction", "add_substrate",
                     f"Cannot add the substrate. A product with the id already exists (id= {comp.id})")
-
-        # add the compound to the reaction network
-        if self.network:
-            if comp.id not in self.network.compounds:
-                self.network.add_compound(comp)
 
         self._substrates[comp.id] = {
             "compound": comp,
@@ -272,11 +251,6 @@ class Reaction:
                     "gena.reaction.Reaction", "add_substrate",
                     f"Cannot add the product. A susbtrate with the id already exists (id= {comp.id})")
 
-        # add the compound to the reaction network
-        if self.network:
-            if comp.id not in self.network.compounds:
-                self.network.add_compound(comp)
-
         self._products[comp.id] = {
             "compound": comp,
             "stoichiometry": abs(float(stoich)),
@@ -286,7 +260,6 @@ class Reaction:
 
     def copy(self) -> 'Reaction':
         rxn = Reaction(id=self.id, name=self.name)
-        rxn.network = self.network
         rxn.direction = self.direction
         rxn.lower_bound = self.lower_bound
         rxn.upper_bound = self.upper_bound
@@ -337,10 +310,8 @@ class Reaction:
         if not isinstance(related_compound, Compound):
             raise BadRequestException("A compound is required")
         name = related_compound.id + "_sink"
-        network = related_compound.network
         rxn = Reaction(
             name=name,
-            network=network,
             direction="B",
             lower_bound=lower_bound,
             upper_bound=upper_bound
@@ -376,8 +347,7 @@ class Reaction:
 
     @classmethod
     def from_biota(
-            cls, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up',
-            network=None) -> 'Reaction':
+            cls, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up') -> List['Reaction']:
         """
         Create a biota reaction from a Rhea id or an EC number.
 
@@ -393,8 +363,6 @@ class Reaction:
             * `none`: the algorithm will only search at the given taxonomy level
             * `bottom_up`: the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found
         :rtype tax_search_method: `none` or `bottom_up`
-        :param network: The network to which the reaction is added. If the reaction already exists, an exception is raised.
-        :return: The network reaction
         :rtype: `gena.reaction.Reaction`
         """
 
@@ -440,7 +408,7 @@ class Reaction:
                 rxn.add_substrate(c, stoich)
         # return c
 
-        def __create_reaction(rhea_rxn, network, enzyme):
+        def __create_reaction(rhea_rxn, enzyme):
             if enzyme:
                 e = {
                     "name": enzyme.get_name(),
@@ -473,7 +441,6 @@ class Reaction:
                 e = {}
 
             rxn: Reaction = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number,
-                                network=network,
                                 rhea_id=rhea_rxn.rhea_id,
                                 direction=rhea_rxn.direction,
                                 enzyme=e)
@@ -570,7 +537,7 @@ class Reaction:
                     continue
                 _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                 try:
-                    rxns.append(__create_reaction(rhea_rxn, network, e))
+                    rxns.append(__create_reaction(rhea_rxn, e))
                 except:
                     pass
             return rxns
@@ -586,7 +553,7 @@ class Reaction:
                         continue
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                     try:
-                        rxns.append(__create_reaction(rhea_rxn, network, e))
+                        rxns.append(__create_reaction(rhea_rxn, e))
                     except:
                         pass
             return rxns
@@ -639,7 +606,7 @@ class Reaction:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
-                            rxns.append(__create_reaction(rhea_rxn, network, e))
+                            rxns.append(__create_reaction(rhea_rxn, e))
                         except:
                             # reaction duplicate
                             # skip error!
@@ -657,7 +624,7 @@ class Reaction:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
-                            rxns.append(__create_reaction(rhea_rxn, network, e))
+                            rxns.append(__create_reaction(rhea_rxn, e))
                         except:
                             pass
                 if not rxns:
@@ -720,7 +687,7 @@ class Reaction:
         if not comp.id in self._substrates:
             raise BadRequestException(f"Substrate (id= {comp.id}) does not exist")
 
-        # remove the compound to the reaction network
+        # remove the compound from the reaction
         del self._substrates[comp.id]
 
     def remove_product(self, comp: Compound):
@@ -734,12 +701,12 @@ class Reaction:
         if not comp.id in self._products:
             raise BadRequestException(f"Product (id= {comp.id}) does not exist")
 
-        # remove the compound to the reaction network
+        # remove the compound from the reaction
         del self._products[comp.id]
 
     def get_related_biota_reaction(self):
         """
-        Get the biota reaction that is related to this network reaction
+        Get the biota reaction that is related to this reaction
 
         :return: The biota compound corresponding to the rhea id. Returns `None` is no biota reaction is found
         :rtype: `bioa.reaction.Reaction`, `None`

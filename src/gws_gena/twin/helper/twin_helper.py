@@ -3,7 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import Dict, List, TypedDict
+from typing import List, TypedDict
 
 import efmtool
 import numpy as np
@@ -12,8 +12,8 @@ from gws_core import BadRequestException
 from pandas import DataFrame
 from scipy.linalg import null_space
 
+from ...context.context import Variable
 from ..flat_twin import FlatTwin
-from ..twin_context import Variable
 
 # ####################################################################
 #

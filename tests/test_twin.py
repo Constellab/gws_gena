@@ -6,8 +6,8 @@ import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import (FlatTwin, Network, NetworkImporter, Twin, TwinContext,
-                      TwinContextImporter, TwinHelper)
+from gws_gena import (Context, ContextImporter, FlatTwin, Network,
+                      NetworkImporter, Twin, TwinHelper)
 from pandas import DataFrame
 
 settings = Settings.retrieve()
@@ -27,7 +27,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             params=ConfigParams()
         )
         file_path = os.path.join(data_dir, "small_context.json")
-        ctx = TwinContextImporter.call(
+        ctx = ContextImporter.call(
             File(path=file_path),
             params=ConfigParams()
         )
@@ -51,20 +51,22 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
         print(problem["S"])
         expected_S = DataFrame({
-            'small_cell_EX_glc_D_e': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            'small_cell_GLNabc': [0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0],
-            'small_cell_biomass': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+            'small_cell_EX_glc_D_e': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            'small_cell_GLNabc': [0.0, 1.0, -1.0, -1.0, 1.0, 0.0],
+            'small_cell_biomass': [-1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
         }, index=[
             "glc_D_e",
             "small_cell_gln_L_c",
             "gln_L_e",
             "small_cell_atp_c",
             "small_cell_adp_c",
-            "small_cell_adp_n",
             "small_cell_biomass_b"
         ]
         )
-        self.assertTrue(problem["S"].equals(expected_S))
+        S = problem["S"]
+        expected_S = expected_S.loc[S.index, :]
+        expected_S = expected_S.loc[:, S.columns]
+        self.assertTrue(S.equals(expected_S))
 
         print(problem["C"])
         expected_C = DataFrame({
@@ -101,7 +103,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             File(path=os.path.join(data_dir, "toy.json")),
             ConfigParams()
         )
-        ctx = TwinContextImporter.call(
+        ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "toy_context.json")),
             ConfigParams()
         )

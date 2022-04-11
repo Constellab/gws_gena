@@ -15,14 +15,9 @@ class ReactionRemoverHelper:
     @classmethod
     def remove_list_of_reactions(
             cls, network: Network, reaction_table: (ECTable, EntityIDTable),
-            reverse_remove: bool = False, inplace=False, current_task=None) -> Network:
+            reverse_remove: bool = False, current_task=None) -> Network:
 
-        if inplace:
-            new_net = network
-        else:
-            new_net: Network = network.copy()
-
-        rxn_dict: dict = new_net.reactions.copy()
+        rxn_dict: dict = network.reactions.copy()
 
         # check all
         all_valid_ids = []
@@ -41,9 +36,9 @@ class ReactionRemoverHelper:
                     is_in_list = (ec_number in valid_id_list)
                     if reverse_remove:
                         if not is_in_list:
-                            new_net.remove_reaction(rxn.id)
+                            network.remove_reaction(rxn.id)
                     elif is_in_list:
-                        new_net.remove_reaction(rxn.id)
+                        network.remove_reaction(rxn.id)
 
         elif isinstance(reaction_table, EntityIDTable):
             id_list: list = reaction_table.get_ids()
@@ -55,9 +50,9 @@ class ReactionRemoverHelper:
                     is_in_list = (rxn.rhea_id in valid_id_list) or (k in valid_id_list)
                     if reverse_remove:
                         if not is_in_list:
-                            new_net.remove_reaction(rxn.id)
+                            network.remove_reaction(rxn.id)
                     elif is_in_list:
-                        new_net.remove_reaction(rxn.id)
+                        network.remove_reaction(rxn.id)
 
         for k in invalid_id_list:
             if isinstance(reaction_table, ECTable):
@@ -69,5 +64,3 @@ class ReactionRemoverHelper:
                 current_task.log_warning_message(message)
             else:
                 Logger.warning(message)
-
-        return new_net

@@ -7,11 +7,11 @@ import copy
 from typing import Dict, TypedDict
 
 from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
-                      Resource, ResourceService, StrRField, TextView,
-                      resource_decorator, view)
+                      Resource, ResourceService, ResourceSet, StrRField,
+                      TextView, resource_decorator, view)
 
+from ..context.context import Context, Variable
 from ..network.network import Compound, Network, Reaction
-from .twin_context import TwinContext, Variable
 
 TwinDict = TypedDict("TwinDict", {
     "name": str,
@@ -28,7 +28,7 @@ TwinDict = TypedDict("TwinDict", {
 
 
 @resource_decorator("Twin", human_name="Twin", short_description="Twin of cell metabolism")
-class Twin(Resource):
+class Twin(ResourceSet):
     """
     Class that represents a twin.
 
@@ -36,54 +36,52 @@ class Twin(Resource):
     can therefore be used for simulation and prediction.
     """
 
-    DEFAULT_NAME = "twin"
-    name: str = StrRField(default_value="", searchable=True)
     description: str = StrRField(default_value="", searchable=True)
-    _networks: Dict[str, Network] = DictRField()
-    _contexts: Dict[str, TwinContext] = DictRField()
-    _network_contexts: Dict[str, str] = DictRField()
+    network_contexts: Dict[str, str] = DictRField()
 
     # -- A --
 
-    def add_network(self, network: 'Network', related_context: 'TwinContext' = None):
+    def add_network(self, network: 'Network', related_context: 'Context' = None):
         """
         Add a network to the twin
 
         :param network: The network to add
         :type network: `gena.network.Network`
         :param related_context: A context related to the network
-        :type related_context: `gena.twin_context.TwinContext`
+        :type related_context: `gena.context.Context`
         """
 
         if not isinstance(network, Network):
             raise BadRequestException("The network must an instance of Network")
-        if network.uid in self._networks:
-            raise BadRequestException(f"Network uid '{network.uid }'' duplicated")
-        self._networks[network.uid] = network
+        if self.resource_exists(network.name):
+            raise BadRequestException(f"Network name '{network.name}'' duplicated")
+        self.add_resource(network)
         if related_context:
-            if not isinstance(related_context, TwinContext):
-                raise BadRequestException("The related context must be an instance of TwinContext")
+            if not isinstance(related_context, Context):
+                raise BadRequestException("The related context must be an instance of Context")
             self.add_context(related_context, network)
 
-    def add_context(self, ctx: 'TwinContext', related_network: 'Network' = None):
+    def add_context(self, ctx: 'Context', related_network: 'Network' = None):
         """
         Add a context to the twin
 
         :param context: The context to add
-        :type context: `gena.twin_context.TwinContext`
+        :type context: `gena.context.Context`
         :param related_network: A network related to the context
         :type related_network: `gena.network.Network`
         """
 
-        if not isinstance(ctx, TwinContext):
-            raise BadRequestException("The context must be an instance of TwinContext")
-        if ctx.uid in self._contexts:
-            raise BadRequestException(f"TwinContext id {ctx.uid} duplicate")
-        self._contexts[ctx.uid] = ctx
+        if not isinstance(ctx, Context):
+            raise BadRequestException("The context must be an instance of Context")
+        if self.resource_exists(ctx.name):
+            raise BadRequestException(f"Context name {ctx.name} duplicate")
+
+        self.add_resource(ctx)
+
         if related_network:
             if not isinstance(related_network, Network):
                 raise BadRequestException("The related network must be an instance of Network")
-            if not related_network.uid in self._networks:
+            if not self.resource_exists(related_network.name):
                 raise BadRequestException("The related networks is not found")
             # ckeck that the context is consistent with the related network
             reaction_ids = related_network.get_reaction_ids()
@@ -97,7 +95,7 @@ class Twin(Resource):
                     else:
                         raise BadRequestException(
                             f"Invalid reference type '{v.reference_type}' for the context measure '{measure.id}'")
-            self._network_contexts[related_network.uid] = ctx
+            self.network_contexts[related_network.name] = ctx.name
 
     # -- B --
 
@@ -105,16 +103,21 @@ class Twin(Resource):
 
     @property
     def contexts(self):
-        return self._contexts
+        contexts = {}
+        for name in self.network_contexts.values():
+            contexts[name] = self.get_resource(name)
+        return contexts
 
     def copy(self):
         twin = type(self)()
         twin.name = self.name
         twin.description = self.description
         # keep same networks
-        twin._networks = {k: self._networks[k].copy() for k in self._networks}
-        twin._contexts = {k: self._contexts[k].copy() for k in self._contexts}
-        twin._network_contexts = copy.deepcopy(self._network_contexts)
+        for net in self.networks.values():
+            twin.add_network(net.copy())
+        for ctx in self.contexts.values():
+            twin.add_context(ctx.copy())
+        twin.network_contexts = self.network_contexts.copy()
         return twin
 
     # -- D --
@@ -123,27 +126,26 @@ class Twin(Resource):
         _net_json = []
         _ctx_json = []
         _net_ctx_json = []
-        for _net in self._networks.values():
+        for _net in self.networks.values():
             if not deep:
-                _net_json.append({"uid": _net.uid})
+                _net_json.append({"name": _net.name})
             else:
                 _net_json.append({
-                    "uid": _net.uid,
+                    "name": _net.name,
                     **_net.dumps()
                 })
-        for _ctx in self._contexts.values():
+        for _ctx in self.contexts.values():
             if not deep:
-                _ctx_json.append({"uid": _ctx.uid})
+                _ctx_json.append({"name": _ctx.name})
             else:
                 _ctx_json.append({
-                    "uid": _ctx.uid,
+                    "name": _ctx.name,
                     **_ctx.dumps()
                 })
-        for _net_uid in self._network_contexts:
-            _ctx = self._network_contexts[_net_uid]
+        for _net_name, _ctx_name in self.network_contexts.items():
             _net_ctx_json.append({
-                "network_uid": _net_uid,
-                "context_uid": _ctx.uid
+                "network_name": _net_name,
+                "context_name": _ctx_name
             })
         _json = {
             "networks": _net_json,
@@ -164,11 +166,11 @@ class Twin(Resource):
         _rxns = []
 
         def __get_network_uname(net):
-            return (net.name if net.name else "network_"+str(net.id))
+            return (net.name if net.name else "network_"+str(net.name))
 
         _mapping = {}
         _rev_mapping = {}
-        for net in self._networks.values():
+        for net in self.networks.values():
             net_data = net.dumps()
             uname = __get_network_uname(net)
             for k in net_data["compartments"]:
@@ -202,7 +204,7 @@ class Twin(Resource):
                 _rxns.append(_rxn)
 
         _meas = []
-        for ctx in self._contexts.values():
+        for ctx in self.contexts.values():
             related_network = self._get_related_network(ctx)
             if related_network:
                 uname = __get_network_uname(related_network)
@@ -226,6 +228,7 @@ class Twin(Resource):
             "mapping": _mapping,
             "reverse_mapping": _rev_mapping
         }
+
         return _json
 
     # -- F --
@@ -233,20 +236,20 @@ class Twin(Resource):
     # -- G --
 
     def _get_related_network(self, ctx):
-        for net_uid in self._network_contexts:
-            ctx = self._network_contexts[net_uid]
-            if ctx.uid == ctx.uid:
-                return self._networks[net_uid]
+        for net_name, ctx_name in self.network_contexts.items():
+            if ctx_name == ctx.name:
+                return self.get_resource(net_name)
+
         return None
 
     def _get_related_context(self, net):
-        for net_uid in self._network_contexts:
-            if net.uid == net_uid:
-                ctx = self._network_contexts[net_uid]
-                return ctx
+        for net_name, ctx_name in self.network_contexts.items():
+            if net_name == net.name:
+                return self.get_resource(ctx_name)
+
         return None
 
-    # -- L --
+        # -- L --
 
     @classmethod
     def loads(cls, data: TwinDict):
@@ -254,20 +257,19 @@ class Twin(Resource):
         nets = {}
         for val in data.get("networks", []):
             net = Network.loads(val)
-            nets[net.uid] = net
+            nets[net.name] = net
             twin.add_network(net)
 
         for val in data.get("contexts", []):
-            ctx = TwinContext.loads(val)
-            current_ctx_uid = ctx.uid
+            ctx = Context.loads(val)
+            current_ctx_name = ctx.name
             for net_ctx in data.get("network_contexts", []):
-                ctx_uid = net_ctx["context_uid"]
-                if ctx_uid == current_ctx_uid:
-                    net_uid = net_ctx["network_uid"]
-                    twin.add_context(ctx, related_network=nets[net_uid])
+                ctx_name = net_ctx["context_name"]
+                if ctx_name == current_ctx_name:
+                    net_name = net_ctx["network_name"]
+                    twin.add_context(ctx, related_network=nets[net_name])
                     break
 
-        twin.name = data.get("name", "")
         twin.description = data.get("description", "")
         return twin
 
@@ -277,33 +279,30 @@ class Twin(Resource):
 
     @property
     def networks(self):
-        return self._networks
-
-    @property
-    def network_contexts(self):
-        return self._network_contexts
+        contexts = {}
+        for name in self.network_contexts.keys():
+            contexts[name] = self.get_resource(name)
+        return contexts
 
     @property
     def number_of_compounds(self) -> int:
-        c = 0
-        for k in self._networks:
-            net = self._networks[k]
-            c += len(net.compounds)
-        return c
+        count = 0
+        for net in self.networks.values():
+            count += len(net.compounds)
+        return count
 
     @property
     def number_of_reactions(self) -> int:
-        c = 0
-        for k in self._networks:
-            net = self._networks[k]
-            c += len(net.reactions)
-        return c
+        count = 0
+        for net in self.networks.values():
+            count += len(net.reactions)
+        return count
 
     # -- R --
 
     def remove_all_contexts(self):
-        self._contexts = {}
-        self._network_contexts = {}
+        self.contexts = ResourceSet()
+        self.network_contexts = {}
 
     # -- S --
 
@@ -316,8 +315,8 @@ class Twin(Resource):
         text = []
         text.append("Networks")
         text.append("--------")
-        for net_id, net in self.networks.items():
-            text.append(f"Network: {net_id}")
+        for net in self.networks.values():
+            text.append("Network")
             text.append(f"- name: {net.name}")
             text.append(f"- description: {net.description}")
             text.append(f"- number of reactions: {len(net.reactions)}")
@@ -327,8 +326,8 @@ class Twin(Resource):
         text.append("")
         text.append("Contexts")
         text.append("--------")
-        for ctx_id, ctx in self.contexts.items():
-            text.append(f"Context: {ctx_id}")
+        for ctx in self.contexts.values():
+            text.append("Context")
             text.append(f"- name: {ctx.name}")
             text.append(f"- description: {ctx.description}")
             text.append(f"- number of variables: {len(ctx.measures)}")

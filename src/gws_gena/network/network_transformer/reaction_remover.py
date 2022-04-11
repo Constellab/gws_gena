@@ -28,6 +28,6 @@ class ReactionRemover(Task):
         network: Network = inputs["network"]
         reaction_table = inputs["reaction_table"]
         reverse_remove = params["reverse_remove"]
-        new_network: Network = ReactionRemoverHelper.remove_list_of_reactions(
+        ReactionRemoverHelper.remove_list_of_reactions(
             network, reaction_table, reverse_remove=reverse_remove, current_task=self)
-        return {"network": new_network}
+        return {"network": network}

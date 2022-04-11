@@ -5,17 +5,18 @@ import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, ExperimentService, File, GTest,
                       IExperiment, Settings, ViewTester)
-from gws_gena import (FBA, FBAProto, FBAResult, Network, NetworkImporter, Twin,
-                      TwinContext, TwinContextImporter)
+from gws_gena import (FBAProto, Network, NetworkImporter, Twin, Context,
+                      ContextImporter)
 
 settings = Settings.retrieve()
 
 
-class TestFba(BaseTestCaseUsingFullBiotaDB):
+class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
     async def test_toy_fba(self):
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
-        data_dir = os.path.join(data_dir, "toy")
+        testdata_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = os.path.join(testdata_dir, "toy")
+        organism_result_dir = os.path.join(testdata_dir, 'fba', "toy")
 
         async def run_fba(context, solver="highs", relax_qssa=False):
             experiment = IExperiment(FBAProto)
@@ -24,7 +25,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             net = NetworkImporter.call(File(
                 path=os.path.join(data_dir, "toy.json"))
             )
-            ctx = TwinContextImporter.call(
+            ctx = ContextImporter.call(
                 File(path=os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json")))
             )
 
@@ -38,8 +39,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-            fluxes = result.get_fluxes_as_dataframe()
-            sv = result.get_sv_as_dataframe()
+            fluxes = result.get_fluxes_dataframe()
+            sv = result.get_sv_dataframe()
             print(fluxes)
             print(sv)
             th, p = result.compute_zero_flux_threshold()
@@ -51,9 +52,10 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 relax_dir = ""
 
             if context:
-                result_dir = os.path.join(data_dir, 'fba', solver, relax_dir)
-                if not os.path.exists(result_dir):
-                    os.makedirs(result_dir)
+                result_dir = os.path.join(organism_result_dir, solver, relax_dir)
+
+                # if not os.path.exists(result_dir):
+                #     os.makedirs(result_dir)
                 # # write test results in files
                 # file_path = os.path.join(result_dir, "sv.csv")
                 # with open(file_path, 'w', encoding="utf-8") as fp:
@@ -70,24 +72,13 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
                 print(expected_table)
                 expected_table = expected_table.to_numpy()
                 expected_table = numpy.array(expected_table, dtype=float)
-                self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-02).all())
-
-            # view
-            heat_view = result.view_fluxes_as_heatmap(ConfigParams())
-            tester = ViewTester(
-                view=heat_view
-            )
-            dict_ = tester.to_dict({})
-            # print(dict_)
-
-            # twin
-            bio = result.get_related_twin()
-            self.assertIsInstance(bio, Twin)
+                self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
         # highs
         for context in [False, True]:
             self.print(f"Test FBAProto: Small network (toy + context={context} + linprog)")
             await run_fba(context=context, solver="highs")
+
         # quad
         for relax in [False, True]:
             self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
@@ -101,13 +92,14 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             proto = experiment.get_protocol()
 
             organism_dir = os.path.join(data_dir, organism)
+            organism_result_dir = os.path.join(data_dir, 'fba', organism)
 
             net = NetworkImporter.call(
                 File(os.path.join(organism_dir, f"{organism}.json")),
                 {"skip_bigg_exchange_reactions": False}
             )
 
-            ctx = TwinContextImporter.call(File(
+            ctx = ContextImporter.call(File(
                 os.path.join(organism_dir, f"{organism}_context.json")
             ))
 
@@ -130,8 +122,8 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
-            sv = result.get_sv_as_dataframe()
-            fluxes = result.get_fluxes_as_dataframe()
+            sv = result.get_sv_dataframe()
+            fluxes = result.get_fluxes_dataframe()
 
             if organism == 'ecoli':
                 biomass_flux = fluxes.loc[["ecoli_BIOMASS_Ecoli_core_w_GAM"], :]
@@ -144,9 +136,10 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             th, p = result.compute_zero_flux_threshold()
             print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
 
-            result_dir = os.path.join(organism_dir, 'fba', solver, relax_dir)
-            if not os.path.exists(result_dir):
-                os.makedirs(result_dir)
+            result_dir = os.path.join(organism_result_dir, solver, relax_dir)
+
+            # if not os.path.exists(result_dir):
+            #     os.makedirs(result_dir)
             # file_path = os.path.join(result_dir, "flux.csv")
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(fluxes.to_csv())
@@ -165,19 +158,6 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             expected_table = expected_table.to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
             self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
-
-            bio = result.get_related_twin()
-            self.assertIsInstance(bio, Twin)
-            #bio_json = result.get_annotated_twin_as_json()
-            # print(bio_json)
-
-            # view
-            heat_view = result.view_fluxes_as_heatmap(ConfigParams())
-            tester = ViewTester(
-                view=heat_view
-            )
-            dict_ = tester.to_dict({})
-            # print(dict_)
 
         organism = "ecoli"
         self.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")

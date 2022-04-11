@@ -5,18 +5,19 @@ import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ExperimentService, File, GTest, IExperiment, Settings
-from gws_gena import (FVAProto, Network, NetworkImporter, Twin, TwinContext,
-                      TwinContextImporter)
+from gws_gena import Context, ContextImporter, Network, NetworkImporter, Twin
+from gws_gena.deprecated.v030.dep_fva_proto import FVAProto
 
 settings = Settings.retrieve()
 
 
-class TestFba(BaseTestCaseUsingFullBiotaDB):
+class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
     async def test_small_fva(self):
         self.print("Test FVAProto: Small metwork")
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
-        data_dir = os.path.join(data_dir, "toy")
+        testdata_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = os.path.join(testdata_dir, "toy")
+        organism_result_dir = os.path.join(testdata_dir, 'fva', "toy")
 
         async def run_fva(solver="highs", relax_qssa=False):
             experiment = IExperiment(FVAProto)
@@ -30,7 +31,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             net = NetworkImporter.call(File(
                 path=os.path.join(data_dir, "toy.json")
             ))
-            ctx = TwinContextImporter.call(File(
+            ctx = ContextImporter.call(File(
                 path=os.path.join(data_dir, "toy_context.json")
             ))
 
@@ -49,18 +50,17 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            fluxes = result.get_fluxes_as_dataframe()
-            sv = result.get_sv_as_dataframe()
+            fluxes = result.get_fluxes_dataframe()
+            sv = result.get_sv_dataframe()
             print(fluxes)
             print(sv)
             th, p = result.compute_zero_flux_threshold()
             print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
 
-            result_dir = os.path.join(data_dir, 'fva', solver, relax_dir)
-            if not os.path.exists(result_dir):
-                os.makedirs(result_dir)
+            result_dir = os.path.join(organism_result_dir, solver, relax_dir)
 
-            # # write test results in files
+            # if not os.path.exists(result_dir):
+            #     os.makedirs(result_dir)
             # file_path = os.path.join(result_dir, "sv.csv")
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(sv.to_csv())
@@ -76,7 +76,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             expected_table = expected_table.to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
 
-            self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-02).all())
+            self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
         GTest.print(f"Test FVAProto: Small network (toy + linprog)")
         await run_fva(solver="highs")
@@ -94,11 +94,13 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             proto = experiment.get_protocol()
 
             organism_dir = os.path.join(data_dir, organism)
+            organism_result_dir = os.path.join(data_dir, 'fva', organism)
+
             net = NetworkImporter.call(
                 File(path=os.path.join(organism_dir, f"{organism}.json")),
                 {"skip_bigg_exchange_reactions": False}
             )
-            ctx = TwinContextImporter.call(File(
+            ctx = ContextImporter.call(File(
                 path=os.path.join(organism_dir, f"{organism}_context.json")
             ))
 
@@ -122,13 +124,15 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            fluxes = result.get_fluxes_as_dataframe()
-            sv = result.get_sv_as_dataframe()
+            fluxes = result.get_fluxes_dataframe()
+            sv = result.get_sv_dataframe()
 
             if organism == 'ecoli':
                 biomass_flux = result.get_fluxes_by_reaction_ids(["ecoli_BIOMASS_Ecoli_core_w_GAM"])
+                #self.assertAlmostEqual(biomass_flux.at[0, "flux_value"], 51.259373, delta=1e-3)
             else:
                 biomass_flux = result.get_fluxes_by_reaction_ids(["pcys_Biomass"])
+                #self.assertAlmostEqual(biomass_flux.at[0, "flux_value"], 51.259373, delta=1e-3)
 
             print(fluxes)
             print(sv)
@@ -136,10 +140,10 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             th, p = result.compute_zero_flux_threshold()
             print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
 
-            result_dir = os.path.join(organism_dir, 'fva', solver, relax_dir)
-            if not os.path.exists(result_dir):
-                os.makedirs(result_dir)
+            result_dir = os.path.join(organism_result_dir, solver, relax_dir)
 
+            # if not os.path.exists(result_dir):
+            #     os.makedirs(result_dir)
             # file_path = os.path.join(result_dir, "flux.csv")
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(fluxes.to_csv())
@@ -155,15 +159,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             expected_table = expected_table.to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
 
-            self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-02).all())
-
-            bio = result.get_related_twin()
-            net = list(bio.networks.values())[0]
-            tflux = net.get_total_abs_flux_as_table().get_data()
-            print(tflux)
-
-            # bio_json = result.get_annotated_twin_as_json()
-            # print(bio_json)
+            self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
         # ecoli
         organism = "ecoli"

@@ -21,7 +21,7 @@ from ..twin.twin import Twin
 from .koa_result_table import KOAResultTable
 
 
-@task_decorator("KOA", human_name="KOA", short_description="KnockOut Analysis")
+@task_decorator("KOA_001", human_name="KOA", short_description="KnockOut Analysis")
 class KOA(Task):
     """
     KOA class.
@@ -75,7 +75,7 @@ class KOA(Task):
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
                 fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
 
-            current_fluxes = current_result.get_fluxes_as_dataframe()
+            current_fluxes = current_result.get_fluxes_dataframe()
             if monitored_fluxes:
                 if not is_monitored_fluxes_expanded:
                     monitored_fluxes = FBAHelper._expand_fluxes_by_names(

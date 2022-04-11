@@ -4,7 +4,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import GTest, Settings
-from gws_gena import Compound, Network, Reaction, Twin, TwinContext
+from gws_gena import Compound, Network, Reaction, Twin, Context
 from pandas import DataFrame
 
 settings = Settings.retrieve()
@@ -15,10 +15,10 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
     def test_reaction(self):
         self.print("Test Reaction")
 
-        t = Network()
+        net = Network()
 
         rxn1 = Reaction(id="my-reaction")
-        t.add_reaction(rxn1)
+        net.add_reaction(rxn1)
 
         comp1 = Compound(name="ATP", chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
         rxn1.add_substrate(comp1, -1)
@@ -61,7 +61,9 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
         print("--->")
         net = Network()
-        rxns = Reaction.from_biota(ec_number="1.4.1.3", network=net, tax_id="42068", tax_search_method="bottom_up")
+        rxns = Reaction.from_biota(ec_number="1.4.1.3", tax_id="42068", tax_search_method="bottom_up")
+        for rxn in rxns:
+            net.add_reaction(rxn)
         for rxn in rxns:
             print(rxn.id)
             print(rxn.to_str())

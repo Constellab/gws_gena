@@ -9,7 +9,7 @@ from gws_core import (BoolParam, CheckBeforeTaskResult, ConfigParams,
 
 from ..network.network import Network
 from .twin import Twin
-from .twin_context import TwinContext
+from ..context.context import Context
 
 # ####################################################################
 #
@@ -21,8 +21,8 @@ from .twin_context import TwinContext
 @task_decorator("TwinBuilder", human_name="Twin builder",
                 short_description="Build a twin using a metabolic network and a context")
 class TwinBuilder(Task):
-    input_specs = {'network': (Network,), 'context': SkippableIn(TwinContext)}
-    output_specs = {'twin': (Twin,)}
+    input_specs = {'network': Network, 'context': SkippableIn(Context)}
+    output_specs = {'twin': Twin}
     config_specs = {"use_context": BoolParam(
         default_value=True, human_name="Use context", short_description="Set True to use the context, False otherwise."), }
 

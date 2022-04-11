@@ -39,33 +39,21 @@ class EntityIDTable(Table):
 
     # -- G --
 
-    def get_ids(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.id_column, rtype)
+    def get_ids(self) -> list:
+        return self.get_column_as_list(self.id_column,)
 
     # -- I --
 
     # -- S --
 
-    def select_by_row_positions(self, positions: List[int]) -> 'EntityIDTable':
-        table = super().select_by_row_positions(positions)
-        table.id_column = self.id_column
-        return table
-
     def select_by_column_positions(self, positions: List[int]) -> 'EntityIDTable':
         table = super().select_by_column_positions(positions)
         if not self.id_column in table.id_column:
             raise BadRequestException("The id_column is required and must be selected")
-        table.id_column = self.id_column
         return table
 
-    def select_by_row_names(self, names: List[str], use_regex=False) -> 'EntityIDTable':
-        table = super().select_by_row_names(names, use_regex)
-        table.id_column = self.id_column
-        return table
-
-    def select_by_column_names(self, names: List[str], use_regex=False) -> 'EntityIDTable':
-        table = super().select_by_column_names(names, use_regex)
+    def select_by_column_names(self, names: List[str], filters: List['DataframeFilterName']) -> 'EntityIDTable':
+        table = super().select_by_column_names(names, filters)
         if not self.id_column in table.id_column:
             raise BadRequestException("The id_column is required and must be selected")
-        table.id_column = self.id_column
         return table

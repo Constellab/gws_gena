@@ -5,7 +5,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner
 from gws_gena import (Compound, GapFiller, Network, NetworkImporter, Reaction,
-                      Twin, TwinContext)
+                      Twin, Context)
 
 settings = Settings.retrieve()
 

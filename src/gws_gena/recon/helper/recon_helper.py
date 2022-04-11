@@ -52,8 +52,10 @@ class ReconHelper(TaskHelper):
             counter += 1
 
             try:
-                Reaction.from_biota(ec_number=enzyme.ec_number, network=net,
+                rxns = Reaction.from_biota(ec_number=enzyme.ec_number,
                                     tax_id=tax_id, tax_search_method=tax_search_method)
+                for rxn in rxns:
+                    net.add_reaction(rxn)
             except Exception as err:
                 pass
                 # net.set_reaction_recon_tag(enzyme.ec_number, {
@@ -65,7 +67,7 @@ class ReconHelper(TaskHelper):
 
     def create_network_with_ec_table(
             self, unique_name: str, ec_table: ECTable, tax_id: str, tax_search_method: str) -> Network:
-        ec_list = ec_table.get_ec_numbers(rtype="list")
+        ec_list = ec_table.get_ec_numbers()
         net = Network()
         net.name = unique_name
 
@@ -92,7 +94,9 @@ class ReconHelper(TaskHelper):
                 })
             else:
                 try:
-                    Reaction.from_biota(ec_number=ec, network=net, tax_id=tax_id, tax_search_method=tax_search_method)
+                    rxns = Reaction.from_biota(ec_number=ec, tax_id=tax_id, tax_search_method=tax_search_method)
+                    for rxn in rxns:
+                        net.add_reaction(rxn)
                 except Exception as err:
                     net.set_reaction_recon_tag(ec, {
                         "ec_number": ec,
@@ -109,12 +113,16 @@ class ReconHelper(TaskHelper):
             subs = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_EXTRACELL)
             prod = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
             try:
-                rxn = Reaction(
-                    id=prod.name+"_ex",
-                    network=net
-                )
+                rxn = Reaction(id=prod.name+"_ex")
                 rxn.add_product(prod, 1)
                 rxn.add_substrate(subs, 1)
+                net.add_reaction(rxn)
+                for comp in [ subs, prod ]:
+                    net.set_compound_recon_tag(comp.id, {
+                        "id": comp.id,
+                        "is_in_biomass_or_medium": True
+                    })
+
             except ReactionDuplicate:
                 # ... the reactoin alread exits => OK!
                 pass
@@ -139,12 +147,12 @@ class ReconHelper(TaskHelper):
             else:
                 comp = comps[0]
 
-        if not net.exists(comp):
-            net.add_compound(comp)
-        net.set_compound_recon_tag(comp.id, {
-            "id": comp.id,
-            "is_in_biomass_or_medium": True
-        })
+        # if not net.exists(comp):
+        #     net.add_compound(comp)
+        # net.set_compound_recon_tag(comp.id, {
+        #     "id": comp.id,
+        #     "is_in_biomass_or_medium": True
+        # })
         return comp
 
     def _create_biomass_rxns(self, net, biomass_comps, biomass_table):
@@ -197,6 +205,6 @@ class ReconHelper(TaskHelper):
             else:
                 comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
                 _comps.append(comp)
-        if not net.exists(comp):
-            net.add_compound(comp)
+        # if not net.exists(comp):
+        #     net.add_compound(comp)
         return _comps

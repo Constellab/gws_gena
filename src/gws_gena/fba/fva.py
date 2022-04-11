@@ -86,7 +86,7 @@ def _do_parallel_loop(kwargs):
     return xmin, xmax
 
 
-@task_decorator("FVA", human_name="FVA", short_description="Flux variability Analysis")
+@task_decorator("FVA_001", human_name="FVA", short_description="Flux variability Analysis")
 class FVA(Task):
     """
     FVA class
@@ -98,8 +98,8 @@ class FVA(Task):
         https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
     """
 
-    input_specs = {'twin': (Twin,)}
-    output_specs = {'result': (FVAResult,)}
+    input_specs = {'twin': Twin}
+    output_specs = {'result': FVAResult}
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The list of fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The list of fluxes to minimize"),

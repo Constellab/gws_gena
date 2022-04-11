@@ -1045,6 +1045,7 @@ Cell_wall_c,1,1,False
 Carbohydrates_c,1,1,False
 Phospholipids_c,1,1,False
 Sterols_c,1,1,False
+Biomass_b,0,1,False
 tetradecanoic_acid_c,1,1,False
 pentadecanoic_acid_c,1,0,True
 palmitoleic_acid_c,1,1,False
@@ -1066,7 +1067,6 @@ campesterol_c,1,0,True
 cholest_5_en_3_one_c,1,0,True
 fungisterol_c,1,0,True
 sitosterol_c,1,1,False
-Biomass_b,0,1,False
 L_argininium_1_e,1,0,False
 L_cysteine_zwitterion_e,1,0,False
 L_glutamine_zwitterion_e,1,0,False

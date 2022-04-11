@@ -37,7 +37,7 @@ class ReactionAdder(Task):
         tax_search_method = params['tax_search_method']
         reaction_table = inputs["reaction_table"]
 
-        new_network: Network = ReactionAdderHelper.add_list_of_reactions(
+        ReactionAdderHelper.add_reactions(
             network, reaction_table, tax_id, tax_search_method=tax_search_method)
 
-        return {"network": new_network}
+        return {"network": network}

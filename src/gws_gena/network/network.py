@@ -16,7 +16,8 @@ from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
                       File, JSONView, Resource, ResourceExporter, RField,
-                      StrRField, Table, TabularView, resource_decorator, view)
+                      StrRField, Table, TabularView, UUIDRField,
+                      resource_decorator, view)
 from pandas import DataFrame
 
 from .compound import Compound
@@ -55,7 +56,6 @@ PositionDict = TypedDict("PositionDict", {
 CompoundDict = TypedDict("CompoundDict", {
     "id": str,
     "name": str,
-    "network": "Network",
     "charge": float,
     "mass": float,
     "monoisotopic_mass": float,
@@ -72,7 +72,6 @@ CompoundDict = TypedDict("CompoundDict", {
 ReactionDict = TypedDict("ReactionDict", {
     "id": str,
     "name": str,
-    "network": "Network",
     "direction": str,
     "lower_bound": float,
     "upper_bound": float,
@@ -108,27 +107,29 @@ class Network(Resource):
     """
 
     DEFAULT_NAME = "network"
-    name: str = StrRField(default_value=DEFAULT_NAME, searchable=True)
-    description: str = StrRField(default_value="", searchable=True)
+
     compounds: Dict[str, Compound] = DictRField()
     reactions: Dict[str, Reaction] = DictRField()
     compartments: Dict[str, str] = DictRField()
 
-    _recon_tags: Dict[str, NetworkReconTagDict] = DictRField(
-        default_value=NetworkReconTagDict(reactions={}, compounds={})
-    )
+    _recon_tags: Dict[str, NetworkReconTagDict] = DictRField()
     _stats: Dict[str, str] = DictRField()
     _set_of_chebi_ids: Dict[str, str] = DictRField()
     _set_of_ec_numbers: Dict[str, str] = DictRField()
     _set_of_rhea_ids: Dict[str, str] = DictRField()
 
-    _cofactor_freq_threshold: float = 0.7
-
-    _table_name = "gena_network"
+    def __init__(self):
+        super().__init__()
+        if not self.name:
+            self.name = "Network"
+            self.compounds = {}
+            self.reactions = {}
+            self.compartments = {}
+            self._recon_tags = NetworkReconTagDict(reactions={}, compounds={})
 
     # -- A --
 
-    def add_compound(self, comp: Compound):
+    def _add_compound(self, comp: Compound):
         """
         Adds a compound
 
@@ -138,18 +139,17 @@ class Network(Resource):
 
         if not isinstance(comp, Compound):
             raise BadRequestException("The compound must an instance of Compound")
-        if comp.network and comp.network != self:
-            raise BadRequestException("The compound is already in another network")
         if comp.id in self.compounds:
-            raise CompoundDuplicate(f"Compound id {comp.id} duplicate")
+            raise CompoundDuplicate(f'Compound id "{comp.id}" is duplicated')
         if not comp.compartment:
             raise NoCompartmentFound("No compartment defined for the compound")
         if not comp.compartment in self.compartments:
             suffix = comp.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
             self.compartments[comp.compartment] = Compound.COMPARTMENTS[suffix]["name"]
-        comp.network = self
+
         self.compounds[comp.id] = comp
         self._stats = {}
+
         if comp.chebi_id:
             if comp.compartment not in self._set_of_chebi_ids:
                 self._set_of_chebi_ids[comp.compartment] = {}
@@ -167,8 +167,6 @@ class Network(Resource):
 
         if not isinstance(rxn, Reaction):
             raise BadRequestException("The reaction must an instance of Reaction")
-        if rxn.network:
-            raise BadRequestException("The reaction is already in a network")
         if rxn.id in self.reactions:
             raise ReactionDuplicate(f"Reaction id {rxn.id} duplicate")
 
@@ -176,15 +174,14 @@ class Network(Resource):
         for sub in rxn.substrates.values():
             comp = sub["compound"]
             if not self.exists(comp):
-                self.add_compound(comp)
+                self._add_compound(comp)
 
         for prod in rxn.products.values():
             comp = prod["compound"]
             if not self.exists(comp):
-                self.add_compound(comp)
+                self._add_compound(comp)
 
         # add the reaction
-        rxn.network = self
         self.reactions[rxn.id] = rxn
         self._stats = {}
 
@@ -202,7 +199,6 @@ class Network(Resource):
     def copy(self) -> 'Network':
         net = Network()
         net.name = self.name
-        net.description = self.description
         net.compounds = copy.deepcopy(self.compounds)  # /!\ use deepcopy for performance
         net.reactions = copy.deepcopy(self.reactions)  # /!\ use deepcopy for performance
         net.compartments = self.compartments.copy()
@@ -471,18 +467,6 @@ class Network(Resource):
                     comps.append(self.compounds[comp_id])
             return comps
 
-        # _list = []
-        # for _id in self.compounds:
-        #     comp: Compound = self.compounds[_id]
-        #     OK = ( comp.chebi_id == chebi_id ) or \
-        #          ( chebi_id in comp.alt_chebi_ids )
-        #     if OK:
-        #         if compartment is None:
-        #             _list.append(comp)
-        #         elif comp.compartment == compartment:
-        #             _list.append(comp)
-        # return _list
-
     def get_reaction_by_id(self, rxn_id: str) -> Reaction:
         """
         Get a reaction by its id.
@@ -510,11 +494,6 @@ class Network(Resource):
             return self.reactions[r_id]
         else:
             return None
-
-        # for k in self.reactions:
-        #     rxn = self.reactions[k]
-        #     if rxn.ec_number == ec_number:
-        #         return rxn
 
     def get_reaction_by_rhea_id(self, rhea_id: str) -> Reaction:
         """
@@ -668,13 +647,14 @@ class Network(Resource):
     @classmethod
     def loads(cls, data: NetworkDict, skip_bigg_exchange_reactions: bool = True, loads_biota_info: False = False):
         if not data.get("compartments"):
-            raise BadRequestException("Invalid network dump. Compartment field not found")
+            raise BadRequestException("Invalid network dump. Compartments not found")
         if not data.get("metabolites"):
-            raise BadRequestException("Invalid network dump. Metabolite field not found")
+            raise BadRequestException("Invalid network dump. Metabolites not found")
         if not data.get("reactions"):
-            raise BadRequestException("Invalid network dump. Reaction field not found")
+            raise BadRequestException("Invalid network dump. Reactions not found")
 
-        net = cls()
+        net = Network()
+        net.name = data.get("name", cls.DEFAULT_NAME)
         net.compartments = data["compartments"]
         ckey = "compounds" if "compounds" in data else "metabolites"
 
@@ -709,7 +689,6 @@ class Network(Resource):
                             chebi_id=chebi_id,
                             inchikey=inchikey,
                             compartment=compart,
-                            network=net
                         )
                     except:
                         pass
@@ -718,7 +697,6 @@ class Network(Resource):
                 comp = Compound(
                     id=_id,
                     name=val.get("name", ""),
-                    network=net,
                     compartment=compart,
                     charge=val.get("charge", ""),
                     mass=val.get("mass", ""),
@@ -749,7 +727,6 @@ class Network(Resource):
             rxn = Reaction(
                 id=val["id"],  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER),\
                 name=val.get("name"), \
-                network=net, \
                 lower_bound=val.get("lower_bound", Reaction.lower_bound), \
                 upper_bound=val.get("upper_bound", Reaction.upper_bound), \
                 enzyme=val.get("enzyme", {}),\
@@ -790,8 +767,7 @@ class Network(Resource):
 
                 rxn.position.points[comp.id] = points
 
-        net.name = data.get("name", cls.DEFAULT_NAME)
-        net.description = data.get("description", "")
+            net.add_reaction(rxn)
 
         return net
 

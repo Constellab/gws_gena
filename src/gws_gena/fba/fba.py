@@ -3,16 +3,15 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
-                      Logger, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (BoolParam, ConfigParams, ListParam, StrParam, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 
 from ..twin.twin import Twin
 from .fba_helper.fba_helper import FBAHelper
 from .fba_result import FBAResult
 
 
-@task_decorator("FBA", human_name="FBA", short_description="Flux balance Analysis")
+@task_decorator("FBA_001", human_name="FBA", short_description="Flux balance Analysis")
 class FBA(Task):
     """
     FBA class
@@ -59,8 +58,8 @@ class FBA(Task):
     Id_{C} and Id_{Y} are identity matrices.
     """
 
-    input_specs = {'twin': (Twin,)}
-    output_specs = {'result': (FBAResult,)}
+    input_specs = {'twin': Twin}
+    output_specs = {'result': FBAResult}
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
@@ -81,9 +80,10 @@ class FBA(Task):
 
         helper = FBAHelper()
         helper.attach(self)
-        result: FBAResult = helper.run(
+        fba_result: FBAResult = helper.run(
             twin, solver, fluxes_to_maximize, fluxes_to_minimize, fill_gaps_with_sinks=fill_gaps_with_sinks,
             ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
-        return {"result": result}
+
+        return {"result": fba_result}
 
     # -- B --

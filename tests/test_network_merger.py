@@ -5,7 +5,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, Experiment, File, IExperiment, ProcessSpec,
                       Protocol, Settings, protocol_decorator)
-from gws_gena import Network, NetworkImporter, NetworkMerger, Twin, TwinContext
+from gws_gena import Network, NetworkImporter, NetworkMerger, Twin, Context
 
 settings = Settings.retrieve()
 

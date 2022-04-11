@@ -41,6 +41,8 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         self.print("Test reaction ID adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
+        self.assertEqual(len(net.reactions), 7)
+
         table = EntityIDTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "rhea_id_table.csv")),
             params=ConfigParams({'id_column': 'rhea_id'}))
@@ -53,8 +55,9 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         outputs = await tester.run()
         net = outputs["network"]
 
-        # print(net.to_csv())
         self.assertEqual(len(net.reactions), 8)
+
+        print(net.reactions)
         self.assertTrue("RHEA_16505_4_1_3_40" in net.reactions)
 
         # file_path = os.path.join(data_dir, "reaction_adder", "toy_with_added_id.json")

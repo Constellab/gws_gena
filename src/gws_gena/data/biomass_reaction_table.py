@@ -56,22 +56,15 @@ class BiomassReactionTable(Table):
 
     # -- F --
 
-    def get_chebi_ids(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.chebi_column, rtype)
+    def get_chebi_ids(self) -> list:
+        return self.get_column_as_list(self.chebi_column)
 
-    def get_entities(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.entity_column, rtype)
+    def get_entities(self) -> list:
+        return self.get_column_as_list(self.entity_column)
 
     # -- I --
 
     # -- S --
-
-    def select_by_row_positions(self, positions: List[int]) -> 'BiomassReactionTable':
-        table = super().select_by_row_positions(positions)
-        table.biomass_column = self.biomass_column
-        table.chebi_column = self.chebi_column
-        table.entity_column = self.entity_column
-        return table
 
     def select_by_column_positions(self, positions: List[int]) -> 'BiomassReactionTable':
         table = super().select_by_column_positions(positions)
@@ -81,16 +74,6 @@ class BiomassReactionTable(Table):
             raise BadRequestException("The chebi_column is required and must be selected")
         if not table.entity_column in table.column_names:
             raise BadRequestException("The entity_column is required and must be selected")
-        table.biomass_column = self.biomass_column
-        table.chebi_column = self.chebi_column
-        table.entity_column = self.entity_column
-        return table
-
-    def select_by_row_names(self, names: List[str], use_regex=False) -> 'BiomassReactionTable':
-        table = super().select_by_row_names(names, use_regex)
-        table.biomass_column = self.biomass_column
-        table.chebi_column = self.chebi_column
-        table.entity_column = self.entity_column
         return table
 
     def select_by_column_names(self, names: List[str], use_regex=False) -> 'BiomassReactionTable':
@@ -101,7 +84,4 @@ class BiomassReactionTable(Table):
             raise BadRequestException("The chebi_column is required and must be selected")
         if not table.entity_column in table.column_names:
             raise BadRequestException("The entity_column is required and must be selected")
-        table.biomass_column = self.biomass_column
-        table.chebi_column = self.chebi_column
-        table.entity_column = self.entity_column
         return table

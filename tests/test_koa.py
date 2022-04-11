@@ -4,13 +4,13 @@ from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, File, IExperiment, Settings, TaskRunner,
                       ViewTester)
 from gws_gena import (KOA, EntityIDTable, EntityIDTableImporter, KOAProto,
-                      Network, NetworkImporter, Twin, TwinContext,
-                      TwinContextImporter)
+                      Network, NetworkImporter, Twin, Context,
+                      ContextImporter)
 
 settings = Settings.retrieve()
 
 
-class TestFba(BaseTestCaseUsingFullBiotaDB):
+class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
     async def test_toy_koa(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
@@ -18,7 +18,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko.json")),
             {}
         )
-        ctx = TwinContextImporter.call(
+        ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko_context.json")),
             {}
         )
@@ -49,21 +49,6 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
 
         print(ko_results)
 
-        params = ConfigParams({
-            "flux_names": ["toy_cell_RB", "toy_cell_R1"]
-        })
-        tester = ViewTester(
-            view=ko_results.view_ko_summary_as_bar_plot(params)
-        )
-
-        view_dict = tester.to_dict()
-        print(view_dict)
-
-        self.assertEqual(view_dict["data"]["nb_of_columns"], 2)
-        self.assertEqual(len(view_dict["data"]["views"]), 2)
-
-        print(ko_results)
-
         self.assertEqual(ko_results.get_data().at[0, "ko_id"], "toy_cell_R1")
         self.assertEqual(ko_results.get_data().at[0, "flux_name"], "toy_cell_R1")
         self.assertAlmostEqual(ko_results.get_data().at[0, "flux_value"], 0.000193, delta=1e-6)
@@ -78,7 +63,7 @@ class TestFba(BaseTestCaseUsingFullBiotaDB):
             File(os.path.join(data_dir, "ecoli", "ecoli.json")),
             {}
         )
-        ctx = TwinContextImporter.call(
+        ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "ecoli", "ecoli_context.json")),
             {}
         )

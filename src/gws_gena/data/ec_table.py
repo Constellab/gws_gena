@@ -39,33 +39,21 @@ class ECTable(Table):
 
     # -- G --
 
-    def get_ec_numbers(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.ec_column, rtype)
+    def get_ec_numbers(self) -> list:
+        return self.get_column_as_list(self.ec_column)
 
     # -- I --
 
     # -- S --
 
-    def select_by_row_positions(self, positions: List[int]) -> 'ECTable':
-        table = super().select_by_row_positions(positions)
-        table.ec_column = self.ec_column
-        return table
-
     def select_by_column_positions(self, positions: List[int]) -> 'ECTable':
         table = super().select_by_column_positions(positions)
         if not self.ec_column in table.ec_column:
             raise BadRequestException("The ec_column is required and must be selected")
-        table.ec_column = self.ec_column
         return table
 
-    def select_by_row_names(self, names: List[str], use_regex=False) -> 'ECTable':
-        table = super().select_by_row_names(names, use_regex)
-        table.ec_column = self.ec_column
-        return table
-
-    def select_by_column_names(self, names: List[str], use_regex=False) -> 'ECTable':
-        table = super().select_by_column_names(names, use_regex)
+    def select_by_column_names(self, names: List[str], filters: List['DataframeFilterName']) -> 'ECTable':
+        table = super().select_by_column_names(names, filters)
         if not self.ec_column in table.ec_column:
             raise BadRequestException("The ec_column is required and must be selected")
-        table.ec_column = self.ec_column
         return table

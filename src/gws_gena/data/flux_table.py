@@ -50,45 +50,33 @@ class FluxTable(Table):
 
     # -- G --
 
-    def get_reaction_ids(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.reaction_id_column_name, rtype)
+    def get_reaction_ids(self) -> list:
+        return self.get_column_as_list(self.reaction_id_column_name)
 
-    def get_targets(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.target_column_name, rtype)
+    def get_targets(self) -> list:
+        return self.get_column_as_list(self.target_column_name)
 
-    def get_upper_bounds(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.upper_bound_column_name, rtype)
+    def get_upper_bounds(self) -> list:
+        return self.get_column_as_list(self.upper_bound_column_name)
 
-    def get_lower_bounds(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.lower_bound_column_name, rtype)
+    def get_lower_bounds(self) -> list:
+        return self.get_column_as_list(self.lower_bound_column_name)
 
-    def get_confidence_scores(self, rtype='list') -> ('DataFrame', list):
-        return self.get_column(self.confidence_score_column, rtype)
+    def get_confidence_scores(self) -> list:
+        return self.get_column_as_list(self.confidence_score_column)
 
     # -- I --
 
     # -- S --
 
-    def select_by_row_positions(self, positions: List[int]) -> 'FluxTable':
-        table = super().select_by_row_positions(positions)
-        table.confidence_score_column = self.confidence_score_column
-        return table
-
     def select_by_column_positions(self, positions: List[int]) -> 'FluxTable':
         table = super().select_by_column_positions(positions)
         if not self.confidence_score_column in table.confidence_score_column:
             raise BadRequestException("The confidence_score_column is required and must be selected")
-        table.confidence_score_column = self.confidence_score_column
         return table
 
-    def select_by_row_names(self, names: List[str], use_regex=False) -> 'FluxTable':
-        table = super().select_by_row_names(names, use_regex)
-        table.confidence_score_column = self.confidence_score_column
-        return table
-
-    def select_by_column_names(self, names: List[str], use_regex=False) -> 'FluxTable':
-        table = super().select_by_column_names(names, use_regex)
+    def select_by_column_names(self, names: List[str], filters: List['DataframeFilterName']) -> 'FluxTable':
+        table = super().select_by_column_names(names, filters)
         if not self.confidence_score_column in table.confidence_score_column:
             raise BadRequestException("The confidence_score_column is required and must be selected")
-        table.confidence_score_column = self.confidence_score_column
         return table

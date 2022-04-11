@@ -1,5 +1,6 @@
 {
-    "pathway_id": "toy", 
+    "id": "measure_R1_ex",
+    "name": "toy_context", 
     "measures": [
         {
             "id": "M1",

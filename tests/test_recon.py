@@ -6,7 +6,7 @@ from gws_core import (ConfigParams, Experiment, File, IExperiment, Settings,
                       TaskRunner)
 from gws_gena import (BiomassReactionTableImporter, DraftRecon,
                       ECTableImporter, GapFiller, MediumTableImporter,
-                      NetworkMerger, ReconProto, TwinContext)
+                      NetworkMerger, ReconProto, Context)
 
 settings = Settings.retrieve()
 
