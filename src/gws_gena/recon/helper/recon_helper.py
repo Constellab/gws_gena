@@ -147,12 +147,6 @@ class ReconHelper(TaskHelper):
             else:
                 comp = comps[0]
 
-        # if not net.exists(comp):
-        #     net.add_compound(comp)
-        # net.set_compound_recon_tag(comp.id, {
-        #     "id": comp.id,
-        #     "is_in_biomass_or_medium": True
-        # })
         return comp
 
     def _create_biomass_rxns(self, net, biomass_comps, biomass_table):
@@ -162,7 +156,7 @@ class ReconHelper(TaskHelper):
             if col_name == chebi_col_name:
                 continue
             rxn = Reaction(id=col_name, direction="R", lower_bound=0.0)
-            coefs = biomass_table.get_column(col_name)
+            coefs = biomass_table.get_column_as_list(col_name)
             error_message = "The reaction is empty"
             for i, coef in enumerate(coefs):
                 if isinstance(coef, str):
@@ -205,6 +199,5 @@ class ReconHelper(TaskHelper):
             else:
                 comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
                 _comps.append(comp)
-        # if not net.exists(comp):
-        #     net.add_compound(comp)
+
         return _comps
