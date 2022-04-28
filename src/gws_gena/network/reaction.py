@@ -146,6 +146,7 @@ class Reaction:
     enzyme: EnzymeDict = None
     position: ReactionPosition = None
 
+    _is_biomass_reaction = None
     _tax_ids = []
     _estimate: dict = None
     _substrates: dict = None
@@ -256,6 +257,9 @@ class Reaction:
             "stoichiometry": abs(float(stoich)),
         }
 
+        if comp.is_biomass:
+            self._is_biomass_reaction = True
+
     # -- C --
 
     def copy(self) -> 'Reaction':
@@ -330,20 +334,20 @@ class Reaction:
     # -- F --
 
     @classmethod
-    def _flatten_id(cls, id: str, ctx_name: str) -> str:
+    def flatten_id(cls, id: str, net_name: str) -> str:
         """
         Flattens a reaction id
 
         :param id: The id
         :type id: `str`
-        :param ctx_name: The name of the (metabolic, biological, network) context
-        :type ctx_name: `str`
+        :param net_name: The name of the network
+        :type net_name: `str`
         :return: The flattened id
         :rtype: `str`
         """
 
         delim = cls._FLATTENING_DELIMITER
-        return slugify_id(ctx_name + delim + id.replace(delim, "_"))
+        return slugify_id(net_name + delim + id.replace(delim, "_"))
 
     @classmethod
     def from_biota(
@@ -417,7 +421,7 @@ class Reaction:
                 e["tax"] = {}
                 try:
                     tax = BiotaTaxo.get(BiotaTaxo.tax_id == enzyme.tax_id)
-                except:
+                except Exception as _:
                     tax = None
                 if tax:
                     e["tax"][tax.rank] = {
@@ -538,8 +542,9 @@ class Reaction:
                 _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                 try:
                     rxns.append(__create_reaction(rhea_rxn, e))
-                except:
+                except Exception as _:
                     pass
+
             return rxns
         elif rhea_id:
             tax = None
@@ -554,7 +559,7 @@ class Reaction:
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                     try:
                         rxns.append(__create_reaction(rhea_rxn, e))
-                    except:
+                    except Exception as _:
                         pass
             return rxns
         elif ec_number:
@@ -607,7 +612,7 @@ class Reaction:
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
                             rxns.append(__create_reaction(rhea_rxn, e))
-                        except:
+                        except Exception as _:
                             # reaction duplicate
                             # skip error!
                             pass
@@ -625,7 +630,7 @@ class Reaction:
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         try:
                             rxns.append(__create_reaction(rhea_rxn, e))
-                        except:
+                        except Exception as _:
                             pass
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")
@@ -656,6 +661,19 @@ class Reaction:
             return {"kegg": "", "brenda": "", "metacyc": ""}
 
     # -- I --
+
+    @property
+    def is_biomass_reaction(self):
+        # retro-rcomaptiblity check
+        if self._is_biomass_reaction is None:
+            self._is_biomass_reaction = False
+            for comp_id in self.products:
+                comp = self.products[comp_id]["compound"]
+                if comp.is_biomass:
+                    self._is_biomass_reaction = True
+                    break
+
+        return self._is_biomass_reaction
 
     @property
     def is_empty(self):
@@ -704,6 +722,9 @@ class Reaction:
         # remove the compound from the reaction
         del self._products[comp.id]
 
+        if comp.is_biomass:
+            self._is_biomass_reaction = True
+
     def get_related_biota_reaction(self):
         """
         Get the biota reaction that is related to this reaction
@@ -714,7 +735,7 @@ class Reaction:
 
         try:
             return BiotaReaction.get(BiotaReaction.rhea_id == self.rhea_id)
-        except:
+        except Exception as _:
             return None
 
     # -- S --

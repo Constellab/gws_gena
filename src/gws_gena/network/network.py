@@ -15,8 +15,8 @@ from gws_biota import CompoundPosition as BiotaCompoundPosition
 from gws_biota import EnzymeClass
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
-                      File, JSONView, Resource, ResourceExporter, RField,
-                      StrRField, Table, TabularView, UUIDRField,
+                      File, JSONView, Logger, Resource, ResourceExporter,
+                      RField, StrRField, Table, TabularView, UUIDRField,
                       resource_decorator, view)
 from pandas import DataFrame
 
@@ -140,7 +140,7 @@ class Network(Resource):
         if not isinstance(comp, Compound):
             raise BadRequestException("The compound must an instance of Compound")
         if comp.id in self.compounds:
-            raise CompoundDuplicate(f'Compound id "{comp.id}" is duplicated')
+            raise CompoundDuplicate(f'Compound id "{comp.id}" is duplicated')
         if not comp.compartment:
             raise NoCompartmentFound("No compartment defined for the compound")
         if not comp.compartment in self.compartments:
@@ -191,6 +191,18 @@ class Network(Resource):
             ec = rxn.enzyme.get("ec_number")
             if ec:
                 self._set_of_ec_numbers[ec] = rxn.id
+
+    def update_reaction(self, rxn: Reaction):
+        """ Update a reaction in the network """
+        for sub in rxn.substrates.values():
+            comp = sub["compound"]
+            if not self.exists(comp):
+                self._add_compound(comp)
+
+        for prod in rxn.products.values():
+            comp = prod["compound"]
+            if not self.exists(comp):
+                self._add_compound(comp)
 
     # -- B --
 
@@ -270,13 +282,23 @@ class Network(Resource):
         _met_json = []
         _rxn_json = []
 
+        # switch all biomass compounds as majors
+        biomass_comps = []
+        biomass_rxn = self.get_biomass_reaction()
+        if biomass_rxn is not None:
+            for comp_id in biomass_rxn.substrates:
+                biomass_comps.append(comp_id)
+            for comp_id in biomass_rxn.products:
+                biomass_comps.append(comp_id)
+
         for _met in self.compounds.values():
 
             # refresh position
             if _met.chebi_id:
                 _met.position = BiotaCompoundPosition.get_by_chebi_id(
-                    chebi_id=_met.chebi_id, compartment=_met.compartment)
+                    chebi_ids=[_met.chebi_id], compartment=_met.compartment)
 
+            is_in_biomass_reaction = _met.id in biomass_comps
             _met_json.append({
                 "id": _met.id,
                 "name": _met.name,
@@ -286,7 +308,7 @@ class Network(Resource):
                 "formula": _met.formula,
                 "inchi": _met.inchi,
                 "is_cofactor": _met.is_cofactor,
-                "level": _met.get_level(),
+                "level": _met.get_level(is_in_biomass_reaction=is_in_biomass_reaction),
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
@@ -399,10 +421,10 @@ class Network(Resource):
         return self._recon_tags["compounds"]
 
     def get_compound_ids(self) -> List[str]:
-        return [_id for _id in self.compounds]
+        return [comp_id for comp_id in self.compounds]
 
     def get_reaction_ids(self) -> List[str]:
-        return [_id for _id in self.reactions]
+        return [rxn_id for rxn_id in self.reactions]
 
     def get_reaction_recon_tag(self, rxn_id: str, tag_name: str = None):
         """
@@ -538,9 +560,13 @@ class Network(Resource):
         :rtype: `gena.network.Reaction` or `None`
         """
 
-        for k in self.reactions:
-            if "biomass" in k.lower():
-                return self.reactions[k]
+        for rxn in self.reactions.values():
+            if rxn.is_biomass_reaction:
+                return rxn
+
+        # for k in self.reactions:
+        #     if "biomass" in k.lower():
+        #         return self.reactions[k]
         return None
 
     def get_biomass_compound(self) -> Compound:
@@ -552,9 +578,11 @@ class Network(Resource):
         """
 
         for name in self.compounds:
-            name_lower = name.lower()
-            if name_lower.endswith("_b") or name_lower == "biomass":
-                return self.compounds[name]
+            if self.compounds[name].is_biomass:
+                return True
+            # name_lower = name.lower()
+            # if name_lower.endswith("_b") or name_lower == "biomass":
+            #     return self.compounds[name]
         return None
 
     def get_compounds_by_compartments(self, compartment_list: List[str] = None) -> Dict[str, Compound]:
@@ -644,8 +672,11 @@ class Network(Resource):
 
     # -- L --
 
-    @classmethod
-    def loads(cls, data: NetworkDict, skip_bigg_exchange_reactions: bool = True, loads_biota_info: False = False):
+    @ classmethod
+    def loads(cls, data: NetworkDict, skip_bigg_exchange_reactions: bool = True, loads_biota_info: bool = False,
+              biomass_reaction_id: str = None) -> 'Network':
+        """ Loads JSON data and create a Network  """
+
         if not data.get("compartments"):
             raise BadRequestException("Invalid network dump. Compartments not found")
         if not data.get("metabolites"):
@@ -656,6 +687,7 @@ class Network(Resource):
         net = Network()
         net.name = data.get("name", cls.DEFAULT_NAME)
         net.compartments = data["compartments"]
+
         ckey = "compounds" if "compounds" in data else "metabolites"
 
         added_comps = {}
@@ -667,8 +699,8 @@ class Network(Resource):
 
             chebi_id = val.get("chebi_id", "")
             inchikey = val.get("inchikey", "")
-
             is_bigg_data_format = ("annotation" in val)
+
             alt_chebi_ids = []
             if not chebi_id and not inchikey and is_bigg_data_format:
                 annotation = val["annotation"]
@@ -677,25 +709,25 @@ class Network(Resource):
                 if alt_chebi_ids:
                     chebi_id = alt_chebi_ids.pop(0)
 
-            _id = val["id"]  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
+            comp_id = val["id"]  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
             comp = None
 
             if loads_biota_info:
                 if chebi_id or inchikey:
                     try:
                         comp = Compound.from_biota(
-                            id=_id,
+                            id=comp_id,
                             name=val.get("name", ""),
                             chebi_id=chebi_id,
                             inchikey=inchikey,
                             compartment=compart,
                         )
-                    except:
+                    except Exception as _:
                         pass
 
             if comp is None:
                 comp = Compound(
-                    id=_id,
+                    id=comp_id,
                     name=val.get("name", ""),
                     compartment=compart,
                     charge=val.get("charge", ""),
@@ -718,7 +750,7 @@ class Network(Resource):
                 comp.position.y = position.get("y", None)
                 comp.position.z = position.get("z", None)
 
-            added_comps[_id] = comp
+            added_comps[comp_id] = comp
 
         for val in data["reactions"]:
             if is_bigg_data_format and skip_bigg_exchange_reactions and val["id"].startswith("EX_"):
@@ -744,10 +776,12 @@ class Network(Resource):
             if val.get("estimate"):
                 rxn.set_estimate(val.get("estimate"))
 
+            reg_exp = re.compile(r"CHEBI\:\d+$")
             for comp_id in val[ckey]:
                 comp = added_comps[comp_id]
                 # search according to compound ids
-                if re.match(r"CHEBI\:\d+$", comp_id):
+                # if re.match(r"CHEBI\:\d+$", comp_id):
+                if reg_exp.match(comp_id):
                     comps = net.get_compounds_by_chebi_id(comp_id)
                     # select the compound in the good compartment
                     for c in comps:
@@ -768,6 +802,30 @@ class Network(Resource):
                 rxn.position.points[comp.id] = points
 
             net.add_reaction(rxn)
+
+        # check if the biomass comaprtment exists
+        compart_biomass = Compound.COMPARTMENT_BIOMASS
+        if net.get_biomass_compound() is None:
+            Logger.warning("No biomass compound found. Try creating a dummy biomass compound.")
+            if biomass_reaction_id:
+                if biomass_reaction_id in net.reactions:
+                    rxn = net.reactions[biomass_reaction_id]
+                    biomass = Compound(name="Biomass", compartment=compart_biomass)
+                    rxn.add_product(biomass, 1)
+                    net.compartments[compart_biomass] = Compound.COMPARTMENTS[compart_biomass]
+                    net.update_reaction(rxn)
+                else:
+                    raise BadRequestException(f"No reaction found with id '{biomass_reaction_id}'.")
+            else:
+                for rxn in net.reactions.values():
+                    if "biomass" in rxn.id.lower():
+                        biomass = Compound(name="Biomass", compartment=compart_biomass)
+                        rxn.add_product(biomass, 1)
+                        net.compartments[compart_biomass] = Compound.COMPARTMENTS[compart_biomass]
+                        net.update_reaction(rxn)
+                        Logger.warning(
+                            f"The reaction '{rxn.name}' was automatically infered as biomass reaction.")
+                        break
 
         return net
 
@@ -876,8 +934,8 @@ class Network(Resource):
         """
 
         _str = ""
-        for _id in self.reactions:
-            _str += "\n" + self.reactions[_id].to_str()
+        for rxn_id in self.reactions:
+            _str += "\n" + self.reactions[rxn_id].to_str()
         return _str
 
     def to_csv(self) -> str:
@@ -961,7 +1019,7 @@ class Network(Resource):
                 if rxn.enzyme.get("ec_number"):
                     try:
                         enzyme_class = EnzymeClass.get(EnzymeClass.ec_numbner == rxn.enzyme.get("ec_number"))
-                    except:
+                    except Exception as _:
                         pass
             subs = []
             for m in rxn.substrates:
@@ -1010,7 +1068,7 @@ class Network(Resource):
                 try:
                     enzyme_class = EnzymeClass.get(EnzymeClass.ec_number == ec)
                     _rxn_row["enzyme_class"] = enzyme_class.get_name()
-                except:
+                except Exception as _:
                     pass
             rxn_count += 1
             data.append(list(_rxn_row.values()))
@@ -1022,11 +1080,40 @@ class Network(Resource):
 
     # -- V --
 
-    @view(view_type=NetworkView, human_name="Network")
+    @view(view_type=NetworkView, default_view=True, human_name="Network",
+          specs={
+              "remove_blocked":
+              BoolParam(
+                  default_value=False, optional=True, human_name="Remove blocked reactions",
+                  short_description="Set True to remove blocked reactions; False otherwise"),
+          })
     def view_as_network(self, params: ConfigParams) -> NetworkView:
         return NetworkView(data=self)
 
-    @view(view_type=TabularView, default_view=True, human_name="Reaction table")
+    @view(view_type=TabularView, human_name="Summary table")
+    def view_as_table(self, params: ConfigParams) -> TabularView:
+        biomass_rxn = self.get_biomass_reaction()
+        if biomass_rxn:
+            biomas_str = biomass_rxn.to_str()
+        else:
+            biomas_str = "None"
+
+        data = {
+            "ID": self.id,
+            "Name": self.name,
+            "Number of reactions": len(self.reactions),
+            "Number of metabolites": len(self.metabolites),
+            "Number of compartments": len(self.compartments),
+            "Compartments": list(self.compartments.values()),
+            "Biomass reaction ID": biomass_rxn.id,
+            "Biomass reaction name": biomass_rxn.name,
+            "Biomass reaction formula": self.get_biomass_reaction().to_str()
+        }
+        t_view = TabularView()
+        t_view.set_data(data=DataFrame(data, index=list(data.keys())), columns=["Information"])
+        return t_view
+
+    @view(view_type=TabularView, human_name="Reaction table")
     def view_as_table(self, params: ConfigParams) -> TabularView:
         t_view = TabularView()
         t_view.set_data(data=self.to_dataframe())

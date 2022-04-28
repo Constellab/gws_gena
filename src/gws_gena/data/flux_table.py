@@ -71,12 +71,12 @@ class FluxTable(Table):
 
     def select_by_column_positions(self, positions: List[int]) -> 'FluxTable':
         table = super().select_by_column_positions(positions)
-        if not self.confidence_score_column in table.confidence_score_column:
+        if not self.confidence_score_column in table.column_names:
             raise BadRequestException("The confidence_score_column is required and must be selected")
         return table
 
     def select_by_column_names(self, names: List[str], filters: List['DataframeFilterName']) -> 'FluxTable':
         table = super().select_by_column_names(names, filters)
-        if not self.confidence_score_column in table.confidence_score_column:
+        if not self.confidence_score_column in table.column_names:
             raise BadRequestException("The confidence_score_column is required and must be selected")
         return table

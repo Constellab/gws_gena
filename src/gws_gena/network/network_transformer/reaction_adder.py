@@ -20,8 +20,8 @@ class ReactionAdder(Task):
     Add a list of reactions to an existing network
     """
 
-    input_specs = {'network': (Network,), 'reaction_table': (ECTable, EntityIDTable,), }
-    output_specs = {'network': (Network,)}
+    input_specs = {'network': Network, 'reaction_table': (ECTable, EntityIDTable), }
+    output_specs = {'network': Network}
     config_specs = {
         'tax_id': StrParam(
             default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id"),

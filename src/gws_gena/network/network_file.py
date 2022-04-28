@@ -13,13 +13,14 @@ from .view.network_view import NetworkView
                     short_description="Metabolic network file")
 class NetworkFile(File):
 
-    @view(view_type=NetworkView, human_name="Network")
+    @view(view_type=NetworkView, default_view=True, human_name="Network")
     def view_as_network(self, params: ConfigParams) -> NetworkView:
+        """ View as network """
         from .network_task import NetworkImporter
         net = NetworkImporter.call(self, {})
         return net.view_as_network(params)
 
-    @view(view_type=TabularView, default_view=True, human_name="Reaction table")
+    @view(view_type=TabularView, human_name="Reaction table")
     def view_as_table(self, params: ConfigParams) -> TabularView:
         from .network_task import NetworkImporter
         net = NetworkImporter.call(self, {})

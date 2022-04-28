@@ -20,7 +20,7 @@ from .context import Context
 # ####################################################################
 
 
-@importer_decorator("ContextImporter", human_name="Network context importer", source_type=File,
+@importer_decorator("ContextImporter", human_name="Context importer", source_type=File,
                     target_type=Context, supported_extensions=[".json"])
 class ContextImporter(ResourceImporter):
     config_specs: ConfigSpecs = {

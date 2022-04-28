@@ -111,7 +111,8 @@ class Compound:
         "x": {"name": "peroxisome/glyoxysome", "is_steady": True},
         "g": {"name": "golgi apparatus", "is_steady": True},
         "p": {"name": "periplasm", "is_steady": True},
-        "l": {"name": "lysosome", "is_steady": True}
+        "l": {"name": "lysosome", "is_steady": True},
+        "o": {"name": "other", "is_steady": True}
     }
 
     LEVEL_MAJOR = "major"
@@ -145,12 +146,12 @@ class Compound:
             compartment = Compound.COMPARTMENT_CYTOSOL
 
         if len(compartment) == 1:
-            if not compartment in self.COMPARTMENTS.keys():
+            if compartment not in self.COMPARTMENTS:
                 raise BadRequestException(f"Invalid compartment '{compartment}'")
             compartment_suffix = compartment
         else:
             compartment_suffix = compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
-            if not compartment_suffix in self.COMPARTMENTS.keys():
+            if compartment_suffix not in self.COMPARTMENTS:
                 raise BadRequestException(f"Invalid compartment '{compartment}'")
 
         self.compartment = compartment
@@ -158,7 +159,7 @@ class Compound:
         if id:
             self.id = slugify_id(id)
             is_compartment_found = False
-            for c in self.COMPARTMENTS.keys():
+            for c in self.COMPARTMENTS:
                 if self.id.endswith(Compound.COMPARTMENT_DELIMITER + c):
                     is_compartment_found = True
             if not is_compartment_found:
@@ -178,14 +179,14 @@ class Compound:
                         c = BiotaCompound.get(BiotaCompound.inchikey == inchikey)
                         name = c.get_name()
                         is_found = True
-                    except:
+                    except Exception as _:
                         is_found = False
 
                 if not is_found and chebi_id:
                     try:
                         c = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
                         name = c.get_name()
-                    except:
+                    except Exception as _:
                         name = chebi_id
                 else:
                     raise BadRequestException("Please provide at least a valid compound id, name or chebi_id")
@@ -194,6 +195,7 @@ class Compound:
 
         if not name:
             name = self.id
+
         self.name = name
         self.charge = charge
         self.mass = mass
@@ -211,6 +213,7 @@ class Compound:
     # -- C --
 
     def copy(self) -> 'Compound':
+        """ Create a copy of the compound """
         c = Compound(id=self.id, name=self.name, compartment=self.compartment)
         c.charge = self.charge
         c.mass = self.mass
@@ -226,6 +229,7 @@ class Compound:
 
     @classmethod
     def create_sink_compound(cls, related_compound: 'Compound') -> 'Compound':
+        """ Create a sink compound """
         if related_compound.compartment.endswith(Compound.COMPARTMENT_DELIMITER + Compound.COMPARTMENT_SINK):
             raise BadRequestException("Cannot add a sink reaction to another sink reaction")
 
@@ -240,7 +244,7 @@ class Compound:
     # -- F --
 
     @classmethod
-    def _flatten_id(cls, id, ctx_name, is_compartment=False) -> str:
+    def flatten_id(cls, id, ctx_name, is_compartment=False) -> str:
         """
         Flattens a compound or compartment id
 
@@ -281,7 +285,7 @@ class Compound:
             if inchikey:
                 try:
                     biota_compound = BiotaCompound.get(BiotaCompound.inchikey == inchikey)
-                except:
+                except Exception as _:
                     pass
 
             if not biota_compound and chebi_id:
@@ -291,13 +295,13 @@ class Compound:
                 #     chebi_id = chebi_id
                 try:
                     biota_compound = BiotaCompound.get(BiotaCompound.chebi_id == chebi_id)
-                except:
+                except Exception as _:
                     pass
 
             if not biota_compound and kegg_id:
                 try:
                     biota_compound = BiotaCompound.get(BiotaCompound.kegg_id == kegg_id)
-                except:
+                except Exception as _:
                     pass
 
         if not biota_compound:
@@ -332,13 +336,17 @@ class Compound:
 
     # -- G --
 
-    def get_level(self) -> int:
+    def get_level(self, is_in_biomass_reaction=False) -> int:
         if self.is_major:
             level_str = self.LEVEL_MAJOR
         elif self.is_cofactor:
             level_str = self.LEVEL_COFACTOR
         else:
             level_str = self.LEVEL_MINOR
+
+        # override if is in biomass_reaction
+        if is_in_biomass_reaction:
+            level_str = self.LEVEL_MAJOR
 
         return self.LEVEL_NUMBER[level_str]
 
@@ -355,7 +363,7 @@ class Compound:
                 return BiotaCompound.get(BiotaCompound.chebi_id == self.chebi_id)
             elif self.kegg_id:
                 return BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
-        except:
+        except Exception as _:
             return None
 
     def get_related_biota_reactions(self):
@@ -373,7 +381,7 @@ class Compound:
                 comp = BiotaCompound.get(BiotaCompound.kegg_id == self.kegg_id)
 
             return comp.reactions
-        except:
+        except Exception as _:
             return None
 
     # -- I --
@@ -440,7 +448,6 @@ class Compound:
         for pattern in self.COFACTOR_NAME_PATTERNS:
             if pattern in self.name:
                 return not self.is_major
-
         return self.chebi_id in self.COFACTORS
 
     @property
@@ -452,16 +459,18 @@ class Compound:
         :rtype: `bool`
         """
 
-        return self.position.is_major
-
-    #     for pattern in self.MAJOR_NAME_PATTERNS:
-    #         if pattern in self.name:
-    #             return True
-
-    #     return self.chebi_id in self.MAJORS
+        if self.position.is_major:
+            return self.position.is_major
+        else:
+            if self.is_biomass:
+                return True
+            return False
 
     @property
     def is_minor(self) -> bool:
+        """
+        Test if the compound is a minor metabolite
+        """
         return (not self.is_cofactor) and (not self.is_major)
 
     # -- M --

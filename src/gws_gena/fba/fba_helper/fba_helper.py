@@ -171,16 +171,25 @@ class FBAHelper(TaskHelper):
                 else:
                     raise BadRequestException("The biomass reaction is not found")
             else:
-                if "*" in rxn_name:
-                    rxn_name = rxn_name.replace("*", ".*")
-                    for tmp_rxn_name in list_of_rxn_names:
-                        if re.match(rxn_name, tmp_rxn_name, re.IGNORECASE):
-                            expanded_fluxes_to_minmax.append(tmp_rxn_name+":"+weight)
+                # print(list_of_rxn_names)
+                if rxn_name in list_of_rxn_names:
+                    expanded_fluxes_to_minmax.append(rxn_name+":"+weight)
                 else:
-                    if rxn_name in list_of_rxn_names:
-                        expanded_fluxes_to_minmax.append(rxn_name+":"+weight)
-                    else:
-                        raise BadRequestException(f"Invalid reactions to maximize. No reaction found with id '{k}'")
+                    #raise Exception(list_of_rxn_names)
+                    raise BadRequestException(f"Invalid reactions to maximize. No reaction found with id '{k}'")
+
+                # if "*" in rxn_name:
+                #     #rxn_name = rxn_name.replace("*", ".*")
+                #     regexp = re.compile(rxn_name)
+                #     for tmp_rxn_name in list_of_rxn_names:
+                #         if regexp.match(tmp_rxn_name, re.IGNORECASE):
+                #             expanded_fluxes_to_minmax.append(tmp_rxn_name+":"+weight)
+
+                # else:
+                #     if rxn_name in list_of_rxn_names:
+                #         expanded_fluxes_to_minmax.append(rxn_name+":"+weight)
+                #     else:
+                #         raise BadRequestException(f"Invalid reactions to maximize. No reaction found with id '{k}'")
         return list(set(expanded_fluxes_to_minmax))
 
     # -- S --
@@ -262,7 +271,7 @@ class FBAHelper(TaskHelper):
                     ],
                 )
             else:
-                #regularizer = cp.sum_squares(x)
+                # regularizer = cp.sum_squares(x)
                 prob = cp.Problem(
                     cp.Minimize(c_par.T@x + qssa_cost),  # + 0.0*regularizer,
                     [

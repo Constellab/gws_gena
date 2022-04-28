@@ -8,7 +8,7 @@ from typing import Dict, TypedDict
 
 from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
                       Resource, ResourceService, ResourceSet, StrRField,
-                      TextView, resource_decorator, view)
+                      resource_decorator, view)
 
 from ..context.context import Context, Variable
 from ..network.network import Compound, Network, Reaction
@@ -166,7 +166,7 @@ class Twin(ResourceSet):
         _rxns = []
 
         def __get_network_uname(net):
-            return (net.name if net.name else "network_"+str(net.name))
+            return (net.name if net.name else "network")
 
         _mapping = {}
         _rev_mapping = {}
@@ -174,18 +174,18 @@ class Twin(ResourceSet):
             net_data = net.dumps()
             uname = __get_network_uname(net)
             for k in net_data["compartments"]:
-                c_name = Compound._flatten_id(k, uname, is_compartment=True)
+                c_name = Compound.flatten_id(k, uname, is_compartment=True)
                 c_desc = net_data["compartments"][k]
                 _comps[c_name] = c_desc
 
             for _met in net_data["metabolites"]:
-                _met["id"] = Compound._flatten_id(_met["id"], uname)
-                _met["compartment"] = Compound._flatten_id(_met["compartment"], uname, is_compartment=True)
+                _met["id"] = Compound.flatten_id(_met["id"], uname)
+                _met["compartment"] = Compound.flatten_id(_met["compartment"], uname, is_compartment=True)
                 _mets.append(_met)
 
             for _rxn in net_data["reactions"]:
                 _original_rxn_id = _rxn["id"]
-                _rxn["id"] = Reaction._flatten_id(_rxn["id"], uname)
+                _rxn["id"] = Reaction.flatten_id(_rxn["id"], uname)
                 _rxn["lower_bound"] = _rxn["lower_bound"]
                 _rxn["upper_bound"] = _rxn["upper_bound"]
                 _mapping[_rxn["id"]] = {
@@ -197,7 +197,7 @@ class Twin(ResourceSet):
                 _rev_mapping[net.name][_original_rxn_id] = _rxn["id"]
                 _rxn_mets = {}
                 for _met_id in _rxn["metabolites"]:
-                    _flat_met_id = Compound._flatten_id(_met_id, uname)
+                    _flat_met_id = Compound.flatten_id(_met_id, uname)
                     stoich = _rxn["metabolites"][_met_id]
                     _rxn_mets[_flat_met_id] = stoich
                 _rxn["metabolites"] = _rxn_mets
@@ -212,7 +212,7 @@ class Twin(ResourceSet):
                 _meas = copy.deepcopy(ctx_data["measures"])
                 for k in range(0, len(_meas)):
                     for var in _meas[k]["variables"]:
-                        var["reference_id"] = Reaction._flatten_id(var["reference_id"], uname)
+                        var["reference_id"] = Reaction.flatten_id(var["reference_id"], uname)
 
         _json = {
             "name": self.name,
@@ -253,6 +253,7 @@ class Twin(ResourceSet):
 
     @classmethod
     def loads(cls, data: TwinDict):
+        """ Loads JSON data nd creates a Twin """
         twin = cls()
         nets = {}
         for val in data.get("networks", []):
@@ -279,6 +280,7 @@ class Twin(ResourceSet):
 
     @property
     def networks(self):
+        """ Returns the networks """
         contexts = {}
         for name in self.network_contexts.keys():
             contexts[name] = self.get_resource(name)
@@ -286,6 +288,7 @@ class Twin(ResourceSet):
 
     @property
     def number_of_compounds(self) -> int:
+        """ Returns the number of compounds """
         count = 0
         for net in self.networks.values():
             count += len(net.compounds)
@@ -293,6 +296,7 @@ class Twin(ResourceSet):
 
     @property
     def number_of_reactions(self) -> int:
+        """ Returns the number of reactions """
         count = 0
         for net in self.networks.values():
             count += len(net.reactions)
@@ -301,6 +305,7 @@ class Twin(ResourceSet):
     # -- R --
 
     def remove_all_contexts(self):
+        """ Remove all the contexts """
         self.contexts = ResourceSet()
         self.network_contexts = {}
 
@@ -310,25 +315,31 @@ class Twin(ResourceSet):
 
     # -- V --
 
-    @view(view_type=TextView, default_view=True, human_name="InfoText")
-    def view_as_table(self, params: ConfigParams) -> TextView:
-        text = []
-        text.append("Networks")
-        text.append("--------")
+    @view(view_type=JSONView, human_name="Summary")
+    def view_as_summary(self, _: ConfigParams) -> JSONView:
+        """ view as summary """
+        j_view = {
+            "name": self.name,
+            "networks": [],
+            "contexts": []
+        }
+
         for net in self.networks.values():
-            text.append("Network")
-            text.append(f"- name: {net.name}")
-            text.append(f"- number of reactions: {len(net.reactions)}")
-            text.append(f"- number of compounds: {len(net.compounds)}")
-            text.append("")
+            biomass_rxn = net.get_biomass_reaction()
+            j_view["networks"].append({
+                "name": net.name,
+                "number of reactions": len(net.reactions),
+                "number of compounds": len(net.compounds),
+                "biomass reaction id": biomass_rxn.id,
+                "biomass reaction name": biomass_rxn.name,
+                "biomass reaction flat_id": Reaction.flatten_id(biomass_rxn.id, net.name)
+            })
 
-        text.append("")
-        text.append("Contexts")
-        text.append("--------")
         for ctx in self.contexts.values():
-            text.append("Context")
-            text.append(f"- name: {ctx.name}")
-            text.append(f"- number of variables: {len(ctx.measures)}")
-            text.append("")
+            j_view["contexts"].append({
+                "name": ctx.name,
+                "number of variables": len(ctx.measures),
+                "number of compounds": len(ctx.compounds)
+            })
 
-        return TextView("\n".join(text))
+        return j_view

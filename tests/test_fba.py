@@ -5,8 +5,8 @@ import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, ExperimentService, File, GTest,
                       IExperiment, Settings, ViewTester)
-from gws_gena import (FBAProto, Network, NetworkImporter, Twin, Context,
-                      ContextImporter)
+from gws_gena import (Context, ContextImporter, FBAProto, Network,
+                      NetworkImporter, Twin)
 
 settings = Settings.retrieve()
 
@@ -39,6 +39,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fba_result")
+
             fluxes = result.get_fluxes_dataframe()
             sv = result.get_sv_dataframe()
             print(fluxes)
@@ -111,6 +112,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba.set_param('relax_qssa', relax_qssa)
             if organism == 'ecoli':
                 fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+                #fba.set_param('fluxes_to_maximize', ["biomass.*:1.0"])
             else:
                 fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 

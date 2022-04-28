@@ -17,13 +17,12 @@ class ReactionAdderHelper:
         if isinstance(reaction_table, ECTable):
             ec_list: list = reaction_table.get_ec_numbers()
             for ec in ec_list:
-                print(ec)
                 try:
                     rxns = Reaction.from_biota(ec_number=ec, tax_id=tax_id,
-                                            tax_search_method=tax_search_method)
+                                               tax_search_method=tax_search_method)
                     for rxn in rxns:
                         network.add_reaction(rxn)
-                except:
+                except Exception as _:
                     pass
         elif isinstance(reaction_table, EntityIDTable):
             id_list: list = reaction_table.get_ids()
@@ -32,5 +31,5 @@ class ReactionAdderHelper:
                     rxns = Reaction.from_biota(rhea_id=rxn_id)
                     for rxn in rxns:
                         network.add_reaction(rxn)
-                except:
+                except Exception as _:
                     pass
