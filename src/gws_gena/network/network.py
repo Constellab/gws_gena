@@ -1095,23 +1095,25 @@ class Network(Resource):
     @view(view_type=JSONView, default_view=True, human_name="Summary")
     def view_as_summary(self, params: ConfigParams) -> JSONView:
         biomass_rxn = self.get_biomass_reaction()
-        if biomass_rxn:
-            biomas_str = biomass_rxn.to_str()
-        else:
-            biomas_str = "None"
+
         data = {
             "Name": self.name,
             "Number of reactions": len(self.reactions),
             "Number of metabolites": len(self.compounds),
             "Number of compartments": len(self.compartments),
-            "Compartments": [c for c in self.compartments.values()],
-            "Biomass reaction": {
+            "Compartments": [c for c in self.compartments.values()]
+        }
+
+        if biomass_rxn:
+            data["Biomass reaction"] = {
                 "ID": biomass_rxn.id,
                 "Name": biomass_rxn.name,
-                "Formula": [self.get_biomass_reaction().to_str()],
+                "Formula": [biomass_rxn.to_str()],
                 "Flux estimate": biomass_rxn.estimate
             }
-        }
+        else:
+            data["Biomass reaction"] = {}
+
         j_view = JSONView()
         j_view.set_data(data=data)
         return j_view
