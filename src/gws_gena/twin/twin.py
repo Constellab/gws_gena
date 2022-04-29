@@ -170,6 +170,7 @@ class Twin(ResourceSet):
 
         _mapping = {}
         _rev_mapping = {}
+        
         for net in self.networks.values():
             net_data = net.dumps()
             uname = __get_network_uname(net)
@@ -338,8 +339,7 @@ class Twin(ResourceSet):
         for ctx in self.contexts.values():
             j_view["contexts"].append({
                 "name": ctx.name,
-                "number of variables": len(ctx.measures),
-                "number of compounds": len(ctx.compounds)
+                "number of measurements": len(ctx.measures)
             })
 
         return j_view

@@ -804,24 +804,26 @@ class Network(Resource):
             net.add_reaction(rxn)
 
         # check if the biomass comaprtment exists
-        compart_biomass = Compound.COMPARTMENT_BIOMASS
+        biomass_compartment: str = Compound.COMPARTMENT_BIOMASS
         if net.get_biomass_compound() is None:
             Logger.warning("No biomass compound found. Try creating a dummy biomass compound.")
             if biomass_reaction_id:
                 if biomass_reaction_id in net.reactions:
                     rxn = net.reactions[biomass_reaction_id]
-                    biomass = Compound(name="Biomass", compartment=compart_biomass)
+                    biomass = Compound(name="Biomass", compartment=biomass_compartment)
                     rxn.add_product(biomass, 1)
-                    net.compartments[compart_biomass] = Compound.COMPARTMENTS[compart_biomass]
+                    #net.compartments[biomass_compartment] = Compound.COMPARTMENTS[biomass_compartment]
+                    net.compartments[biomass_compartment] = Compound.COMPARTMENTS[biomass_compartment]["name"]
                     net.update_reaction(rxn)
                 else:
                     raise BadRequestException(f"No reaction found with id '{biomass_reaction_id}'.")
             else:
                 for rxn in net.reactions.values():
                     if "biomass" in rxn.id.lower():
-                        biomass = Compound(name="Biomass", compartment=compart_biomass)
+                        biomass = Compound(name="Biomass", compartment=biomass_compartment)
                         rxn.add_product(biomass, 1)
-                        net.compartments[compart_biomass] = Compound.COMPARTMENTS[compart_biomass]
+                        #net.compartments[biomass_compartment] = Compound.COMPARTMENT_BIOMASS
+                        net.compartments[biomass_compartment] = Compound.COMPARTMENTS[biomass_compartment]["name"]
                         net.update_reaction(rxn)
                         Logger.warning(
                             f"The reaction '{rxn.name}' was automatically infered as biomass reaction.")
@@ -1080,7 +1082,7 @@ class Network(Resource):
 
     # -- V --
 
-    @view(view_type=NetworkView, default_view=True, human_name="Network",
+    @view(view_type=NetworkView, human_name="Network",
           specs={
               "remove_blocked":
               BoolParam(
@@ -1090,49 +1092,50 @@ class Network(Resource):
     def view_as_network(self, params: ConfigParams) -> NetworkView:
         return NetworkView(data=self)
 
-    @view(view_type=TabularView, human_name="Summary table")
-    def view_as_table(self, params: ConfigParams) -> TabularView:
+    @view(view_type=JSONView, default_view=True, human_name="Summary")
+    def view_as_summary(self, params: ConfigParams) -> JSONView:
         biomass_rxn = self.get_biomass_reaction()
         if biomass_rxn:
             biomas_str = biomass_rxn.to_str()
         else:
             biomas_str = "None"
-
         data = {
-            "ID": self.id,
             "Name": self.name,
             "Number of reactions": len(self.reactions),
-            "Number of metabolites": len(self.metabolites),
+            "Number of metabolites": len(self.compounds),
             "Number of compartments": len(self.compartments),
-            "Compartments": list(self.compartments.values()),
-            "Biomass reaction ID": biomass_rxn.id,
-            "Biomass reaction name": biomass_rxn.name,
-            "Biomass reaction formula": self.get_biomass_reaction().to_str()
+            "Compartments": [c for c in self.compartments.values()],
+            "Biomass reaction": {
+                "ID": biomass_rxn.id,
+                "Name": biomass_rxn.name,
+                "Formula": [self.get_biomass_reaction().to_str()],
+                "Flux estimate": biomass_rxn.estimate
+            }
         }
-        t_view = TabularView()
-        t_view.set_data(data=DataFrame(data, index=list(data.keys())), columns=["Information"])
-        return t_view
+        j_view = JSONView()
+        j_view.set_data(data=data)
+        return j_view
 
-    @view(view_type=TabularView, human_name="Reaction table")
+    @ view(view_type=TabularView, human_name="Reaction table")
     def view_as_table(self, params: ConfigParams) -> TabularView:
         t_view = TabularView()
         t_view.set_data(data=self.to_dataframe())
         return t_view
 
-    @view(view_type=JSONView, human_name="JSON view")
+    @ view(view_type=JSONView, human_name="JSON view")
     def view_as_json(self, params: ConfigParams) -> JSONView:
         json_view: JSONView = super().view_as_json(params)
-        json_view._data = self.dumps()
+        json_view.set_data(self.dumps())
         return json_view
 
-    @view(view_type=TabularView, human_name="Reaction gaps")
+    @ view(view_type=TabularView, human_name="Reaction gaps")
     def view_gaps_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = self.get_gaps_as_table()
         t_view = TabularView()
         t_view.set_data(data=table.to_dataframe())
         return t_view
 
-    @view(view_type=TabularView, human_name="Compound distrib.")
+    @ view(view_type=TabularView, human_name="Compound distrib.")
     def view_compound_stats_as_table(self, params: ConfigParams) -> TabularView:
         table: Table = self.get_compound_stats_as_table()
         t_view = TabularView()
