@@ -5,8 +5,9 @@
 
 import copy
 
-from gws_core import (BoolParam, ConfigParams, ListParam, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+from gws_core import (BoolParam, ConfigParams, InputSpec, ListParam,
+                      OutputSpec, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ..network.reaction import Reaction
 from ..twin.flat_twin import FlatTwin
@@ -24,10 +25,12 @@ class TwinReducer(Task):
     Class digital twin reduction
     """
 
-    input_specs = {'twin': (Twin, FlatTwin), }
+    input_specs = {
+        'twin': InputSpec((Twin, FlatTwin), human_name="Digital twin", short_description="The digital twin to reduce"),
+    }
     output_specs = {
-        'efm_table': (TwinEFMTable,),
-        'reduction_table': (TwinReductionTable,)
+        'efm_table': OutputSpec(TwinEFMTable, human_name="EFM table", short_description="The table of elementary flux modes"),
+        'reduction_table': OutputSpec(TwinReductionTable, human_name="Reduction table", short_description="The reduction table"),
     }
     config_specs = {
         "ignore_cofactors":

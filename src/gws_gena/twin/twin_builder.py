@@ -4,12 +4,12 @@
 # About us: https://gencovery.com
 
 from gws_core import (BoolParam, CheckBeforeTaskResult, ConfigParams,
-                      SkippableIn, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      InputSpec, OutputSpec, Task, TaskInputs,
+                      TaskOutputs, task_decorator)
 
+from ..context.context import Context
 from ..network.network import Network
 from .twin import Twin
-from ..context.context import Context
 
 # ####################################################################
 #
@@ -21,8 +21,14 @@ from ..context.context import Context
 @task_decorator("TwinBuilder", human_name="Twin builder",
                 short_description="Build a twin using a metabolic network and a context")
 class TwinBuilder(Task):
-    input_specs = {'network': Network, 'context': SkippableIn(Context)}
-    output_specs = {'twin': Twin}
+    input_specs = {
+        'network': InputSpec(Network, human_name="Network", short_description="The metabolic network"),
+        'context': InputSpec(Context, human_name="Context", short_description="The metabolic context", is_skippable=True)
+    }
+    output_specs = {
+        'twin': OutputSpec(Twin, human_name="Digital twin", short_description="The digital twin"),
+    }
+
     config_specs = {"use_context": BoolParam(
         default_value=True, human_name="Use context", short_description="Set True to use the context, False otherwise."), }
 

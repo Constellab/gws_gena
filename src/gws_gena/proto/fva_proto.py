@@ -6,7 +6,7 @@
 from gws_core import (FIFO2, ConfigParams, ProcessSpec, Protocol, Sink, Source,
                       protocol_decorator)
 
-from ..fba.fva import FVA
+from ..fva.fva import FVA
 from ..twin.twin_annotator import TwinAnnotator
 from ..twin.twin_builder import TwinBuilder
 
@@ -14,7 +14,7 @@ from ..twin.twin_builder import TwinBuilder
 @protocol_decorator("FVAProto_001", human_name="FVA protocol", short_description="Flux variability analysis protocol")
 class FVAProto(Protocol):
 
-    def configure_protocol(self, config_params: ConfigParams) -> None:
+    def configure_protocol(self) -> None:
         # fva
         fva: ProcessSpec = self.add_process(FVA, 'fva')
         twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder').set_param("use_context", True)

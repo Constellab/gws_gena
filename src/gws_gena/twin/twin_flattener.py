@@ -3,8 +3,8 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (ConfigParams, InputSpec, OutputSpec, Task, TaskInputs,
+                      TaskOutputs, task_decorator)
 
 from .flat_twin import FlatTwin
 from .twin import Twin
@@ -12,8 +12,12 @@ from .twin import Twin
 
 @task_decorator("TwinFlattener", human_name="Twin flattener", short_description="Flatten a twin")
 class TwinFlattener(Task):
-    input_specs = {'twin': (Twin,), }
-    output_specs = {'flat_twin': (FlatTwin,)}
+    input_specs = {
+        'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to flatten"),
+    }
+    output_specs = {'flat_twin': OutputSpec(
+        FlatTwin, human_name="Flat digital twin", short_description="The flat digital twin"), }
+
     config_specs = {}
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

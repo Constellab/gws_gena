@@ -1,0 +1,4743 @@
+{
+    "name": "ecoli",
+    "metabolites": [
+        {
+            "id": "glc_D_e",
+            "name": "D-Glucose",
+            "charge": 0.0,
+            "mass": 180.15588,
+            "monoisotopic_mass": 180.06339,
+            "formula": "C6H12O6",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:4167",
+            "kegg_id": "D00009",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "gln_L_c",
+            "name": "L-Glutamine",
+            "charge": 0.0,
+            "mass": 146.14458,
+            "monoisotopic_mass": 146.06914,
+            "formula": "C5H10N2O3",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:18050",
+            "kegg_id": "D00015",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "gln_L_e",
+            "name": "L-Glutamine",
+            "charge": 0.0,
+            "mass": 146.14458,
+            "monoisotopic_mass": 146.06914,
+            "formula": "C5H10N2O3",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:18050",
+            "kegg_id": "D00015",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "glu_L_c",
+            "name": "L-Glutamate",
+            "charge": -1.0,
+            "mass": 146.12136,
+            "monoisotopic_mass": 146.04588,
+            "formula": "C5H8NO4",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:29985",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "glu_L_e",
+            "name": "L-Glutamate",
+            "charge": -1.0,
+            "mass": 146.12136,
+            "monoisotopic_mass": 146.04588,
+            "formula": "C5H8NO4",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:29985",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "glx_c",
+            "name": "Glyoxylate",
+            "charge": -1.0,
+            "mass": 73.02754,
+            "monoisotopic_mass": 72.99312,
+            "formula": "C2HO3",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:36655",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "h2o_c",
+            "name": "H2O H2O",
+            "charge": 0.0,
+            "mass": 18.0153,
+            "monoisotopic_mass": 18.01056,
+            "formula": "H2O",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:15377",
+            "kegg_id": "C00001",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "h2o_e",
+            "name": "H2O H2O",
+            "charge": 0.0,
+            "mass": 18.0153,
+            "monoisotopic_mass": 18.01056,
+            "formula": "H2O",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "e",
+            "chebi_id": "CHEBI:15377",
+            "kegg_id": "C00001",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "h_c",
+            "name": "H+",
+            "charge": 1.0,
+            "mass": 1.00794,
+            "monoisotopic_mass": 1.008,
+            "formula": "H",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:15378",
+            "kegg_id": "C00080",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "h_e",
+            "name": "H+",
+            "charge": 1.0,
+            "mass": 1.00794,
+            "monoisotopic_mass": 1.008,
+            "formula": "H",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "e",
+            "chebi_id": "CHEBI:15378",
+            "kegg_id": "C00080",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "icit_c",
+            "name": "Isocitrate",
+            "charge": -3.0,
+            "mass": 189.0997,
+            "monoisotopic_mass": 189.00517,
+            "formula": "C6H5O7",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16087",
+            "kegg_id": "C00311",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "lac_D_c",
+            "name": "D-Lactate",
+            "charge": -1.0,
+            "mass": 89.07,
+            "monoisotopic_mass": 89.02442,
+            "formula": "C3H5O3",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16004",
+            "kegg_id": "C00256",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "lac_D_e",
+            "name": "D-Lactate",
+            "charge": -1.0,
+            "mass": 89.07,
+            "monoisotopic_mass": 89.02442,
+            "formula": "C3H5O3",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:16004",
+            "kegg_id": "C00256",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "mal_L_c",
+            "name": "L-Malate",
+            "charge": -2.0,
+            "mass": 132.07156,
+            "monoisotopic_mass": 132.00697,
+            "formula": "C4H4O5",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:15589",
+            "kegg_id": "C00149",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "mal_L_e",
+            "name": "L-Malate",
+            "charge": -2.0,
+            "mass": 132.07156,
+            "monoisotopic_mass": 132.00697,
+            "formula": "C4H4O5",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:15589",
+            "kegg_id": "C00149",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "nad_c",
+            "name": "Nicotinamide adenine dinucleotide",
+            "charge": -1.0,
+            "mass": 662.4172,
+            "monoisotopic_mass": 662.10185,
+            "formula": "C21H26N7O14P2",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57540",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "nadh_c",
+            "name": "Nicotinamide adenine dinucleotide - reduced",
+            "charge": -2.0,
+            "mass": 663.4251,
+            "monoisotopic_mass": 663.11022,
+            "formula": "C21H27N7O14P2",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57945",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "nadp_c",
+            "name": "Nicotinamide adenine dinucleotide phosphate",
+            "charge": -3.0,
+            "mass": 740.3812,
+            "monoisotopic_mass": 740.05362,
+            "formula": "C21H25N7O17P3",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:58349",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "nadph_c",
+            "name": "Nicotinamide adenine dinucleotide phosphate - reduced",
+            "charge": -4.0,
+            "mass": 741.3891,
+            "monoisotopic_mass": 741.062,
+            "formula": "C21H26N7O17P3",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57783",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "nh4_c",
+            "name": "Ammonium",
+            "charge": 1.0,
+            "mass": 18.0385,
+            "monoisotopic_mass": 18.03383,
+            "formula": "H4N",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:28938",
+            "kegg_id": "C01342",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "13dpg_c",
+            "name": "3-Phospho-D-glyceroyl phosphate",
+            "charge": -4.0,
+            "mass": 262.0054,
+            "monoisotopic_mass": 261.92797,
+            "formula": "C3H4O10P2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57604",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "nh4_e",
+            "name": "Ammonium",
+            "charge": 1.0,
+            "mass": 18.0385,
+            "monoisotopic_mass": 18.03383,
+            "formula": "H4N",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "e",
+            "chebi_id": "CHEBI:28938",
+            "kegg_id": "C01342",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "o2_c",
+            "name": "O2 O2",
+            "charge": 0.0,
+            "mass": 31.9988,
+            "monoisotopic_mass": 31.98983,
+            "formula": "O2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:27140",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "2pg_c",
+            "name": "D-Glycerate 2-phosphate",
+            "charge": -3.0,
+            "mass": 183.0334,
+            "monoisotopic_mass": 182.97111,
+            "formula": "C3H4O7P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:58289",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "o2_e",
+            "name": "O2 O2",
+            "charge": 0.0,
+            "mass": 31.9988,
+            "monoisotopic_mass": 31.98983,
+            "formula": "O2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:27140",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "3pg_c",
+            "name": "3-Phospho-D-glycerate",
+            "charge": -3.0,
+            "mass": 183.0334,
+            "monoisotopic_mass": 182.96946,
+            "formula": "C3H4O7P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:58272",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "oaa_c",
+            "name": "Oxaloacetate",
+            "charge": -2.0,
+            "mass": 130.05568,
+            "monoisotopic_mass": 129.99132,
+            "formula": "C4H2O5",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16452",
+            "kegg_id": "C00036",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "pep_c",
+            "name": "Phosphoenolpyruvate",
+            "charge": -3.0,
+            "mass": 165.0181,
+            "monoisotopic_mass": 164.96055,
+            "formula": "C3H2O6P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:58702",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "6pgc_c",
+            "name": "6-Phospho-D-gluconate",
+            "charge": -3.0,
+            "mass": 273.1114,
+            "monoisotopic_mass": 273.00116,
+            "formula": "C6H10O10P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:58759",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "pi_c",
+            "name": "Phosphate",
+            "charge": -2.0,
+            "mass": 95.9793,
+            "monoisotopic_mass": 95.96234,
+            "formula": "HO4P",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:43474",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "6pgl_c",
+            "name": "6-phospho-D-glucono-1,5-lactone",
+            "charge": -2.0,
+            "mass": 256.104,
+            "monoisotopic_mass": 255.99842,
+            "formula": "C6H9O9P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57955",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "pi_e",
+            "name": "Phosphate",
+            "charge": -2.0,
+            "mass": 95.9793,
+            "monoisotopic_mass": 95.96234,
+            "formula": "HO4P",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "e",
+            "chebi_id": "CHEBI:43474",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "ac_c",
+            "name": "Acetate",
+            "charge": -1.0,
+            "mass": 59.04402,
+            "monoisotopic_mass": 59.01385,
+            "formula": "C2H3O2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:30089",
+            "kegg_id": "C00033",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "pyr_c",
+            "name": "Pyruvate",
+            "charge": -1.0,
+            "mass": 87.05412,
+            "monoisotopic_mass": 87.00877,
+            "formula": "C3H3O3",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:15361",
+            "kegg_id": "C00022",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "pyr_e",
+            "name": "Pyruvate",
+            "charge": -1.0,
+            "mass": 87.05412,
+            "monoisotopic_mass": 87.00877,
+            "formula": "C3H3O3",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:15361",
+            "kegg_id": "C00022",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "q8_c",
+            "name": "Ubiquinone-8",
+            "charge": 0.0,
+            "mass": 727.1095,
+            "monoisotopic_mass": 726.55871,
+            "formula": "C49H74O4",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:61683",
+            "kegg_id": "C17569",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "q8h2_c",
+            "name": "Ubiquinol-8",
+            "charge": 0.0,
+            "mass": 729.1253,
+            "monoisotopic_mass": 728.57436,
+            "formula": "C49H76O4",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:61682",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "r5p_c",
+            "name": "Alpha-D-Ribose 5-phosphate",
+            "charge": -2.0,
+            "mass": 228.094,
+            "monoisotopic_mass": 228.0046,
+            "formula": "C5H9O8P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:140679",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "ru5p_D_c",
+            "name": "D-Ribulose 5-phosphate",
+            "charge": -2.0,
+            "mass": 228.0939,
+            "monoisotopic_mass": 228.0046,
+            "formula": "C5H9O8P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:58121",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "ac_e",
+            "name": "Acetate",
+            "charge": -1.0,
+            "mass": 59.04402,
+            "monoisotopic_mass": 59.01385,
+            "formula": "C2H3O2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:30089",
+            "kegg_id": "C00033",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "acald_c",
+            "name": "Acetaldehyde",
+            "charge": 0.0,
+            "mass": 44.05256,
+            "monoisotopic_mass": 44.02621,
+            "formula": "C2H4O",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:15343",
+            "kegg_id": "C00084",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "s7p_c",
+            "name": "Sedoheptulose 7-phosphate",
+            "charge": -2.0,
+            "mass": 288.1459,
+            "monoisotopic_mass": 288.02573,
+            "formula": "C7H13O10P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57483",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "acald_e",
+            "name": "Acetaldehyde",
+            "charge": 0.0,
+            "mass": 44.05256,
+            "monoisotopic_mass": 44.02621,
+            "formula": "C2H4O",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:15343",
+            "kegg_id": "C00084",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "accoa_c",
+            "name": "Acetyl-CoA",
+            "charge": -4.0,
+            "mass": 805.539,
+            "monoisotopic_mass": 805.09667,
+            "formula": "C23H34N7O17P3S",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57288",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "succ_c",
+            "name": "Succinate",
+            "charge": -2.0,
+            "mass": 116.07216,
+            "monoisotopic_mass": 116.01206,
+            "formula": "C4H4O4",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:30031",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "succ_e",
+            "name": "Succinate",
+            "charge": -2.0,
+            "mass": 116.07216,
+            "monoisotopic_mass": 116.01206,
+            "formula": "C4H4O4",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:30031",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "succoa_c",
+            "name": "Succinyl-CoA",
+            "charge": -5.0,
+            "mass": 862.567,
+            "monoisotopic_mass": 862.09487,
+            "formula": "C25H35N7O19P3S",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57292",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "acon_C_c",
+            "name": "Cis-Aconitate",
+            "charge": -3.0,
+            "mass": 171.08442,
+            "monoisotopic_mass": 170.99461,
+            "formula": "C6H3O6",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16383",
+            "kegg_id": "C00417",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "xu5p_D_c",
+            "name": "D-Xylulose 5-phosphate",
+            "charge": -2.0,
+            "mass": 228.0939,
+            "monoisotopic_mass": 228.0035,
+            "formula": "C5H9O8P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57737",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "actp_c",
+            "name": "Acetyl phosphate",
+            "charge": -2.0,
+            "mass": 138.01598,
+            "monoisotopic_mass": 137.97291,
+            "formula": "C2H3O5P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:22191",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "adp_c",
+            "name": "ADP C10H12N5O10P2",
+            "charge": -3.0,
+            "mass": 424.1773,
+            "monoisotopic_mass": 424.00759,
+            "formula": "C10H12N5O10P2",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:456216",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "akg_c",
+            "name": "2-Oxoglutarate",
+            "charge": -2.0,
+            "mass": 144.08226,
+            "monoisotopic_mass": 144.00697,
+            "formula": "C5H4O5",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16810",
+            "kegg_id": "C00026",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "akg_e",
+            "name": "2-Oxoglutarate",
+            "charge": -2.0,
+            "mass": 144.08226,
+            "monoisotopic_mass": 144.00697,
+            "formula": "C5H4O5",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:16810",
+            "kegg_id": "C00026",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "amp_c",
+            "name": "AMP C10H12N5O7P",
+            "charge": -2.0,
+            "mass": 345.2053,
+            "monoisotopic_mass": 345.04853,
+            "formula": "C10H12N5O7P",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:456215",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "atp_c",
+            "name": "ATP C10H12N5O13P3",
+            "charge": -4.0,
+            "mass": 503.14946,
+            "monoisotopic_mass": 502.96664,
+            "formula": "C10H12N5O13P3",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:30616",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "cit_c",
+            "name": "Citrate",
+            "charge": -3.0,
+            "mass": 189.0997,
+            "monoisotopic_mass": 189.00517,
+            "formula": "C6H5O7",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16947",
+            "kegg_id": "C00158",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "co2_c",
+            "name": "CO2 CO2",
+            "charge": 0.0,
+            "mass": 44.01,
+            "monoisotopic_mass": 43.98983,
+            "formula": "CO2",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16526",
+            "kegg_id": "C00011",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "co2_e",
+            "name": "CO2 CO2",
+            "charge": 0.0,
+            "mass": 44.01,
+            "monoisotopic_mass": 43.98983,
+            "formula": "CO2",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "e",
+            "chebi_id": "CHEBI:16526",
+            "kegg_id": "C00011",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "coa_c",
+            "name": "Coenzyme A",
+            "charge": -4.0,
+            "mass": 763.502,
+            "monoisotopic_mass": 763.0861,
+            "formula": "C21H32N7O16P3S",
+            "inchi": "",
+            "is_cofactor": true,
+            "level": 3,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57287",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "dhap_c",
+            "name": "Dihydroxyacetone phosphate",
+            "charge": -2.0,
+            "mass": 168.042,
+            "monoisotopic_mass": 167.98347,
+            "formula": "C3H5O6P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57642",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "e4p_c",
+            "name": "D-Erythrose 4-phosphate",
+            "charge": -2.0,
+            "mass": 198.06794,
+            "monoisotopic_mass": 197.99404,
+            "formula": "C4H7O7P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16897",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "etoh_c",
+            "name": "Ethanol",
+            "charge": 0.0,
+            "mass": 46.06844,
+            "monoisotopic_mass": 46.04186,
+            "formula": "C2H6O",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:16236",
+            "kegg_id": "D00068",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "etoh_e",
+            "name": "Ethanol",
+            "charge": 0.0,
+            "mass": 46.06844,
+            "monoisotopic_mass": 46.04186,
+            "formula": "C2H6O",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:16236",
+            "kegg_id": "D00068",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "f6p_c",
+            "name": "D-Fructose 6-phosphate",
+            "charge": -2.0,
+            "mass": 258.1199,
+            "monoisotopic_mass": 258.01407,
+            "formula": "C6H11O9P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:57634",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "fdp_c",
+            "name": "D-Fructose 1,6-bisphosphate",
+            "charge": -4.0,
+            "mass": 336.08392,
+            "monoisotopic_mass": 335.96694,
+            "formula": "C6H10O12P2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:49299",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "for_c",
+            "name": "Formate",
+            "charge": -1.0,
+            "mass": 45.01744,
+            "monoisotopic_mass": 44.9982,
+            "formula": "CHO2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:15740",
+            "kegg_id": "C00058",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "for_e",
+            "name": "Formate",
+            "charge": -1.0,
+            "mass": 45.01744,
+            "monoisotopic_mass": 44.9982,
+            "formula": "CHO2",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:15740",
+            "kegg_id": "C00058",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "fru_e",
+            "name": "D-Fructose",
+            "charge": 0.0,
+            "mass": 180.15588,
+            "monoisotopic_mass": 180.06339,
+            "formula": "C6H12O6",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:37721",
+            "kegg_id": "C00095",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "fum_c",
+            "name": "Fumarate",
+            "charge": -2.0,
+            "mass": 114.05628,
+            "monoisotopic_mass": 113.99641,
+            "formula": "C4H2O4",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:29806",
+            "kegg_id": "C00122",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "fum_e",
+            "name": "Fumarate",
+            "charge": -2.0,
+            "mass": 114.05628,
+            "monoisotopic_mass": 113.99641,
+            "formula": "C4H2O4",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "e",
+            "chebi_id": "CHEBI:29806",
+            "kegg_id": "C00122",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "g3p_c",
+            "name": "Glyceraldehyde 3-phosphate",
+            "charge": -2.0,
+            "mass": 168.042,
+            "monoisotopic_mass": 167.98347,
+            "formula": "C3H5O6P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:59776",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "g6p_c",
+            "name": "D-Glucose 6-phosphate",
+            "charge": -2.0,
+            "mass": 258.1199,
+            "monoisotopic_mass": 258.01517,
+            "formula": "C6H11O9P",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "c",
+            "chebi_id": "CHEBI:61548",
+            "kegg_id": null,
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        },
+        {
+            "id": "Biomass_b",
+            "name": "Biomass",
+            "charge": "",
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "",
+            "inchi": "",
+            "is_cofactor": false,
+            "level": 1,
+            "compartment": "b",
+            "chebi_id": "",
+            "kegg_id": "",
+            "layout": {
+                "x": null,
+                "y": null,
+                "clusters": {}
+            }
+        }
+    ],
+    "reactions": [
+        {
+            "id": "PFK",
+            "name": "Phosphofructokinase",
+            "enzyme": {
+                "name": "6-phosphofructokinase",
+                "ec_number": "2.7.1.11",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "degradation of hexoses"
+                    },
+                    "kegg": {
+                        "id": "rn00052",
+                        "name": "Galactose metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY0-1517",
+                        "name": "sedoheptulose bisphosphate bypass"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "f6p_c": {
+                    "stoich": -1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                },
+                "fdp_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00020000000002573515,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PFL",
+            "name": "Pyruvate formate lyase",
+            "enzyme": {
+                "name": "formate C-acetyltransferase",
+                "ec_number": "2.3.1.54",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "threonine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00640",
+                        "name": "Propanoate metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-5437",
+                        "name": "L-threonine degradation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "coa_c": {
+                    "stoich": -1.0
+                },
+                "pyr_c": {
+                    "stoich": -1.0
+                },
+                "accoa_c": {
+                    "stoich": 1.0
+                },
+                "for_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.00032000000002341267,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PGI",
+            "name": "Glucose-6-phosphate isomerase",
+            "enzyme": {
+                "name": "glucose-6-phosphate isomerase",
+                "ec_number": "5.3.1.9",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "glycolysis"
+                    },
+                    "kegg": {
+                        "id": "rn00010; rn01110; rn01120",
+                        "name": "Glycolysis / Gluconeogenesis; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "SUCSYN-PWY; PWY-6992; ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-7385; PWY-8013; P341-PWY; UDPNACETYLGALSYN-PWY; PWY-6981; PWY-6142; GLUCONEO-PWY; PWY-622; PWY66-399; PWY-5384; PWY-7238; PWY-3801; PWY-5054; RUMP-PWY; P122-PWY; PWY-5659; P124-PWY; UDPNAGSYN-PWY; PWY-621; PWY-5514; PWY-7347",
+                        "name": "sucrose biosynthesis I (from photosynthesis); 1,5-anhydrofructose degradation; glycolysis III (from glucose); glycolysis I (from glucose 6-phosphate); 1,3-propanediol biosynthesis (engineered); UDP-N-acetyl-D-galactosamine biosynthesis III; glycolysis V (Pyrococcus); UDP-N-acetyl-D-glucosamine biosynthesis II; chitin biosynthesis; gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; starch biosynthesis; gluconeogenesis III; sucrose degradation IV (sucrose phosphorylase); sucrose biosynthesis II; sucrose degradation II (sucrose synthase); D-sorbitol biosynthesis I; formaldehyde oxidation I; heterolactic fermentation; GDP-mannose biosynthesis; Bifidobacterium shunt; UDP-N-acetyl-D-glucosamine biosynthesis I; sucrose degradation III (sucrose invertase); UDP-N-acetyl-D-galactosamine biosynthesis II; sucrose biosynthesis III"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "g6p_c": {
+                    "stoich": -1.0
+                },
+                "f6p_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PGK",
+            "name": "Phosphoglycerate kinase",
+            "enzyme": {
+                "name": "phosphoglycerate kinase",
+                "ec_number": "2.7.2.3",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "photosynthesis; glycolysis"
+                    },
+                    "kegg": {
+                        "id": "rn00010; rn00710; rn01110; rn01120",
+                        "name": "Glycolysis / Gluconeogenesis; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "SUCSYN-PWY; ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-5484; PWY-8004; GLUCONEO-PWY; PWY-7003; P124-PWY; P122-PWY; PWY-6901; PWY66-399; PWY-6886; CALVIN-PWY; P185-PWY; PWY-1042",
+                        "name": "sucrose biosynthesis I (from photosynthesis); glycolysis III (from glucose); glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); Entner-Doudoroff pathway I; gluconeogenesis I; glycerol degradation to butanol; Bifidobacterium shunt; heterolactic fermentation; superpathway of glucose and xylose degradation; gluconeogenesis III; 1-butanol autotrophic biosynthesis (engineered); Calvin-Benson-Bassham cycle; formaldehyde assimilation III (dihydroxyacetone cycle); glycolysis IV"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "3pg_c": {
+                    "stoich": -1.0
+                },
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "13dpg_c": {
+                    "stoich": 1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00015999999999394277,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PGL",
+            "name": "6-phosphogluconolactonase",
+            "enzyme": {
+                "name": "6-phosphogluconolactonase",
+                "ec_number": "3.1.1.31",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "pentose phosphate pathway"
+                    },
+                    "kegg": {
+                        "id": "rn00030; rn01110; rn01120",
+                        "name": "Pentose phosphate pathway; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-8004; GLYCOLYSIS-E-D; P122-PWY; RUMP-PWY; OXIDATIVEPENT-PWY",
+                        "name": "Entner-Doudoroff pathway I; superpathway of glycolysis and the Entner-Doudoroff pathway; heterolactic fermentation; formaldehyde oxidation I; pentose phosphate pathway (oxidative branch) I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "6pgl_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "6pgc_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -3.999999999360071e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ACALD",
+            "name": "Acetaldehyde dehydrogenase (acetylating)",
+            "enzyme": {
+                "name": "acetaldehyde dehydrogenase (acetylating)",
+                "ec_number": "1.2.1.10",
+                "tax": {},
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00640; rn01120",
+                        "name": "Propanoate metabolism; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-6863",
+                        "name": "pyruvate fermentation to hexanol (engineered)"
+                    },
+                    "brenda": {
+                        "id": "",
+                        "name": "propanol degradation; androgen and estrogen metabolism"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "acald_c": {
+                    "stoich": -1.0
+                },
+                "coa_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "accoa_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.0002800000000888758,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "AKGt2r",
+            "name": "2 oxoglutarate reversible transport via symport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "akg_e": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "akg_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -9.325873406851315e-15,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PGM",
+            "name": "Phosphoglycerate mutase",
+            "enzyme": {
+                "name": "phosphoglycerate mutase (2,3-diphosphoglycerate-independent)",
+                "ec_number": "5.4.2.12",
+                "tax": {},
+                "related_deprecated_enzyme": {
+                    "ec_number": "5.4.2.1",
+                    "reason": "transferred"
+                },
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "Entner Doudoroff pathway"
+                    },
+                    "kegg": {
+                        "id": "rn00010; rn00260; rn00680; rn01110; rn01120",
+                        "name": "Glycolysis / Gluconeogenesis; Glycine, serine and threonine metabolism; Methane metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-5484; P341-PWY; PWY-2221; PWY-6142; GLUCONEO-PWY; PWY-7003; P124-PWY; PWY-6901; PWY-7218; PWY-7124; PWY-6886; PWY-5723; PWY-1042; PWY-8004; PWY-1622; P122-PWY; PWY66-399",
+                        "name": "glycolysis III (from glucose); glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); glycolysis V (Pyrococcus); Entner-Doudoroff pathway III (semi-phosphorylative); gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; glycerol degradation to butanol; Bifidobacterium shunt; superpathway of glucose and xylose degradation; photosynthetic 3-hydroxybutanoate biosynthesis (engineered); ethene biosynthesis V (engineered); 1-butanol autotrophic biosynthesis (engineered); Rubisco shunt; glycolysis IV; Entner-Doudoroff pathway I; formaldehyde assimilation I (serine pathway); heterolactic fermentation; gluconeogenesis III"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "2pg_c": {
+                    "stoich": -1.0
+                },
+                "3pg_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PIt2r",
+            "name": "Phosphate reversible transport via symport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "pi_e": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ALCD2x",
+            "name": "Alcohol dehydrogenase (ethanol)",
+            "enzyme": {
+                "name": "alcohol dehydrogenase [NAD(P)+]",
+                "ec_number": "1.1.1.71",
+                "tax": {},
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00830",
+                        "name": "Retinol metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7385",
+                        "name": "1,3-propanediol biosynthesis (engineered)"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "etoh_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "acald_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 4.0000000012696546e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ACALDt",
+            "name": "Acetaldehyde reversible transport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "acald_e": {
+                    "stoich": -1.0
+                },
+                "acald_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ACKr",
+            "name": "Acetate kinase",
+            "enzyme": {
+                "name": "propionate kinase",
+                "ec_number": "2.7.2.15",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "threonine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00640",
+                        "name": "Propanoate metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7013; PWY-5437",
+                        "name": "(S)-propane-1,2-diol degradation; L-threonine degradation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "ac_c": {
+                    "stoich": -1.0
+                },
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "actp_c": {
+                    "stoich": 1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0002000000000066393,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PPC",
+            "name": "Phosphoenolpyruvate carboxylase",
+            "enzyme": {
+                "name": "phosphoenolpyruvate carboxylase",
+                "ec_number": "4.1.1.31",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "C4 and CAM-carbon fixation; photosynthesis; gluconeogenesis"
+                    },
+                    "kegg": {
+                        "id": "rn00620; rn00680; rn00710; rn01120",
+                        "name": "Pyruvate metabolism; Methane metabolism; Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7117; GLUCONEO-PWY; PWY-561",
+                        "name": "C4 photosynthetic carbon assimilation cycle, PEPCK type; gluconeogenesis I; superpathway of glyoxylate cycle and fatty acid degradation"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "co2_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "pep_c": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "oaa_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0004800000000386717,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ACONTa",
+            "name": "Aconitase (half-reaction A, Citrate hydro-lyase)",
+            "enzyme": {
+                "name": "aconitate hydratase",
+                "ec_number": "4.2.1.3",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "propionate fermentation"
+                    },
+                    "kegg": {
+                        "id": "rn00630; rn01110; rn01120",
+                        "name": "Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "P105-PWY; PWY-6969; PWY-7254; PWY-5913; PWY66-398; PWY-6728; PWY-5690; TCA; PWY-5392; P23-PWY; PWY-7124; GLYOXYLATE-BYPASS; PWY-6549; FERMENTATION-PWY; REDCITCYC",
+                        "name": "TCA cycle IV (2-oxoglutarate decarboxylase); TCA cycle V (2-oxoglutarate synthase); TCA cycle VII (acetate-producers); partial TCA cycle (obligate autotrophs); TCA cycle III (animals); methylaspartate cycle; TCA cycle II (plants and fungi); TCA cycle I (prokaryotic); reductive TCA cycle II; reductive TCA cycle I; ethene biosynthesis V (engineered); glyoxylate cycle; L-glutamine biosynthesis III; mixed acid fermentation; TCA cycle VI (Helicobacter)"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "cit_c": {
+                    "stoich": -1.0
+                },
+                "acon_C_c": {
+                    "stoich": 1.0
+                },
+                "h2o_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -1.9999999981479277e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ACONTb",
+            "name": "Aconitase (half-reaction B, Isocitrate hydro-lyase)",
+            "enzyme": {
+                "name": "aconitate hydratase",
+                "ec_number": "4.2.1.3",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "propionate fermentation"
+                    },
+                    "kegg": {
+                        "id": "rn00630; rn01110; rn01120",
+                        "name": "Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "P105-PWY; PWY-6969; PWY-7254; PWY-5913; PWY66-398; PWY-6728; PWY-5690; TCA; PWY-5392; P23-PWY; PWY-7124; GLYOXYLATE-BYPASS; PWY-6549; FERMENTATION-PWY; REDCITCYC",
+                        "name": "TCA cycle IV (2-oxoglutarate decarboxylase); TCA cycle V (2-oxoglutarate synthase); TCA cycle VII (acetate-producers); partial TCA cycle (obligate autotrophs); TCA cycle III (animals); methylaspartate cycle; TCA cycle II (plants and fungi); TCA cycle I (prokaryotic); reductive TCA cycle II; reductive TCA cycle I; ethene biosynthesis V (engineered); glyoxylate cycle; L-glutamine biosynthesis III; mixed acid fermentation; TCA cycle VI (Helicobacter)"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "acon_C_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "icit_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 1.9999999977926564e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ATPM",
+            "name": "ATP maintenance requirement",
+            "enzyme": {
+                "name": "apyrase",
+                "ec_number": "3.6.1.5",
+                "tax": {},
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00240",
+                        "name": "Pyrimidine metabolism"
+                    },
+                    "brenda": {
+                        "id": "",
+                        "name": "non-pathway related"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7185",
+                        "name": "UTP and CTP dephosphorylation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 8.39,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00021999999999877673,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PPCK",
+            "name": "Phosphoenolpyruvate carboxykinase",
+            "enzyme": {
+                "name": "phosphoenolpyruvate carboxykinase (ATP)",
+                "ec_number": "4.1.1.49",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "C4 and CAM-carbon fixation; gluconeogenesis"
+                    },
+                    "kegg": {
+                        "id": "rn00010; rn00620; rn01110; rn01120",
+                        "name": "Glycolysis / Gluconeogenesis; Pyruvate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7383",
+                        "name": "anaerobic energy metabolism (invertebrates, cytosol)"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "oaa_c": {
+                    "stoich": -1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                },
+                "pep_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.0002599999999688407,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ACt2r",
+            "name": "Acetate reversible transport via proton symport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "ac_e": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "ac_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -2.220446049250313e-15,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PPS",
+            "name": "Phosphoenolpyruvate synthase",
+            "enzyme": {
+                "name": "pyruvate, water dikinase",
+                "ec_number": "2.7.9.2",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "gluconeogenesis"
+                    },
+                    "kegg": {
+                        "id": "rn00010; rn00620; rn00680; rn01110; rn01120",
+                        "name": "Glycolysis / Gluconeogenesis; Pyruvate metabolism; Methane metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "GLYCOLYSIS; PWY-5484; P341-PWY; PWY-6142; GLUCONEO-PWY; P23-PWY",
+                        "name": "glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); glycolysis V (Pyrococcus); gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; reductive TCA cycle I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "pyr_c": {
+                    "stoich": -1.0
+                },
+                "amp_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 2.0
+                },
+                "pep_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00030000000000995897,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ADK1",
+            "name": "Adenylate kinase",
+            "enzyme": {
+                "name": "adenylate kinase",
+                "ec_number": "2.7.4.3",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "pyrimidine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00240",
+                        "name": "Pyrimidine metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7205",
+                        "name": "CMP phosphorylation"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "amp_c": {
+                    "stoich": -1.0
+                },
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "adp_c": {
+                    "stoich": 2.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00015999999993709935,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "AKGDH",
+            "name": "2-Oxogluterate dehydrogenase",
+            "enzyme": {
+                "name": "oxoglutarate dehydrogenase (NADP+)",
+                "ec_number": "1.2.1.52",
+                "tax": {},
+                "pathways": {}
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "akg_c": {
+                    "stoich": -1.0
+                },
+                "coa_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                },
+                "succoa_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.0006400000000894579,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ATPS4r",
+            "name": "ATP synthase (four protons for one ATP)",
+            "enzyme": {
+                "name": "H+-transporting two-sector ATPase",
+                "ec_number": "7.1.2.2",
+                "tax": {},
+                "related_deprecated_enzyme": {
+                    "ec_number": "3.6.3.14",
+                    "reason": "transferred"
+                },
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00240",
+                        "name": "Pyrimidine metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7185; PWY-7210; PWY-7198; PWY-7184; PWY-6545",
+                        "name": "UTP and CTP dephosphorylation I; pyrimidine deoxyribonucleotides biosynthesis from CTP; pyrimidine deoxyribonucleotides de novo biosynthesis IV; pyrimidine deoxyribonucleotides de novo biosynthesis I; pyrimidine deoxyribonucleotides de novo biosynthesis III"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "adp_c": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": -4.0
+                },
+                "pi_c": {
+                    "stoich": -1.0
+                },
+                "atp_c": {
+                    "stoich": 1.0
+                },
+                "h2o_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 3.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.0002199999999876745,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PTAr",
+            "name": "Phosphotransacetylase",
+            "enzyme": {
+                "name": "phosphate acetyltransferase",
+                "ec_number": "2.3.1.8",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "threonine metabolism; propanol degradation"
+                    },
+                    "kegg": {
+                        "id": "rn00640",
+                        "name": "Propanoate metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7013; PWY-5437",
+                        "name": "(S)-propane-1,2-diol degradation; L-threonine degradation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "accoa_c": {
+                    "stoich": -1.0
+                },
+                "pi_c": {
+                    "stoich": -1.0
+                },
+                "actp_c": {
+                    "stoich": 1.0
+                },
+                "coa_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00031999999998788553,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PYK",
+            "name": "Pyruvate kinase",
+            "enzyme": {
+                "name": "pyruvate kinase",
+                "ec_number": "2.7.1.40",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "gluconeogenesis"
+                    },
+                    "kegg": {
+                        "id": "rn00620; rn01120",
+                        "name": "Pyruvate metabolism; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "GLYCOLYSIS; PWY-5484; P341-PWY; PWY-6142; GLUCONEO-PWY; P23-PWY",
+                        "name": "glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); glycolysis V (Pyrococcus); gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; reductive TCA cycle I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "adp_c": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": -1.0
+                },
+                "pep_c": {
+                    "stoich": -1.0
+                },
+                "atp_c": {
+                    "stoich": 1.0
+                },
+                "pyr_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.00023999999994828158,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "BIOMASS_Ecoli_core_w_GAM",
+            "name": "Biomass Objective Function with GAM",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "3pg_c": {
+                    "stoich": -1.496
+                },
+                "accoa_c": {
+                    "stoich": -3.7478
+                },
+                "atp_c": {
+                    "stoich": -59.81
+                },
+                "e4p_c": {
+                    "stoich": -0.361
+                },
+                "f6p_c": {
+                    "stoich": -0.0709
+                },
+                "g3p_c": {
+                    "stoich": -0.129
+                },
+                "g6p_c": {
+                    "stoich": -0.205
+                },
+                "gln_L_c": {
+                    "stoich": -0.2557
+                },
+                "glu_L_c": {
+                    "stoich": -4.9414
+                },
+                "h2o_c": {
+                    "stoich": -59.81
+                },
+                "nad_c": {
+                    "stoich": -3.547
+                },
+                "nadph_c": {
+                    "stoich": -13.0279
+                },
+                "oaa_c": {
+                    "stoich": -1.7867
+                },
+                "pep_c": {
+                    "stoich": -0.5191
+                },
+                "pyr_c": {
+                    "stoich": -2.8328
+                },
+                "r5p_c": {
+                    "stoich": -0.8977
+                },
+                "adp_c": {
+                    "stoich": 59.81
+                },
+                "akg_c": {
+                    "stoich": 4.1182
+                },
+                "coa_c": {
+                    "stoich": 3.7478
+                },
+                "h_c": {
+                    "stoich": 59.81
+                },
+                "nadh_c": {
+                    "stoich": 3.547
+                },
+                "nadp_c": {
+                    "stoich": 13.0279
+                },
+                "pi_c": {
+                    "stoich": 59.81
+                },
+                "Biomass_b": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": null,
+                "charge": null
+            }
+        },
+        {
+            "id": "PYRt2",
+            "name": "Pyruvate transport in via proton symport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "pyr_e": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "pyr_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "CO2t",
+            "name": "CO2 transporter via diffusion",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "co2_e": {
+                    "stoich": -1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "RPE",
+            "name": "Ribulose 5-phosphate 3-epimerase",
+            "enzyme": {
+                "name": "ribulose-phosphate 3-epimerase",
+                "ec_number": "5.1.3.1",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "photosynthesis; pentose phosphate pathway"
+                    },
+                    "kegg": {
+                        "id": "rn00030; rn00040; rn00710; rn01110; rn01120",
+                        "name": "Pentose phosphate pathway; Pentose and glucuronate interconversions; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-8090; PWY-8091; PWY-7787; PWY-7789; PWY-7788; PWY-7786",
+                        "name": "D-apionate degradation II (RLP decarboxylase); D-apionate degradation I (xylose isomerase family decarboxylase); L-threitol degradation; erythritol degradation I; erythritol degradation II; D-threitol degradation"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "ru5p_D_c": {
+                    "stoich": -1.0
+                },
+                "xu5p_D_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "CS",
+            "name": "Citrate synthase",
+            "enzyme": {
+                "name": "citrate synthase (unknown stereospecificity)",
+                "ec_number": "2.3.3.16",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "propionate fermentation"
+                    },
+                    "kegg": {
+                        "id": "rn00640",
+                        "name": "Propanoate metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-5747; PWY0-42",
+                        "name": "2-methylcitrate cycle II; 2-methylcitrate cycle I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "accoa_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "oaa_c": {
+                    "stoich": -1.0
+                },
+                "cit_c": {
+                    "stoich": 1.0
+                },
+                "coa_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00034000000001332964,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "RPI",
+            "name": "Ribose-5-phosphate isomerase",
+            "enzyme": {
+                "name": "ribose-5-phosphate isomerase",
+                "ec_number": "5.3.1.6",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "degradation of pentoses"
+                    },
+                    "kegg": {
+                        "id": "rn00051; rn01120",
+                        "name": "Fructose and mannose metabolism; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "LYXMET-PWY",
+                        "name": "L-lyxose degradation"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "r5p_c": {
+                    "stoich": -1.0
+                },
+                "ru5p_D_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00010000000000331966,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "SUCCt2_2",
+            "name": "Succinate transport via proton symport (2 H)",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h_e": {
+                    "stoich": -2.0
+                },
+                "succ_e": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 2.0
+                },
+                "succ_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "CYTBD",
+            "name": "Cytochrome oxidase bd (ubiquinol-8: 2 protons)",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h_c": {
+                    "stoich": -2.0
+                },
+                "o2_c": {
+                    "stoich": -0.5
+                },
+                "q8h2_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": 1.0
+                },
+                "h_e": {
+                    "stoich": 2.0
+                },
+                "q8_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.00010000000008858478,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "D_LACt2",
+            "name": "D lactate transport via proton symport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "lac_D_e": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "lac_D_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ENO",
+            "name": "Enolase",
+            "enzyme": {
+                "name": "phosphopyruvate hydratase",
+                "ec_number": "4.2.1.11",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "methionine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00270",
+                        "name": "Cysteine and methionine metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-4361",
+                        "name": "S-methyl-5-thio-alpha-D-ribose 1-phosphate degradation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "2pg_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": 1.0
+                },
+                "pep_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "SUCCt3",
+            "name": "Succinate transport out via proton antiport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "succ_c": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "succ_e": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ETOHt2r",
+            "name": "Ethanol reversible transport via proton symport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "etoh_e": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "etoh_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -2.220446049250313e-15,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "SUCDi",
+            "name": "Succinate dehydrogenase (irreversible)",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "q8_c": {
+                    "stoich": -1.0
+                },
+                "succ_c": {
+                    "stoich": -1.0
+                },
+                "fum_c": {
+                    "stoich": 1.0
+                },
+                "q8h2_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 7.999999991170625e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "SUCOAS",
+            "name": "Succinyl-CoA synthetase (ADP-forming)",
+            "enzyme": {
+                "name": "succinate-CoA ligase (ADP-forming)",
+                "ec_number": "6.2.1.5",
+                "tax": {},
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00660",
+                        "name": "C5-Branched dibasic acid metabolism"
+                    },
+                    "brenda": {
+                        "id": "",
+                        "name": "ethylmalonyl-CoA pathway"
+                    },
+                    "metacyc": {
+                        "id": "PWY-1622; PWY-5741",
+                        "name": "formaldehyde assimilation I (serine pathway); ethylmalonyl-CoA pathway"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "coa_c": {
+                    "stoich": -1.0
+                },
+                "succ_c": {
+                    "stoich": -1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                },
+                "succoa_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 1.9999999949504854e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "TALA",
+            "name": "Transaldolase",
+            "enzyme": {
+                "name": "transaldolase",
+                "ec_number": "2.2.1.2",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "pentose phosphate pathway"
+                    },
+                    "kegg": {
+                        "id": "rn00030; rn01110; rn01120",
+                        "name": "Pentose phosphate pathway; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "P124-PWY; P185-PWY; PWY-5723; NONOXIPENT-PWY; PWY-1861",
+                        "name": "Bifidobacterium shunt; formaldehyde assimilation III (dihydroxyacetone cycle); Rubisco shunt; pentose phosphate pathway (non-oxidative branch) I; formaldehyde assimilation II (assimilatory RuMP Cycle)"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "g3p_c": {
+                    "stoich": -1.0
+                },
+                "s7p_c": {
+                    "stoich": -1.0
+                },
+                "e4p_c": {
+                    "stoich": 1.0
+                },
+                "f6p_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 6.000000001904482e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "THD2",
+            "name": "NAD(P) transhydrogenase",
+            "enzyme": {
+                "name": "NAD(P)+ transhydrogenase (Si-specific)",
+                "ec_number": "1.6.1.1",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "NAD metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00760",
+                        "name": "Nicotinate and nicotinamide metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-5083; NADPHOS-DEPHOS-PWY; NADPHOS-DEPHOS-PWY-1",
+                        "name": "NAD(P)/NADPH interconversion; NAD phosphorylation and dephosphorylation; NAD phosphorylation and transhydrogenation"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "h_e": {
+                    "stoich": -2.0
+                },
+                "nadh_c": {
+                    "stoich": -1.0
+                },
+                "nadp_c": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 2.0
+                },
+                "nad_c": {
+                    "stoich": 1.0
+                },
+                "nadph_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 2.2737367544323206e-13,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "TKT1",
+            "name": "Transketolase",
+            "enzyme": {
+                "name": "transketolase",
+                "ec_number": "2.2.1.1",
+                "tax": {},
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00710; rn01120; rn00030; rn01110",
+                        "name": "Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments; Pentose phosphate pathway; Biosynthesis of secondary metabolites"
+                    },
+                    "metacyc": {
+                        "id": "PWY-8178; PWY-6901; CALVIN-PWY; PWY-5723; NONOXIPENT-PWY; P185-PWY; PWY-1861; P21-PWY",
+                        "name": "pentose phosphate pathway (non-oxidative branch) II; superpathway of glucose and xylose degradation; Calvin-Benson-Bassham cycle; Rubisco shunt; pentose phosphate pathway (non-oxidative branch) I; formaldehyde assimilation III (dihydroxyacetone cycle); formaldehyde assimilation II (assimilatory RuMP Cycle); pentose phosphate pathway (partial)"
+                    },
+                    "brenda": {
+                        "id": "",
+                        "name": "photosynthesis; pentose phosphate pathway"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "r5p_c": {
+                    "stoich": -1.0
+                },
+                "xu5p_D_c": {
+                    "stoich": -1.0
+                },
+                "g3p_c": {
+                    "stoich": 1.0
+                },
+                "s7p_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "TKT2",
+            "name": "Transketolase",
+            "enzyme": {
+                "name": "transketolase",
+                "ec_number": "2.2.1.1",
+                "tax": {},
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00710; rn01120; rn00030; rn01110",
+                        "name": "Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments; Pentose phosphate pathway; Biosynthesis of secondary metabolites"
+                    },
+                    "metacyc": {
+                        "id": "PWY-8178; PWY-6901; CALVIN-PWY; PWY-5723; NONOXIPENT-PWY; P185-PWY; PWY-1861; P21-PWY",
+                        "name": "pentose phosphate pathway (non-oxidative branch) II; superpathway of glucose and xylose degradation; Calvin-Benson-Bassham cycle; Rubisco shunt; pentose phosphate pathway (non-oxidative branch) I; formaldehyde assimilation III (dihydroxyacetone cycle); formaldehyde assimilation II (assimilatory RuMP Cycle); pentose phosphate pathway (partial)"
+                    },
+                    "brenda": {
+                        "id": "",
+                        "name": "photosynthesis; pentose phosphate pathway"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "e4p_c": {
+                    "stoich": -1.0
+                },
+                "xu5p_D_c": {
+                    "stoich": -1.0
+                },
+                "f6p_c": {
+                    "stoich": 1.0
+                },
+                "g3p_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -5.999999999062311e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "TPI",
+            "name": "Triose-phosphate isomerase",
+            "enzyme": {
+                "name": "triose-phosphate isomerase",
+                "ec_number": "5.3.1.1",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "photosynthesis; glycolysis"
+                    },
+                    "kegg": {
+                        "id": "rn00010; rn00051; rn00562; rn00710; rn01110; rn01120",
+                        "name": "Glycolysis / Gluconeogenesis; Fructose and mannose metabolism; Inositol phosphate metabolism; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-5484; P341-PWY; PWY-6142; GLUCONEO-PWY; PWY-7003; PWY66-373; PWY66-399; CALVIN-PWY; P185-PWY; PWY-1042",
+                        "name": "glycolysis III (from glucose); glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); glycolysis V (Pyrococcus); gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; glycerol degradation to butanol; sucrose degradation V (sucrose alpha-glucosidase); gluconeogenesis III; Calvin-Benson-Bassham cycle; formaldehyde assimilation III (dihydroxyacetone cycle); glycolysis IV"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "dhap_c": {
+                    "stoich": -1.0
+                },
+                "g3p_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FBA",
+            "name": "Fructose-bisphosphate aldolase",
+            "enzyme": {
+                "name": "fructose-bisphosphate aldolase",
+                "ec_number": "4.1.2.13",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "photosynthesis"
+                    },
+                    "kegg": {
+                        "id": "rn00710; rn01120",
+                        "name": "Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-6644",
+                        "name": "fluoroacetate and fluorothreonine biosynthesis"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "fdp_c": {
+                    "stoich": -1.0
+                },
+                "dhap_c": {
+                    "stoich": 1.0
+                },
+                "g3p_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -8.000000002539309e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FBP",
+            "name": "Fructose-bisphosphatase",
+            "enzyme": {
+                "name": "fructose-bisphosphatase",
+                "ec_number": "3.1.3.11",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "myo-inositol biosynthesis"
+                    },
+                    "kegg": {
+                        "id": "rn00562; rn00521; rn01110",
+                        "name": "Inositol phosphate metabolism; Streptomycin biosynthesis; Biosynthesis of secondary metabolites"
+                    },
+                    "metacyc": {
+                        "id": "PWY-2301; PWY-4702",
+                        "name": "myo-inositol biosynthesis; phytate degradation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "fdp_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "f6p_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 2.0000000034769982e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FORt2",
+            "name": "Formate transport in via proton symport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "for_e": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "for_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -2.220446049250313e-15,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FORt",
+            "name": "Formate transport via diffusion",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "for_e": {
+                    "stoich": -1.0
+                },
+                "for_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 0.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FRD7",
+            "name": "Fumarate reductase",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "fum_c": {
+                    "stoich": -1.0
+                },
+                "q8h2_c": {
+                    "stoich": -1.0
+                },
+                "q8_c": {
+                    "stoich": 1.0
+                },
+                "succ_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -7.999999996854967e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FRUpts2",
+            "name": "Fructose transport via PEP:Pyr PTS (f6p generating)",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "fru_e": {
+                    "stoich": -1.0
+                },
+                "pep_c": {
+                    "stoich": -1.0
+                },
+                "f6p_c": {
+                    "stoich": 1.0
+                },
+                "pyr_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -3.999999994164227e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FUM",
+            "name": "Fumarase",
+            "enzyme": {
+                "name": "fumarate hydratase",
+                "ec_number": "4.2.1.2",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "glutamate and glutamine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00660",
+                        "name": "C5-Branched dibasic acid metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-5087",
+                        "name": "L-glutamate degradation VI (to pyruvate)"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "fum_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "mal_L_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 2.0000000006348273e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "FUMt2_2",
+            "name": "Fumarate transport via proton symport (2 H)",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "fum_e": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": -2.0
+                },
+                "fum_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 2.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -4.440892098500626e-15,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "G6PDH2r",
+            "name": "Glucose 6-phosphate dehydrogenase",
+            "enzyme": {
+                "name": "glucose-6-phosphate dehydrogenase [NAD(P)+]",
+                "ec_number": "1.1.1.363",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "pentose phosphate pathway"
+                    },
+                    "metacyc": {
+                        "id": "PWY-8004; GLYCOLYSIS-E-D; RUMP-PWY; P122-PWY; OXIDATIVEPENT-PWY; PWY-7268",
+                        "name": "Entner-Doudoroff pathway I; superpathway of glycolysis and the Entner-Doudoroff pathway; formaldehyde oxidation I; heterolactic fermentation; pentose phosphate pathway (oxidative branch) I; cytosolic NADPH production (yeast)"
+                    },
+                    "kegg": {
+                        "id": "rn00030; rn00480; rn01110; rn01120",
+                        "name": "Pentose phosphate pathway; Glutathione metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "g6p_c": {
+                    "stoich": -1.0
+                },
+                "nadp_c": {
+                    "stoich": -1.0
+                },
+                "6pgl_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "nadph_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 5.99999999622014e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GAPD",
+            "name": "Glyceraldehyde-3-phosphate dehydrogenase",
+            "enzyme": {
+                "name": "glyceraldehyde-3-phosphate dehydrogenase (phosphorylating)",
+                "ec_number": "1.2.1.12",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "Entner Doudoroff pathway"
+                    },
+                    "kegg": {
+                        "id": "rn00010; rn00710; rn01110; rn01120",
+                        "name": "Glycolysis / Gluconeogenesis; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY1YI0-1",
+                        "name": "arsenate detoxification V"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "g3p_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "pi_c": {
+                    "stoich": -1.0
+                },
+                "13dpg_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 5.99999999622014e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GLCpts",
+            "name": "D-glucose transport via PEP:Pyr PTS",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "glc_D_e": {
+                    "stoich": -1.0
+                },
+                "pep_c": {
+                    "stoich": -1.0
+                },
+                "g6p_c": {
+                    "stoich": 1.0
+                },
+                "pyr_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -3.999999994164227e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GLNS",
+            "name": "Glutamine synthetase",
+            "enzyme": {
+                "name": "glutamine synthetase",
+                "ec_number": "6.3.1.2",
+                "tax": {},
+                "pathways": {
+                    "metacyc": {
+                        "id": "PWY-6965",
+                        "name": "methylamine degradation II"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "glu_L_c": {
+                    "stoich": -1.0
+                },
+                "nh4_c": {
+                    "stoich": -1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                },
+                "gln_L_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00019999999996400675,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GLNabc",
+            "name": "L-glutamine transport via ABC system",
+            "enzyme": {
+                "name": "ABC-type polar-amino-acid transporter",
+                "ec_number": "7.4.2.1",
+                "tax": {},
+                "related_deprecated_enzyme": {
+                    "ec_number": "3.6.3.21",
+                    "reason": "transferred"
+                },
+                "pathways": {}
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "atp_c": {
+                    "stoich": -1.0
+                },
+                "gln_L_e": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "adp_c": {
+                    "stoich": 1.0
+                },
+                "gln_L_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "pi_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00022000000002719844,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GLUDy",
+            "name": "Glutamate dehydrogenase (NADP)",
+            "enzyme": {
+                "name": "glutamate synthase (NADPH)",
+                "ec_number": "1.4.1.13",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "glutamate and glutamine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00250; rn00471; rn00910; rn01120",
+                        "name": "Alanine, aspartate and glutamate metabolism; D-Glutamine and D-glutamate metabolism; Nitrogen metabolism; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "ARGININE-SYN4-PWY; GLUDEG-I-PWY; GLUTAMATE-SYN2-PWY; PWY-5766; GLUTSYN-PWY; PWY-5675; PWY490-3; GLUTSYNIII-PWY",
+                        "name": "L-ornithine biosynthesis II; GABA shunt; L-glutamate biosynthesis II; L-glutamate degradation X; L-glutamate biosynthesis I; nitrate reduction V (assimilatory); nitrate reduction VI (assimilatory); L-glutamate biosynthesis III"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "glu_L_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "nadp_c": {
+                    "stoich": -1.0
+                },
+                "akg_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "nadph_c": {
+                    "stoich": 1.0
+                },
+                "nh4_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 6.000000007588824e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GLUN",
+            "name": "Glutaminase",
+            "enzyme": {
+                "name": "GMP synthase (glutamine-hydrolysing)",
+                "ec_number": "6.3.5.2",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "glutamate and glutamine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00983",
+                        "name": "Drug metabolism - other enzymes"
+                    },
+                    "metacyc": {
+                        "id": "GLUTSYN-PWY; PWY490-4; PWY-5921; CITRULBIO-PWY; GLUTAMINDEG-PWY",
+                        "name": "L-glutamate biosynthesis I; L-asparagine biosynthesis III (tRNA-dependent); glutaminyl-tRNAgln biosynthesis via transamidation; L-citrulline biosynthesis; L-glutamine degradation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "gln_L_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "glu_L_c": {
+                    "stoich": 1.0
+                },
+                "nh4_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 1.9999999977926564e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GLUSy",
+            "name": "Glutamate synthase (NADPH)",
+            "enzyme": {
+                "name": "glutamate synthase (NADPH)",
+                "ec_number": "1.4.1.13",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "glutamate and glutamine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00250; rn00471; rn00910; rn01120",
+                        "name": "Alanine, aspartate and glutamate metabolism; D-Glutamine and D-glutamate metabolism; Nitrogen metabolism; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "ARGININE-SYN4-PWY; GLUDEG-I-PWY; GLUTAMATE-SYN2-PWY; PWY-5766; GLUTSYN-PWY; PWY-5675; PWY490-3; GLUTSYNIII-PWY",
+                        "name": "L-ornithine biosynthesis II; GABA shunt; L-glutamate biosynthesis II; L-glutamate degradation X; L-glutamate biosynthesis I; nitrate reduction V (assimilatory); nitrate reduction VI (assimilatory); L-glutamate biosynthesis III"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "akg_c": {
+                    "stoich": -1.0
+                },
+                "gln_L_c": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": -1.0
+                },
+                "nadph_c": {
+                    "stoich": -1.0
+                },
+                "glu_L_c": {
+                    "stoich": 2.0
+                },
+                "nadp_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -3.999999989900971e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GLUt2r",
+            "name": "L glutamate transport via proton symport  reversible",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "glu_L_e": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": -1.0
+                },
+                "glu_L_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -9.325873406851315e-15,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "GND",
+            "name": "Phosphogluconate dehydrogenase",
+            "enzyme": {
+                "name": "phosphogluconate dehydrogenase (NADP+-dependent, decarboxylating)",
+                "ec_number": "1.1.1.44",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "pentose phosphate pathway"
+                    },
+                    "kegg": {
+                        "id": "rn00030; rn00480; rn01110; rn01120",
+                        "name": "Pentose phosphate pathway; Glutathione metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "P122-PWY; RUMP-PWY",
+                        "name": "heterolactic fermentation; formaldehyde oxidation I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "6pgc_c": {
+                    "stoich": -1.0
+                },
+                "nadp_c": {
+                    "stoich": -1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                },
+                "nadph_c": {
+                    "stoich": 1.0
+                },
+                "ru5p_D_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.0003999999999280135,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "H2Ot",
+            "name": "H2O transport via diffusion",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h2o_e": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ICDHyr",
+            "name": "Isocitrate dehydrogenase (NADP)",
+            "enzyme": {
+                "name": "isocitrate dehydrogenase (NADP+)",
+                "ec_number": "1.1.1.42",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "methylaspartate cycle; citric acid cycle"
+                    },
+                    "kegg": {
+                        "id": "rn01110; rn01120",
+                        "name": "Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "P105-PWY; PWY-6969; PWY-7254; PWY-5913; PWY-6728; TCA; P23-PWY; PWY-7268; PWY-7124; PWY-6549; FERMENTATION-PWY; REDCITCYC",
+                        "name": "TCA cycle IV (2-oxoglutarate decarboxylase); TCA cycle V (2-oxoglutarate synthase); TCA cycle VII (acetate-producers); partial TCA cycle (obligate autotrophs); methylaspartate cycle; TCA cycle I (prokaryotic); reductive TCA cycle I; cytosolic NADPH production (yeast); ethene biosynthesis V (engineered); L-glutamine biosynthesis III; mixed acid fermentation; TCA cycle VI (Helicobacter)"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "icit_c": {
+                    "stoich": -1.0
+                },
+                "nadp_c": {
+                    "stoich": -1.0
+                },
+                "akg_c": {
+                    "stoich": 1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                },
+                "nadph_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.00045999999997548,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ICL",
+            "name": "Isocitrate lyase",
+            "enzyme": {
+                "name": "isocitrate lyase",
+                "ec_number": "4.1.3.1",
+                "tax": {},
+                "pathways": {
+                    "metacyc": {
+                        "id": "PWY-7118; PWY-7854; PWY-7295; PWY-7294; GLYOXYLATE-BYPASS; GLYOXDEG-PWY",
+                        "name": "chitin deacetylation; crotonyl-CoA/ethylmalonyl-CoA/hydroxybutyryl-CoA cycle (engineered); L-arabinose degradation IV; D-xylose degradation IV; glyoxylate cycle; glycolate and glyoxylate degradation II"
+                    },
+                    "brenda": {
+                        "id": "",
+                        "name": "citric acid cycle"
+                    },
+                    "kegg": {
+                        "id": "rn00620; rn00630; rn01110; rn01120",
+                        "name": "Pyruvate metabolism; Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "icit_c": {
+                    "stoich": -1.0
+                },
+                "glx_c": {
+                    "stoich": 1.0
+                },
+                "succ_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 1.4210854715202004e-14,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "LDH_D",
+            "name": "D-lactate dehydrogenase",
+            "enzyme": {
+                "name": "D-lactate dehydrogenase",
+                "ec_number": "1.1.1.28",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "methylaspartate cycle; C4 and CAM-carbon fixation; citric acid cycle; alanine metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00350",
+                        "name": "Tyrosine metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-5049",
+                        "name": "rosmarinic acid biosynthesis II"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "lac_D_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                },
+                "pyr_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 4.00000000269074e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "MALS",
+            "name": "Malate synthase",
+            "enzyme": {
+                "name": "malate synthase",
+                "ec_number": "2.3.3.9",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "citric acid cycle"
+                    },
+                    "kegg": {
+                        "id": "rn00620; rn00630; rn01110; rn01120",
+                        "name": "Pyruvate metabolism; Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7118; PWY-7854; PWY-7295; PWY-7294; GLYOXYLATE-BYPASS; GLYOXDEG-PWY",
+                        "name": "chitin deacetylation; crotonyl-CoA/ethylmalonyl-CoA/hydroxybutyryl-CoA cycle (engineered); L-arabinose degradation IV; D-xylose degradation IV; glyoxylate cycle; glycolate and glyoxylate degradation II"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "accoa_c": {
+                    "stoich": -1.0
+                },
+                "glx_c": {
+                    "stoich": -1.0
+                },
+                "h2o_c": {
+                    "stoich": -1.0
+                },
+                "coa_c": {
+                    "stoich": 1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "mal_L_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.00034000000010792064,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "MALt2_2",
+            "name": "Malate transport via proton symport (2 H)",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "h_e": {
+                    "stoich": -2.0
+                },
+                "mal_L_e": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 2.0
+                },
+                "mal_L_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "MDH",
+            "name": "Malate dehydrogenase",
+            "enzyme": {
+                "name": "malate dehydrogenase",
+                "ec_number": "1.1.1.37",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "coenzyme M biosynthesis"
+                    },
+                    "kegg": {
+                        "id": "rn00270; rn00680; rn01120",
+                        "name": "Cysteine and methionine metabolism; Methane metabolism; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-6642; P261-PWY",
+                        "name": "(R)-cysteate degradation; coenzyme M biosynthesis I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "mal_L_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "h_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                },
+                "oaa_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 3.999999995585313e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ME1",
+            "name": "Malic enzyme (NAD)",
+            "enzyme": {
+                "name": "malate dehydrogenase (oxaloacetate-decarboxylating)",
+                "ec_number": "1.1.1.38",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "C4 and CAM-carbon fixation; photosynthesis; gluconeogenesis"
+                    },
+                    "kegg": {
+                        "id": "rn00620; rn00710; rn01120",
+                        "name": "Pyruvate metabolism; Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7117; PWY-241; GLUCONEO-PWY",
+                        "name": "C4 photosynthetic carbon assimilation cycle, PEPCK type; C4 photosynthetic carbon assimilation cycle, NADP-ME type; gluconeogenesis I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "mal_L_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                },
+                "pyr_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.000460000000074956,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "ME2",
+            "name": "Malic enzyme (NADP)",
+            "enzyme": {
+                "name": "malate dehydrogenase (oxaloacetate-decarboxylating) (NADP+)",
+                "ec_number": "1.1.1.40",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "C4 and CAM-carbon fixation; photosynthesis; gluconeogenesis"
+                    },
+                    "kegg": {
+                        "id": "rn00620; rn00710; rn01120",
+                        "name": "Pyruvate metabolism; Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments"
+                    },
+                    "metacyc": {
+                        "id": "PWY-7117; PWY-241; GLUCONEO-PWY",
+                        "name": "C4 photosynthetic carbon assimilation cycle, PEPCK type; C4 photosynthetic carbon assimilation cycle, NADP-ME type; gluconeogenesis I"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "mal_L_c": {
+                    "stoich": -1.0
+                },
+                "nadp_c": {
+                    "stoich": -1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                },
+                "nadph_c": {
+                    "stoich": 1.0
+                },
+                "pyr_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.00045999999996126917,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "NADH16",
+            "name": "NADH dehydrogenase (ubiquinone-8 & 3 protons)",
+            "enzyme": {
+                "name": "NADH:ubiquinone reductase (H+-translocating)",
+                "ec_number": "7.1.1.2",
+                "tax": {},
+                "related_deprecated_enzyme": {
+                    "ec_number": "1.6.5.3",
+                    "reason": "transferred"
+                },
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "oxidative phosphorylation"
+                    },
+                    "metacyc": {
+                        "id": "PWY1YI0-3",
+                        "name": "aerobic respiration (NDH-1 to cytochrome c oxidase via plastocyanin)"
+                    },
+                    "kegg": {
+                        "id": "rn00130; rn01110",
+                        "name": "Ubiquinone and other terpenoid-quinone biosynthesis; Biosynthesis of secondary metabolites"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "h_c": {
+                    "stoich": -4.0
+                },
+                "nadh_c": {
+                    "stoich": -1.0
+                },
+                "q8_c": {
+                    "stoich": -1.0
+                },
+                "h_e": {
+                    "stoich": 3.0
+                },
+                "nad_c": {
+                    "stoich": 1.0
+                },
+                "q8h2_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 4.0000000126383384e-05,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "NADTRHD",
+            "name": "NAD transhydrogenase",
+            "enzyme": {
+                "name": "NAD(P)+ transhydrogenase",
+                "ec_number": "1.6.1.3",
+                "tax": {},
+                "pathways": {
+                    "brenda": {
+                        "id": "",
+                        "name": "NAD metabolism"
+                    },
+                    "kegg": {
+                        "id": "rn00760",
+                        "name": "Nicotinate and nicotinamide metabolism"
+                    },
+                    "metacyc": {
+                        "id": "PWY-5083; NADPHOS-DEPHOS-PWY; NADPHOS-DEPHOS-PWY-1",
+                        "name": "NAD(P)/NADPH interconversion; NAD phosphorylation and dephosphorylation; NAD phosphorylation and transhydrogenation"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "nadph_c": {
+                    "stoich": -1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                },
+                "nadp_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -1.1368683772161603e-13,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "NH4t",
+            "name": "Ammonia reversible transport",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "nh4_e": {
+                    "stoich": -1.0
+                },
+                "nh4_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "O2t",
+            "name": "O2 transport  diffusion ",
+            "enzyme": {},
+            "rhea_id": "",
+            "metabolites": {
+                "o2_e": {
+                    "stoich": -1.0
+                },
+                "o2_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": -1000.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": 0.0,
+                "charge": 0.0
+            }
+        },
+        {
+            "id": "PDH",
+            "name": "Pyruvate dehydrogenase",
+            "enzyme": {
+                "name": "dihydrolipoyl dehydrogenase",
+                "ec_number": "1.8.1.4",
+                "tax": {},
+                "pathways": {
+                    "kegg": {
+                        "id": "rn00630; rn01110",
+                        "name": "Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites"
+                    },
+                    "metacyc": {
+                        "id": "PYRUVDEHYD-PWY",
+                        "name": "pyruvate decarboxylation to acetyl CoA I"
+                    },
+                    "brenda": {
+                        "id": "",
+                        "name": "non-pathway related"
+                    }
+                }
+            },
+            "rhea_id": "",
+            "metabolites": {
+                "coa_c": {
+                    "stoich": -1.0
+                },
+                "nad_c": {
+                    "stoich": -1.0
+                },
+                "pyr_c": {
+                    "stoich": -1.0
+                },
+                "accoa_c": {
+                    "stoich": 1.0
+                },
+                "co2_c": {
+                    "stoich": 1.0
+                },
+                "nadh_c": {
+                    "stoich": 1.0
+                }
+            },
+            "lower_bound": 0.0,
+            "upper_bound": 1000.0,
+            "layout": {
+                "x": null,
+                "y": null
+            },
+            "estimate": {},
+            "balance": {
+                "mass": -0.0007800000001907392,
+                "charge": 0.0
+            }
+        }
+    ],
+    "compartments": {
+        "c": "cytosol",
+        "e": "extracellular space",
+        "b": "biomass"
+    },
+    "recon_tags": {
+        "reactions": {},
+        "compounds": {}
+    }
+}

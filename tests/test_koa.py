@@ -3,9 +3,9 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, File, IExperiment, Settings, TaskRunner,
                       ViewTester)
-from gws_gena import (KOA, EntityIDTable, EntityIDTableImporter, KOAProto,
-                      Network, NetworkImporter, Twin, Context,
-                      ContextImporter)
+from gws_gena import (KOA, Context, ContextImporter, EntityIDTable,
+                      EntityIDTableImporter, KOAProto, Network,
+                      NetworkImporter, Twin)
 
 settings = Settings.retrieve()
 
@@ -49,9 +49,9 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         print(ko_results)
 
-        self.assertEqual(ko_results.get_data().at[0, "ko_id"], "toy_cell_R1")
-        self.assertEqual(ko_results.get_data().at[0, "flux_name"], "toy_cell_R1")
-        self.assertAlmostEqual(ko_results.get_data().at[0, "flux_value"], 0.000193, delta=1e-6)
+        self.assertEqual(ko_results.get_flux_dataframe().at[0, "ko_id"], "toy_cell_R1")
+        self.assertEqual(ko_results.get_flux_dataframe().at[0, "flux_name"], "toy_cell_R1")
+        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[0, "flux_value"], 0.000193, delta=1e-6)
 
     async def test_ecoli_koa(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
@@ -86,5 +86,5 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         print(ko_results)
 
-        self.assertAlmostEqual(ko_results.get_data().at[0, "flux_value"], 37.137627, delta=1e-6)
-        self.assertAlmostEqual(ko_results.get_data().at[1, "flux_value"], 51.262072, delta=1e-6)
+        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[0, "flux_value"], 37.137627, delta=1e-6)
+        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[1, "flux_value"], 51.262072, delta=1e-6)

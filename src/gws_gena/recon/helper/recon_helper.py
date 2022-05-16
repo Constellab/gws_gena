@@ -21,11 +21,13 @@ from ...network.reaction import Reaction
 class ReconHelper(TaskHelper):
 
     def add_biomass_equation_to_network(self, net: Network, biomass_table: BiomassReactionTable):
+        """ Add the biomass equation to a network """
         biomass_comps = self._create_biomass_compounds(net, biomass_table)
         self._create_biomass_rxns(net, biomass_comps, biomass_table)
 
     def create_network_with_taxonomy(
             self, unique_name: str, tax_id: str, tax_search_method: str) -> Network:
+        """ Create a network realated to a given taxonomy level """
         try:
             tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
         except Exception as err:
@@ -53,10 +55,10 @@ class ReconHelper(TaskHelper):
 
             try:
                 rxns = Reaction.from_biota(ec_number=enzyme.ec_number,
-                                    tax_id=tax_id, tax_search_method=tax_search_method)
+                                           tax_id=tax_id, tax_search_method=tax_search_method)
                 for rxn in rxns:
                     net.add_reaction(rxn)
-            except Exception as err:
+            except Exception as _:
                 pass
                 # net.set_reaction_recon_tag(enzyme.ec_number, {
                 #     "ec_number": enzyme.ec_number,
@@ -67,6 +69,7 @@ class ReconHelper(TaskHelper):
 
     def create_network_with_ec_table(
             self, unique_name: str, ec_table: ECTable, tax_id: str, tax_search_method: str) -> Network:
+        """ Create a network realated to a list of EC numbers """
         ec_list = ec_table.get_ec_numbers()
         net = Network()
         net.name = unique_name
@@ -106,6 +109,7 @@ class ReconHelper(TaskHelper):
         return net
 
     def add_medium_to_network(self, net: Network, medium_table: MediumTable):
+        """ Add medium compounds to a network """
         entities = medium_table.get_entities()
         chebi_ids = medium_table.get_chebi_ids()
         for i, chebi_id in enumerate(chebi_ids):
@@ -117,10 +121,10 @@ class ReconHelper(TaskHelper):
                 rxn.add_product(prod, 1)
                 rxn.add_substrate(subs, 1)
                 net.add_reaction(rxn)
-                for comp in [ subs, prod ]:
+                for comp in [subs, prod]:
                     net.set_compound_recon_tag(comp.id, {
                         "id": comp.id,
-                        "is_in_biomass_or_medium": True
+                        "is_supplemented": True
                     })
 
             except ReactionDuplicate:
@@ -141,7 +145,7 @@ class ReconHelper(TaskHelper):
             if not comps:
                 try:
                     comp = Compound.from_biota(chebi_id=chebi_id, compartment=compartment)
-                except:
+                except Exception as _:
                     # invalid chebi_id
                     comp = Compound(name=name, compartment=compartment)
             else:
@@ -165,7 +169,7 @@ class ReconHelper(TaskHelper):
                         continue
                     try:
                         stoich = float(coef)
-                    except:
+                    except Exception as _:
                         error_message = f"Coefficient '{coef}' is not a valid float"
                         break
                 else:
@@ -177,7 +181,7 @@ class ReconHelper(TaskHelper):
                     rxn.add_product(comp, stoich)
                 else:
                     rxn.add_substrate(comp, stoich)
-            if not rxn.is_empty:
+            if not rxn.is_empty():
                 net.add_reaction(rxn)
             else:
                 ec = col_name

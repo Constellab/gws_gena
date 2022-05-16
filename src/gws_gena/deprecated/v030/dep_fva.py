@@ -16,7 +16,7 @@ from pandas import DataFrame
 
 from ...fba.fba_helper.fba_helper import FBAHelper
 from ...fba.fba_result import OptimizeResult
-from ...fba.fva_result import FVAResult
+from ...fva.fva_result import FVAResult
 from ...network.network import Network
 from ...twin.flat_twin import FlatTwin
 from ...twin.twin import Twin

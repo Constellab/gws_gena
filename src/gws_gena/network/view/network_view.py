@@ -5,15 +5,21 @@
 
 from typing import Dict
 
-from gws_core import BadRequestException, View, ViewSpecs
+from gws_core import (BadRequestException, BoolParam, ConfigParams, View,
+                      ViewSpecs, ViewType)
 
 
 class NetworkView(View):
 
-    _type = "network-view"
+    _type: ViewType = ViewType.NETWORK
     _data: "Network"
     _specs: ViewSpecs = {
-        **View._specs
+        "skip_orphans":
+        BoolParam(
+            default_value=False,
+            visibility=BoolParam.PROTECTED_VISIBILITY,
+            human_name="Remove orphans",
+            short_description="Set True to remove orphan metabolites"),
     }
 
     def __init__(self, data):
@@ -32,8 +38,8 @@ class NetworkView(View):
 
         self._data = data
 
-    def to_dict(self, *args, **kwargs) -> dict:
+    def to_dict(self, params: ConfigParams) -> dict:
         return {
-            **super().to_dict(*args, **kwargs),
+            **super().to_dict(params),
             "data": self._data.dumps()
         }

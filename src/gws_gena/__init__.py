@@ -1,5 +1,5 @@
 
-#context
+# context
 from .context.context import Context
 from .context.context_builder import ContextBuilder
 from .context.context_task import ContextExporter, ContextImporter
@@ -17,22 +17,25 @@ from .data.medium_table_task import MediumTableImporter
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult
-from .fba.fva import FVA
-from .fba.fva_result import FVAResult
+# fva
+from .fva.fva import FVA
+from .fva.fva_result import FVAResult
 # KnockOut
 from .koa.koa import KOA
-from .koa.koa_result_table import KOAResultTable
+from .koa.koa_result import KOAResult
 # network
 from .network.compound import Compound
+from .network.helper.deadend_finder_helper import DeadendFinder
+from .network.helper.isolate_finder_helper import IsolateFinder
+from .network.helper.reaction_adder_helper import ReactionAdderHelper
+from .network.helper.reaction_remover_helper import ReactionRemoverHelper
 from .network.network import Network
 from .network.network_file import NetworkFile
-from .network.network_helper.reaction_adder_helper import ReactionAdderHelper
-from .network.network_helper.reaction_remover_helper import \
-    ReactionRemoverHelper
-from .network.network_task import NetworkExporter, NetworkImporter
-from .network.network_transformer.network_merger import NetworkMerger
-from .network.network_transformer.reaction_adder import ReactionAdder
-from .network.network_transformer.reaction_remover import ReactionRemover
+from .network.network_tasks.network_exporter import NetworkExporter
+from .network.network_tasks.network_importer import NetworkImporter
+from .network.network_tasks.network_merger import NetworkMerger
+from .network.network_tasks.reaction_adder import ReactionAdder
+from .network.network_tasks.reaction_remover import ReactionRemover
 from .network.reaction import Reaction
 from .network.view.network_view import NetworkView
 # proto

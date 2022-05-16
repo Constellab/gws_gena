@@ -13,7 +13,7 @@ from ..twin.twin_builder import TwinBuilder
 @protocol_decorator("KOAProto_001", human_name="KOA protocol", short_description="KnockOut analysis protocol")
 class KOAProto(Protocol):
 
-    def configure_protocol(self, config_params: ConfigParams) -> None:
+    def configure_protocol(self) -> None:
         twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder').set_param("use_context", True)
         koa: ProcessSpec = self.add_process(KOA, 'koa')
 

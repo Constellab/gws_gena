@@ -6,8 +6,9 @@
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import (BadRequestException, ConfigParams, OptionalIn, StrParam,
-                      Task, TaskInputs, TaskOutputs, Utils, task_decorator)
+from gws_core import (BadRequestException, ConfigParams, InputSpec,
+                      OutputSpec, StrParam, Task, TaskInputs, TaskOutputs,
+                      Utils, task_decorator)
 
 from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
@@ -40,11 +41,11 @@ class DraftRecon(Task):
     """
 
     input_specs = {
-        'ec_table': OptionalIn(ECTable,),
-        'biomass_table': OptionalIn(BiomassReactionTable),
-        'medium_table': OptionalIn(MediumTable)
+        'ec_table': InputSpec(ECTable, is_optional=True),
+        'biomass_table': InputSpec(BiomassReactionTable, is_optional=True),
+        'medium_table': InputSpec(MediumTable, is_optional=True)
     }
-    output_specs = {'network': (Network,)}
+    output_specs = {'network': OutputSpec(Network)}
     config_specs = {
         'unique_name': StrParam(
             default_value=Utils.generate_random_chars(4), human_name="Network name", short_description="The unique name of the network. Required to uniquely identify taxa in microbial communities"),
@@ -52,7 +53,7 @@ class DraftRecon(Task):
             default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id. For example: `tax_id = 562` for E. Coli"),
         'tax_search_method':
         StrParam(
-            default_value='bottom_up', allowed_values=['none','bottom_up'], human_name="Taxonomy search method",
+            default_value='bottom_up', allowed_values=['none', 'bottom_up'], human_name="Taxonomy search method",
             short_description="If 'bottom_up', the algorithm will to traverse the taxonomy tree to search at higher taxonomy levels until a reaction is found. If `none`, the algorithm will only search at the given taxonomy level given by `tax_id`")}
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

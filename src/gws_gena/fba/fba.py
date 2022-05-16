@@ -3,8 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BoolParam, ConfigParams, ListParam, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (BoolParam, ConfigParams, InputSpec, ListParam,
+                      OutputSpec, StrParam, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ..twin.twin import Twin
 from .fba_helper.fba_helper import FBAHelper
@@ -40,7 +41,6 @@ class FBA(Task):
 
     Then, the problem is reshaped as follows:
 
-
              [ S_{int} |  0      ]           [  0  ]
              [ --------|------   ]           [ --- ]
     A_{eq} = [   C     | -Id_{C} ], b_{eq} = [  0  ]
@@ -58,14 +58,14 @@ class FBA(Task):
     Id_{C} and Id_{Y} are identity matrices.
     """
 
-    input_specs = {'twin': Twin}
-    output_specs = {'result': FBAResult}
+    input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
+    output_specs = {'result': OutputSpec(FBAResult, human_name="FBA result", short_description="The FBA result")}
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
         "solver": StrParam(default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY, allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], human_name="Solver", short_description="The optimization solver"),
-        "fill_gaps_with_sinks": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
         "relax_qssa": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain (quad solver is used). False otherwise."),
+        "fill_gaps_with_sinks": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
         "ignore_cofactors": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Ignore cofactors", short_description="True to ignore cofactors quasi-steady state for cofactors. False otherwise.")
     }
 

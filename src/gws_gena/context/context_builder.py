@@ -3,19 +3,19 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BadRequestException, ConfigParams, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
+                      Task, TaskInputs, TaskOutputs, task_decorator)
 
 from ..data.flux_table import FluxTable
 from ..network.network import Network
-from .context import Measure, Context, Variable
+from .context import Context, Measure, Variable
 
 
 @task_decorator("ContextBuilder", human_name="Network context builder",
                 short_description="Build a context of metabolic network using a flux table")
 class ContextBuilder(Task):
-    input_specs = {'network': Network, 'flux_table': FluxTable}
-    output_specs = {'context': Context}
+    input_specs = {'network': InputSpec(Network), 'flux_table': InputSpec(FluxTable)}
+    output_specs = {'context': OutputSpec(Context)}
     config_specs = {}
 
     async def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

@@ -4,9 +4,9 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, Experiment, File, IExperiment, Settings,
                       TaskRunner)
-from gws_gena import (BiomassReactionTableImporter, DraftRecon,
+from gws_gena import (BiomassReactionTableImporter, Context, DraftRecon,
                       ECTableImporter, GapFiller, MediumTableImporter,
-                      NetworkMerger, ReconProto, Context)
+                      NetworkMerger, ReconProto)
 
 settings = Settings.retrieve()
 
@@ -22,8 +22,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             path=os.path.join(data_dir, "recon_ec_table.csv")),
             {
                 "ec_column": "EC Number"
-        }
-        )
+        })
 
         biomass_table = BiomassReactionTableImporter.call(File(
             path=os.path.join(data_dir, "recon_biomass.csv")),
@@ -31,16 +30,14 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
                 "entity_column": "Component",
                 "chebi_column": "Chebi ID",
                 "biomass_column": "Biomass"
-        }
-        )
+        })
 
         medium_table = MediumTableImporter.call(File(
             path=os.path.join(data_dir, "recon_medium.csv")),
             {
                 "entity_column": "Name of the metabolite",
                 "chebi_column": "Chebi ID"
-        }
-        )
+        })
 
         experiment = IExperiment(ReconProto)
         proto = experiment.get_protocol()
@@ -57,13 +54,13 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         # gap_filler.set_param('tax_id', "4751")
         # #fungi
         # gap_filler.set_param('tax_id', "2759")    #eukaryota
-        gap_filler.set_param('biomass_and_medium_gaps_only', True)
-        gap_filler.set_param('add_sink_reactions', True)
+        # gap_filler.set_param('biomass_and_medium_gaps_only', True)
+        # gap_filler.set_param('add_sink_reactions', True)
 
         async def assert_results(net, file_name):
-            # file_path = os.path.join(data_dir, file_name+"_net.csv")
-            # with open(file_path, 'w', encoding="utf-8") as f:
-            #     f.write(net.to_csv())
+            file_path = os.path.join(data_dir, file_name+"_2_net.csv")
+            with open(file_path, 'w', encoding="utf-8") as f:
+                f.write(net.to_csv())
 
             # file_path = os.path.join(data_dir, file_name+"_net.json")
             # with open(file_path, 'w', encoding="utf-8") as f:
@@ -71,7 +68,6 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
             file_path = os.path.join(data_dir, file_name+"_net.csv")
             with open(file_path, 'r', encoding="utf-8") as f:
-                print(net.to_csv())
                 self.assertEqual(net.to_csv(), f.read())
 
             # file_path = os.path.join(data_dir, file_name+"_stats.csv")
@@ -95,33 +91,3 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         gapfill_net = proto.get_output("gap_filler_network")
         file_name = "gapfill"
         await assert_results(gapfill_net, file_name)
-
-    # async def test_recon_using_tax_id(self):
-    #     self.print("Test Recon using tax_id only")
-
-    #     organisms = {
-    #         "eukaryota": "2759",
-    #         "sapiens": "9606",
-    #         "yeast": "4932",
-    #         "mus musculus": "10090"
-    #     }
-
-    #     name = "sapiens"
-    #     tester = TaskRunner(
-    #         task_type=DraftRecon,
-    #         inputs={},
-    #         params={"tax_id": organisms[name]}
-    #     )
-    #     outputs = await tester.run()
-    #     net = outputs["network"]
-
-    #     data_dir = settings.get_variable("gws_gena:testdata_dir")
-    #     data_dir = os.path.join(data_dir, "recon/build", name)
-    #     if not os.path.exists(data_dir):
-    #         os.makedirs(data_dir)
-
-    #     file_path = os.path.join(data_dir, f"{name}.json")
-    #     with open(file_path, 'w') as f:
-    #         json.dump(net.view_as_network().to_dict(ConfigParams()), f)
-
-    #     # print(len(net.reactions))

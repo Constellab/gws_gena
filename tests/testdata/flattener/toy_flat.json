@@ -1,0 +1,472 @@
+{
+    "name": null,
+    "description": "",
+    "networks": [
+        {
+            "metabolites": [
+                {
+                    "id": "toy_cell_X1_c",
+                    "name": "X1",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 2,
+                    "compartment": "toy_cell_c",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "toy_cell_X2_c",
+                    "name": "X2",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 2,
+                    "compartment": "toy_cell_c",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "toy_cell_X3_c",
+                    "name": "X3",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 1,
+                    "compartment": "toy_cell_c",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "toy_cell_X4_c",
+                    "name": "X4",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 2,
+                    "compartment": "toy_cell_c",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "toy_cell_X5_c",
+                    "name": "X5",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 1,
+                    "compartment": "toy_cell_c",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "toy_cell_XB_b",
+                    "name": "XB_b",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 1,
+                    "compartment": "toy_cell_b",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "X1_e",
+                    "name": "X1_e",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 2,
+                    "compartment": "e",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "X2_e",
+                    "name": "X2_e",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 2,
+                    "compartment": "e",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "X4_e",
+                    "name": "X4_e",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 2,
+                    "compartment": "e",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                },
+                {
+                    "id": "X5_e",
+                    "name": "X5_e",
+                    "charge": "",
+                    "mass": "",
+                    "monoisotopic_mass": "",
+                    "formula": "",
+                    "inchi": "",
+                    "is_cofactor": false,
+                    "level": 2,
+                    "compartment": "e",
+                    "chebi_id": "",
+                    "kegg_id": "",
+                    "position": {
+                        "x": null,
+                        "y": null
+                    }
+                }
+            ],
+            "reactions": [
+                {
+                    "id": "toy_cell_R1",
+                    "name": "R1",
+                    "enzyme": {},
+                    "rhea_id": "",
+                    "metabolites": {
+                        "toy_cell_X1_c": {
+                            "stoich": -1.0,
+                            "points": null
+                        },
+                        "toy_cell_X2_c": {
+                            "stoich": 1.0,
+                            "points": null
+                        },
+                        "toy_cell_X3_c": {
+                            "stoich": 1.0,
+                            "points": null
+                        }
+                    },
+                    "lower_bound": -1000.0,
+                    "upper_bound": 1000.0,
+                    "position": {
+                        "x": null,
+                        "y": null
+                    },
+                    "estimate": {},
+                    "balance": {
+                        "mass": null,
+                        "charge": null
+                    }
+                },
+                {
+                    "id": "toy_cell_R2",
+                    "name": "R2",
+                    "enzyme": {},
+                    "rhea_id": "",
+                    "metabolites": {
+                        "toy_cell_X4_c": {
+                            "stoich": -1.0,
+                            "points": null
+                        },
+                        "toy_cell_X3_c": {
+                            "stoich": 1.0,
+                            "points": null
+                        }
+                    },
+                    "lower_bound": -1000.0,
+                    "upper_bound": 1000.0,
+                    "position": {
+                        "x": null,
+                        "y": null
+                    },
+                    "estimate": {},
+                    "balance": {
+                        "mass": null,
+                        "charge": null
+                    }
+                },
+                {
+                    "id": "toy_cell_RB",
+                    "name": "RB",
+                    "enzyme": {},
+                    "rhea_id": "",
+                    "metabolites": {
+                        "toy_cell_X3_c": {
+                            "stoich": -1.0,
+                            "points": null
+                        },
+                        "toy_cell_X5_c": {
+                            "stoich": -2.0,
+                            "points": null
+                        },
+                        "toy_cell_XB_b": {
+                            "stoich": 3.0,
+                            "points": null
+                        }
+                    },
+                    "lower_bound": -1000.0,
+                    "upper_bound": 1000.0,
+                    "position": {
+                        "x": null,
+                        "y": null
+                    },
+                    "estimate": {},
+                    "balance": {
+                        "mass": null,
+                        "charge": null
+                    }
+                },
+                {
+                    "id": "toy_cell_R1_ex",
+                    "name": "R1_ex",
+                    "enzyme": {},
+                    "rhea_id": "",
+                    "metabolites": {
+                        "X1_e": {
+                            "stoich": -1.0,
+                            "points": null
+                        },
+                        "toy_cell_X1_c": {
+                            "stoich": 1.0,
+                            "points": null
+                        }
+                    },
+                    "lower_bound": -1000.0,
+                    "upper_bound": 1000.0,
+                    "position": {
+                        "x": null,
+                        "y": null
+                    },
+                    "estimate": {},
+                    "balance": {
+                        "mass": null,
+                        "charge": null
+                    }
+                },
+                {
+                    "id": "toy_cell_R2_ex",
+                    "name": "R2_ex",
+                    "enzyme": {},
+                    "rhea_id": "",
+                    "metabolites": {
+                        "toy_cell_X2_c": {
+                            "stoich": -1.0,
+                            "points": null
+                        },
+                        "X2_e": {
+                            "stoich": 1.0,
+                            "points": null
+                        }
+                    },
+                    "lower_bound": -1000.0,
+                    "upper_bound": 1000.0,
+                    "position": {
+                        "x": null,
+                        "y": null
+                    },
+                    "estimate": {},
+                    "balance": {
+                        "mass": null,
+                        "charge": null
+                    }
+                },
+                {
+                    "id": "toy_cell_R4_ex",
+                    "name": "R4_ex",
+                    "enzyme": {},
+                    "rhea_id": "",
+                    "metabolites": {
+                        "X4_e": {
+                            "stoich": -1.0,
+                            "points": null
+                        },
+                        "toy_cell_X4_c": {
+                            "stoich": 1.0,
+                            "points": null
+                        }
+                    },
+                    "lower_bound": -1000.0,
+                    "upper_bound": 1000.0,
+                    "position": {
+                        "x": null,
+                        "y": null
+                    },
+                    "estimate": {},
+                    "balance": {
+                        "mass": null,
+                        "charge": null
+                    }
+                },
+                {
+                    "id": "toy_cell_R5_ex",
+                    "name": "R5_ex",
+                    "enzyme": {},
+                    "rhea_id": "",
+                    "metabolites": {
+                        "X5_e": {
+                            "stoich": -1.0,
+                            "points": null
+                        },
+                        "toy_cell_X5_c": {
+                            "stoich": 1.0,
+                            "points": null
+                        }
+                    },
+                    "lower_bound": -1000.0,
+                    "upper_bound": 1000.0,
+                    "position": {
+                        "x": null,
+                        "y": null
+                    },
+                    "estimate": {},
+                    "balance": {
+                        "mass": null,
+                        "charge": null
+                    }
+                }
+            ],
+            "compartments": {
+                "toy_cell_c": "cytosol",
+                "e": "extracellular",
+                "toy_cell_n": "nucleus",
+                "toy_cell_b": "biomass"
+            }
+        }
+    ],
+    "contexts": [
+        {
+            "measures": [
+                {
+                    "id": "M1",
+                    "name": "M1",
+                    "variables": [
+                        {
+                            "reference_id": "toy_cell_R1_ex",
+                            "reference_type": "reaction",
+                            "coefficient": 1.0
+                        }
+                    ],
+                    "lower_bound": 25.0,
+                    "upper_bound": 35.0,
+                    "target": 30.0,
+                    "confidence_score": 1.0
+                },
+                {
+                    "id": "M2",
+                    "name": "M2",
+                    "variables": [
+                        {
+                            "reference_id": "toy_cell_R5_ex",
+                            "reference_type": "reaction",
+                            "coefficient": 1.0
+                        }
+                    ],
+                    "lower_bound": 0.5,
+                    "upper_bound": 1.0,
+                    "target": 0.75,
+                    "confidence_score": 1.0
+                }
+            ]
+        }
+    ],
+    "mapping": {
+        "toy_cell_R1": {
+            "network_name": "toy_cell",
+            "reaction_id": "R1"
+        },
+        "toy_cell_R2": {
+            "network_name": "toy_cell",
+            "reaction_id": "R2"
+        },
+        "toy_cell_RB": {
+            "network_name": "toy_cell",
+            "reaction_id": "RB"
+        },
+        "toy_cell_R1_ex": {
+            "network_name": "toy_cell",
+            "reaction_id": "R1_ex"
+        },
+        "toy_cell_R2_ex": {
+            "network_name": "toy_cell",
+            "reaction_id": "R2_ex"
+        },
+        "toy_cell_R4_ex": {
+            "network_name": "toy_cell",
+            "reaction_id": "R4_ex"
+        },
+        "toy_cell_R5_ex": {
+            "network_name": "toy_cell",
+            "reaction_id": "R5_ex"
+        }
+    },
+    "reverse_mapping": {
+        "toy_cell": {
+            "R1": "toy_cell_R1",
+            "R2": "toy_cell_R2",
+            "RB": "toy_cell_RB",
+            "R1_ex": "toy_cell_R1_ex",
+            "R2_ex": "toy_cell_R2_ex",
+            "R4_ex": "toy_cell_R4_ex",
+            "R5_ex": "toy_cell_R5_ex"
+        }
+    }
+}

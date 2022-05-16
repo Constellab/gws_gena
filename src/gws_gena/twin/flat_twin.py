@@ -42,6 +42,7 @@ class FlatTwin(Twin):
 
     @classmethod
     def loads(cls, flat_data) -> 'FlatTwin':
+        """ Loads form a JSON dump """
         if len(flat_data["networks"]) > 1:
             raise BadRequestException("More than one network found. The data are not compatible with a FlatTwin.")
         if len(flat_data["contexts"]) > 1:

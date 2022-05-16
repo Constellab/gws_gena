@@ -16,7 +16,7 @@ from ..recon.recon import DraftRecon
 @protocol_decorator("ReconProto", human_name="Recon protocol", short_description="Metabolic reconstruction protocol")
 class ReconProto(Protocol):
 
-    def configure_protocol(self, config_params: ConfigParams) -> None:
+    def configure_protocol(self) -> None:
         recon: ProcessSpec = self.add_process(DraftRecon, 'recon')
         gap_filler: ProcessSpec = self.add_process(GapFiller, 'gap_filler')
 

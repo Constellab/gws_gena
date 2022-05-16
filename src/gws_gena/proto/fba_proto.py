@@ -14,7 +14,7 @@ from ..twin.twin_builder import TwinBuilder
 @protocol_decorator("FBAProto_001", human_name="FBA protocol", short_description="Flux balance analysis protocol")
 class FBAProto(Protocol):
 
-    def configure_protocol(self, _: ConfigParams) -> None:
+    def configure_protocol(self) -> None:
         fba: ProcessSpec = self.add_process(FBA, 'fba')
         twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder').set_param("use_context", True)
         twin_annotator: ProcessSpec = self.add_process(TwinAnnotator, 'twin_annotator')

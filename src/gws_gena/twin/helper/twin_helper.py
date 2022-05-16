@@ -192,12 +192,14 @@ class TwinHelper:
 
     @classmethod
     def compute_nullspace(cls, N: DataFrame) -> DataFrame:
+        """ Compute the null space of th stoichimetric matrix """
         ns = null_space(N.to_numpy())
         return DataFrame(index=N.columns, data=ns)
 
     @classmethod
     def compute_elementary_flux_modes(
             cls, flat_twin: FlatTwin, reversibilities=None, ignore_cofactors=False) -> DataFrame:
+        """ Compute elementary flux modes """
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat model is required")
         N = cls.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
@@ -227,6 +229,7 @@ class TwinHelper:
     @classmethod
     def compute_reduced_matrices(cls, flat_twin: FlatTwin, use_context: bool = True, reversibilities=None,
                                  ignore_cofactors=False) -> ReducedMatrices:
+        """ Compute the reduced matrices """
         EFM = TwinHelper.compute_elementary_flux_modes(
             flat_twin, reversibilities=reversibilities, ignore_cofactors=ignore_cofactors)
 

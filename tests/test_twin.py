@@ -24,7 +24,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "small_net.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams()
+            params={"skip_orphans": True}
         )
         file_path = os.path.join(data_dir, "small_context.json")
         ctx = ContextImporter.call(
@@ -38,11 +38,11 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
         self.assertRaises(Exception, twin.add_network, net)
         file_path = os.path.join(data_dir, "small_flat_twin.json")
-        with open(file_path, 'w') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(twin.dumps_flat(), f)
 
         file_path = os.path.join(data_dir, "small_flat_twin.json")
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
             self.assertEqual(twin.dumps_flat(), data)
 

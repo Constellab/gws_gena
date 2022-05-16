@@ -13,11 +13,10 @@ from ...data.ec_table import ECTable
 from ...data.entity_id_table import EntityIDTable
 from ...fba.fba_helper.fba_helper import FBAHelper
 from ...fba.fba_result import FBAResult
-from ...koa.koa_result_table import KOAResultTable
-from ...network.network_helper.reaction_knockout_helper import \
-    ReactionKnockOutHelper
+from ...network.helper.reaction_knockout_helper import ReactionKnockOutHelper
 from ...twin.flat_twin import FlatTwin
 from ...twin.twin import Twin
+from ..v032.dep_koa_result_table import KOAResultTable
 from .dep_fba import FBA
 
 

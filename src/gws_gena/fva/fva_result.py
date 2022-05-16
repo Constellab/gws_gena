@@ -5,7 +5,7 @@
 
 from gws_core import resource_decorator
 
-from .fba_result import FBAResult
+from ..fba.fba_result import FBAResult
 
 
 @resource_decorator("FVAResult", human_name="FVA result", short_description="Flux variability analysis result", hide=True)

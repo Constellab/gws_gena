@@ -10,18 +10,29 @@ from gws_core import (BadRequestException, BarPlotView, ConfigParams,
                       Resource, ResourceRField, Table, resource_decorator,
                       view)
 
+from ...twin.twin import Twin
+
 
 @resource_decorator("KOAResultTable", human_name="KOA result table",
-                    short_description="Knockout analysis result table", hide=True)
+                    short_description="Knockout analysis result table",
+                    hide=True, deprecated_since='0.3.3', deprecated_message="Use current KOAResult")
 class KOAResultTable(Table):
+    """
+    KOAResultTable
+
+    Result table of the Knock-out analysis
+    """
 
     def get_ko_ids(self) -> List[str]:
+        """ Get the ids of the knock-outed reactions """
         return self._data.loc[:, "ko_id"].unique()
 
-    @view(view_type=MultiViews,
-          human_name='KO Summary',
-          short_description='View KO summary as 2D-bar plots',
-          specs={"flux_names": ListParam(human_name="Flux names", short_description="Fluxes to plot")})
+    @view(view_type=MultiViews, human_name='KO Summary', short_description='View KO summary as 2D-bar plots',
+          specs={
+              "flux_names":
+              ListParam(
+                  human_name="Flux names",
+                  short_description="Fluxes to plot. Set 'biomass' to only the plot biomass reaction flux.")})
     def view_ko_summary_as_bar_plot(self, params: ConfigParams) -> MultiViews:
         """
         View one or several columns as 2D-bar plots

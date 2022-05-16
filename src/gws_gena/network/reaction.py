@@ -10,15 +10,12 @@ from typing import Dict, List, TypedDict
 from gws_biota import Compound as BiotaCompound
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
+from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import BadRequestException, Utils
 
 from .compound import Compound
-
-
-def slugify_id(_id):
-    return Utils.slugify(_id, snakefy=True, to_lower=False)
-
+from .helper.slugify_helper import SlugifyHelper
 
 FLATTENING_DELIMITER = ":"
 EQN_SPLIT_REGEXP = re.compile(r" <?=>? ")
@@ -81,34 +78,6 @@ ReactionPathways = TypedDict("ReactionPathways", {
 
 # ####################################################################
 #
-# ReactionPosition class
-#
-# ####################################################################
-
-
-class ReactionPosition:
-    """ reaction position """
-    x: float = None
-    y: float = None
-    z: float = None
-    points: dict = None
-
-    def __init__(self):
-        self.x = None
-        self.y = None
-        self.z = None
-        self.points = {}
-
-    def copy(self) -> 'ReactionPosition':
-        p = ReactionPosition()
-        p.x = self.x
-        p.y = self.y
-        p.z = self.z
-        p.points = self.points
-        return p
-
-# ####################################################################
-#
 # Reaction class
 #
 # ####################################################################
@@ -144,7 +113,7 @@ class Reaction:
     upper_bound: float = 1000.0
     rhea_id: str = ""
     enzyme: EnzymeDict = None
-    position: ReactionPosition = None
+    layout: BiotaReactionLayoutDict = None
 
     _is_biomass_reaction = None
     _tax_ids = []
@@ -159,9 +128,9 @@ class Reaction:
                  enzyme: EnzymeDict = None, rhea_id=""):
 
         if id:
-            self.id = slugify_id(id)
+            self.id = SlugifyHelper.slugify_id(id)
         else:
-            self.id = slugify_id(name)
+            self.id = SlugifyHelper.slugify_id(name)
 
         self.name = name
         if enzyme is None:
@@ -186,7 +155,7 @@ class Reaction:
         self._products = {}
 
         self.rhea_id = rhea_id
-        self.position = ReactionPosition()
+        self.layout = {}
 
     # -- A --
 
@@ -257,7 +226,7 @@ class Reaction:
             "stoichiometry": abs(float(stoich)),
         }
 
-        if comp.is_biomass:
+        if comp.is_biomass():
             self._is_biomass_reaction = True
 
     # -- C --
@@ -269,7 +238,7 @@ class Reaction:
         rxn.upper_bound = self.upper_bound
         rxn.rhea_id = self.rhea_id
         rxn.enzyme = self.enzyme
-        rxn.position = self.position.copy()
+        rxn.layout = self.layout.copy()
         rxn._tax_ids = copy.deepcopy(self._tax_ids)
         rxn._estimate = copy.deepcopy(self._estimate)
         rxn._substrates = copy.deepcopy(self._substrates)
@@ -334,7 +303,7 @@ class Reaction:
     # -- F --
 
     @classmethod
-    def flatten_id(cls, id: str, net_name: str) -> str:
+    def flatten_id(cls, rxn_id: str, net_name: str) -> str:
         """
         Flattens a reaction id
 
@@ -347,7 +316,7 @@ class Reaction:
         """
 
         delim = cls._FLATTENING_DELIMITER
-        return slugify_id(net_name + delim + id.replace(delim, "_"))
+        return SlugifyHelper.slugify_id(net_name + delim + rxn_id)
 
     @classmethod
     def from_biota(
@@ -373,7 +342,7 @@ class Reaction:
         rxns = []
 
         def __merge_compounds_and_add_to_reaction(
-                comps: List[Compound], stoich, rxn: 'Reaction', is_product: bool,
+                comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
                 compartment=None, alt_litteral_comppound_name=None, oligomerization=None):
             """ Merge a list of compounds (oligomerisation) """
 
@@ -401,10 +370,7 @@ class Reaction:
             c.formula = ",".join([comp_.formula or "" for comp_ in comps])
             c.mass = str(sum([float(comp_.mass or 0.0) for comp_ in comps]))
             c.monoisotopic_mass = str(sum([float(comp_.monoisotopic_mass or 0.0) for comp_ in comps]))
-            if comps[0].position is not None:
-                c.position.x = comps[0].position.x
-                c.position.y = comps[0].position.y
-                c.position.z = comps[0].position.z
+            c.layout = comps[0].layout
 
             if is_product:
                 rxn.add_product(c, stoich)
@@ -419,10 +385,7 @@ class Reaction:
                     "ec_number": enzyme.ec_number,
                 }
                 e["tax"] = {}
-                try:
-                    tax = BiotaTaxo.get(BiotaTaxo.tax_id == enzyme.tax_id)
-                except Exception as _:
-                    tax = None
+                tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == enzyme.tax_id)
                 if tax:
                     e["tax"][tax.rank] = {
                         "tax_id": tax.tax_id,
@@ -448,12 +411,7 @@ class Reaction:
                                 rhea_id=rhea_rxn.rhea_id,
                                 direction=rhea_rxn.direction,
                                 enzyme=e)
-
-            if rhea_rxn.position is not None:
-                rxn.position.x = rhea_rxn.position.x
-                rxn.position.y = rhea_rxn.position.y
-                rxn.position.z = rhea_rxn.position.z
-                rxn.position.points = rhea_rxn.position.points or {}
+            rxn.layout = rhea_rxn.layout
 
             tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["definition"])
             substrate_definition = tab[0].split(" + ")
@@ -540,10 +498,11 @@ class Reaction:
                 if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                     continue
                 _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                try:
-                    rxns.append(__create_reaction(rhea_rxn, e))
-                except Exception as _:
-                    pass
+                rxns.append(__create_reaction(rhea_rxn, e))
+                # try:
+                #     rxns.append(__create_reaction(rhea_rxn, e))
+                # except Exception as _:
+                #     pass
 
             return rxns
         elif rhea_id:
@@ -557,20 +516,21 @@ class Reaction:
                     if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                         continue
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                    try:
-                        rxns.append(__create_reaction(rhea_rxn, e))
-                    except Exception as _:
-                        pass
+                    rxns.append(__create_reaction(rhea_rxn, e))
+                    # try:
+                    #     rxns.append(__create_reaction(rhea_rxn, e))
+                    # except Exception as _:
+                    #     pass
             return rxns
         elif ec_number:
             tax = None
             e = None
             if tax_id:
-                try:
-                    tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
-                except Exception as err:
-                    raise BadRequestException(f"No taxonomy found with tax_id {tax_id}") from err
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number, tax_id=tax_id)
+                tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == tax_id)
+                if tax is None:
+                    raise BadRequestException(f"No taxonomy found with tax_id {tax_id}")
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(
+                    ec_number=ec_number, tax_id=tax_id, select_only_one=True)
                 if not Q:
                     if tax_search_method == 'bottom_up':
                         found_Q = []
@@ -610,16 +570,17 @@ class Reaction:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        try:
-                            rxns.append(__create_reaction(rhea_rxn, e))
-                        except Exception as _:
-                            # reaction duplicate
-                            # skip error!
-                            pass
+                        rxns.append(__create_reaction(rhea_rxn, e))
+                        # try:
+                        #     rxns.append(__create_reaction(rhea_rxn, e))
+                        # except Exception as _:
+                        #     # reaction duplicate
+                        #     # skip error!
+                        #     pass
                 if not rxns:
-                    raise BadRequestException(f"An error occured with ec number {ec_number}")
+                    raise BadRequestException(f"An error occured with ec number {ec_number}.")
             else:
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
+                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number, select_only_one=True)
                 if not Q:
                     raise BadRequestException(f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
@@ -628,10 +589,11 @@ class Reaction:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        try:
-                            rxns.append(__create_reaction(rhea_rxn, e))
-                        except Exception as _:
-                            pass
+                        rxns.append(__create_reaction(rhea_rxn, e))
+                        # try:
+                        #     rxns.append(__create_reaction(rhea_rxn, e))
+                        # except Exception as _:
+                        #     pass
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")
         else:
@@ -662,22 +624,26 @@ class Reaction:
 
     # -- I --
 
-    @property
     def is_biomass_reaction(self):
         # retro-rcomaptiblity check
         if self._is_biomass_reaction is None:
             self._is_biomass_reaction = False
             for comp_id in self.products:
                 comp = self.products[comp_id]["compound"]
-                if comp.is_biomass:
+                if comp.is_biomass():
                     self._is_biomass_reaction = True
                     break
 
         return self._is_biomass_reaction
 
-    @property
+    def has_products(self):
+        return bool(self._products)
+
+    def has_substrates(self):
+        return bool(self._substrates)
+
     def is_empty(self):
-        return not bool(self._substrates) and not bool(self._products)
+        return not self.has_substrates() and not self.has_products()
 
     # -- P --
 
@@ -722,7 +688,7 @@ class Reaction:
         # remove the compound from the reaction
         del self._products[comp.id]
 
-        if comp.is_biomass:
+        if comp.is_biomass():
             self._is_biomass_reaction = True
 
     def get_related_biota_reaction(self):
@@ -733,10 +699,7 @@ class Reaction:
         :rtype: `bioa.reaction.Reaction`, `None`
         """
 
-        try:
-            return BiotaReaction.get(BiotaReaction.rhea_id == self.rhea_id)
-        except Exception as _:
-            return None
+        return BiotaReaction.get_or_none(BiotaReaction.rhea_id == self.rhea_id)
 
     # -- S --
 
@@ -751,6 +714,9 @@ class Reaction:
             BadRequestException("No upper_bound in estimate data")
 
         self._estimate = estimate
+
+    def set_enzyme(self, enzyme: EnzymeDict):
+        self.enzyme = enzyme
 
     @property
     def substrates(self) -> dict:

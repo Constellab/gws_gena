@@ -73,16 +73,18 @@ class Twin(ResourceSet):
 
         if not isinstance(ctx, Context):
             raise BadRequestException("The context must be an instance of Context")
-        if self.resource_exists(ctx.name):
-            raise BadRequestException(f"Context name {ctx.name} duplicate")
-
-        self.add_resource(ctx)
+        if not self.resource_exists(ctx.name):
+            # raise BadRequestException(f'The context "{ctx.name}" duplicate')
+            self.add_resource(ctx)
 
         if related_network:
             if not isinstance(related_network, Network):
                 raise BadRequestException("The related network must be an instance of Network")
             if not self.resource_exists(related_network.name):
                 raise BadRequestException("The related networks is not found")
+            if related_network.name in self.network_contexts:
+                raise BadRequestException(f'The network "{related_network.name}" is already related to a context')
+
             # ckeck that the context is consistent with the related network
             reaction_ids = related_network.get_reaction_ids()
             for k in ctx.measures:
@@ -103,12 +105,14 @@ class Twin(ResourceSet):
 
     @property
     def contexts(self):
+        """ Get all contexts """
         contexts = {}
         for name in self.network_contexts.values():
             contexts[name] = self.get_resource(name)
         return contexts
 
     def copy(self):
+        """ Copy the twin """
         twin = type(self)()
         twin.name = self.name
         twin.description = self.description
@@ -123,6 +127,7 @@ class Twin(ResourceSet):
     # -- D --
 
     def dumps(self, deep=False) -> dict:
+        """ Dump the twin """
         _net_json = []
         _ctx_json = []
         _net_ctx_json = []
@@ -157,93 +162,29 @@ class Twin(ResourceSet):
     # -- F --
 
     def flatten(self) -> 'FlatTwin':
-        from .flat_twin import FlatTwin
-        return FlatTwin.loads(self.dumps_flat())
+        """ Flatten the twin """
+        from .helper.twin_flattener_helper import TwinFalltenerHelper
+        return TwinFalltenerHelper.flatten(self)
 
     def dumps_flat(self) -> dict:
-        _comps = {}
-        _mets = []
-        _rxns = []
-
-        def __get_network_uname(net):
-            return (net.name if net.name else "network")
-
-        _mapping = {}
-        _rev_mapping = {}
-        
-        for net in self.networks.values():
-            net_data = net.dumps()
-            uname = __get_network_uname(net)
-            for k in net_data["compartments"]:
-                c_name = Compound.flatten_id(k, uname, is_compartment=True)
-                c_desc = net_data["compartments"][k]
-                _comps[c_name] = c_desc
-
-            for _met in net_data["metabolites"]:
-                _met["id"] = Compound.flatten_id(_met["id"], uname)
-                _met["compartment"] = Compound.flatten_id(_met["compartment"], uname, is_compartment=True)
-                _mets.append(_met)
-
-            for _rxn in net_data["reactions"]:
-                _original_rxn_id = _rxn["id"]
-                _rxn["id"] = Reaction.flatten_id(_rxn["id"], uname)
-                _rxn["lower_bound"] = _rxn["lower_bound"]
-                _rxn["upper_bound"] = _rxn["upper_bound"]
-                _mapping[_rxn["id"]] = {
-                    "network_name": net.name,
-                    "reaction_id": _original_rxn_id
-                }
-                if not net.name in _rev_mapping:
-                    _rev_mapping[net.name] = {}
-                _rev_mapping[net.name][_original_rxn_id] = _rxn["id"]
-                _rxn_mets = {}
-                for _met_id in _rxn["metabolites"]:
-                    _flat_met_id = Compound.flatten_id(_met_id, uname)
-                    stoich = _rxn["metabolites"][_met_id]
-                    _rxn_mets[_flat_met_id] = stoich
-                _rxn["metabolites"] = _rxn_mets
-                _rxns.append(_rxn)
-
-        _meas = []
-        for ctx in self.contexts.values():
-            related_network = self._get_related_network(ctx)
-            if related_network:
-                uname = __get_network_uname(related_network)
-                ctx_data = ctx.dumps()
-                _meas = copy.deepcopy(ctx_data["measures"])
-                for k in range(0, len(_meas)):
-                    for var in _meas[k]["variables"]:
-                        var["reference_id"] = Reaction.flatten_id(var["reference_id"], uname)
-
-        _json = {
-            "name": self.name,
-            "description": self.description,
-            "networks": [{
-                "metabolites": _mets,
-                "reactions": _rxns,
-                "compartments": _comps,
-            }],
-            "contexts": [{
-                "measures": _meas
-            }],
-            "mapping": _mapping,
-            "reverse_mapping": _rev_mapping
-        }
-
-        return _json
+        """ Generate a flat dump of the twin """
+        from .helper.twin_flattener_helper import TwinFalltenerHelper
+        return TwinFalltenerHelper.dumps_flat(self)
 
     # -- F --
 
     # -- G --
 
-    def _get_related_network(self, ctx):
+    def get_related_network(self, ctx):
+        """ Get the network related to a context """
         for net_name, ctx_name in self.network_contexts.items():
             if ctx_name == ctx.name:
                 return self.get_resource(net_name)
 
         return None
 
-    def _get_related_context(self, net):
+    def get_related_context(self, net):
+        """ Get the context related to a network """
         for net_name, ctx_name in self.network_contexts.items():
             if net_name == net.name:
                 return self.get_resource(ctx_name)
@@ -254,7 +195,7 @@ class Twin(ResourceSet):
 
     @classmethod
     def loads(cls, data: TwinDict):
-        """ Loads JSON data nd creates a Twin """
+        """ Loads JSON data and creates a Twin """
         twin = cls()
         nets = {}
         for val in data.get("networks", []):
@@ -283,7 +224,7 @@ class Twin(ResourceSet):
     def networks(self):
         """ Returns the networks """
         contexts = {}
-        for name in self.network_contexts.keys():
+        for name in self.network_contexts:
             contexts[name] = self.get_resource(name)
         return contexts
 
@@ -326,20 +267,12 @@ class Twin(ResourceSet):
         }
 
         for net in self.networks.values():
-            biomass_rxn = net.get_biomass_reaction()
-            j_view["networks"].append({
-                "name": net.name,
-                "number of reactions": len(net.reactions),
-                "number of compounds": len(net.compounds),
-                "biomass reaction id": biomass_rxn.id,
-                "biomass reaction name": biomass_rxn.name,
-                "biomass reaction flat_id": Reaction.flatten_id(biomass_rxn.id, net.name)
-            })
+            j_view["networks"].append(net.get_summary())
 
         for ctx in self.contexts.values():
             j_view["contexts"].append({
-                "name": ctx.name,
-                "number of measurements": len(ctx.measures)
+                "Name": ctx.name,
+                "Number of measurements": len(ctx.measures)
             })
 
         return j_view

@@ -8,17 +8,17 @@ from copy import deepcopy
 
 import cvxpy as cp
 import numpy as np
-from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
-                      Logger, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
+                      ListParam, Logger, OutputSpec, StrParam, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 #from joblib import Parallel, delayed
 from pandas import DataFrame
 
 from ..network.network import Network
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
-from .fba_helper.fba_helper import FBAHelper
-from .fba_result import OptimizeResult
+from ..fba.fba_helper.fba_helper import FBAHelper
+from ..fba.fba_result import OptimizeResult
 from .fva_result import FVAResult
 
 
@@ -98,14 +98,14 @@ class FVA(Task):
         https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
     """
 
-    input_specs = {'twin': Twin}
-    output_specs = {'result': FVAResult}
+    input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
+    output_specs = {'result': OutputSpec(FVAResult, human_name="FVA result", short_description="The FVA result")}
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The list of fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The list of fluxes to minimize"),
         "solver": StrParam(default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY, allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"], human_name="Solver", short_description="The optimization solver"),
-        "fill_gaps_with_sinks": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
         "relax_qssa": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state constrain (quad solver is used). False otherwise."),
+        "fill_gaps_with_sinks": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
         "ignore_cofactors": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Ignore cofactors", short_description="True to ignore cofactors quasi-steady state for cofactors. False otherwise.")
     }
     __CVXPY_MAX_ITER = 100000

@@ -19,11 +19,6 @@ class TwinContextFile(File):
 class TwinContextImporter(ResourceImporter):
     pass
 
-@exporter_decorator("TwinContextExporter", human_name="Twin context exporter", source_type=TwinContext, target_type=File,
-                    hide=True, deprecated_since='0.3.1', deprecated_message="Use ContextExporter instead")
-class TwinContextImporter(ResourceExporter):
-    pass
-
 @task_decorator("TwinContextBuilder", human_name="Network context builder",
                 short_description="Build a context of metabolic network using a flux table",
                 hide=True, deprecated_since='0.3.1', deprecated_message="Use ContextBuilder instead")

@@ -9,9 +9,7 @@ from typing import Dict, List, TypedDict
 from gws_core import (BadRequestException, DictRField, Resource, StrRField,
                       Utils, resource_decorator)
 
-
-def slugify_id(_id):
-    return Utils.slugify(_id, snakefy=True, to_lower=False)
+from ..network.helper.slugify_helper import SlugifyHelper
 
 # ####################################################################
 #
@@ -80,7 +78,7 @@ class Measure:
             self.id = id
         else:
             self.id = self.__generate_unique_id()
-        self.id = slugify_id(self.id)
+        self.id = SlugifyHelper.slugify_id(self.id)
         self.name = name
         self.target = target
         self.lower_bound = lower_bound
@@ -138,6 +136,7 @@ class Measure:
 
     @property
     def variables(self):
+        """ Get variables """
         return self._variables
 
 # ####################################################################
@@ -223,6 +222,7 @@ class Context(Resource):
 
     @classmethod
     def loads(cls, data: dict) -> 'Context':
+        print(data)
         ctx = cls()
         for _meas in data["measures"]:
             measure = Measure(

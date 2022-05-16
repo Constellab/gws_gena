@@ -7,7 +7,8 @@ from typing import List, Union
 
 import pandas as pd
 from gws_core import (BadRequestException, Resource, ResourceRField,
-                      ResourceSet, RField, Table, resource_decorator)
+                      ResourceSet, RField, Table, TechnicalInfo,
+                      resource_decorator)
 from pandas import DataFrame
 from scipy import stats
 
@@ -48,7 +49,7 @@ class FBAResult(ResourceSet):
 
     _twin: Twin = ResourceRField()
     _optimize_result = RField(default_value=None)
-    _default_zero_flux_threshold = 0.01
+    _default_zero_flux_threshold = 0.05
 
     def __init__(self, twin: Twin = None, optimize_result: OptimizeResult = None):
         super().__init__()
@@ -65,21 +66,27 @@ class FBAResult(ResourceSet):
             sv_table = Table(data=self._create_sv_dataframe())
             sv_table.name = self.SV_TABLE_NAME
             self.add_resource(sv_table)
-
             self._twin = twin
+            self._set_technical_info()
+
+    def _set_technical_info(self):
+        value, pval = self.compute_zero_flux_threshold()
+        self.add_technical_info(TechnicalInfo(key="zero_flux_threshold", value=value))
+        self.add_technical_info(TechnicalInfo(key="zero_flux_pvalue", value=pval))
+        for resource in self.get_resources().values():
+            resource.add_technical_info(TechnicalInfo(key="zero_flux_threshold", value=value))
+            resource.add_technical_info(TechnicalInfo(key="zero_flux_pvalue", value=pval))
 
     # -- C --
 
     def compute_zero_flux_threshold(self) -> (float, float):
+        """ Compute the zero-flux threshold """
         data = self._create_sv_dataframe()
         val = data["value"]
         try:
             if val.shape[0] >= 20:
                 _, p = stats.normaltest(val)
-                if p < 0.05:
-                    return 2.0 * val.std(), p
-                else:
-                    return self._default_zero_flux_threshold, None
+                return 3.0 * val.std(), p
             else:
                 return self._default_zero_flux_threshold, None
         except Exception as _:
@@ -104,11 +111,9 @@ class FBAResult(ResourceSet):
 
     def _create_pathways_dataframe(self) -> DataFrame:
         res: OptimizeResult = self._optimize_result
-
         kegg_pw = []
         brenda_pw = []
         metacyc_pw = []
-
         if isinstance(self._twin, FlatTwin):
             flat_twin: FlatTwin = self._twin
         else:
@@ -146,23 +151,38 @@ class FBAResult(ResourceSet):
     # -- G --
 
     def get_twin(self):
+        """ Get the digital twin """
         return self._twin
 
     def get_sv_table(self):
+        """ Get the SV table """
         return self.get_resource(self.SV_TABLE_NAME)
 
     def get_flux_table(self):
+        """ Get the flux table """
         return self.get_resource(self.FLUX_TABLE_NAME)
 
+    def get_biomass_flux_dataframe(self) -> DataFrame:
+        """ Get the biomass flux """
+        t = []
+        for net in self.get_twin().networks.values():
+            rxn = net.get_biomass_reaction()
+            flat_id = net.flatten_reaction_id(rxn)
+            data = self.get_fluxes_dataframe()
+            t.append(data.loc[[flat_id], :])
+        return pd.concat(t)
+
     def get_fluxes_by_reaction_ids(self, reaction_ids: Union[List, str]) -> DataFrame:
+        """ Get flux values by reaction ids """
         if isinstance(reaction_ids, str):
             reaction_ids = [reaction_ids]
         if not isinstance(reaction_ids, list):
-            raise BadRequestException("A str or a list of str is required")
+            raise BadRequestException("A str or a list ofstr is required")
         data = self.get_fluxes_dataframe()
         return data.loc[reaction_ids, :]
 
     def get_sv_by_compound_ids(self, compound_ids: Union[List, str]) -> DataFrame:
+        """ Get SV values by compound ids """
         if isinstance(compound_ids, str):
             compound_ids = [compound_ids]
         if not isinstance(compound_ids, list):
@@ -171,12 +191,15 @@ class FBAResult(ResourceSet):
         return data.loc[compound_ids, :]
 
     def get_fluxes_dataframe(self) -> DataFrame:
+        """ Get fluxes as dataframe """
         return self.get_flux_table().get_data()
 
     def get_fluxes_and_pathways_dataframe(self):
+        """ Get fluxes and pathways as dataframe """
         return self._create_fluxes_and_pathways_dataframe()
 
     def get_sv_dataframe(self) -> DataFrame:
+        """ Get SV as dataframe """
         return self.get_sv_table().get_data()
 
     # -- V --

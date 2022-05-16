@@ -4,9 +4,9 @@
 # About us: https://gencovery.com
 
 import pandas
-from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
-                      Logger, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
+                      ListParam, Logger, OutputSpec, StrParam, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 from pandas import DataFrame
 
 from ..data.ec_table import ECTable
@@ -14,30 +14,33 @@ from ..data.entity_id_table import EntityIDTable
 from ..fba.fba import FBA
 from ..fba.fba_helper.fba_helper import FBAHelper
 from ..fba.fba_result import FBAResult
-from ..network.network_helper.reaction_knockout_helper import \
-    ReactionKnockOutHelper
+from ..network.helper.reaction_knockout_helper import ReactionKnockOutHelper
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
-from .koa_result_table import KOAResultTable
+from .koa_result import KOAResult
 
 
-@task_decorator("KOA_001", human_name="KOA", short_description="KnockOut Analysis")
+@task_decorator("KOA_002", human_name="KOA", short_description="KnockOut Analysis")
 class KOA(Task):
     """
     KOA class.
     """
 
     input_specs = {
-        'twin': (Twin,),
-        'ko_table': (EntityIDTable, ECTable,),
+        'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze"),
+        'ko_table': InputSpec([EntityIDTable, ECTable], human_name="KO table", short_description="The table of KO hypotheses"),
     }
-    output_specs = {'result': (KOAResultTable,)}
+    output_specs = {'result': OutputSpec(KOAResult, human_name="KOA result",
+                                         short_description="The result of KOA")}
     config_specs = {
         **FBA.config_specs,
-        'monitored_fluxes': ListParam(optional=True, short_description="The list fluxes to monitor"),
+        'monitored_fluxes':
+        ListParam(
+            optional=True, human_name="Monitored fluxes", visibility=ListParam.PROTECTED_VISIBILITY,
+            short_description="The list of fluxes to monitor. By default, all the reactions are monitored. Set 'biomass' to only monitor the biomass reaction flux."),
         'ko_delimiter':
         StrParam(
-            default_value=",",
+            default_value=",", human_name="Multiple KO delimiter",
             short_description="The delimiter used to separate IDs or EC numbers when multiple KO are performed")}
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
@@ -75,15 +78,20 @@ class KOA(Task):
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
                 fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
 
-            current_fluxes = current_result.get_fluxes_dataframe()
             if monitored_fluxes:
-                if not is_monitored_fluxes_expanded:
-                    monitored_fluxes = FBAHelper._expand_fluxes_by_names(
-                        monitored_fluxes,
-                        current_ko_twin.get_flat_network()
-                    )
-                monitored_fluxes_names = [x.split(":")[0] for x in monitored_fluxes]
-                current_fluxes = current_fluxes.loc[monitored_fluxes_names, :]
+                if len(monitored_fluxes) == 1 and monitored_fluxes[0].lower() == 'biomass':
+                    current_fluxes = current_result.get_biomass_flux_dataframe()
+                else:
+                    current_fluxes = current_result.get_fluxes_dataframe()
+                    if not is_monitored_fluxes_expanded:
+                        monitored_fluxes = FBAHelper._expand_fluxes_by_names(
+                            monitored_fluxes,
+                            current_ko_twin.get_flat_network()
+                        )
+                    monitored_fluxes_names = [name.split(":")[0] for name in monitored_fluxes]
+                    current_fluxes = current_fluxes.loc[monitored_fluxes_names, :]
+            else:
+                current_fluxes = current_result.get_fluxes_dataframe()
 
             current_fluxes.columns = ["flux_value", "flux_lower_bound", "flux_upper_bound"]
             ko_id_df = DataFrame(
@@ -118,5 +126,5 @@ class KOA(Task):
         full_ko_result_df.rename(
             columns={ko_table.id_column: "ko_id"},
             inplace=True)  # rename the `id_column` to `ko_id`
-        koa_result = KOAResultTable(data=full_ko_result_df)
+        koa_result = KOAResult(data=full_ko_result_df, twin=inputs["twin"])
         return {"result": koa_result}
