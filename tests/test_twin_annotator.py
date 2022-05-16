@@ -5,8 +5,8 @@ import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, ExperimentService, File, GTest,
                       IExperiment, Settings, ViewTester)
-from gws_gena import (FBAProto, Network, NetworkImporter, Twin, Context,
-                      ContextImporter)
+from gws_gena import (Context, ContextImporter, FBAProto, Network,
+                      NetworkImporter, Twin)
 
 settings = Settings.retrieve()
 
@@ -83,7 +83,7 @@ class TestTwinAnnotator(BaseTestCaseUsingFullBiotaDB):
             net = twin.networks[k]
 
             rxn = net.reactions["RB"]
-            self.assertAlmostEqual(rxn.estimate["value"], 0.374999, tol=1e-3)
+            self.assertAlmostEqual(rxn.estimate["value"], 0.374999, delta=1e-3)
 
             rxn = net.reactions["R1"]
-            self.assertAlmostEqual(rxn.estimate["value"], 29.99999, tol=1e-3)
+            self.assertAlmostEqual(rxn.estimate["value"], 29.99999, delta=1e-3)

@@ -37,6 +37,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         twin.add_context(ctx, related_network=net)
 
         self.assertRaises(Exception, twin.add_network, net)
+
         file_path = os.path.join(data_dir, "small_flat_twin.json")
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(twin.dumps_flat(), f)
@@ -94,7 +95,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue(problem["b"].equals(expected_B))
 
     def test_toy_twin(self):
-        # return
+        return
         self.print("Test Toy Twin")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
