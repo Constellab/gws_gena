@@ -16,7 +16,7 @@ from ...fba.fba_result import FBAResult
 from ...network.helper.reaction_knockout_helper import ReactionKnockOutHelper
 from ...twin.flat_twin import FlatTwin
 from ...twin.twin import Twin
-from ..v032.dep_koa_result_table import KOAResultTable
+from ..v031.dep_koa_result_table import KOAResultTable
 from .dep_fba import FBA
 
 

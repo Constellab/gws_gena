@@ -15,7 +15,7 @@ from ...twin.twin import Twin
 
 @resource_decorator("KOAResultTable", human_name="KOA result table",
                     short_description="Knockout analysis result table",
-                    hide=True, deprecated_since='0.3.3', deprecated_message="Use current KOAResult")
+                    hide=True, deprecated_since='0.3.2', deprecated_message="Use current KOAResult")
 class KOAResultTable(Table):
     """
     KOAResultTable

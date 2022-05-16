@@ -18,7 +18,7 @@ from ...recon.helper.sink_helper import SinkHelper
 
 
 @task_decorator("GapFiller", human_name="Gap filler", short_description="Fills gaps in a networks",
-                hide=True, deprecated_since='0.3.3', deprecated_message="Use current GapFiller")
+                hide=True, deprecated_since='0.3.2', deprecated_message="Use current GapFiller")
 class GapFiller(Task):
     """
     GapFiller class.
