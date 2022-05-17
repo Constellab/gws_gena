@@ -269,13 +269,13 @@ class Compound:
             if inchikey:
                 biota_compound = BiotaCompound.get_or_none(BiotaCompound.inchikey == inchikey)
 
-            if not biota_compound and chebi_id:
+            if biota_compound is None and chebi_id:
                 if isinstance(chebi_id, (float, int)):
                     chebi_id = f"CHEBI:{chebi_id}"
                 # if re.match(r"CHEBI\:\d+$", chebi_id):  # not in chebi_id:
                 #     chebi_id = chebi_id
                 biota_compound = BiotaCompound.get_or_none(BiotaCompound.chebi_id == chebi_id)
-            if not biota_compound and kegg_id:
+            if biota_compound is None and kegg_id:
                 biota_compound = BiotaCompound.get_or_none(BiotaCompound.kegg_id == kegg_id)
 
         if biota_compound is None:

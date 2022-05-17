@@ -7,7 +7,7 @@ from typing import List
 
 from gws_core import (BadRequestException, BarPlotView, ConfigParams,
                       DataFrameRField, ListParam, ListRField, MultiViews,
-                      Resource, ResourceRField, ResourceSet, Table,
+                      Resource, ResourceRField, ResourceSet, StrParam, Table,
                       resource_decorator, view)
 from pandas import DataFrame
 
@@ -53,42 +53,68 @@ class KOAResult(ResourceSet):
 
     def get_ko_ids(self) -> List[str]:
         """ Get the ids of the knock-outed reactions """
-        return self.get_flux_dataframe().loc[:, "ko_id"].unique()
+        return self.get_flux_dataframe().loc[:, "ko_id"].unique().tolist()
 
     def _set_technical_info(self):
         pass
 
-    @view(view_type=MultiViews, human_name='KO Summary', short_description='View KO summary as 2D-bar plots',
+    # @view(view_type=MultiViews, human_name='KO Summary', short_description='View KO summary as 2D-bar plots',
+    #       specs={
+    #           "flux_names":
+    #           ListParam(
+    #               human_name="Flux names",
+    #               short_description="Fluxes to plot. Set 'biomass' to only the plot biomass reaction flux.")})
+    # def view_ko_summary_as_bar_plot(self, params: ConfigParams) -> MultiViews:
+    #     """
+    #     View one or several columns as 2D-bar plots
+    #     """
+
+    #     flux_names = params.get_value("flux_names", [])
+    #     nb_of_ko = len(self.get_ko_ids())
+    #     nb_cols = 3 if nb_of_ko >= 5 else min(2, nb_of_ko)
+    #     multi_view = MultiViews(nb_of_columns=nb_cols)
+    #     for flux_name in flux_names:
+    #         idx = self.get_flux_dataframe()["flux_name"] == flux_name
+    #         current_data = self.get_flux_dataframe().loc[idx, :]
+    #         x_label = "ko_id"
+    #         y_label = flux_name
+    #         barplot_view = BarPlotView()
+    #         barplot_view.add_series(
+    #             y=current_data.values.tolist()
+    #         )
+    #         multi_view.add_view(
+    #             barplot_view,
+    #             params={
+    #                 "column_names": ["flux_value"],
+    #                 "x_label": x_label,
+    #                 "y_label": y_label,
+    #                 "x_tick_labels": list(current_data.loc[:, "ko_id"].to_list())
+    #             })
+
+    #     return multi_view
+
+    @view(view_type=BarPlotView, human_name='KO Summary', short_description='View KO summary as 2D-bar plots',
           specs={
-              "flux_names":
-              ListParam(
-                  human_name="Flux names",
-                  short_description="Fluxes to plot. Set 'biomass' to only the plot biomass reaction flux.")})
-    def view_ko_summary_as_bar_plot(self, params: ConfigParams) -> MultiViews:
+              "flux_name":
+              StrParam(
+                  human_name="Flux name",
+                  optional=True,
+                  short_description="Flux to plot. Set 'biomass' to only the plot biomass reaction flux.")})
+    def view_ko_summary_as_bar_plot(self, params: ConfigParams) -> BarPlotView:
         """
         View one or several columns as 2D-bar plots
         """
 
-        flux_names = params.get_value("flux_names", [])
-        nb_of_ko = len(self.get_ko_ids())
-        nb_cols = 3 if nb_of_ko >= 5 else min(2, nb_of_ko)
-        multi_view = MultiViews(nb_of_columns=nb_cols)
-        for flux_name in flux_names:
+        flux_name = params.get_value("flux_name")
+        if flux_name:
             idx = self.get_flux_dataframe()["flux_name"] == flux_name
-            current_data = self.get_flux_dataframe().loc[idx, :]
-            x_label = "ko_id"
-            y_label = flux_name
-            barplot_view = BarPlotView()
-            barplot_view.add_series(
-                y=current_data.values.tolist()
-            )
-            multi_view.add_view(
-                barplot_view,
-                params={
-                    "column_names": ["flux_value"],
-                    "x_label": x_label,
-                    "y_label": y_label,
-                    "x_tick_labels": list(current_data.loc[:, "ko_id"].to_list())
-                })
+            current_data = self.get_flux_dataframe().loc[idx, "flux_value"]
+        else:
+            current_data = self.get_flux_dataframe().loc[:, "flux_value"]
 
-        return multi_view
+        barplot_view = BarPlotView()
+        barplot_view.add_series(
+            y=current_data.values.tolist()
+        )
+        barplot_view.x_tick_labels = self.get_ko_ids()
+        return barplot_view
