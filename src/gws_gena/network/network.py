@@ -11,8 +11,6 @@ import uuid
 from typing import Dict, List, Optional, TypedDict, Union
 
 import numpy as np
-from gws_biota import CompoundClusterDict as BiotaCompoundClusterDict
-from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_biota import EnzymeClass
 from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
@@ -24,6 +22,7 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
 from pandas import DataFrame
 
 from .compound import Compound
+from .helper.network_loader_helper import NetworkLoaderHelper
 from .reaction import Reaction
 from .view.network_view import NetworkView
 
@@ -326,13 +325,7 @@ class Network(Resource):
                 biomass_comps.append(comp_id)
 
         for _met in self.compounds.values():
-
-            # refresh layout
-            layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
-                synonym_chebi_ids=[_met.chebi_id], compartment=_met.compartment)
-
             is_in_biomass_reaction = _met.id in biomass_comps
-
             _met_json.append({
                 "id": _met.id,
                 "name": _met.name,
@@ -346,7 +339,7 @@ class Network(Resource):
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
-                "layout": layout
+                "layout": _met.layout,
             })
 
         for _rxn in self.reactions.values():
@@ -668,13 +661,13 @@ class Network(Resource):
         """
 
         comps = {}
-        for id in self.compounds:
-            comp = self.compounds[id]
+        for comp_id in self.compounds:
+            comp = self.compounds[comp_id]
             if comp.is_steady():
                 if ignore_cofactors and comp.is_cofactor():
                     continue
                 else:
-                    comps[id] = self.compounds[id]
+                    comps[comp_id] = self.compounds[comp_id]
         return comps
 
     def get_non_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
@@ -732,9 +725,9 @@ class Network(Resource):
     # -- L --
 
     @ classmethod
-    def loads(cls, data: NetworkDict, skip_bigg_exchange_reactions: bool = True, loads_biota_info: bool = False,
+    def loads(cls, data: NetworkDict, *, skip_bigg_exchange_reactions: bool = True, loads_biota_info: bool = False,
               biomass_reaction_id: str = None, skip_orphans: bool = False) -> 'Network':
-        """ Loads JSON data and create a Network  """
+        """ Load JSON data and create a Network  """
 
         if not data.get("compartments"):
             raise BadRequestException("Invalid network dump. Compartments not found")
@@ -743,202 +736,13 @@ class Network(Resource):
         if not data.get("reactions"):
             raise BadRequestException("Invalid network dump. Reactions not found")
 
-        def _convert_annotation_list_to_dict(annotation):
-            if isinstance(annotation, list):
-                annotation_dict = {}
-                for annotation_val in annotation:
-                    k = annotation_val[0]
-                    v = annotation_val[1]
-                    if k not in annotation_dict:
-                        annotation_dict[k] = []
-                    if "http" in v:
-                        v = v.split("/")[-1]
-                    annotation_dict[k].append(v)
-            return annotation_dict
-
-        net = Network()
-        net.name = data.get("name", cls.DEFAULT_NAME)
-        net.compartments = data["compartments"]
-        ckey = "compounds" if "compounds" in data else "metabolites"
-
-        if loads_biota_info:
-            Logger.info("Loading biota info of imported compounds and reactions. This operation may take a while")
-
-        count = 0
-        total_number_of_compounds = len(data[ckey])
-        total_number_of_reactions = len(data["reactions"])
-        total_number_of_prints = 3
-        comp_print_interval = int(total_number_of_compounds / total_number_of_prints) or 1
-        rxn_print_interval = int(total_number_of_reactions / total_number_of_prints) or 1
-
-        added_comps = {}
-        Logger.info("Loading compounds ...")
-        for val in data[ckey]:
-            count += 1
-            if not count % comp_print_interval:
-                perc = int(100 * count/total_number_of_compounds)
-                Logger.info(f"... {perc}%")
-
-            compart = val["compartment"]
-            if not compart in net.compartments:
-                raise BadRequestException(
-                    f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
-
-            chebi_id = val.get("chebi_id", "")
-            inchikey = val.get("inchikey", "")
-            is_bigg_data_format = ("annotation" in val)
-
-            alt_chebi_ids = []
-            if not chebi_id and not inchikey and is_bigg_data_format:
-                annotation = val["annotation"]
-                if isinstance(annotation, list):
-                    annotation = _convert_annotation_list_to_dict(annotation)
-
-                alt_chebi_ids = annotation.get("chebi", []) or annotation.get("CHEBI", [])
-                inchikey = annotation.get("inchi_key", [""])[0]
-                if alt_chebi_ids:
-                    chebi_id = alt_chebi_ids.pop(0)
-
-            comp_id = val["id"]  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER)
-            comp = None
-
-            if loads_biota_info:
-                if chebi_id or inchikey:
-                    comp = Compound.from_biota(
-                        id=comp_id,
-                        name=val.get("name", ""),
-                        chebi_id=chebi_id,
-                        inchikey=inchikey,
-                        compartment=compart,
-                    )
-
-            if comp is None:
-                comp = Compound(
-                    id=comp_id,
-                    name=val.get("name", ""),
-                    compartment=compart,
-                    charge=val.get("charge", ""),
-                    mass=val.get("mass", ""),
-                    monoisotopic_mass=val.get("monoisotopic_mass", ""),
-                    formula=val.get("formula", ""),
-                    inchi=val.get("inchi", ""),
-                    inchikey=val.get("inchikey", ""),
-                    chebi_id=chebi_id,
-                    alt_chebi_ids=alt_chebi_ids,
-                    kegg_id=val.get("kegg_id", ""),
-                    # TODO: for retrocompatibility, position is deprecated
-                    layout=val.get("layout", {}) or val.get("position", {})
-                )
-
-            if not skip_orphans:
-                # add all compounds by default
-                net.add_compound(comp)
-            added_comps[comp_id] = comp
-
-        count = 0
-        Logger.info("Loading reactions ...")
-        for val in data["reactions"]:
-            count += 1
-            if not count % rxn_print_interval:
-                perc = int(100 * count/total_number_of_reactions)
-                Logger.info(f"... {perc}%")
-
-            if is_bigg_data_format and skip_bigg_exchange_reactions and val["id"].startswith("EX_"):
-                continue
-
-            rxn = Reaction(
-                id=val["id"],  # .replace(self.Compound.FLATTENING_DELIMITER,Compound.COMPARTMENT_DELIMITER),\
-                name=val.get("name"), \
-                lower_bound=val.get("lower_bound", Reaction.lower_bound), \
-                upper_bound=val.get("upper_bound", Reaction.upper_bound), \
-                enzyme=val.get("enzyme", {}),\
-                direction=val.get("direction", "B"),\
-                rhea_id=val.get("rhea_id", "")\
-            )
-            # TODO: for retrocompatibility, position is deprecated
-            rxn.layout = val.get("layout", {}) or val.get("position", {})
-
-            if loads_biota_info:
-                if not rxn.enzyme:
-                    if is_bigg_data_format:
-                        annotation = val["annotation"]
-                        if isinstance(annotation, list):
-                            annotation = _convert_annotation_list_to_dict(annotation)
-
-                        ec_number = annotation.get(
-                            "ec-code") or annotation.get("ec-number") or annotation.get("EC Number")
-                    else:
-                        ec_number = val.get("ec-code") or val.get("ec-number") or val.get("ec") or val.get("EC Number")
-
-                    if ec_number:
-                        if isinstance(ec_number, list):
-                            ec_number_list = ec_number
-                        else:
-                            ec_number_list = [ec_number]
-
-                        for ec_number in ec_number_list:
-                            try:
-                                rxn_loaded = Reaction.from_biota(ec_number=ec_number)
-                                rxn_loaded[0].enzyme["tax"] = {}
-                                rxn.set_enzyme(rxn_loaded[0].enzyme)
-                                break
-                            except Exception as _:
-                                pass
-
-            if val.get("estimate"):
-                rxn.set_estimate(val.get("estimate"))
-
-            reg_exp = re.compile(r"CHEBI\:\d+$")
-            for comp_id in val[ckey]:
-                comp = added_comps[comp_id]
-                # search according to compound ids
-                if reg_exp.match(comp_id):
-                    comps = net.get_compounds_by_chebi_id(comp_id)
-                    # select the compound in the good compartment
-                    for c in comps:
-                        if c.compartment == comp.compartment:
-                            break
-
-                if isinstance(val[ckey][comp_id], dict):
-                    stoich = float(val[ckey][comp_id].get("stoich"))
-                else:
-                    stoich = float(val[ckey][comp_id])  # for retro compatiblity
-                if stoich < 0:
-                    rxn.add_substrate(comp, stoich)
-                elif stoich > 0:
-                    rxn.add_product(comp, stoich)
-
-            net.add_reaction(rxn)
-
-        # check if the biomass compartment exists
-        biomass_compartment: str = Compound.COMPARTMENT_BIOMASS
-        if net.get_biomass_compound() is None:
-            Logger.warning(
-                "No explicit biomass compound found.\nTry inferring the biomass reaction and adding an explicit dummy biomass compound")
-            if biomass_reaction_id:
-                Logger.warning(f'Looking for user biomass reaction "{biomass_reaction_id}" ...')
-                if biomass_reaction_id in net.reactions:
-                    rxn = net.reactions[biomass_reaction_id]
-                    biomass = Compound(name="Biomass", compartment=biomass_compartment)
-                    rxn.add_product(biomass, 1)
-                    net.compartments[biomass_compartment] = Compound.COMPARTMENTS[biomass_compartment]["name"]
-                    net.update_reaction(rxn)
-                else:
-                    raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
-            else:
-                Logger.warning('No user biomass given')
-                for rxn in net.reactions.values():
-                    if "biomass" in rxn.id.lower():
-                        # can be used as biomas reaction
-                        biomass = Compound(name="Biomass", compartment=biomass_compartment)
-                        rxn.add_product(biomass, 1)
-                        net.compartments[biomass_compartment] = Compound.COMPARTMENTS[biomass_compartment]["name"]
-                        net.update_reaction(rxn)
-                        Logger.warning(
-                            f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')
-                        break
-
-        return net
+        return NetworkLoaderHelper.loads(
+            data,
+            skip_bigg_exchange_reactions=skip_bigg_exchange_reactions,
+            loads_biota_info=loads_biota_info,
+            biomass_reaction_id=biomass_reaction_id,
+            skip_orphans=skip_orphans
+        )
 
     # -- N --
 

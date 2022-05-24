@@ -1,0 +1,3 @@
+reaction_id,target,lower_bound,upper_bound,confidence_score
+R1_ex,30.0,0,40,1
+R5_ex,0.75,nan,100,1

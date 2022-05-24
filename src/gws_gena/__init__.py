@@ -24,7 +24,9 @@ from .fva.fva_result import FVAResult
 from .koa.koa import KOA
 from .koa.koa_result import KOAResult
 # network
-from .network.compound import Compound
+from .network.compound import (Compound, CompoundNotFoundException,
+                               InvalidCompartmentException,
+                               InvalidCompoundIdException)
 from .network.helper.deadend_finder_helper import DeadendFinder
 from .network.helper.isolate_finder_helper import IsolateFinder
 from .network.helper.reaction_adder_helper import ReactionAdderHelper
@@ -36,7 +38,9 @@ from .network.network_tasks.network_importer import NetworkImporter
 from .network.network_tasks.network_merger import NetworkMerger
 from .network.network_tasks.reaction_adder import ReactionAdder
 from .network.network_tasks.reaction_remover import ReactionRemover
-from .network.reaction import Reaction
+from .network.reaction import (ProductDuplicateException, Reaction,
+                               ReactionNotFoundException,
+                               SubstrateDuplicateException)
 from .network.view.network_view import NetworkView
 # proto
 from .proto.fba_proto import FBAProto

@@ -3,13 +3,15 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import math
+
 from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
                       Task, TaskInputs, TaskOutputs, task_decorator)
 
 from ..data.flux_table import FluxTable
 from ..network.network import Network
 from .context import Context, Measure, Variable
-
+from ..network.reaction import Reaction
 
 @task_decorator("ContextBuilder", human_name="Network context builder",
                 short_description="Build a context of metabolic network using a flux table")
@@ -36,12 +38,27 @@ class ContextBuilder(Task):
                     raise BadRequestException(f"Flux {ref_id}: the target must be greater than lower bound")
                 if targets[i] > ubounds[i]:
                     raise BadRequestException(f"Flux {ref_id}: the target must be smaller than upper bound")
+
+                lbound = float(lbounds[i])
+                lbound = Reaction.LOWER_BOUND if math.isnan(lbound) else lbounds
+
+                ubound = float(ubounds[i])
+                ubound = Reaction.UPPER_BOUND if math.isnan(ubound) else ubound
+
+                score = float(scores[i])
+                score = 1.0 if math.isnan(score) else score
+
+                target = float(targets[i])
+                if math.isnan(target):
+                    target = 0.0
+                    score = 0.0  # set the output confidence score to zero if it is NaN
+
                 measure = Measure(
                     id="measure_" + ref_id,
-                    target=float(targets[i]),
-                    upper_bound=float(ubounds[i]),
-                    lower_bound=float(lbounds[i]),
-                    confidence_score=float(scores[i])
+                    target=target,
+                    upper_bound=ubound,
+                    lower_bound=lbound,
+                    confidence_score=score
                 )
                 variable = Variable(
                     coefficient=1.0,

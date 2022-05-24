@@ -4,13 +4,11 @@
 # About us: https://gencovery.com
 
 import json
-import os
 from typing import Type
 
 from gws_core import (BadRequestException, BoolParam, ConfigParams,
                       ConfigSpecs, File, ResourceExporter, ResourceImporter,
                       StrParam, exporter_decorator, importer_decorator)
-from pandas import DataFrame
 
 from ..network import Network
 
@@ -47,7 +45,7 @@ class NetworkImporter(ResourceImporter):
         """
 
         net: Network
-        loads_biota_info = params.get_value("loads_biota_info", False)
+        loads_biota_info = params.get_value("loads_biota_info", True)
         skip_bigg_exchange_reactions = params.get_value("skip_bigg_exchange_reactions", True)
         skip_orphans = params.get_value("skip_orphans", False)
 

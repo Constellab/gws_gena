@@ -4,77 +4,43 @@
 # About us: https://gencovery.com
 
 import copy
-import re
-from typing import Dict, List, TypedDict
+from typing import Dict, List
 
-from gws_biota import Compound as BiotaCompound
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import BadRequestException, Utils
+from gws_core import BadRequestException
 
 from .compound import Compound
+from .helper.reaction_biota_helper import ReactionBiotaHelper
 from .helper.slugify_helper import SlugifyHelper
+from .typing.reaction_enzyme_typing import EnzymeDict, ReactionPathwayDict
 
 FLATTENING_DELIMITER = ":"
-EQN_SPLIT_REGEXP = re.compile(r" <?=>? ")
-OLIG_REGEXP = re.compile(r"\((n(\+\d)?)\)$")
 
 # ####################################################################
 #
-# Error classes
+# Exception classes
 #
 # ####################################################################
 
 
-class SubstrateDuplicate(BadRequestException):
-    pass
+class ReactionNotFoundException(BadRequestException):
+    """ ReactionNotFoundException """
 
 
-class ProductDuplicate(BadRequestException):
-    pass
+class InvalidReactionIdException(BadRequestException):
+    """ InvalidReactionIdException """
 
 
-# ####################################################################
-#
-# EnzymeDict class
-#
-# ####################################################################
+class SubstrateDuplicateException(BadRequestException):
+    """ SubstrateDuplicateException """
 
-EnzymeDict = TypedDict("EnzymeDict", {
-    "name": str,
-    "tax": dict,
-    "ec_number": str,
-    "pathways": dict,
-    "related_deprecated_enzyme": dict
-})
 
-# ####################################################################
-#
-# Pathway class
-#
-# ####################################################################
+class ProductDuplicateException(BadRequestException):
+    """ ProductDuplicateException """
 
-"""
-    For example:
-    {
-        'kegg': {
-            'id': 'rn00290; rn01110',
-            'name': 'Valine, leucine and isoleucine biosynthesis; Biosynthesis of secondary metabolites'
-        }
-    }
-"""
-Pathway = TypedDict("Pathway", {
-    "id": list,
-    "name": list,
-})
-
-ReactionPathways = TypedDict("ReactionPathways", {
-    "brenda": Pathway,
-    "kegg": Pathway,
-    "metacyc": Pathway,
-})
 
 # ####################################################################
 #
@@ -106,11 +72,14 @@ class Reaction:
     :type enzyme: `dict`
     """
 
+    LOWER_BOUND = -1000.0
+    UPPER_BOUND = 1000.0
+
     id: str = ""
     name: str = ""
     direction: str = "B"
-    lower_bound: float = -1000.0
-    upper_bound: float = 1000.0
+    lower_bound: float = LOWER_BOUND
+    upper_bound: float = UPPER_BOUND
     rhea_id: str = ""
     enzyme: EnzymeDict = None
     layout: BiotaReactionLayoutDict = None
@@ -124,7 +93,7 @@ class Reaction:
     _FLATTENING_DELIMITER = FLATTENING_DELIMITER
 
     def __init__(self, id: str = "", name: str = "",
-                 direction: str = "B", lower_bound: float = -1000.0, upper_bound: float = 1000.0,
+                 direction: str = "B", lower_bound: float = LOWER_BOUND, upper_bound: float = UPPER_BOUND,
                  enzyme: EnzymeDict = None, rhea_id=""):
 
         if id:
@@ -143,7 +112,7 @@ class Reaction:
                 self.name = self.id
 
         if not self.id:
-            raise BadRequestException("At least a valid reaction id or name is required")
+            raise InvalidReactionIdException("At least a valid reaction id or name is required")
 
         if direction in ["B", "L", "R"]:
             self.direction = direction
@@ -174,8 +143,8 @@ class Reaction:
                 self._substrates[comp.id]["stoichiometry"] += abs(float(stoich))
                 return
             else:
-                raise SubstrateDuplicate("gena.reaction.Reaction", "add_substrate",
-                                         f"Substrate duplicate (id= {comp.id})")
+                raise SubstrateDuplicateException("gena.reaction.Reaction", "add_substrate",
+                                                  f"Substrate duplicate (id= {comp.id})")
 
         if comp.id in self._products:
             if update_if_exists:
@@ -184,7 +153,7 @@ class Reaction:
                     self.remove_product(comp)
                 return
             else:
-                raise SubstrateDuplicate(
+                raise SubstrateDuplicateException(
                     "gena.reaction.Reaction", "add_substrate",
                     f"Cannot add the substrate. A product with the id already exists (id= {comp.id})")
 
@@ -208,7 +177,8 @@ class Reaction:
                 self._products[comp.id]["stoichiometry"] += abs(float(stoich))
                 return
             else:
-                raise ProductDuplicate("gena.reaction.Reaction", "add_product", f"Product duplicate (id= {comp.id})")
+                raise ProductDuplicateException("gena.reaction.Reaction", "add_product",
+                                                f"Product duplicate (id= {comp.id})")
 
         if comp.id in self._substrates:
             if update_if_exists:
@@ -217,7 +187,7 @@ class Reaction:
                     self.remove_substrate(comp)
                 return
             else:
-                raise ProductDuplicate(
+                raise ProductDuplicateException(
                     "gena.reaction.Reaction", "add_substrate",
                     f"Cannot add the product. A susbtrate with the id already exists (id= {comp.id})")
 
@@ -279,7 +249,7 @@ class Reaction:
 
     @classmethod
     def create_sink_reaction(
-            self, related_compound: Compound = None, lower_bound: float = -1000.0, upper_bound: float = 1000.0) -> 'Reaction':
+            self, related_compound: Compound = None, lower_bound: float = LOWER_BOUND, upper_bound: float = UPPER_BOUND) -> 'Reaction':
         if not isinstance(related_compound, Compound):
             raise BadRequestException("A compound is required")
         name = related_compound.id + "_sink"
@@ -341,156 +311,6 @@ class Reaction:
 
         rxns = []
 
-        def __merge_compounds_and_add_to_reaction(
-                comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
-                compartment=None, alt_litteral_comppound_name=None, oligomerization=None):
-            """ Merge a list of compounds (oligomerisation) """
-
-            if compartment is None:
-                compartment = comps[0].compartment
-
-            names = []
-            for comp in comps:
-                names.append(comp.name)
-
-            if oligomerization is not None:
-                names.append(oligomerization)
-
-            is_substrate = not is_product
-            c = Compound(name=",".join(names), compartment=compartment)
-            if is_substrate:
-                comp_id_exists_in_products = (c.id in rxn.products)
-                if comp_id_exists_in_products and alt_litteral_comppound_name:
-                    # use the litteral name to uniquify the compound id
-                    c = Compound(name=alt_litteral_comppound_name, compartment=compartment)
-
-            c.chebi_id = ",".join([comp_.chebi_id or "" for comp_ in comps])
-            c.kegg_id = ",".join([comp_.kegg_id or "" for comp_ in comps])
-            c.charge = str(sum([float(comp_.charge or 0.0) for comp_ in comps]))
-            c.formula = ",".join([comp_.formula or "" for comp_ in comps])
-            c.mass = str(sum([float(comp_.mass or 0.0) for comp_ in comps]))
-            c.monoisotopic_mass = str(sum([float(comp_.monoisotopic_mass or 0.0) for comp_ in comps]))
-            c.layout = comps[0].layout
-
-            if is_product:
-                rxn.add_product(c, stoich)
-            else:
-                rxn.add_substrate(c, stoich)
-        # return c
-
-        def __create_reaction(rhea_rxn, enzyme):
-            if enzyme:
-                e = {
-                    "name": enzyme.get_name(),
-                    "ec_number": enzyme.ec_number,
-                }
-                e["tax"] = {}
-                tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == enzyme.tax_id)
-                if tax:
-                    e["tax"][tax.rank] = {
-                        "tax_id": tax.tax_id,
-                        "name": tax.get_name()
-                    }
-                    for t in tax.ancestors:
-                        e["tax"][t.rank] = {
-                            "tax_id": t.tax_id,
-                            "name": t.get_name()
-                        }
-                if enzyme.related_deprecated_enzyme:
-                    e["related_deprecated_enzyme"] = {
-                        "ec_number": enzyme.related_deprecated_enzyme.ec_number,
-                        "reason": enzyme.related_deprecated_enzyme.data["reason"],
-                    }
-                pwy = enzyme.pathway
-                if pwy:
-                    e["pathways"] = pwy.data
-            else:
-                e = {}
-
-            rxn: Reaction = cls(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number,
-                                rhea_id=rhea_rxn.rhea_id,
-                                direction=rhea_rxn.direction,
-                                enzyme=e)
-            rxn.layout = rhea_rxn.layout
-
-            tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["definition"])
-            substrate_definition = tab[0].split(" + ")
-            product_definition = tab[1].split(" + ")
-
-            tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["source_equation"])
-            eqn_substrates = tab[0].split(" + ")
-            eqn_products = tab[1].split(" + ")
-
-            count = 0
-            for sub in eqn_substrates:
-                tab = sub.split(" ")
-                if len(tab) == 2:
-                    stoich = tab[0].replace("n", "")
-                    if stoich == "":
-                        stoich = 1.0
-                    chebi_ids = tab[1].split(",")
-                else:
-                    stoich = 1.0
-                    chebi_ids = tab[0].split(",")
-
-                biota_comps = []
-                for id_ in chebi_ids:
-                    biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
-
-                litteral_comp_name = substrate_definition[count]
-                if litteral_comp_name.endswith("(out)"):
-                    compartment = Compound.COMPARTMENT_EXTRACELL
-                else:
-                    compartment = Compound.COMPARTMENT_CYTOSOL
-
-                tab = re.findall(OLIG_REGEXP, litteral_comp_name)
-                oligo = tab[0][0] if len(tab) else None
-                __merge_compounds_and_add_to_reaction(
-                    biota_comps,
-                    stoich,
-                    rxn,
-                    is_product=True,
-                    compartment=compartment,
-                    alt_litteral_comppound_name=None,
-                    oligomerization=oligo
-                )
-                count += 1
-
-            count = 0
-            for prod in eqn_products:
-                tab = prod.split(" ")
-                if len(tab) == 2:
-                    stoich = tab[0]
-                    chebi_ids = tab[1].split(",")
-                else:
-                    stoich = 1
-                    chebi_ids = tab[0].split(",")
-
-                biota_comps = []
-                for id_ in chebi_ids:
-                    biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
-
-                litteral_comp_name = product_definition[count]
-                if litteral_comp_name.endswith("(out)"):
-                    compartment = Compound.COMPARTMENT_EXTRACELL
-                else:
-                    compartment = Compound.COMPARTMENT_CYTOSOL
-
-                tab = re.findall(OLIG_REGEXP, litteral_comp_name)
-                oligo = tab[0][0] if len(tab) else None
-                __merge_compounds_and_add_to_reaction(
-                    biota_comps,
-                    stoich,
-                    rxn=rxn,
-                    is_product=False,
-                    compartment=compartment,
-                    alt_litteral_comppound_name=litteral_comp_name,
-                    oligomerization=oligo
-                )
-                count += 1
-
-            return rxn
-
         if biota_reaction:
             rhea_rxn = biota_reaction
             _added_rxns = []
@@ -498,29 +318,20 @@ class Reaction:
                 if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                     continue
                 _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                rxns.append(__create_reaction(rhea_rxn, e))
-                # try:
-                #     rxns.append(__create_reaction(rhea_rxn, e))
-                # except Exception as _:
-                #     pass
-
+                rxns.append(ReactionBiotaHelper.create_reaction_from_biota(rhea_rxn, e))
             return rxns
         elif rhea_id:
             tax = None
-            Q = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
-            if not Q:
+            query = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
+            if not query:
                 raise BadRequestException(f"No reaction found with rhea id {rhea_id}")
             _added_rxns = []
-            for rhea_rxn in Q:
+            for rhea_rxn in query:
                 for e in rhea_rxn.enzymes:
                     if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                         continue
                     _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                    rxns.append(__create_reaction(rhea_rxn, e))
-                    # try:
-                    #     rxns.append(__create_reaction(rhea_rxn, e))
-                    # except Exception as _:
-                    #     pass
+                    rxns.append(ReactionBiotaHelper.create_reaction_from_biota(rhea_rxn, e))
             return rxns
         elif ec_number:
             tax = None
@@ -529,71 +340,60 @@ class Reaction:
                 tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == tax_id)
                 if tax is None:
                     raise BadRequestException(f"No taxonomy found with tax_id {tax_id}")
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(
+                query = BiotaEnzyme.select_and_follow_if_deprecated(
                     ec_number=ec_number, tax_id=tax_id, select_only_one=True)
-                if not Q:
+                if not query:
                     if tax_search_method == 'bottom_up':
-                        found_Q = []
-                        Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
+                        found_query = []
+                        query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
                         tab = {}
-                        for e in Q:
+                        for e in query:
                             if not e.ec_number in tab:
                                 tab[e.ec_number] = []
                             tab[e.ec_number].append(e)
                         for t in tax.ancestors:
                             is_found = False
-                            for ec in tab:
+                            for _, ec in enumerate(tab):
                                 e_group = tab[ec]
                                 for e in e_group:
                                     if t.rank == "no rank":
                                         continue
                                     if getattr(e, "tax_"+t.rank) == t.tax_id:
-                                        found_Q.append(e)
+                                        found_query.append(e)
                                         is_found = True
                                         break  # -> stop at this taxonomy rank
                                 if is_found:
                                     del tab[ec]
                                     break
                         # add remaining enzyme
-                        for ec in tab:
-                            e_group = tab[ec]
+                        for e_group in tab.values():
                             for e in e_group:
-                                found_Q.append(e)
+                                found_query.append(e)
                                 break
-                        if found_Q:
-                            Q = found_Q
-                if not Q:
+                        if found_query:
+                            query = found_query
+                if not query:
                     raise BadRequestException(f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
-                for e in Q:
+                for e in query:
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append(__create_reaction(rhea_rxn, e))
-                        # try:
-                        #     rxns.append(__create_reaction(rhea_rxn, e))
-                        # except Exception as _:
-                        #     # reaction duplicate
-                        #     # skip error!
-                        #     pass
+                        rxns.append(ReactionBiotaHelper.create_reaction_from_biota(rhea_rxn, e))
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}.")
             else:
-                Q = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number, select_only_one=True)
-                if not Q:
+                query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number, select_only_one=True)
+                if not query:
                     raise BadRequestException(f"No enzyme found with ec number {ec_number}")
                 _added_rxns = []
-                for e in Q:
+                for e in query:
                     for rhea_rxn in e.reactions:
                         if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
                             continue
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append(__create_reaction(rhea_rxn, e))
-                        # try:
-                        #     rxns.append(__create_reaction(rhea_rxn, e))
-                        # except Exception as _:
-                        #     pass
+                        rxns.append(ReactionBiotaHelper.create_reaction_from_biota(rhea_rxn, e))
                 if not rxns:
                     raise BadRequestException(f"An error occured with ec number {ec_number}")
         else:
@@ -603,11 +403,11 @@ class Reaction:
 
     # -- G --
 
-    def get_pathways(self) -> ReactionPathways:
+    def get_pathways(self) -> ReactionPathwayDict:
         if self.enzyme.get("pathways"):
             return self.enzyme.get("pathways")
 
-        return ReactionPathways()
+        return ReactionPathwayDict()
 
     def get_pathways_as_flat_dict(self) -> Dict:
         pw_dict = {}

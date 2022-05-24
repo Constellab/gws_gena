@@ -115,7 +115,7 @@ class FBAHelper(TaskHelper):
         out_flux_target = b.loc[:, ["target"]]
         out_flux_lb = b.loc[:, ["lb"]]
         out_flux_ub = b.loc[:, ["ub"]]
-        out_coef_score = b.loc[:, ["confidence_score"]]
+        beq_confidence_score = b.loc[:, ["confidence_score"]]
 
         # A_eq
         A_eq_left = pd.concat([S_int, C, Y_zeros], axis=0)  # vert_concat
@@ -148,7 +148,7 @@ class FBAHelper(TaskHelper):
         c = DataFrame(index=lb.index, data=np.zeros((lb.shape[0], 1)))
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_minimize, direction="min")
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_maximize, direction="max")
-        A_eq, b_eq = cls.__upgrade_Aeq_beq_with_output_coefficient_score(A_eq, b_eq, out_coef_score)
+        A_eq, b_eq = cls.__upgrade_Aeq_beq_with_output_coefficient_score(A_eq, b_eq, beq_confidence_score)
 
         return c, A_eq, b_eq, bounds
 
@@ -201,10 +201,10 @@ class FBAHelper(TaskHelper):
             current_solver = cls.__CVXPY_SOLVER_PRIORITY[i]
             if current_solver == cp.OSQP:
                 params = {"max_iter": cls.__CVXPY_MAX_ITER}
-                msg = f"ECOS failed. Switched to OSQP."
+                msg = "ECOS failed. Switched to OSQP."
             else:
                 params = {"max_iters": cls.__CVXPY_MAX_ITER}
-                msg = f"OSQP failed. Switched to ECOS."
+                msg = "OSQP failed. Switched to ECOS."
             if has_switched:
                 Logger.progress(msg)
             prob.solve(solver=current_solver, **params, verbose=verbose)
@@ -429,10 +429,10 @@ class FBAHelper(TaskHelper):
     # -- U --
 
     @classmethod
-    def __upgrade_Aeq_beq_with_output_coefficient_score(cls, A_eq, b_eq, out_coef_score):
-        for i in range(0, out_coef_score.shape[0]):
-            name = out_coef_score.index[i]
-            score = abs(out_coef_score.iloc[i, 0])
+    def __upgrade_Aeq_beq_with_output_coefficient_score(cls, A_eq, b_eq, beq_confidence_score):
+        for i in range(0, beq_confidence_score.shape[0]):
+            name = beq_confidence_score.index[i]
+            score = abs(beq_confidence_score.iloc[i, 0])
             b_eq.loc[name, :] = score * b_eq.loc[name, :]
             A_eq.loc[name, :] = score * A_eq.loc[name, :]
         return A_eq, b_eq

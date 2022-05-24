@@ -3,36 +3,43 @@
     "metabolites": [
         {
             "id": "glc_D_e",
-            "name": "D-Glucose",
+            "name": "D-glucose",
             "charge": 0.0,
-            "mass": 180.15588,
-            "monoisotopic_mass": 180.06339,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C6H12O6",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:4167",
-            "kegg_id": "D00009",
+            "chebi_id": "CHEBI:12965",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 200,
+                "y": -800,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 100,
+                        "y": -900,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "gln_L_c",
-            "name": "L-Glutamine",
-            "charge": 0.0,
-            "mass": 146.14458,
-            "monoisotopic_mass": 146.06914,
-            "formula": "C5H10N2O3",
+            "name": "L-glutaminate",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C5H9N2O3",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:18050",
-            "kegg_id": "D00015",
+            "chebi_id": "CHEBI:42943",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -41,17 +48,17 @@
         },
         {
             "id": "gln_L_e",
-            "name": "L-Glutamine",
-            "charge": 0.0,
-            "mass": 146.14458,
-            "monoisotopic_mass": 146.06914,
-            "formula": "C5H10N2O3",
+            "name": "L-glutaminate",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C5H9N2O3",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:18050",
-            "kegg_id": "D00015",
+            "chebi_id": "CHEBI:42943",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -60,17 +67,17 @@
         },
         {
             "id": "glu_L_c",
-            "name": "L-Glutamate",
-            "charge": -1.0,
-            "mass": 146.12136,
-            "monoisotopic_mass": 146.04588,
-            "formula": "C5H8NO4",
+            "name": "L-glutamate(2-)",
+            "charge": -2.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C5H7NO4",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:29985",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:76051",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -79,17 +86,17 @@
         },
         {
             "id": "glu_L_e",
-            "name": "L-Glutamate",
-            "charge": -1.0,
-            "mass": 146.12136,
-            "monoisotopic_mass": 146.04588,
-            "formula": "C5H8NO4",
+            "name": "L-glutamate(2-)",
+            "charge": -2.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C5H7NO4",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:29985",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:76051",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -98,36 +105,43 @@
         },
         {
             "id": "glx_c",
-            "name": "Glyoxylate",
-            "charge": -1.0,
-            "mass": 73.02754,
-            "monoisotopic_mass": 72.99312,
-            "formula": "C2HO3",
+            "name": "glyoxylic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C2H2O3",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:36655",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:24420",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": 300,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": 0,
+                        "y": 300,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "h2o_c",
-            "name": "H2O H2O",
-            "charge": 0.0,
-            "mass": 18.0153,
-            "monoisotopic_mass": 18.01056,
-            "formula": "H2O",
+            "name": "hydroxide",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "HO",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:15377",
-            "kegg_id": "C00001",
+            "chebi_id": "CHEBI:13352",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -136,17 +150,17 @@
         },
         {
             "id": "h2o_e",
-            "name": "H2O H2O",
-            "charge": 0.0,
-            "mass": 18.0153,
-            "monoisotopic_mass": 18.01056,
-            "formula": "H2O",
+            "name": "hydroxide",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "HO",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "e",
-            "chebi_id": "CHEBI:15377",
-            "kegg_id": "C00001",
+            "chebi_id": "CHEBI:13352",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -155,17 +169,17 @@
         },
         {
             "id": "h_c",
-            "name": "H+",
+            "name": "hydron",
             "charge": 1.0,
-            "mass": 1.00794,
-            "monoisotopic_mass": 1.008,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "H",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:15378",
-            "kegg_id": "C00080",
+            "chebi_id": "CHEBI:5584",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -174,17 +188,17 @@
         },
         {
             "id": "h_e",
-            "name": "H+",
+            "name": "hydron",
             "charge": 1.0,
-            "mass": 1.00794,
-            "monoisotopic_mass": 1.008,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "H",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "e",
-            "chebi_id": "CHEBI:15378",
-            "kegg_id": "C00080",
+            "chebi_id": "CHEBI:5584",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -193,112 +207,147 @@
         },
         {
             "id": "icit_c",
-            "name": "Isocitrate",
-            "charge": -3.0,
-            "mass": 189.0997,
-            "monoisotopic_mass": 189.00517,
-            "formula": "C6H5O7",
+            "name": "isocitric acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C6H8O7",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
             "chebi_id": "CHEBI:16087",
-            "kegg_id": "C00311",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 195.0,
+                "y": 330,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": 195.0,
+                        "y": 330,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "lac_D_c",
-            "name": "D-Lactate",
-            "charge": -1.0,
-            "mass": 89.07,
-            "monoisotopic_mass": 89.02442,
-            "formula": "C3H5O3",
+            "name": "(R)-lactic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C3H6O3",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
             "chebi_id": "CHEBI:16004",
-            "kegg_id": "C00256",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 300,
+                "y": -50,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": 300,
+                        "y": -50,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "lac_D_e",
-            "name": "D-Lactate",
-            "charge": -1.0,
-            "mass": 89.07,
-            "monoisotopic_mass": 89.02442,
-            "formula": "C3H5O3",
+            "name": "(R)-lactic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C3H6O3",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
             "chebi_id": "CHEBI:16004",
-            "kegg_id": "C00256",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 200,
+                "y": -150,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": 300,
+                        "y": -50,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "mal_L_c",
-            "name": "L-Malate",
-            "charge": -2.0,
-            "mass": 132.07156,
-            "monoisotopic_mass": 132.00697,
-            "formula": "C4H4O5",
+            "name": "(S)-malic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C4H6O5",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
             "chebi_id": "CHEBI:15589",
-            "kegg_id": "C00149",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -175.0,
+                "y": 300,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": -175.0,
+                        "y": 300,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "mal_L_e",
-            "name": "L-Malate",
-            "charge": -2.0,
-            "mass": 132.07156,
-            "monoisotopic_mass": 132.00697,
-            "formula": "C4H4O5",
+            "name": "(S)-malic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C4H6O5",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
             "chebi_id": "CHEBI:15589",
-            "kegg_id": "C00149",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -275.0,
+                "y": 400,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": -175.0,
+                        "y": 300,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "nad_c",
-            "name": "Nicotinamide adenine dinucleotide",
-            "charge": -1.0,
-            "mass": 662.4172,
-            "monoisotopic_mass": 662.10185,
-            "formula": "C21H26N7O14P2",
+            "name": "NAD(+)",
+            "charge": 1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C21H28N7O14P2",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:57540",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:7422",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -307,17 +356,17 @@
         },
         {
             "id": "nadh_c",
-            "name": "Nicotinamide adenine dinucleotide - reduced",
-            "charge": -2.0,
-            "mass": 663.4251,
-            "monoisotopic_mass": 663.11022,
-            "formula": "C21H27N7O14P2",
+            "name": "NADH",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C21H29N7O14P2",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:57945",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:13395",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -326,17 +375,17 @@
         },
         {
             "id": "nadp_c",
-            "name": "Nicotinamide adenine dinucleotide phosphate",
-            "charge": -3.0,
-            "mass": 740.3812,
-            "monoisotopic_mass": 740.05362,
-            "formula": "C21H25N7O17P3",
+            "name": "NADP zwitterion",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C21H28N7O17P3",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:58349",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:29868",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -345,17 +394,17 @@
         },
         {
             "id": "nadph_c",
-            "name": "Nicotinamide adenine dinucleotide phosphate - reduced",
+            "name": "NADPH(4-)",
             "charge": -4.0,
-            "mass": 741.3891,
-            "monoisotopic_mass": 741.062,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C21H26N7O17P3",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:57783",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:16474",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -364,74 +413,95 @@
         },
         {
             "id": "nh4_c",
-            "name": "Ammonium",
+            "name": "ammonium",
             "charge": 1.0,
-            "mass": 18.0385,
-            "monoisotopic_mass": 18.03383,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "H4N",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:28938",
-            "kegg_id": "C01342",
+            "chebi_id": "CHEBI:44284",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 1000,
+                "y": -1000,
+                "clusters": {
+                    "arginine and proline metabolism": {
+                        "name": "arginine and proline metabolism",
+                        "x": 1000,
+                        "y": -1000,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "13dpg_c",
-            "name": "3-Phospho-D-glyceroyl phosphate",
-            "charge": -4.0,
-            "mass": 262.0054,
-            "monoisotopic_mass": 261.92797,
-            "formula": "C3H4O10P2",
+            "name": "3-phospho-D-glyceroyl dihydrogen phosphate",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C3H8O10P2",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
             "chebi_id": "CHEBI:57604",
-            "kegg_id": null,
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": -400,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -400,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "nh4_e",
-            "name": "Ammonium",
+            "name": "ammonium",
             "charge": 1.0,
-            "mass": 18.0385,
-            "monoisotopic_mass": 18.03383,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "H4N",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "e",
-            "chebi_id": "CHEBI:28938",
-            "kegg_id": "C01342",
+            "chebi_id": "CHEBI:44284",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 1100,
+                "y": -1100,
+                "clusters": {
+                    "arginine and proline metabolism": {
+                        "name": "arginine and proline metabolism",
+                        "x": 1000,
+                        "y": -1000,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "o2_c",
-            "name": "O2 O2",
-            "charge": 0.0,
-            "mass": 31.9988,
-            "monoisotopic_mass": 31.98983,
-            "formula": "O2",
+            "name": "hydridodioxygen(1+)",
+            "charge": 1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "HO2",
             "inchi": "",
-            "is_cofactor": false,
-            "level": 1,
+            "is_cofactor": true,
+            "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:27140",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:7860",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -440,36 +510,43 @@
         },
         {
             "id": "2pg_c",
-            "name": "D-Glycerate 2-phosphate",
+            "name": "2-phosphoglycerate(3-)",
             "charge": -3.0,
-            "mass": 183.0334,
-            "monoisotopic_mass": 182.97111,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C3H4O7P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:58289",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:39868",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": -200,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -200,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "o2_e",
-            "name": "O2 O2",
-            "charge": 0.0,
-            "mass": 31.9988,
-            "monoisotopic_mass": 31.98983,
-            "formula": "O2",
+            "name": "hydridodioxygen(1+)",
+            "charge": 1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "HO2",
             "inchi": "",
-            "is_cofactor": false,
-            "level": 1,
+            "is_cofactor": true,
+            "level": 3,
             "compartment": "e",
-            "chebi_id": "CHEBI:27140",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:7860",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -478,93 +555,127 @@
         },
         {
             "id": "3pg_c",
-            "name": "3-Phospho-D-glycerate",
+            "name": "3-phosphonato-D-glycerate(3-)",
             "charge": -3.0,
-            "mass": 183.0334,
-            "monoisotopic_mass": 182.96946,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C3H4O7P",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:58272",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:11879",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": -300,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -300,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "oaa_c",
-            "name": "Oxaloacetate",
-            "charge": -2.0,
-            "mass": 130.05568,
-            "monoisotopic_mass": 129.99132,
-            "formula": "C4H2O5",
+            "name": "oxaloacetic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C4H4O5",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:16452",
-            "kegg_id": "C00036",
+            "chebi_id": "CHEBI:25731",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -90,
+                "y": 165.0,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": -90,
+                        "y": 165.0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "pep_c",
-            "name": "Phosphoenolpyruvate",
-            "charge": -3.0,
-            "mass": 165.0181,
-            "monoisotopic_mass": 164.96055,
-            "formula": "C3H2O6P",
+            "name": "phosphoenolpyruvic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C3H5O6P",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:58702",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:18021",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": -100,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -100,
+                        "level": 1
+                    },
+                    "aromatic amino acid metabolism": {
+                        "name": "aromatic amino acid metabolism",
+                        "x": 2200,
+                        "y": -600,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "6pgc_c",
-            "name": "6-Phospho-D-gluconate",
+            "name": "6-phosphonatooxy-D-gluconate",
             "charge": -3.0,
-            "mass": 273.1114,
-            "monoisotopic_mass": 273.00116,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C6H10O10P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:58759",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:33851",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 200,
+                "y": -800,
+                "clusters": {
+                    "pentose phosphate metabolism": {
+                        "name": "pentose phosphate metabolism",
+                        "x": 200,
+                        "y": -800,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "pi_c",
-            "name": "Phosphate",
-            "charge": -2.0,
-            "mass": 95.9793,
-            "monoisotopic_mass": 95.96234,
-            "formula": "HO4P",
+            "name": "dihydrogenphosphate",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "H2O4P",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:43474",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:26078",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -573,36 +684,43 @@
         },
         {
             "id": "6pgl_c",
-            "name": "6-phospho-D-glucono-1,5-lactone",
-            "charge": -2.0,
-            "mass": 256.104,
-            "monoisotopic_mass": 255.99842,
-            "formula": "C6H9O9P",
+            "name": "6-O-phosphono-D-glucono-1,5-lactone",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C6H11O9P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:57955",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:12233",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 100,
+                "y": -800,
+                "clusters": {
+                    "pentose phosphate metabolism": {
+                        "name": "pentose phosphate metabolism",
+                        "x": 100,
+                        "y": -800,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "pi_e",
-            "name": "Phosphate",
-            "charge": -2.0,
-            "mass": 95.9793,
-            "monoisotopic_mass": 95.96234,
-            "formula": "HO4P",
+            "name": "dihydrogenphosphate",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "H2O4P",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "e",
-            "chebi_id": "CHEBI:43474",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:26078",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -611,74 +729,95 @@
         },
         {
             "id": "ac_c",
-            "name": "Acetate",
+            "name": "acetate",
             "charge": -1.0,
-            "mass": 59.04402,
-            "monoisotopic_mass": 59.01385,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C2H3O2",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:30089",
-            "kegg_id": "C00033",
+            "chebi_id": "CHEBI:13704",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -300,
+                "y": 200,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": -300,
+                        "y": 200,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "pyr_c",
-            "name": "Pyruvate",
+            "name": "pyruvate",
             "charge": -1.0,
-            "mass": 87.05412,
-            "monoisotopic_mass": 87.00877,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C3H3O3",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:15361",
-            "kegg_id": "C00022",
+            "chebi_id": "CHEBI:26462",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": 0,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": 0,
+                        "y": 0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "pyr_e",
-            "name": "Pyruvate",
+            "name": "pyruvate",
             "charge": -1.0,
-            "mass": 87.05412,
-            "monoisotopic_mass": 87.00877,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C3H3O3",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:15361",
-            "kegg_id": "C00022",
+            "chebi_id": "CHEBI:26462",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -100,
+                "y": -100,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": 0,
+                        "y": 0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "q8_c",
             "name": "Ubiquinone-8",
-            "charge": 0.0,
-            "mass": 727.1095,
-            "monoisotopic_mass": 726.55871,
+            "charge": 0,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C49H74O4",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
             "chebi_id": "CHEBI:61683",
-            "kegg_id": "C17569",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -688,16 +827,16 @@
         {
             "id": "q8h2_c",
             "name": "Ubiquinol-8",
-            "charge": 0.0,
-            "mass": 729.1253,
-            "monoisotopic_mass": 728.57436,
+            "charge": 0,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C49H76O4",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
             "chebi_id": "CHEBI:61682",
-            "kegg_id": null,
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -707,263 +846,360 @@
         {
             "id": "r5p_c",
             "name": "Alpha-D-Ribose 5-phosphate",
-            "charge": -2.0,
-            "mass": 228.094,
-            "monoisotopic_mass": 228.0046,
+            "charge": -2,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C5H9O8P",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:140679",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:18189",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 400,
+                "y": -700,
+                "clusters": {
+                    "pentose phosphate metabolism": {
+                        "name": "pentose phosphate metabolism",
+                        "x": 400,
+                        "y": -700,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "ru5p_D_c",
-            "name": "D-Ribulose 5-phosphate",
+            "name": "D-ribulose 5-phosphate(2-)",
             "charge": -2.0,
-            "mass": 228.0939,
-            "monoisotopic_mass": 228.0046,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C5H9O8P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:58121",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:40192",
+            "kegg_id": "",
             "layout": {
                 "x": null,
-                "y": null,
-                "clusters": {}
+                "y": -1110,
+                "clusters": {
+                    "riboflavin metabolism": {
+                        "name": "riboflavin metabolism",
+                        "x": -3050,
+                        "y": -1110,
+                        "level": 1
+                    },
+                    "pentose phosphate metabolism": {
+                        "name": "pentose phosphate metabolism",
+                        "x": 300,
+                        "y": -800,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "ac_e",
-            "name": "Acetate",
+            "name": "acetate",
             "charge": -1.0,
-            "mass": 59.04402,
-            "monoisotopic_mass": 59.01385,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C2H3O2",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:30089",
-            "kegg_id": "C00033",
+            "chebi_id": "CHEBI:13704",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -200,
+                "y": 300,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": -300,
+                        "y": 200,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "acald_c",
-            "name": "Acetaldehyde",
+            "name": "acetaldehyde",
             "charge": 0.0,
-            "mass": 44.05256,
-            "monoisotopic_mass": 44.02621,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C2H4O",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:15343",
-            "kegg_id": "C00084",
+            "chebi_id": "CHEBI:40533",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 200,
+                "y": 0,
+                "clusters": {
+                    "ethanol metabolism": {
+                        "name": "ethanol metabolism",
+                        "x": 200,
+                        "y": 0,
+                        "level": 2
+                    }
+                }
             }
         },
         {
             "id": "s7p_c",
-            "name": "Sedoheptulose 7-phosphate",
+            "name": "sedoheptulose 7-phosphate(2-)",
             "charge": -2.0,
-            "mass": 288.1459,
-            "monoisotopic_mass": 288.02573,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C7H13O10P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:57483",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:4244",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 300,
+                "y": -500,
+                "clusters": {
+                    "pentose phosphate metabolism": {
+                        "name": "pentose phosphate metabolism",
+                        "x": 300,
+                        "y": -500,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "acald_e",
-            "name": "Acetaldehyde",
+            "name": "acetaldehyde",
             "charge": 0.0,
-            "mass": 44.05256,
-            "monoisotopic_mass": 44.02621,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C2H4O",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:15343",
-            "kegg_id": "C00084",
+            "chebi_id": "CHEBI:40533",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 100,
+                "y": -100,
+                "clusters": {
+                    "ethanol metabolism": {
+                        "name": "ethanol metabolism",
+                        "x": 200,
+                        "y": 0,
+                        "level": 2
+                    }
+                }
             }
         },
         {
             "id": "accoa_c",
-            "name": "Acetyl-CoA",
-            "charge": -4.0,
-            "mass": 805.539,
-            "monoisotopic_mass": 805.09667,
-            "formula": "C23H34N7O17P3S",
+            "name": "acetyl-CoA",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C23H38N7O17P3S",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
             "chebi_id": "CHEBI:57288",
-            "kegg_id": null,
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": 100,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": 0,
+                        "y": 100,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "succ_c",
-            "name": "Succinate",
+            "name": "succinate(2-)",
             "charge": -2.0,
-            "mass": 116.07216,
-            "monoisotopic_mass": 116.01206,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C4H4O4",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:30031",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:22941",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -60,
+                "y": 480,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": -60,
+                        "y": 480,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "succ_e",
-            "name": "Succinate",
+            "name": "succinate(2-)",
             "charge": -2.0,
-            "mass": 116.07216,
-            "monoisotopic_mass": 116.01206,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C4H4O4",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:30031",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:22941",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -160,
+                "y": 380,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": -60,
+                        "y": 480,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "succoa_c",
-            "name": "Succinyl-CoA",
-            "charge": -5.0,
-            "mass": 862.567,
-            "monoisotopic_mass": 862.09487,
-            "formula": "C25H35N7O19P3S",
+            "name": "succinyl-CoA",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C25H40N7O19P3S",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
             "chebi_id": "CHEBI:57292",
-            "kegg_id": null,
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 65.0,
+                "y": 485.0,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": 65.0,
+                        "y": 485.0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "acon_C_c",
-            "name": "Cis-Aconitate",
-            "charge": -3.0,
-            "mass": 171.08442,
-            "monoisotopic_mass": 170.99461,
-            "formula": "C6H3O6",
+            "name": "cis-aconitic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C6H6O6",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:16383",
-            "kegg_id": "C00417",
+            "chebi_id": "CHEBI:23306",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 155.0,
+                "y": 240,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": 155.0,
+                        "y": 240,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "xu5p_D_c",
-            "name": "D-Xylulose 5-phosphate",
+            "name": "D-xylulose 5-phosphate(2-)",
             "charge": -2.0,
-            "mass": 228.0939,
-            "monoisotopic_mass": 228.0035,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C5H9O8P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:57737",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:13036",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 300,
+                "y": -700,
+                "clusters": {
+                    "pentose phosphate metabolism": {
+                        "name": "pentose phosphate metabolism",
+                        "x": 300,
+                        "y": -700,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "actp_c",
-            "name": "Acetyl phosphate",
+            "name": "acetyl phosphate(2-)",
             "charge": -2.0,
-            "mass": 138.01598,
-            "monoisotopic_mass": 137.97291,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C2H3O5P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:22191",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:13711",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -200,
+                "y": 0,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": -200,
+                        "y": 0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "adp_c",
-            "name": "ADP C10H12N5O10P2",
-            "charge": -3.0,
-            "mass": 424.1773,
-            "monoisotopic_mass": 424.00759,
-            "formula": "C10H12N5O10P2",
+            "name": "ADP(2-)",
+            "charge": -2.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C10H13N5O10P2",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:456216",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:2342",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -972,74 +1208,95 @@
         },
         {
             "id": "akg_c",
-            "name": "2-Oxoglutarate",
-            "charge": -2.0,
-            "mass": 144.08226,
-            "monoisotopic_mass": 144.00697,
-            "formula": "C5H4O5",
+            "name": "2-oxoglutaric acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C5H6O5",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:16810",
-            "kegg_id": "C00026",
+            "chebi_id": "CHEBI:40661",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 175.0,
+                "y": 400,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": 175.0,
+                        "y": 400,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "akg_e",
-            "name": "2-Oxoglutarate",
-            "charge": -2.0,
-            "mass": 144.08226,
-            "monoisotopic_mass": 144.00697,
-            "formula": "C5H4O5",
+            "name": "2-oxoglutaric acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C5H6O5",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:16810",
-            "kegg_id": "C00026",
+            "chebi_id": "CHEBI:40661",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 75.0,
+                "y": 500,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": 175.0,
+                        "y": 400,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "amp_c",
-            "name": "AMP C10H12N5O7P",
+            "name": "adenosine 5'-monophosphate(2-)",
             "charge": -2.0,
-            "mass": 345.2053,
-            "monoisotopic_mass": 345.04853,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C10H12N5O7P",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:456215",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:13736",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 960,
+                "y": 230,
+                "clusters": {
+                    "purine metabolism": {
+                        "name": "purine metabolism",
+                        "x": 960,
+                        "y": 230,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "atp_c",
-            "name": "ATP C10H12N5O13P3",
-            "charge": -4.0,
-            "mass": 503.14946,
-            "monoisotopic_mass": 502.96664,
-            "formula": "C10H12N5O13P3",
+            "name": "ATP(3-)",
+            "charge": -3.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C10H13N5O13P3",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:30616",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:15422",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -1048,36 +1305,43 @@
         },
         {
             "id": "cit_c",
-            "name": "Citrate",
-            "charge": -3.0,
-            "mass": 189.0997,
-            "monoisotopic_mass": 189.00517,
-            "formula": "C6H5O7",
+            "name": "3,4-dicarboxy-3-hydroxybutanoate",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C6H7O7",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:16947",
-            "kegg_id": "C00158",
+            "chebi_id": "CHEBI:35802",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 75.0,
+                "y": 185.0,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": 75.0,
+                        "y": 185.0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "co2_c",
-            "name": "CO2 CO2",
+            "name": "carbon dioxide",
             "charge": 0.0,
-            "mass": 44.01,
-            "monoisotopic_mass": 43.98983,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "CO2",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:16526",
-            "kegg_id": "C00011",
+            "chebi_id": "CHEBI:23011",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -1086,17 +1350,17 @@
         },
         {
             "id": "co2_e",
-            "name": "CO2 CO2",
+            "name": "carbon dioxide",
             "charge": 0.0,
-            "mass": 44.01,
-            "monoisotopic_mass": 43.98983,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "CO2",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "e",
-            "chebi_id": "CHEBI:16526",
-            "kegg_id": "C00011",
+            "chebi_id": "CHEBI:23011",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -1105,36 +1369,43 @@
         },
         {
             "id": "coa_c",
-            "name": "Coenzyme A",
-            "charge": -4.0,
-            "mass": 763.502,
-            "monoisotopic_mass": 763.0861,
-            "formula": "C21H32N7O16P3S",
+            "name": "coenzyme A",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C21H36N7O16P3S",
             "inchi": "",
             "is_cofactor": true,
             "level": 3,
             "compartment": "c",
-            "chebi_id": "CHEBI:57287",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:41631",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 880,
+                "y": 0,
+                "clusters": {
+                    "pantothenate and CoA biosynthesis": {
+                        "name": "pantothenate and CoA biosynthesis",
+                        "x": 880,
+                        "y": 0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "dhap_c",
-            "name": "Dihydroxyacetone phosphate",
+            "name": "glycerone phosphate(2-)",
             "charge": -2.0,
-            "mass": 168.042,
-            "monoisotopic_mass": 167.98347,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C3H5O6P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:57642",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:14341",
+            "kegg_id": "",
             "layout": {
                 "x": null,
                 "y": null,
@@ -1143,230 +1414,326 @@
         },
         {
             "id": "e4p_c",
-            "name": "D-Erythrose 4-phosphate",
+            "name": "D-erythrose 4-phosphate(2-)",
             "charge": -2.0,
-            "mass": 198.06794,
-            "monoisotopic_mass": 197.99404,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C4H7O7P",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:16897",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:4114",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 2000,
+                "y": -400,
+                "clusters": {
+                    "aromatic amino acid metabolism": {
+                        "name": "aromatic amino acid metabolism",
+                        "x": 2000,
+                        "y": -400,
+                        "level": 1
+                    },
+                    "pentose phosphate metabolism": {
+                        "name": "pentose phosphate metabolism",
+                        "x": 200,
+                        "y": -500,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "etoh_c",
-            "name": "Ethanol",
-            "charge": 0.0,
-            "mass": 46.06844,
-            "monoisotopic_mass": 46.04186,
-            "formula": "C2H6O",
+            "name": "ethoxide",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C2H5O",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:16236",
-            "kegg_id": "D00068",
+            "chebi_id": "CHEBI:42377",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 300,
+                "y": 0,
+                "clusters": {
+                    "ethanol metabolism": {
+                        "name": "ethanol metabolism",
+                        "x": 300,
+                        "y": 0,
+                        "level": 2
+                    }
+                }
             }
         },
         {
             "id": "etoh_e",
-            "name": "Ethanol",
-            "charge": 0.0,
-            "mass": 46.06844,
-            "monoisotopic_mass": 46.04186,
-            "formula": "C2H6O",
+            "name": "ethoxide",
+            "charge": -1.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C2H5O",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:16236",
-            "kegg_id": "D00068",
+            "chebi_id": "CHEBI:42377",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 200,
+                "y": -100,
+                "clusters": {
+                    "ethanol metabolism": {
+                        "name": "ethanol metabolism",
+                        "x": 300,
+                        "y": 0,
+                        "level": 2
+                    }
+                }
             }
         },
         {
             "id": "f6p_c",
-            "name": "D-Fructose 6-phosphate",
+            "name": "beta-D-fructofuranose 6-phosphate(2-)",
             "charge": -2.0,
-            "mass": 258.1199,
-            "monoisotopic_mass": 258.01407,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C6H11O9P",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:57634",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:16084",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": -700,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -700,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "fdp_c",
-            "name": "D-Fructose 1,6-bisphosphate",
+            "name": "D-fructofuranose 1,6-bisphosphate(4-)",
             "charge": -4.0,
-            "mass": 336.08392,
-            "monoisotopic_mass": 335.96694,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C6H10O12P2",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:49299",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:37736",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -100,
+                "y": -600,
+                "clusters": {
+                    "fructose metabolism": {
+                        "name": "fructose metabolism",
+                        "x": -100,
+                        "y": -600,
+                        "level": 1
+                    },
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -600,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "for_c",
-            "name": "Formate",
+            "name": "formate",
             "charge": -1.0,
-            "mass": 45.01744,
-            "monoisotopic_mass": 44.9982,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "CHO2",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:15740",
-            "kegg_id": "C00058",
+            "chebi_id": "CHEBI:24081",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -400,
+                "y": 0,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": -400,
+                        "y": 0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "for_e",
-            "name": "Formate",
+            "name": "formate",
             "charge": -1.0,
-            "mass": 45.01744,
-            "monoisotopic_mass": 44.9982,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "CHO2",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:15740",
-            "kegg_id": "C00058",
+            "chebi_id": "CHEBI:24081",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -300,
+                "y": 100,
+                "clusters": {
+                    "pyruvate metabolism": {
+                        "name": "pyruvate metabolism",
+                        "x": -400,
+                        "y": 0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "fru_e",
-            "name": "D-Fructose",
+            "name": "keto-D-fructose",
             "charge": 0.0,
-            "mass": 180.15588,
-            "monoisotopic_mass": 180.06339,
+            "mass": "",
+            "monoisotopic_mass": "",
             "formula": "C6H12O6",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:37721",
-            "kegg_id": "C00095",
+            "chebi_id": "CHEBI:47424",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -200,
+                "y": -700,
+                "clusters": {
+                    "fructose metabolism": {
+                        "name": "fructose metabolism",
+                        "x": -100,
+                        "y": -800,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "fum_c",
-            "name": "Fumarate",
-            "charge": -2.0,
-            "mass": 114.05628,
-            "monoisotopic_mass": 113.99641,
-            "formula": "C4H2O4",
+            "name": "butenedioic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C4H4O4",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "c",
-            "chebi_id": "CHEBI:29806",
-            "kegg_id": "C00122",
+            "chebi_id": "CHEBI:36180",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -165.0,
+                "y": 405.0,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": -165.0,
+                        "y": 405.0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "fum_e",
-            "name": "Fumarate",
-            "charge": -2.0,
-            "mass": 114.05628,
-            "monoisotopic_mass": 113.99641,
-            "formula": "C4H2O4",
+            "name": "butenedioic acid",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C4H4O4",
             "inchi": "",
             "is_cofactor": false,
-            "level": 1,
+            "level": 2,
             "compartment": "e",
-            "chebi_id": "CHEBI:29806",
-            "kegg_id": "C00122",
+            "chebi_id": "CHEBI:36180",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": -265.0,
+                "y": 505.0,
+                "clusters": {
+                    "TCA cycle": {
+                        "name": "TCA cycle",
+                        "x": -165.0,
+                        "y": 405.0,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "g3p_c",
-            "name": "Glyceraldehyde 3-phosphate",
-            "charge": -2.0,
-            "mass": 168.042,
-            "monoisotopic_mass": 167.98347,
-            "formula": "C3H5O6P",
+            "name": "D-glyceraldehyde 3-phosphate",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C3H7O6P",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
-            "chebi_id": "CHEBI:59776",
-            "kegg_id": null,
+            "chebi_id": "CHEBI:5446",
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": -500,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -500,
+                        "level": 1
+                    }
+                }
             }
         },
         {
             "id": "g6p_c",
-            "name": "D-Glucose 6-phosphate",
-            "charge": -2.0,
-            "mass": 258.1199,
-            "monoisotopic_mass": 258.01517,
-            "formula": "C6H11O9P",
+            "name": "D-glucopyranose 6-phosphate",
+            "charge": 0.0,
+            "mass": "",
+            "monoisotopic_mass": "",
+            "formula": "C6H13O9P",
             "inchi": "",
             "is_cofactor": false,
             "level": 1,
             "compartment": "c",
             "chebi_id": "CHEBI:61548",
-            "kegg_id": null,
+            "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 0,
+                "y": -800,
+                "clusters": {
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -800,
+                        "level": 1
+                    }
+                }
             }
         },
         {
@@ -1438,7 +1805,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00020000000002573515,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1487,7 +1854,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.00032000000002341267,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1530,8 +1897,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
-                "charge": 0.0
+                "mass": null,
+                "charge": 2.0
             }
         },
         {
@@ -1579,8 +1946,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00015999999999394277,
-                "charge": 0.0
+                "mass": null,
+                "charge": -4.0
             }
         },
         {
@@ -1628,8 +1995,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -3.999999999360071e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": 1.0
             }
         },
         {
@@ -1683,7 +2050,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.0002800000000888758,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1714,7 +2081,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -9.325873406851315e-15,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1722,21 +2089,17 @@
             "id": "PGM",
             "name": "Phosphoglycerate mutase",
             "enzyme": {
-                "name": "phosphoglycerate mutase (2,3-diphosphoglycerate-independent)",
-                "ec_number": "5.4.2.12",
+                "name": "phosphoglycerate mutase (2,3-diphosphoglycerate-dependent)",
+                "ec_number": "5.4.2.11",
                 "tax": {},
-                "related_deprecated_enzyme": {
-                    "ec_number": "5.4.2.1",
-                    "reason": "transferred"
-                },
                 "pathways": {
                     "brenda": {
                         "id": "",
                         "name": "Entner Doudoroff pathway"
                     },
                     "kegg": {
-                        "id": "rn00010; rn00260; rn00680; rn01110; rn01120",
-                        "name": "Glycolysis / Gluconeogenesis; Glycine, serine and threonine metabolism; Methane metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
+                        "id": "rn00010",
+                        "name": "Glycolysis / Gluconeogenesis"
                     },
                     "metacyc": {
                         "id": "ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-5484; P341-PWY; PWY-2221; PWY-6142; GLUCONEO-PWY; PWY-7003; P124-PWY; PWY-6901; PWY-7218; PWY-7124; PWY-6886; PWY-5723; PWY-1042; PWY-8004; PWY-1622; P122-PWY; PWY66-399",
@@ -1761,7 +2124,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1792,7 +2155,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1840,8 +2203,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 4.0000000012696546e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -1865,7 +2228,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1914,7 +2277,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0002000000000066393,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -1969,8 +2332,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0004800000000386717,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -2015,7 +2378,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -1.9999999981479277e-05,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2061,8 +2424,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 1.9999999977926564e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -2113,8 +2476,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00021999999999877673,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -2165,8 +2528,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.0002599999999688407,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -2196,7 +2559,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -2.220446049250313e-15,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2254,8 +2617,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00030000000000995897,
-                "charge": 0.0
+                "mass": null,
+                "charge": -4.0
             }
         },
         {
@@ -2300,8 +2663,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00015999999993709935,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -2342,32 +2705,14 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.0006400000000894579,
-                "charge": 0.0
+                "mass": null,
+                "charge": 1.0
             }
         },
         {
             "id": "ATPS4r",
             "name": "ATP synthase (four protons for one ATP)",
-            "enzyme": {
-                "name": "H+-transporting two-sector ATPase",
-                "ec_number": "7.1.2.2",
-                "tax": {},
-                "related_deprecated_enzyme": {
-                    "ec_number": "3.6.3.14",
-                    "reason": "transferred"
-                },
-                "pathways": {
-                    "kegg": {
-                        "id": "rn00240",
-                        "name": "Pyrimidine metabolism"
-                    },
-                    "metacyc": {
-                        "id": "PWY-7185; PWY-7210; PWY-7198; PWY-7184; PWY-6545",
-                        "name": "UTP and CTP dephosphorylation I; pyrimidine deoxyribonucleotides biosynthesis from CTP; pyrimidine deoxyribonucleotides de novo biosynthesis IV; pyrimidine deoxyribonucleotides de novo biosynthesis I; pyrimidine deoxyribonucleotides de novo biosynthesis III"
-                    }
-                }
-            },
+            "enzyme": {},
             "rhea_id": "",
             "metabolites": {
                 "adp_c": {
@@ -2397,8 +2742,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.0002199999999876745,
-                "charge": 0.0
+                "mass": null,
+                "charge": 2.0
             }
         },
         {
@@ -2446,8 +2791,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00031999999998788553,
-                "charge": 0.0
+                "mass": null,
+                "charge": 1.0
             }
         },
         {
@@ -2498,8 +2843,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.00023999999994828158,
-                "charge": 0.0
+                "mass": null,
+                "charge": 3.0
             }
         },
         {
@@ -2620,7 +2965,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2645,7 +2990,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2688,7 +3033,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2743,8 +3088,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00034000000001332964,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -2786,8 +3131,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00010000000000331966,
-                "charge": 0.0
+                "mass": null,
+                "charge": null
             }
         },
         {
@@ -2817,7 +3162,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2854,8 +3199,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.00010000000008858478,
-                "charge": 0.0
+                "mass": null,
+                "charge": null
             }
         },
         {
@@ -2885,7 +3230,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2931,8 +3276,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -2962,7 +3307,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -2993,7 +3338,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -2.220446049250313e-15,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -3024,8 +3369,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 7.999999991170625e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": null
             }
         },
         {
@@ -3079,8 +3424,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 1.9999999949504854e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -3128,8 +3473,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 6.000000001904482e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": 2.0
             }
         },
         {
@@ -3183,8 +3528,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 2.2737367544323206e-13,
-                "charge": 0.0
+                "mass": null,
+                "charge": 3.0
             }
         },
         {
@@ -3232,8 +3577,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
-                "charge": 0.0
+                "mass": null,
+                "charge": null
             }
         },
         {
@@ -3281,8 +3626,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -5.999999999062311e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -3324,8 +3669,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -3370,8 +3715,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -8.000000002539309e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -3419,8 +3764,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 2.0000000034769982e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -3450,7 +3795,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -2.220446049250313e-15,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -3475,7 +3820,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -3506,8 +3851,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -7.999999996854967e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": null
             }
         },
         {
@@ -3537,8 +3882,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -3.999999994164227e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": 3.0
             }
         },
         {
@@ -3583,8 +3928,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 2.0000000006348273e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -3614,7 +3959,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -4.440892098500626e-15,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -3666,8 +4011,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 5.99999999622014e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": 3.0
             }
         },
         {
@@ -3721,8 +4066,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 5.99999999622014e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -3752,8 +4097,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -3.999999994164227e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": 1.0
             }
         },
         {
@@ -3802,23 +4147,14 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00019999999996400675,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
             "id": "GLNabc",
             "name": "L-glutamine transport via ABC system",
-            "enzyme": {
-                "name": "ABC-type polar-amino-acid transporter",
-                "ec_number": "7.4.2.1",
-                "tax": {},
-                "related_deprecated_enzyme": {
-                    "ec_number": "3.6.3.21",
-                    "reason": "transferred"
-                },
-                "pathways": {}
-            },
+            "enzyme": {},
             "rhea_id": "",
             "metabolites": {
                 "atp_c": {
@@ -3851,8 +4187,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00022000000002719844,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -3909,8 +4245,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 6.000000007588824e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -3958,8 +4294,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 1.9999999977926564e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": -1.0
             }
         },
         {
@@ -4013,7 +4349,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -3.999999989900971e-05,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -4044,7 +4380,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -9.325873406851315e-15,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -4096,8 +4432,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.0003999999999280135,
-                "charge": 0.0
+                "mass": null,
+                "charge": 3.0
             }
         },
         {
@@ -4121,7 +4457,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -4173,8 +4509,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.00045999999997548,
-                "charge": 0.0
+                "mass": null,
+                "charge": 4.0
             }
         },
         {
@@ -4219,8 +4555,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 1.4210854715202004e-14,
-                "charge": 0.0
+                "mass": null,
+                "charge": 2.0
             }
         },
         {
@@ -4271,8 +4607,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 4.00000000269074e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": 1.0
             }
         },
         {
@@ -4326,8 +4662,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.00034000000010792064,
-                "charge": 0.0
+                "mass": null,
+                "charge": -2.0
             }
         },
         {
@@ -4357,7 +4693,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -4409,7 +4745,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 3.999999995585313e-05,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -4461,8 +4797,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.000460000000074956,
-                "charge": 0.0
+                "mass": null,
+                "charge": 2.0
             }
         },
         {
@@ -4513,36 +4849,14 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.00045999999996126917,
-                "charge": 0.0
+                "mass": null,
+                "charge": 5.0
             }
         },
         {
             "id": "NADH16",
             "name": "NADH dehydrogenase (ubiquinone-8 & 3 protons)",
-            "enzyme": {
-                "name": "NADH:ubiquinone reductase (H+-translocating)",
-                "ec_number": "7.1.1.2",
-                "tax": {},
-                "related_deprecated_enzyme": {
-                    "ec_number": "1.6.5.3",
-                    "reason": "transferred"
-                },
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "oxidative phosphorylation"
-                    },
-                    "metacyc": {
-                        "id": "PWY1YI0-3",
-                        "name": "aerobic respiration (NDH-1 to cytochrome c oxidase via plastocyanin)"
-                    },
-                    "kegg": {
-                        "id": "rn00130; rn01110",
-                        "name": "Ubiquinone and other terpenoid-quinone biosynthesis; Biosynthesis of secondary metabolites"
-                    }
-                }
-            },
+            "enzyme": {},
             "rhea_id": "",
             "metabolites": {
                 "h_c": {
@@ -4572,8 +4886,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 4.0000000126383384e-05,
-                "charge": 0.0
+                "mass": null,
+                "charge": null
             }
         },
         {
@@ -4621,8 +4935,8 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -1.1368683772161603e-13,
-                "charge": 0.0
+                "mass": null,
+                "charge": -3.0
             }
         },
         {
@@ -4646,7 +4960,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -4671,7 +4985,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": 0.0,
+                "mass": null,
                 "charge": 0.0
             }
         },
@@ -4726,7 +5040,7 @@
             },
             "estimate": {},
             "balance": {
-                "mass": -0.0007800000001907392,
+                "mass": null,
                 "charge": 0.0
             }
         }

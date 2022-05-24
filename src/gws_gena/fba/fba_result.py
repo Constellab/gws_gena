@@ -13,7 +13,8 @@ from pandas import DataFrame
 from scipy import stats
 
 from ..network.network import Network
-from ..network.reaction import Reaction, ReactionPathways
+from ..network.reaction import Reaction
+from ..network.typing.reaction_enzyme_typing import ReactionPathwayDict
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
 
@@ -121,7 +122,7 @@ class FBAResult(ResourceSet):
 
         net: Network = flat_twin.get_flat_network()
         rxn: Reaction
-        pathways: ReactionPathways
+        pathways: ReactionPathwayDict
         for rxn_id in res.x_names:
             if rxn_id in net.reactions:
                 rxn = net.reactions[rxn_id]

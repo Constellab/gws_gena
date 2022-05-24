@@ -17,6 +17,24 @@ from .helper.slugify_helper import SlugifyHelper
 
 # ####################################################################
 #
+# Exception classes
+#
+# ####################################################################
+
+
+class CompoundNotFoundException(BadRequestException):
+    """ CompoundNotFoundException """
+
+
+class InvalidCompoundIdException(BadRequestException):
+    """ InvalidCompoundIdException """
+
+
+class InvalidCompartmentException(BadRequestException):
+    """ InvalidCompartmentException """
+
+# ####################################################################
+#
 # Compound class
 #
 # ####################################################################
@@ -99,7 +117,6 @@ class Compound:
     LEVEL_MINOR = 2
     LEVEL_COFACTOR = 3
 
-
     def __init__(self, id="", name="", compartment=None, formula="", charge="", mass="", monoisotopic_mass="", inchi="",
                  inchikey="", chebi_id="", alt_chebi_ids: List = None, kegg_id="", layout: BiotaCompoundLayoutDict = None):
 
@@ -117,12 +134,12 @@ class Compound:
 
         if len(compartment) == 1:
             if compartment not in self.COMPARTMENTS:
-                raise BadRequestException(f"Invalid compartment '{compartment}'")
+                raise InvalidCompartmentException(f"Invalid compartment '{compartment}'")
             compartment_suffix = compartment
         else:
             compartment_suffix = compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
             if compartment_suffix not in self.COMPARTMENTS:
-                raise BadRequestException(f"Invalid compartment '{compartment}'")
+                raise InvalidCompartmentException(f"Invalid compartment '{compartment}'")
 
         self.compartment = compartment
 
@@ -133,30 +150,31 @@ class Compound:
                 if self.id.endswith(Compound.COMPARTMENT_DELIMITER + c):
                     is_compartment_found = True
             if not is_compartment_found:
-                raise BadRequestException(f"Invalid compound id '{self.id}'. No compartment suffix found.")
+                raise InvalidCompoundIdException(f"Invalid compound id '{self.id}'. No compartment suffix found.")
 
             if not self.id.endswith(Compound.COMPARTMENT_DELIMITER + compartment_suffix):
-                raise BadRequestException(
+                raise InvalidCompoundIdException(
                     f"Invalid compound id '{self.id}'. The id suffix must be {compartment_suffix}.")
         else:
-            is_found = False
             if not name:
-                if inchikey:
-                    c = BiotaCompound.get_or_none(BiotaCompound.inchikey == inchikey)
-                    if c is not None:
-                        name = c.get_name()
-                        is_found = True
-                    else:
-                        is_found = False
+                # if inchikey:
+                #     c = BiotaCompound.get_or_none(BiotaCompound.inchikey == inchikey)
+                #     if c is not None:
+                #         name = c.get_name()
+                #         is_found = True
+                #     else:
+                #         is_found = False
 
-                if not is_found and chebi_id:
+                # if not is_found and chebi_id:
+                if chebi_id:
                     c = BiotaCompound.get_or_none(BiotaCompound.chebi_id == chebi_id)
                     if c is not None:
                         name = c.get_name()
                     else:
                         name = chebi_id
                 else:
-                    raise BadRequestException("Please provide at least a valid compound id, name or chebi_id")
+                    #raise CompoundNotFoundException("The chebi_id and inchikey are not valid")
+                    raise CompoundNotFoundException("The chebi_id is not valid")
 
             self.id = SlugifyHelper.slugify_id(name + Compound.COMPARTMENT_DELIMITER + compartment_suffix)
 
@@ -173,7 +191,14 @@ class Compound:
         self.chebi_id = chebi_id
         self.kegg_id = kegg_id
         self.alt_chebi_ids = (alt_chebi_ids if alt_chebi_ids else [])
-        self.layout = layout
+
+        if layout:
+            self.layout = layout
+        else:
+            # refresh layout
+            self.layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
+                synonym_chebi_ids=chebi_id,
+                compartment=self.compartment)
 
     # -- A --
 
@@ -249,6 +274,32 @@ class Compound:
                 return comp_id
         return SlugifyHelper.slugify_id(net_name + flat_delim + comp_id)
 
+    # @classmethod
+    # def from_bulk_biota(cls, chebi_ids: List = None, compartment="") -> dict:
+    #     """
+    #     Create a a list of compounds from a list of chebi_ids
+
+    #     Faster than iterating with method `from_biota()`
+    #     """
+
+    #     Q = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_ids))
+    #     list_of_comps = {}
+    #     for biota_compound in Q:
+    #         c = Compound(
+    #             id=None,
+    #             name=biota_compound.name,
+    #             compartment=compartment,
+    #             chebi_id=biota_compound.chebi_id,
+    #             kegg_id=biota_compound.kegg_id,
+    #             inchikey=biota_compound.inchikey,
+    #             charge=biota_compound.charge,
+    #             formula=biota_compound.formula,
+    #             mass=biota_compound.mass,
+    #             monoisotopic_mass=biota_compound.monoisotopic_mass,
+    #         )
+    #         list_of_comps[c.chebi_id].append(c)
+    #     return list_of_comps
+
     @classmethod
     def from_biota(
             cls, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="", compartment="") -> 'Compound':
@@ -265,22 +316,20 @@ class Compound:
         :rtype: `gena.compound.Compound`
         """
 
-        if not biota_compound:
-            if inchikey:
-                biota_compound = BiotaCompound.get_or_none(BiotaCompound.inchikey == inchikey)
-
-            if biota_compound is None and chebi_id:
-                if isinstance(chebi_id, (float, int)):
-                    chebi_id = f"CHEBI:{chebi_id}"
-                # if re.match(r"CHEBI\:\d+$", chebi_id):  # not in chebi_id:
-                #     chebi_id = chebi_id
-                biota_compound = BiotaCompound.get_or_none(BiotaCompound.chebi_id == chebi_id)
-            if biota_compound is None and kegg_id:
-                biota_compound = BiotaCompound.get_or_none(BiotaCompound.kegg_id == kegg_id)
+        if biota_compound is None and chebi_id:
+            if isinstance(chebi_id, (float, int)):
+                chebi_id = "CHEBI:"+str(chebi_id)
+            biota_compound = BiotaCompound.get_or_none(BiotaCompound.chebi_id == chebi_id)
+        # if biota_compound is None and inchikey:
+        #     biota_compound = BiotaCompound.get_or_none(BiotaCompound.inchikey == inchikey)
+        # if biota_compound is None and kegg_id:
+        #     biota_compound = BiotaCompound.get_or_none(BiotaCompound.kegg_id == kegg_id)
 
         if biota_compound is None:
-            raise BadRequestException(
-                f"Cannot find compound (inchikey={inchikey}, chebi_id={chebi_id}, kegg_id={kegg_id})")
+            raise CompoundNotFoundException(
+                f"Cannot find compound (chebi_id={chebi_id})")
+            # raise CompoundNotFoundException(
+            #     f"Cannot find compound (chebi_id={chebi_id}, inchikey={inchikey}, kegg_id={kegg_id})")
 
         if not compartment:
             compartment = Compound.COMPARTMENT_CYTOSOL
@@ -310,7 +359,7 @@ class Compound:
         elif is_in_biomass_reaction:
             return self.LEVEL_MAJOR
         else:
-            return 1
+            return 2
 
     def get_related_biota_compound(self):
         """

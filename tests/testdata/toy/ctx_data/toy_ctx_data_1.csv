@@ -1,0 +1,2 @@
+reaction_id,target,lower_bound,upper_bound,confidence_score
+R1_ex,30.0,0,40,1
