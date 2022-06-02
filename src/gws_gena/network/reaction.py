@@ -248,8 +248,8 @@ class Reaction:
         }
 
     @classmethod
-    def create_sink_reaction(
-            self, related_compound: Compound = None, lower_bound: float = LOWER_BOUND, upper_bound: float = UPPER_BOUND) -> 'Reaction':
+    def create_sink_reaction(self, related_compound: Compound = None, lower_bound: float = LOWER_BOUND,
+                             upper_bound: float = UPPER_BOUND) -> 'Reaction':
         if not isinstance(related_compound, Compound):
             raise BadRequestException("A compound is required")
         name = related_compound.id + "_sink"
@@ -323,8 +323,8 @@ class Reaction:
         elif rhea_id:
             tax = None
             query = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
-            if not query:
-                raise BadRequestException(f"No reaction found with rhea id {rhea_id}")
+            if len(query) == 0:
+                raise BadRequestException(f"No reaction found with rhea_id {rhea_id}")
             _added_rxns = []
             for rhea_rxn in query:
                 for e in rhea_rxn.enzymes:
@@ -340,12 +340,14 @@ class Reaction:
                 tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == tax_id)
                 if tax is None:
                     raise BadRequestException(f"No taxonomy found with tax_id {tax_id}")
+
                 query = BiotaEnzyme.select_and_follow_if_deprecated(
                     ec_number=ec_number, tax_id=tax_id, select_only_one=True)
-                if not query:
+
+                if len(query) == 0:
                     if tax_search_method == 'bottom_up':
                         found_query = []
-                        query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
+                        query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number, select_only_one=True)
                         tab = {}
                         for e in query:
                             if not e.ec_number in tab:
@@ -372,8 +374,9 @@ class Reaction:
                                 break
                         if found_query:
                             query = found_query
-                if not query:
-                    raise BadRequestException(f"No enzyme found with ec number {ec_number}")
+
+                if len(query) == 0:
+                    raise BadRequestException(f"No enzyme found with ec_number {ec_number} and tax_id {tax_id}")
                 _added_rxns = []
                 for e in query:
                     for rhea_rxn in e.reactions:
@@ -382,11 +385,11 @@ class Reaction:
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         rxns.append(ReactionBiotaHelper.create_reaction_from_biota(rhea_rxn, e))
                 if not rxns:
-                    raise BadRequestException(f"An error occured with ec number {ec_number}.")
+                    raise BadRequestException(f"No reactions found with ec_number {ec_number}.")
             else:
                 query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number, select_only_one=True)
-                if not query:
-                    raise BadRequestException(f"No enzyme found with ec number {ec_number}")
+                if len(query) == 0:
+                    raise BadRequestException(f"No enzyme found with ec_number {ec_number}")
                 _added_rxns = []
                 for e in query:
                     for rhea_rxn in e.reactions:
@@ -395,7 +398,7 @@ class Reaction:
                         _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
                         rxns.append(ReactionBiotaHelper.create_reaction_from_biota(rhea_rxn, e))
                 if not rxns:
-                    raise BadRequestException(f"An error occured with ec number {ec_number}")
+                    raise BadRequestException(f"No reactions found with ec_number {ec_number}")
         else:
             raise BadRequestException("Invalid arguments")
 

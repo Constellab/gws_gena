@@ -13,7 +13,6 @@ settings = Settings.retrieve()
 class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
     def test_network_import(self):
-        return
         self.print("Test Network Import")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "small_net")

@@ -38,6 +38,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             proto.set_input("context", ctx)
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
+            fba.set_param('fluxes_to_maximize', ["toy_cell_RB"])
             await experiment.run()
 
             # test results
@@ -67,12 +68,12 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             with open(file_path, 'w', encoding="utf-8") as fp:
                 fp.write(fluxes.to_csv())
 
+            print(fluxes)
             table = fluxes.to_numpy()
             table = numpy.array(table, dtype=float)
 
             file_path = os.path.join(result_dir, "flux.csv")
             expected_table = pandas.read_csv(file_path, index_col=0, header=0)
-            print(expected_table)
             expected_table = expected_table.to_numpy()
             expected_table = numpy.array(expected_table, dtype=float)
             self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
@@ -81,11 +82,6 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         relax = True
         self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
 
-        ctx_name = "toy_ctx_data_2"
-        await run_fba(ctx_name=ctx_name, solver="quad", relax_qssa=relax)
-
-        ctx_name = "toy_ctx_data_3"
-        await run_fba(ctx_name=ctx_name, solver="quad", relax_qssa=relax)
-
-        ctx_name = "toy_ctx_data_4"
-        await run_fba(ctx_name=ctx_name, solver="quad", relax_qssa=relax)
+        for i in range(1,6):
+            ctx_name = f"toy_ctx_data_{i}"
+            await run_fba(ctx_name=ctx_name, solver="quad", relax_qssa=relax)

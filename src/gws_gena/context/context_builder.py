@@ -10,8 +10,9 @@ from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
 
 from ..data.flux_table import FluxTable
 from ..network.network import Network
-from .context import Context, Measure, Variable
 from ..network.reaction import Reaction
+from .context import Context, Measure, Variable
+
 
 @task_decorator("ContextBuilder", human_name="Network context builder",
                 short_description="Build a context of metabolic network using a flux table")
@@ -40,7 +41,7 @@ class ContextBuilder(Task):
                     raise BadRequestException(f"Flux {ref_id}: the target must be smaller than upper bound")
 
                 lbound = float(lbounds[i])
-                lbound = Reaction.LOWER_BOUND if math.isnan(lbound) else lbounds
+                lbound = Reaction.LOWER_BOUND if math.isnan(lbound) else lbound
 
                 ubound = float(ubounds[i])
                 ubound = Reaction.UPPER_BOUND if math.isnan(ubound) else ubound

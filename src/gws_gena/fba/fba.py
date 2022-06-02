@@ -15,47 +15,7 @@ from .fba_result import FBAResult
 @task_decorator("FBA_001", human_name="FBA", short_description="Flux balance Analysis")
 class FBA(Task):
     """
-    FBA class
-
-    The flux analysis problem is shaped as follows:
-    -----------------------------------------------
-    min c' * v
-    s.t.
-        A_{ub} * v_{ub} = b_{ub}
-        A_{eq} * v_{eq} = b_{eq}
-        lb < v < ub
-
-    With FBA, one has:
-        S_{int} * v = 0
-        v_{lb} < v < v_{ub}
-    and
-        C * v = y (<=> C * v - y = 0)
-        y = y_b
-        y_lb < y < y_ub
-    where
-        S_{int} is the intracellular stoichimetric matrix
-        y is the vector of measurement,
-        y_b is the vector containing measured values
-        y_{lb} is the vector containing lower bounds of measured values
-        y_{ub} is the vector containing upper bounds of measured values
-
-    Then, the problem is reshaped as follows:
-
-             [ S_{int} |  0      ]           [  0  ]
-             [ --------|------   ]           [ --- ]
-    A_{eq} = [   C     | -Id_{C} ], b_{eq} = [  0  ]
-             [---------|------   ]           [-----]
-             [   0     |  Id_{Y} ]           [ y_b ]
-
-         [  v  ]
-    x =  [ --- ]
-         [  y  ]
-
-         [ v_{lb} ]        [ v_{ub} ]
-    lb = [ ----   ],  ub = [ ----   ]
-         [ y_{lb} ]        [ y_{ub} ]
-
-    Id_{C} and Id_{Y} are identity matrices.
+    FBA task class
     """
 
     input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}

@@ -15,8 +15,8 @@
             "chebi_id": "CHEBI:12965",
             "kegg_id": "",
             "layout": {
-                "x": 200,
-                "y": -800,
+                "x": 0,
+                "y": -1000,
                 "clusters": {
                     "glycolysis": {
                         "name": "glycolysis",
@@ -272,7 +272,7 @@
             "kegg_id": "",
             "layout": {
                 "x": 200,
-                "y": -150,
+                "y": 50,
                 "clusters": {
                     "pyruvate metabolism": {
                         "name": "pyruvate metabolism",
@@ -324,7 +324,7 @@
             "kegg_id": "",
             "layout": {
                 "x": -275.0,
-                "y": 400,
+                "y": 200,
                 "clusters": {
                     "TCA cycle": {
                         "name": "TCA cycle",
@@ -619,19 +619,19 @@
             "chebi_id": "CHEBI:18021",
             "kegg_id": "",
             "layout": {
-                "x": 0,
-                "y": -100,
+                "x": null,
+                "y": -600,
                 "clusters": {
-                    "glycolysis": {
-                        "name": "glycolysis",
-                        "x": 0,
-                        "y": -100,
-                        "level": 1
-                    },
                     "aromatic amino acid metabolism": {
                         "name": "aromatic amino acid metabolism",
                         "x": 2200,
                         "y": -600,
+                        "level": 1
+                    },
+                    "glycolysis": {
+                        "name": "glycolysis",
+                        "x": 0,
+                        "y": -100,
                         "level": 1
                     }
                 }
@@ -916,7 +916,7 @@
             "kegg_id": "",
             "layout": {
                 "x": -200,
-                "y": 300,
+                "y": 100,
                 "clusters": {
                     "pyruvate metabolism": {
                         "name": "pyruvate metabolism",
@@ -967,9 +967,15 @@
             "chebi_id": "CHEBI:4244",
             "kegg_id": "",
             "layout": {
-                "x": 300,
-                "y": -500,
+                "x": 550,
+                "y": -900,
                 "clusters": {
+                    "lipopolysaccharide metabolism": {
+                        "name": "lipopolysaccharide metabolism",
+                        "x": 550,
+                        "y": -900,
+                        "level": 1
+                    },
                     "pentose phosphate metabolism": {
                         "name": "pentose phosphate metabolism",
                         "x": 300,
@@ -994,7 +1000,7 @@
             "kegg_id": "",
             "layout": {
                 "x": 100,
-                "y": -100,
+                "y": 100,
                 "clusters": {
                     "ethanol metabolism": {
                         "name": "ethanol metabolism",
@@ -1071,8 +1077,8 @@
             "chebi_id": "CHEBI:22941",
             "kegg_id": "",
             "layout": {
-                "x": -160,
-                "y": 380,
+                "x": 40,
+                "y": 580,
                 "clusters": {
                     "TCA cycle": {
                         "name": "TCA cycle",
@@ -1484,7 +1490,7 @@
             "chebi_id": "CHEBI:42377",
             "kegg_id": "",
             "layout": {
-                "x": 200,
+                "x": 400,
                 "y": -100,
                 "clusters": {
                     "ethanol metabolism": {
@@ -1620,7 +1626,7 @@
             "chebi_id": "CHEBI:47424",
             "kegg_id": "",
             "layout": {
-                "x": -200,
+                "x": 0,
                 "y": -700,
                 "clusters": {
                     "fructose metabolism": {
@@ -1672,7 +1678,7 @@
             "chebi_id": "CHEBI:36180",
             "kegg_id": "",
             "layout": {
-                "x": -265.0,
+                "x": -65.0,
                 "y": 505.0,
                 "clusters": {
                     "TCA cycle": {
@@ -1765,14 +1771,6 @@
                 "ec_number": "2.7.1.11",
                 "tax": {},
                 "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "degradation of hexoses"
-                    },
-                    "kegg": {
-                        "id": "rn00052",
-                        "name": "Galactose metabolism"
-                    },
                     "metacyc": {
                         "id": "PWY0-1517",
                         "name": "sedoheptulose bisphosphate bypass"
@@ -1866,17 +1864,9 @@
                 "ec_number": "5.3.1.9",
                 "tax": {},
                 "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "glycolysis"
-                    },
                     "kegg": {
                         "id": "rn00010; rn01110; rn01120",
                         "name": "Glycolysis / Gluconeogenesis; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "SUCSYN-PWY; PWY-6992; ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-7385; PWY-8013; P341-PWY; UDPNACETYLGALSYN-PWY; PWY-6981; PWY-6142; GLUCONEO-PWY; PWY-622; PWY66-399; PWY-5384; PWY-7238; PWY-3801; PWY-5054; RUMP-PWY; P122-PWY; PWY-5659; P124-PWY; UDPNAGSYN-PWY; PWY-621; PWY-5514; PWY-7347",
-                        "name": "sucrose biosynthesis I (from photosynthesis); 1,5-anhydrofructose degradation; glycolysis III (from glucose); glycolysis I (from glucose 6-phosphate); 1,3-propanediol biosynthesis (engineered); UDP-N-acetyl-D-galactosamine biosynthesis III; glycolysis V (Pyrococcus); UDP-N-acetyl-D-glucosamine biosynthesis II; chitin biosynthesis; gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; starch biosynthesis; gluconeogenesis III; sucrose degradation IV (sucrose phosphorylase); sucrose biosynthesis II; sucrose degradation II (sucrose synthase); D-sorbitol biosynthesis I; formaldehyde oxidation I; heterolactic fermentation; GDP-mannose biosynthesis; Bifidobacterium shunt; UDP-N-acetyl-D-glucosamine biosynthesis I; sucrose degradation III (sucrose invertase); UDP-N-acetyl-D-galactosamine biosynthesis II; sucrose biosynthesis III"
                     }
                 }
             },
@@ -1908,20 +1898,7 @@
                 "name": "phosphoglycerate kinase",
                 "ec_number": "2.7.2.3",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "photosynthesis; glycolysis"
-                    },
-                    "kegg": {
-                        "id": "rn00010; rn00710; rn01110; rn01120",
-                        "name": "Glycolysis / Gluconeogenesis; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "SUCSYN-PWY; ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-5484; PWY-8004; GLUCONEO-PWY; PWY-7003; P124-PWY; P122-PWY; PWY-6901; PWY66-399; PWY-6886; CALVIN-PWY; P185-PWY; PWY-1042",
-                        "name": "sucrose biosynthesis I (from photosynthesis); glycolysis III (from glucose); glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); Entner-Doudoroff pathway I; gluconeogenesis I; glycerol degradation to butanol; Bifidobacterium shunt; heterolactic fermentation; superpathway of glucose and xylose degradation; gluconeogenesis III; 1-butanol autotrophic biosynthesis (engineered); Calvin-Benson-Bassham cycle; formaldehyde assimilation III (dihydroxyacetone cycle); glycolysis IV"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -2007,17 +1984,9 @@
                 "ec_number": "1.2.1.10",
                 "tax": {},
                 "pathways": {
-                    "kegg": {
-                        "id": "rn00640; rn01120",
-                        "name": "Propanoate metabolism; Microbial metabolism in diverse environments"
-                    },
                     "metacyc": {
                         "id": "PWY-6863",
                         "name": "pyruvate fermentation to hexanol (engineered)"
-                    },
-                    "brenda": {
-                        "id": "",
-                        "name": "propanol degradation; androgen and estrogen metabolism"
                     }
                 }
             },
@@ -2092,20 +2061,7 @@
                 "name": "phosphoglycerate mutase (2,3-diphosphoglycerate-dependent)",
                 "ec_number": "5.4.2.11",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "Entner Doudoroff pathway"
-                    },
-                    "kegg": {
-                        "id": "rn00010",
-                        "name": "Glycolysis / Gluconeogenesis"
-                    },
-                    "metacyc": {
-                        "id": "ANAGLYCOLYSIS-PWY; GLYCOLYSIS; PWY-5484; P341-PWY; PWY-2221; PWY-6142; GLUCONEO-PWY; PWY-7003; P124-PWY; PWY-6901; PWY-7218; PWY-7124; PWY-6886; PWY-5723; PWY-1042; PWY-8004; PWY-1622; P122-PWY; PWY66-399",
-                        "name": "glycolysis III (from glucose); glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); glycolysis V (Pyrococcus); Entner-Doudoroff pathway III (semi-phosphorylative); gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; glycerol degradation to butanol; Bifidobacterium shunt; superpathway of glucose and xylose degradation; photosynthetic 3-hydroxybutanoate biosynthesis (engineered); ethene biosynthesis V (engineered); 1-butanol autotrophic biosynthesis (engineered); Rubisco shunt; glycolysis IV; Entner-Doudoroff pathway I; formaldehyde assimilation I (serine pathway); heterolactic fermentation; gluconeogenesis III"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -2166,16 +2122,7 @@
                 "name": "alcohol dehydrogenase [NAD(P)+]",
                 "ec_number": "1.1.1.71",
                 "tax": {},
-                "pathways": {
-                    "kegg": {
-                        "id": "rn00830",
-                        "name": "Retinol metabolism"
-                    },
-                    "metacyc": {
-                        "id": "PWY-7385",
-                        "name": "1,3-propanediol biosynthesis (engineered)"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -2296,10 +2243,6 @@
                     "kegg": {
                         "id": "rn00620; rn00680; rn00710; rn01120",
                         "name": "Pyruvate metabolism; Methane metabolism; Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "PWY-7117; GLUCONEO-PWY; PWY-561",
-                        "name": "C4 photosynthetic carbon assimilation cycle, PEPCK type; gluconeogenesis I; superpathway of glyoxylate cycle and fatty acid degradation"
                     }
                 }
             },
@@ -2344,10 +2287,6 @@
                 "ec_number": "4.2.1.3",
                 "tax": {},
                 "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "propionate fermentation"
-                    },
                     "kegg": {
                         "id": "rn00630; rn01110; rn01120",
                         "name": "Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
@@ -2390,10 +2329,6 @@
                 "ec_number": "4.2.1.3",
                 "tax": {},
                 "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "propionate fermentation"
-                    },
                     "kegg": {
                         "id": "rn00630; rn01110; rn01120",
                         "name": "Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
@@ -2435,20 +2370,7 @@
                 "name": "apyrase",
                 "ec_number": "3.6.1.5",
                 "tax": {},
-                "pathways": {
-                    "kegg": {
-                        "id": "rn00240",
-                        "name": "Pyrimidine metabolism"
-                    },
-                    "brenda": {
-                        "id": "",
-                        "name": "non-pathway related"
-                    },
-                    "metacyc": {
-                        "id": "PWY-7185",
-                        "name": "UTP and CTP dephosphorylation I"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -2487,20 +2409,7 @@
                 "name": "phosphoenolpyruvate carboxykinase (ATP)",
                 "ec_number": "4.1.1.49",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "C4 and CAM-carbon fixation; gluconeogenesis"
-                    },
-                    "kegg": {
-                        "id": "rn00010; rn00620; rn01110; rn01120",
-                        "name": "Glycolysis / Gluconeogenesis; Pyruvate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "PWY-7383",
-                        "name": "anaerobic energy metabolism (invertebrates, cytosol)"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -2628,20 +2537,7 @@
                 "name": "adenylate kinase",
                 "ec_number": "2.7.4.3",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "pyrimidine metabolism"
-                    },
-                    "kegg": {
-                        "id": "rn00240",
-                        "name": "Pyrimidine metabolism"
-                    },
-                    "metacyc": {
-                        "id": "PWY-7205",
-                        "name": "CMP phosphorylation"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -2802,20 +2698,7 @@
                 "name": "pyruvate kinase",
                 "ec_number": "2.7.1.40",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "gluconeogenesis"
-                    },
-                    "kegg": {
-                        "id": "rn00620; rn01120",
-                        "name": "Pyruvate metabolism; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "GLYCOLYSIS; PWY-5484; P341-PWY; PWY-6142; GLUCONEO-PWY; P23-PWY",
-                        "name": "glycolysis I (from glucose 6-phosphate); glycolysis II (from fructose 6-phosphate); glycolysis V (Pyrococcus); gluconeogenesis II (Methanobacterium thermoautotrophicum); gluconeogenesis I; reductive TCA cycle I"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3002,14 +2885,6 @@
                 "ec_number": "5.1.3.1",
                 "tax": {},
                 "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "photosynthesis; pentose phosphate pathway"
-                    },
-                    "kegg": {
-                        "id": "rn00030; rn00040; rn00710; rn01110; rn01120",
-                        "name": "Pentose phosphate pathway; Pentose and glucuronate interconversions; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
                     "metacyc": {
                         "id": "PWY-8090; PWY-8091; PWY-7787; PWY-7789; PWY-7788; PWY-7786",
                         "name": "D-apionate degradation II (RLP decarboxylase); D-apionate degradation I (xylose isomerase family decarboxylase); L-threitol degradation; erythritol degradation I; erythritol degradation II; D-threitol degradation"
@@ -3044,20 +2919,7 @@
                 "name": "citrate synthase (unknown stereospecificity)",
                 "ec_number": "2.3.3.16",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "propionate fermentation"
-                    },
-                    "kegg": {
-                        "id": "rn00640",
-                        "name": "Propanoate metabolism"
-                    },
-                    "metacyc": {
-                        "id": "PWY-5747; PWY0-42",
-                        "name": "2-methylcitrate cycle II; 2-methylcitrate cycle I"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3099,20 +2961,7 @@
                 "name": "ribose-5-phosphate isomerase",
                 "ec_number": "5.3.1.6",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "degradation of pentoses"
-                    },
-                    "kegg": {
-                        "id": "rn00051; rn01120",
-                        "name": "Fructose and mannose metabolism; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "LYXMET-PWY",
-                        "name": "L-lyxose degradation"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3241,20 +3090,7 @@
                 "name": "phosphopyruvate hydratase",
                 "ec_number": "4.2.1.11",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "methionine metabolism"
-                    },
-                    "kegg": {
-                        "id": "rn00270",
-                        "name": "Cysteine and methionine metabolism"
-                    },
-                    "metacyc": {
-                        "id": "PWY-4361",
-                        "name": "S-methyl-5-thio-alpha-D-ribose 1-phosphate degradation I"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3384,14 +3220,6 @@
                     "kegg": {
                         "id": "rn00660",
                         "name": "C5-Branched dibasic acid metabolism"
-                    },
-                    "brenda": {
-                        "id": "",
-                        "name": "ethylmalonyl-CoA pathway"
-                    },
-                    "metacyc": {
-                        "id": "PWY-1622; PWY-5741",
-                        "name": "formaldehyde assimilation I (serine pathway); ethylmalonyl-CoA pathway"
                     }
                 }
             },
@@ -3435,20 +3263,7 @@
                 "name": "transaldolase",
                 "ec_number": "2.2.1.2",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "pentose phosphate pathway"
-                    },
-                    "kegg": {
-                        "id": "rn00030; rn01110; rn01120",
-                        "name": "Pentose phosphate pathway; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "P124-PWY; P185-PWY; PWY-5723; NONOXIPENT-PWY; PWY-1861",
-                        "name": "Bifidobacterium shunt; formaldehyde assimilation III (dihydroxyacetone cycle); Rubisco shunt; pentose phosphate pathway (non-oxidative branch) I; formaldehyde assimilation II (assimilatory RuMP Cycle)"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3539,20 +3354,7 @@
                 "name": "transketolase",
                 "ec_number": "2.2.1.1",
                 "tax": {},
-                "pathways": {
-                    "kegg": {
-                        "id": "rn00710; rn01120; rn00030; rn01110",
-                        "name": "Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments; Pentose phosphate pathway; Biosynthesis of secondary metabolites"
-                    },
-                    "metacyc": {
-                        "id": "PWY-8178; PWY-6901; CALVIN-PWY; PWY-5723; NONOXIPENT-PWY; P185-PWY; PWY-1861; P21-PWY",
-                        "name": "pentose phosphate pathway (non-oxidative branch) II; superpathway of glucose and xylose degradation; Calvin-Benson-Bassham cycle; Rubisco shunt; pentose phosphate pathway (non-oxidative branch) I; formaldehyde assimilation III (dihydroxyacetone cycle); formaldehyde assimilation II (assimilatory RuMP Cycle); pentose phosphate pathway (partial)"
-                    },
-                    "brenda": {
-                        "id": "",
-                        "name": "photosynthesis; pentose phosphate pathway"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3588,20 +3390,7 @@
                 "name": "transketolase",
                 "ec_number": "2.2.1.1",
                 "tax": {},
-                "pathways": {
-                    "kegg": {
-                        "id": "rn00710; rn01120; rn00030; rn01110",
-                        "name": "Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments; Pentose phosphate pathway; Biosynthesis of secondary metabolites"
-                    },
-                    "metacyc": {
-                        "id": "PWY-8178; PWY-6901; CALVIN-PWY; PWY-5723; NONOXIPENT-PWY; P185-PWY; PWY-1861; P21-PWY",
-                        "name": "pentose phosphate pathway (non-oxidative branch) II; superpathway of glucose and xylose degradation; Calvin-Benson-Bassham cycle; Rubisco shunt; pentose phosphate pathway (non-oxidative branch) I; formaldehyde assimilation III (dihydroxyacetone cycle); formaldehyde assimilation II (assimilatory RuMP Cycle); pentose phosphate pathway (partial)"
-                    },
-                    "brenda": {
-                        "id": "",
-                        "name": "photosynthesis; pentose phosphate pathway"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3680,20 +3469,7 @@
                 "name": "fructose-bisphosphate aldolase",
                 "ec_number": "4.1.2.13",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "photosynthesis"
-                    },
-                    "kegg": {
-                        "id": "rn00710; rn01120",
-                        "name": "Carbon fixation in photosynthetic organisms; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "PWY-6644",
-                        "name": "fluoroacetate and fluorothreonine biosynthesis"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3726,20 +3502,7 @@
                 "name": "fructose-bisphosphatase",
                 "ec_number": "3.1.3.11",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "myo-inositol biosynthesis"
-                    },
-                    "kegg": {
-                        "id": "rn00562; rn00521; rn01110",
-                        "name": "Inositol phosphate metabolism; Streptomycin biosynthesis; Biosynthesis of secondary metabolites"
-                    },
-                    "metacyc": {
-                        "id": "PWY-2301; PWY-4702",
-                        "name": "myo-inositol biosynthesis; phytate degradation I"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -3970,20 +3733,7 @@
                 "name": "glucose-6-phosphate dehydrogenase [NAD(P)+]",
                 "ec_number": "1.1.1.363",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "pentose phosphate pathway"
-                    },
-                    "metacyc": {
-                        "id": "PWY-8004; GLYCOLYSIS-E-D; RUMP-PWY; P122-PWY; OXIDATIVEPENT-PWY; PWY-7268",
-                        "name": "Entner-Doudoroff pathway I; superpathway of glycolysis and the Entner-Doudoroff pathway; formaldehyde oxidation I; heterolactic fermentation; pentose phosphate pathway (oxidative branch) I; cytosolic NADPH production (yeast)"
-                    },
-                    "kegg": {
-                        "id": "rn00030; rn00480; rn01110; rn01120",
-                        "name": "Pentose phosphate pathway; Glutathione metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -4023,14 +3773,6 @@
                 "ec_number": "1.2.1.12",
                 "tax": {},
                 "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "Entner Doudoroff pathway"
-                    },
-                    "kegg": {
-                        "id": "rn00010; rn00710; rn01110; rn01120",
-                        "name": "Glycolysis / Gluconeogenesis; Carbon fixation in photosynthetic organisms; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
                     "metacyc": {
                         "id": "PWY1YI0-1",
                         "name": "arsenate detoxification V"
@@ -4108,12 +3850,7 @@
                 "name": "glutamine synthetase",
                 "ec_number": "6.3.1.2",
                 "tax": {},
-                "pathways": {
-                    "metacyc": {
-                        "id": "PWY-6965",
-                        "name": "methylamine degradation II"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -4257,17 +3994,9 @@
                 "ec_number": "6.3.5.2",
                 "tax": {},
                 "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "glutamate and glutamine metabolism"
-                    },
                     "kegg": {
                         "id": "rn00983",
                         "name": "Drug metabolism - other enzymes"
-                    },
-                    "metacyc": {
-                        "id": "GLUTSYN-PWY; PWY490-4; PWY-5921; CITRULBIO-PWY; GLUTAMINDEG-PWY",
-                        "name": "L-glutamate biosynthesis I; L-asparagine biosynthesis III (tRNA-dependent); glutaminyl-tRNAgln biosynthesis via transamidation; L-citrulline biosynthesis; L-glutamine degradation I"
                     }
                 }
             },
@@ -4391,20 +4120,7 @@
                 "name": "phosphogluconate dehydrogenase (NADP+-dependent, decarboxylating)",
                 "ec_number": "1.1.1.44",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "pentose phosphate pathway"
-                    },
-                    "kegg": {
-                        "id": "rn00030; rn00480; rn01110; rn01120",
-                        "name": "Pentose phosphate pathway; Glutathione metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "P122-PWY; RUMP-PWY",
-                        "name": "heterolactic fermentation; formaldehyde oxidation I"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -4468,20 +4184,7 @@
                 "name": "isocitrate dehydrogenase (NADP+)",
                 "ec_number": "1.1.1.42",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "methylaspartate cycle; citric acid cycle"
-                    },
-                    "kegg": {
-                        "id": "rn01110; rn01120",
-                        "name": "Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "P105-PWY; PWY-6969; PWY-7254; PWY-5913; PWY-6728; TCA; P23-PWY; PWY-7268; PWY-7124; PWY-6549; FERMENTATION-PWY; REDCITCYC",
-                        "name": "TCA cycle IV (2-oxoglutarate decarboxylase); TCA cycle V (2-oxoglutarate synthase); TCA cycle VII (acetate-producers); partial TCA cycle (obligate autotrophs); methylaspartate cycle; TCA cycle I (prokaryotic); reductive TCA cycle I; cytosolic NADPH production (yeast); ethene biosynthesis V (engineered); L-glutamine biosynthesis III; mixed acid fermentation; TCA cycle VI (Helicobacter)"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -4520,20 +4223,7 @@
                 "name": "isocitrate lyase",
                 "ec_number": "4.1.3.1",
                 "tax": {},
-                "pathways": {
-                    "metacyc": {
-                        "id": "PWY-7118; PWY-7854; PWY-7295; PWY-7294; GLYOXYLATE-BYPASS; GLYOXDEG-PWY",
-                        "name": "chitin deacetylation; crotonyl-CoA/ethylmalonyl-CoA/hydroxybutyryl-CoA cycle (engineered); L-arabinose degradation IV; D-xylose degradation IV; glyoxylate cycle; glycolate and glyoxylate degradation II"
-                    },
-                    "brenda": {
-                        "id": "",
-                        "name": "citric acid cycle"
-                    },
-                    "kegg": {
-                        "id": "rn00620; rn00630; rn01110; rn01120",
-                        "name": "Pyruvate metabolism; Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites; Microbial metabolism in diverse environments"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -4566,20 +4256,7 @@
                 "name": "D-lactate dehydrogenase",
                 "ec_number": "1.1.1.28",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "methylaspartate cycle; C4 and CAM-carbon fixation; citric acid cycle; alanine metabolism"
-                    },
-                    "kegg": {
-                        "id": "rn00350",
-                        "name": "Tyrosine metabolism"
-                    },
-                    "metacyc": {
-                        "id": "PWY-5049",
-                        "name": "rosmarinic acid biosynthesis II"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -4704,20 +4381,7 @@
                 "name": "malate dehydrogenase",
                 "ec_number": "1.1.1.37",
                 "tax": {},
-                "pathways": {
-                    "brenda": {
-                        "id": "",
-                        "name": "coenzyme M biosynthesis"
-                    },
-                    "kegg": {
-                        "id": "rn00270; rn00680; rn01120",
-                        "name": "Cysteine and methionine metabolism; Methane metabolism; Microbial metabolism in diverse environments"
-                    },
-                    "metacyc": {
-                        "id": "PWY-6642; P261-PWY",
-                        "name": "(R)-cysteate degradation; coenzyme M biosynthesis I"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {
@@ -4996,20 +4660,7 @@
                 "name": "dihydrolipoyl dehydrogenase",
                 "ec_number": "1.8.1.4",
                 "tax": {},
-                "pathways": {
-                    "kegg": {
-                        "id": "rn00630; rn01110",
-                        "name": "Glyoxylate and dicarboxylate metabolism; Biosynthesis of secondary metabolites"
-                    },
-                    "metacyc": {
-                        "id": "PYRUVDEHYD-PWY",
-                        "name": "pyruvate decarboxylation to acetyl CoA I"
-                    },
-                    "brenda": {
-                        "id": "",
-                        "name": "non-pathway related"
-                    }
-                }
+                "pathways": {}
             },
             "rhea_id": "",
             "metabolites": {

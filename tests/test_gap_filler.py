@@ -53,14 +53,9 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
 
-        file_path = os.path.join(result_dir, organism, "ecoli_gap_filled.json")
-        with open(file_path, 'w', encoding="utf-8") as fp:
-            json.dump(result.dumps(), fp)
-
-        # with open(file_path, 'r', encoding="utf-8") as fp:
-        #     intial_json = json.load(fp)
-        #     print(f"Initial number of metabolites {len(intial_json['metabolites'])}")
-        #     #self.assertEquals(len(dump_json["metabolites"]), len(intial_json["metabolites"]))
+        # file_path = os.path.join(result_dir, organism, "ecoli_gap_filled.json")
+        # with open(file_path, 'w', encoding="utf-8") as fp:
+        #     json.dump(result.dumps(), fp)
 
         file_path = os.path.join(result_dir, organism, "ecoli_gap_filled.json")
         with open(file_path, 'r', encoding="utf-8") as fp:

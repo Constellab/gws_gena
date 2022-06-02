@@ -4,9 +4,9 @@
 # About us: https://gencovery.com
 
 import pandas
-from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
-                      Logger, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
+                      ListParam, Logger, OutputSpec, StrParam, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 from pandas import DataFrame
 
 from ...data.ec_table import ECTable
@@ -28,10 +28,10 @@ class KOA(Task):
     """
 
     input_specs = {
-        'twin': (Twin,),
-        'ko_table': (EntityIDTable, ECTable,),
+        'twin': InputSpec(Twin),
+        'ko_table': InputSpec([EntityIDTable, ECTable]),
     }
-    output_specs = {'result': (KOAResultTable,)}
+    output_specs = {'result': OutputSpec(KOAResultTable)}
     config_specs = {
         **FBA.config_specs,
         'monitored_fluxes': ListParam(optional=True, short_description="The list fluxes to monitor"),

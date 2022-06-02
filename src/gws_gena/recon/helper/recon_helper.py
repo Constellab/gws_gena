@@ -101,6 +101,7 @@ class ReconHelper(TaskHelper):
                     for rxn in rxns:
                         net.add_reaction(rxn)
                 except Exception as err:
+                    Logger.warning(f"An non-blocking error occured: {err}")
                     net.set_reaction_recon_tag(ec, {
                         "ec_number": ec,
                         "error": str(err)

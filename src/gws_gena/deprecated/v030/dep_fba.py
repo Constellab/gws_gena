@@ -3,9 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BadRequestException, BoolParam, ConfigParams, ListParam,
-                      Logger, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
+                      ListParam, Logger, OutputSpec, StrParam, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 
 from ...fba.fba_helper.fba_helper import FBAHelper
 from ...fba.fba_result import FBAResult
@@ -60,8 +60,8 @@ class FBA(Task):
     Id_{C} and Id_{Y} are identity matrices.
     """
 
-    input_specs = {'twin': Twin}
-    output_specs = {'result': FBAResult}
+    input_specs = {'twin': InputSpec(Twin)}
+    output_specs = {'result': OutputSpec(FBAResult)}
     config_specs = {
         "fluxes_to_maximize": ListParam(default_value="[]", human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The fluxes to minimize"),

@@ -253,7 +253,6 @@ class NetworkLoaderHelper:
             for c in query:
                 biota_comps[c.chebi_id] = c
             Logger.info(f"{len(query)} compounds loaded.")
-
             query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_number_list))
             for r in query:
                 biota_enzymes[r.ec_number] = r

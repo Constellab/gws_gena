@@ -23,6 +23,50 @@ from ..fba_result import FBAResult, OptimizeResult
 
 class FBAHelper(TaskHelper):
 
+    """
+    FBA helper class
+
+    The flux analysis problem is shaped as follows:
+    -----------------------------------------------
+    min c' * v
+    s.t.
+        A_{ub} * v_{ub} = b_{ub}
+        A_{eq} * v_{eq} = b_{eq}
+        lb < v < ub
+
+    With FBA, one has:
+        S_{int} * v = 0
+        v_{lb} < v < v_{ub}
+    and
+        C * v = y (<=> C * v - y = 0)
+        y = y_b
+        y_lb < y < y_ub
+    where
+        S_{int} is the intracellular stoichimetric matrix
+        y is the vector of measurement,
+        y_b is the vector containing measured values
+        y_{lb} is the vector containing lower bounds of measured values
+        y_{ub} is the vector containing upper bounds of measured values
+
+    Then, the problem is reshaped as follows:
+
+             [ S_{int} |  0      ]           [  0  ]
+             [ --------|------   ]           [ --- ]
+    A_{eq} = [   C     | -Id_{C} ], b_{eq} = [  0  ]
+             [---------|------   ]           [-----]
+             [   0     |  Id_{Y} ]           [ y_b ]
+
+         [  v  ]
+    x =  [ --- ]
+         [  y  ]
+
+         [ v_{lb} ]        [ v_{ub} ]
+    lb = [ ----   ],  ub = [ ----   ]
+         [ y_{lb} ]        [ y_{ub} ]
+
+    Id_{C} and Id_{Y} are identity matrices.
+    """
+
     __CVXPY_MAX_ITER = 100000
     __CVXPY_SOLVER_PRIORITY = [cp.OSQP, cp.ECOS]
 
@@ -98,16 +142,19 @@ class FBAHelper(TaskHelper):
             columns=Y_names,
             data=- np.identity(C.shape[0])
         )
+
+        Y_obs_names = [s+"_obsv" for s in Y_names]
         Y_zeros = DataFrame(
-            index=Y_names,
+            index=Y_obs_names,
             columns=S_int.columns,
             data=np.zeros((C.shape[0], S_int.shape[1],))
         )
         Id_Y = DataFrame(
-            index=Y_names,
+            index=Y_zeros.index,
             columns=Y_names,
             data=np.identity(C.shape[0])
         )
+
         df = flat_net.get_reaction_bounds()
         int_flux_lb = df.loc[:, ["lb"]]
         int_flux_ub = df.loc[:, ["ub"]]
@@ -171,25 +218,10 @@ class FBAHelper(TaskHelper):
                 else:
                     raise BadRequestException("The biomass reaction is not found")
             else:
-                # print(list_of_rxn_names)
                 if rxn_name in list_of_rxn_names:
                     expanded_fluxes_to_minmax.append(rxn_name+":"+weight)
                 else:
-                    #raise Exception(list_of_rxn_names)
                     raise BadRequestException(f"Invalid reactions to maximize. No reaction found with id '{k}'")
-
-                # if "*" in rxn_name:
-                #     #rxn_name = rxn_name.replace("*", ".*")
-                #     regexp = re.compile(rxn_name)
-                #     for tmp_rxn_name in list_of_rxn_names:
-                #         if regexp.match(tmp_rxn_name, re.IGNORECASE):
-                #             expanded_fluxes_to_minmax.append(tmp_rxn_name+":"+weight)
-
-                # else:
-                #     if rxn_name in list_of_rxn_names:
-                #         expanded_fluxes_to_minmax.append(rxn_name+":"+weight)
-                #     else:
-                #         raise BadRequestException(f"Invalid reactions to maximize. No reaction found with id '{k}'")
         return list(set(expanded_fluxes_to_minmax))
 
     # -- S --
@@ -432,9 +464,10 @@ class FBAHelper(TaskHelper):
     def __upgrade_Aeq_beq_with_output_coefficient_score(cls, A_eq, b_eq, beq_confidence_score):
         for i in range(0, beq_confidence_score.shape[0]):
             name = beq_confidence_score.index[i]
+            name_obs = name + "_obsv"
             score = abs(beq_confidence_score.iloc[i, 0])
-            b_eq.loc[name, :] = score * b_eq.loc[name, :]
-            A_eq.loc[name, :] = score * A_eq.loc[name, :]
+            b_eq.loc[name_obs, :] = score * b_eq.loc[name_obs, :]
+            A_eq.loc[name_obs, :] = score * A_eq.loc[name_obs, :]
         return A_eq, b_eq
 
     @classmethod
