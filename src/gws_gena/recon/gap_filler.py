@@ -65,49 +65,49 @@ class GapFiller(Task):
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
-        i=0
-        nb_gaps_filled=0
-        max_gaps_filled=0
+        i = 0
+        nb_gaps_filled = 0
+        max_gaps_filled = 0
         while True:
             i += 1
-            done=max_gaps_filled-nb_gaps_filled
+            done = max_gaps_filled-nb_gaps_filled
             if max_gaps_filled == 0:
-                perc=0
+                perc = 0
             else:
-                perc=100 * done/max_gaps_filled
+                perc = 100 * done/max_gaps_filled
             if perc < 0:
-                perc=0
+                perc = 0
 
-            self.update_progress_value(perc, message = f"Doing pass {i} ...")
+            self.update_progress_value(perc, message=f"Doing pass {i} ...")
 
-            nb_gaps_filled=self._fill_gaps_with_tax(net, params)
+            nb_gaps_filled = self._fill_gaps_with_tax(net, params)
             if nb_gaps_filled <= 1:
-                message=f"Pass {i} done: {nb_gaps_filled} gap filled."
+                message = f"Pass {i} done: {nb_gaps_filled} gap filled."
             else:
-                message=f"Pass {i} done: {nb_gaps_filled} gaps filled."
-            self.update_progress_value(perc, message = message)
+                message = f"Pass {i} done: {nb_gaps_filled} gaps filled."
+            self.update_progress_value(perc, message=message)
             if not nb_gaps_filled:
                 break
-            max_gaps_filled=max(max_gaps_filled, nb_gaps_filled)
+            max_gaps_filled = max(max_gaps_filled, nb_gaps_filled)
 
         return {"network": net}
 
     def _fill_gaps_with_tax(self, net, params):
-        nb_gaps_filled=0
-        _gap_info=net.get_gaps()
-        tax_id=params["tax_id"]
-        skip_cofactors=params["skip_cofactors"]
-        fill_each_gap_once=params["fill_each_gap_once"]
+        nb_gaps_filled = 0
+        _gap_info = net.get_gaps()
+        tax_id = params["tax_id"]
+        skip_cofactors = params["skip_cofactors"]
+        fill_each_gap_once = params["fill_each_gap_once"]
 
         if tax_id:
-            tax=BiotaTaxo.get_or_none(BiotaTaxo.tax_id == tax_id)
+            tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == tax_id)
             if tax is None:
                 raise BadRequestException(f"No taxonomy found with taxonomy id {tax_id}")
         else:
-            tax=None
+            tax = None
         # orphan_list = net.get_orphan_compound_ids()
-        dead_end_list=net.get_deadend_compound_ids()
-        # self.log_info_message(f'Number of dead-end metabolites: {len(dead_end_list)}')
+        dead_end_list = net.get_deadend_compound_ids()
+        self.log_info_message(f'Number of dead-end metabolites: {len(dead_end_list)}')
         # Logger.info(f'List of dead-end compounds: {dead_end_list}')
         # Logger.info(f'List of orphan compounds: {orphan_list}')
 
@@ -116,7 +116,7 @@ class GapFiller(Task):
             # if is_orphan:
             #     self.log_info_message(f'Skip orphan metabolite: {k}')
             #     continue
-            comp: Compound=net.compounds[k]
+            comp: Compound = net.compounds[k]
             if comp.is_sink():
                 raise BadRequestException("Coherence check. A sink reaction compound should not be a gap compound.")
             if not comp.is_steady():
@@ -126,18 +126,7 @@ class GapFiller(Task):
             if not comp.chebi_id:
                 continue
 
-            # biota_c = BiotaCompound.get_or_none(BiotaCompound.chebi_id == comp.chebi_id)
-            # if biota_c is None:
-            #     self.log_warning_message(
-            #         f'No compound corresponds to chebi_id "{comp.chebi_id}". It is may be an alternative chebi id')
-            #     net.set_compound_recon_tag(comp.id, {
-            #         "id": comp.id,
-            #         "is_chebi_not_found": True,
-            #         "error": "CheBI ID not found"
-            #     })
-            #     continue
-
-            biota_c_list=BiotaCompound.search_by_chebi_ids(comp.chebi_id)
+            biota_c_list = BiotaCompound.search_by_chebi_ids(comp.chebi_id)
             if len(biota_c_list) == 0:
                 Logger.warning(f'No compound corresponds to chebi_id "{comp.chebi_id}"')
                 net.set_compound_recon_tag(comp.id, {
@@ -146,23 +135,26 @@ class GapFiller(Task):
                     "error": "CheBI ID not found"
                 })
 
+            ReactionEnzyme = BiotaReaction.enzymes.get_through_model()
             for biota_c in biota_c_list:
                 for biota_rxn in biota_c.reactions:
                     if tax:
-                        is_rxn_ok=False
-                        enzymes=biota_rxn.enzymes
-                        for e in enzymes:
-                            enzyme_tax_id=getattr(e, "tax_"+tax.rank)
-                            if enzyme_tax_id == tax.tax_id:
-                                # an enzyme exists at this taxonomy level
-                                is_rxn_ok=True
-                                break
-                    else:
-                        is_rxn_ok=True
+                        is_rxn_ok = False
+                        #enzymes = biota_rxn.enzymes
+                        enzymes = BiotaEnzyme.select(BiotaEnzyme.id) \
+                            .join(ReactionEnzyme, on=(ReactionEnzyme.enzyme == BiotaEnzyme.id)) \
+                            .where(ReactionEnzyme.reaction == biota_rxn)\
+                            .where(getattr(BiotaEnzyme, "tax_"+tax.rank) == tax.tax_id)
+                        is_rxn_ok = len(enzymes) > 0
+                        if is_rxn_ok:
+                            break
 
-                    is_filled_once=False
+                    else:
+                        is_rxn_ok = True
+
+                    is_filled_once = False
                     if is_rxn_ok:
-                        rxns=Reaction.from_biota(biota_reaction = biota_rxn)
+                        rxns = Reaction.from_biota(biota_reaction=biota_rxn)
 
                         # ...
                         # ... @ToDo : check compound id
@@ -176,7 +168,7 @@ class GapFiller(Task):
                                     "is_from_gap_filling": True
                                 })
                                 nb_gaps_filled += 1
-                                is_filled_once=True
+                                is_filled_once = True
                                 break  # > select only one reaction
 
                     if fill_each_gap_once and is_filled_once:

@@ -5,8 +5,8 @@ import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ExperimentService, File, GTest, IExperiment, Settings
-from gws_gena import Context, ContextImporter, Network, NetworkImporter, Twin
-from gws_gena.deprecated.v030.dep_fva_proto import FVAProto
+from gws_gena import (Context, ContextImporter, FVAProto, Network,
+                      NetworkImporter, Twin)
 
 settings = Settings.retrieve()
 

@@ -98,6 +98,8 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "ecoli")
         file_path = os.path.join(data_dir, "ecoli.json")
+        # data_dir = os.path.join(data_dir, "ecoli/build")
+        # file_path = os.path.join(data_dir, "ecoli_BL21_iECD_1391.json")
 
         # import 1
         net = NetworkImporter.call(

@@ -4,6 +4,7 @@
 # About us: https://gencovery.com
 
 from gws_core import Logger
+
 from ...data.ec_table import ECTable
 from ...data.entity_id_table import EntityIDTable
 from ...network.network import Network
@@ -42,6 +43,7 @@ class ReactionKnockOutHelper:
                             rxn.lower_bound = -cls.FLUX_EPSILON
                             rxn.upper_bound = cls.FLUX_EPSILON
                             found_id.append(ec_number)
+                            # print(f'{ko_ec} - {rxn.lower_bound} -  {rxn.upper_bound}')
 
         elif isinstance(reaction_table, EntityIDTable):
             # ko using RXN_ID and EC_NUMBER
@@ -61,6 +63,7 @@ class ReactionKnockOutHelper:
                             rxn.lower_bound = -cls.FLUX_EPSILON
                             rxn.upper_bound = cls.FLUX_EPSILON
                             found_id.append(ko_id)
+                            # print(f'=====> {ko_id} : {rxn.lower_bound} :  {rxn.upper_bound}')
 
         # write warnings
         not_found_id = []

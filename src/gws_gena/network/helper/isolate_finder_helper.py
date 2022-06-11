@@ -13,9 +13,6 @@ class IsolateFinder:
 
     @staticmethod
     def find(network: Network) -> Table:
-
-        S: DataFrame = network.create_steady_stoichiometric_matrix()
-        sum_S = S.sum(axis=1)
-        print(sum_S)
-
-        pass
+        """ Find isolates """
+        # S: DataFrame = network.create_steady_stoichiometric_matrix()
+        # sum_S = S.sum(axis=1)

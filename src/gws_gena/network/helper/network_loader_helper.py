@@ -249,7 +249,8 @@ class NetworkLoaderHelper:
         if loads_biota_info:
             Logger.info("Loading all compounds and enzymes from biota. This operation may take a while.")
             chebi_id_list, ec_number_list = cls._extracts_all_ids_from_dump(data)
-            query = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_id_list))
+            # query = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_id_list))
+            query = BiotaCompound.search_by_chebi_ids(chebi_id_list)
             for c in query:
                 biota_comps[c.chebi_id] = c
             Logger.info(f"{len(query)} compounds loaded.")

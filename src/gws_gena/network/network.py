@@ -321,11 +321,13 @@ class Network(Resource):
         if biomass_rxn is not None:
             for comp_id in biomass_rxn.substrates:
                 biomass_comps.append(comp_id)
+                biomass_rxn.substrates[comp_id]["compound"].append_biomass_layout()
             for comp_id in biomass_rxn.products:
                 biomass_comps.append(comp_id)
+                biomass_rxn.products[comp_id]["compound"].append_biomass_layout()
 
         for _met in self.compounds.values():
-            is_in_biomass_reaction = _met.id in biomass_comps
+            #is_in_biomass_reaction = _met.id in biomass_comps
             _met_json.append({
                 "id": _met.id,
                 "name": _met.name,
@@ -335,7 +337,7 @@ class Network(Resource):
                 "formula": _met.formula,
                 "inchi": _met.inchi,
                 "is_cofactor": _met.is_cofactor(),
-                "level": _met.get_level(is_in_biomass_reaction=is_in_biomass_reaction),
+                "level": _met.layout.get("level", 2),  # _met.get_level(is_in_biomass_reaction=is_in_biomass_reaction),
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,

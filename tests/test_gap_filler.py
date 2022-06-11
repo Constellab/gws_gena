@@ -29,7 +29,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         for k in info["compounds"]:
             if info["compounds"][k]["is_dead_end"]:
                 nb_gaps += 1
-        print(f"Total number of gaps: {nb_gaps} over {len(info['compounds'])} compounds")
+        print(f"Total number of dead-end: {nb_gaps} over {len(info['compounds'])} compounds")
 
         params = {'fill_each_gap_once': True}
         if organism == "pcys":

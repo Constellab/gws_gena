@@ -13,6 +13,7 @@ from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_core import BadRequestException, Utils
 
+from .helper.layout_helper import LayoutHelper
 from .helper.slugify_helper import SlugifyHelper
 
 # ####################################################################
@@ -200,7 +201,18 @@ class Compound:
                 synonym_chebi_ids=chebi_id,
                 compartment=self.compartment)
 
+        if self.is_biomass():
+            self.append_biomass_layout()
+
     # -- A --
+
+    def append_biomass_layout(self):
+        if "clusters" not in self.layout:
+            self.layout["clusters"]: {}
+
+        self.layout["clusters"].update(
+            LayoutHelper.create_biomass_layout()["clusters"]
+        )
 
     # -- C --
 
@@ -353,13 +365,13 @@ class Compound:
 
     # -- G --
 
-    def get_level(self, is_in_biomass_reaction=False) -> int:
-        if self.is_cofactor():
-            return self.LEVEL_COFACTOR
-        elif is_in_biomass_reaction:
-            return self.LEVEL_MAJOR
-        else:
-            return 2
+    # def get_level(self, is_in_biomass_reaction=False) -> int:
+    #     if self.is_cofactor():
+    #         return self.LEVEL_COFACTOR
+    #     elif is_in_biomass_reaction:
+    #         return self.LEVEL_MAJOR
+    #     else:
+    #         return 2
 
     def get_related_biota_compound(self):
         """
