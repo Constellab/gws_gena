@@ -9,18 +9,19 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
                       TaskInputs, TaskOutputs, task_decorator)
 from pandas import DataFrame
 
-from ..data.ec_table import ECTable
-from ..data.entity_id_table import EntityIDTable
-from ..fba.fba import FBA
-from ..fba.fba_helper.fba_helper import FBAHelper
-from ..fba.fba_result import FBAResult
-from ..network.helper.reaction_knockout_helper import ReactionKnockOutHelper
-from ..twin.flat_twin import FlatTwin
-from ..twin.twin import Twin
-from .koa_result import KOAResult
+from ...data.ec_table import ECTable
+from ...data.entity_id_table import EntityIDTable
+from ...fba.fba import FBA
+from ...fba.fba_helper.fba_helper import FBAHelper
+from ...fba.fba_result import FBAResult
+from ...koa.koa_result import KOAResult
+from ...network.helper.reaction_knockout_helper import ReactionKnockOutHelper
+from ...twin.flat_twin import FlatTwin
+from ...twin.twin import Twin
 
 
-@task_decorator("KOA_003", human_name="KOA", short_description="Knockout Analysis")
+@task_decorator("KOA_002", human_name="Deprecated KOA", short_description="Knockout Analysis",
+                hide=True, deprecated_since='0.4.0', deprecated_message="Use new version of KOA")
 class KOA(Task):
     """
     KOA class.
@@ -75,7 +76,7 @@ class KOA(Task):
             fba_helper = FBAHelper()
             fba_helper.attach(self)
             current_result: FBAResult = fba_helper.run(
-                current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
+                current_ko_twin, solver, fluxes_to_maximize=fluxes_to_maximize, fluxes_to_minimize=fluxes_to_minimize,
                 fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
 
             if monitored_fluxes:

@@ -35,7 +35,8 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba.set_param('solver', solver)
             fba.set_param('relax_qssa', relax_qssa)
             if organism == 'ecoli':
-                fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+                #fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+                fba.set_param('biomass_optimization', "maximize")
             else:
                 fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 

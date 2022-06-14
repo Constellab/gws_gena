@@ -70,8 +70,8 @@ class FBAHelper(TaskHelper):
     __CVXPY_MAX_ITER = 100000
     __CVXPY_SOLVER_PRIORITY = [cp.OSQP, cp.ECOS]
 
-    def run(self, twin: Twin, solver, fluxes_to_maximize, fluxes_to_minimize, fill_gaps_with_sinks: bool,
-            ignore_cofactors: bool, relax_qssa: bool) -> FBAResult:
+    def run(self, twin: Twin, solver, fluxes_to_maximize=None, fluxes_to_minimize=None, biomass_optimization=None,
+            fill_gaps_with_sinks: bool = None, ignore_cofactors: bool = None, relax_qssa: bool = None) -> FBAResult:
         cls = type(self)
         self.notify_info_message(message="Creating problem ...")
         if relax_qssa and solver != "quad":
@@ -88,6 +88,7 @@ class FBAHelper(TaskHelper):
 
         c, A_eq, b_eq, bounds = cls.build_problem(
             flat_twin,
+            biomass_optimization=biomass_optimization,
             fluxes_to_maximize=fluxes_to_maximize,
             fluxes_to_minimize=fluxes_to_minimize,
             fill_gaps_with_sinks=fill_gaps_with_sinks,
@@ -110,7 +111,7 @@ class FBAHelper(TaskHelper):
 
     @classmethod
     def build_problem(
-            cls, flat_twin: FlatTwin, fluxes_to_maximize: list = None,
+            cls, flat_twin: FlatTwin, biomass_optimization=None, fluxes_to_maximize: list = None,
             fluxes_to_minimize: list = None,
             fill_gaps_with_sinks: bool = True, ignore_cofactors: bool = False):
 
@@ -120,6 +121,16 @@ class FBAHelper(TaskHelper):
             fluxes_to_minimize = []
         if not isinstance(flat_twin, FlatTwin):
             raise BadRequestException("A flat twin is required")
+
+        if biomass_optimization:
+            fat_net = flat_twin.get_flat_network()
+            biomass_rxn = fat_net.get_biomass_reaction()
+            if biomass_optimization == "maximize":
+                fluxes_to_maximize.append(biomass_rxn.id)
+                fluxes_to_maximize = list(set(fluxes_to_maximize))
+            elif biomass_optimization == "minimize":
+                fluxes_to_minimize.append(biomass_rxn.id)
+                fluxes_to_minimize = list(set(fluxes_to_minimize))
 
         flat_net: Network = flat_twin.get_flat_network()
         if fill_gaps_with_sinks:
