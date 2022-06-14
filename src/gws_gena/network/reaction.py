@@ -205,6 +205,11 @@ class Reaction:
     # -- C --
 
     def copy(self) -> 'Reaction':
+        if self.layout is None:
+            # check attribute for retro-compatiblity
+            # TODO: remove on next major
+            self.layout = {}
+
         rxn = Reaction(id=self.id, name=self.name)
         rxn.direction = self.direction
         rxn.lower_bound = self.lower_bound

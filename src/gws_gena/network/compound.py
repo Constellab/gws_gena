@@ -150,7 +150,7 @@ class Compound:
         self.kegg_id = kegg_id
         self.alt_chebi_ids = (alt_chebi_ids if alt_chebi_ids else [])
 
-        if layout:
+        if layout is not None:
             self.layout = layout
         else:
             # refresh layout
@@ -165,6 +165,11 @@ class Compound:
 
     def append_biomass_layout(self, is_biomass=False):
         """ Append biomass layout """
+        if self.layout is None:
+            # check attribute for retro-compatiblity
+            # TODO: remove on next major
+            self.layout = {}
+
         if "clusters" not in self.layout:
             self.layout["clusters"]: {}
 
@@ -323,13 +328,14 @@ class Compound:
 
     # -- G --
 
-    # def get_level(self, is_in_biomass_reaction=False) -> int:
-    #     if self.is_cofactor():
-    #         return self.LEVEL_COFACTOR
-    #     elif is_in_biomass_reaction:
-    #         return self.LEVEL_MAJOR
-    #     else:
-    #         return 2
+    def get_level(self) -> int:
+        """ Get compound level """
+        if self.layout is None:
+            # check attribute for retro-compatiblity
+            # TODO: remove on next major
+            return 2
+
+        return self.layout.get("level", 2)
 
     def get_related_biota_compound(self):
         """

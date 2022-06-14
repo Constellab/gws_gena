@@ -339,7 +339,7 @@ class Network(Resource):
                 "formula": _met.formula,
                 "inchi": _met.inchi,
                 "is_cofactor": _met.is_cofactor(),
-                "level": _met.layout.get("level", 2),  # _met.get_level(is_in_biomass_reaction=is_in_biomass_reaction),
+                "level": _met.get_level(),
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
