@@ -13,8 +13,7 @@ from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_core import BadRequestException, Utils
 
-from ..deprecated.v032.retrocompatibilty import (CompoundPosition,
-                                                 ReactionPosition)
+from ..deprecated.v032.retrocompatibilty import CompoundPosition
 from .compartment import Compartment
 from .helper.layout_helper import LayoutHelper
 from .helper.slugify_helper import SlugifyHelper
@@ -85,6 +84,7 @@ class Compound:
     kegg_id = ""
     inchikey = ""
     layout: BiotaCompoundLayoutDict = None
+    # position: CompoundPosition = None
 
     FLATTENING_DELIMITER = "_"
 

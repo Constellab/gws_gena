@@ -12,6 +12,7 @@ from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import BadRequestException
 
+from ..deprecated.v032.retrocompatibilty import ReactionPosition
 from .compound import Compound
 from .helper.reaction_biota_helper import ReactionBiotaHelper
 from .helper.slugify_helper import SlugifyHelper
@@ -82,7 +83,9 @@ class Reaction:
     upper_bound: float = UPPER_BOUND
     rhea_id: str = ""
     enzyme: EnzymeDict = None
+
     layout: BiotaReactionLayoutDict = None
+    # position: ReactionPosition = None  # will be depreacated soon
 
     _is_biomass_reaction = None
     _tax_ids = []
