@@ -9,7 +9,7 @@ from pandas import DataFrame, Series
 from ...network.network import Network
 
 
-class DeadendFinder:
+class DeadendFinderHelper:
 
     @staticmethod
     def find(network: Network) -> DataFrame:

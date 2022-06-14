@@ -9,10 +9,16 @@ from pandas import DataFrame
 from ...network.network import Network
 
 
-class IsolateFinderHelper:
+class FutileCyclesFinderHelper:
 
     @staticmethod
     def find(network: Network) -> Table:
-        """ Find isolates """
-        # S: DataFrame = network.create_steady_stoichiometric_matrix()
-        # sum_S = S.sum(axis=1)
+        """ Find futile cycle """
+
+        # S = network.create_stoichiometric_matrix()
+        # for i in range(0, S.shape[1]):
+        #     Ri = S[:, i]
+        #     for j in range(i, S.shape[1]):
+        #         Rj = S[:, j]
+        #         if all(Ri == Rj):
+        #             pass

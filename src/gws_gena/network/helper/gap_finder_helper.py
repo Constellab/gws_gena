@@ -4,9 +4,10 @@
 # About us: https://gencovery.com
 
 
-from .deadend_finder_helper import DeadendFinder
+from .deadend_finder_helper import DeadendFinderHelper
 
-class GapFinder:
+
+class GapFinderHelper:
 
     @staticmethod
     def find(net) -> dict:
@@ -18,7 +19,7 @@ class GapFinder:
         compounds = {}
         reactions = {}
 
-        data = DeadendFinder.find(net)
+        data = DeadendFinderHelper.find(net)
         orphan_ids = [idx for idx in data.index if data.at[idx, "is_orphan"]]
         deadend_ids = [idx for idx in data.index if data.at[idx, "is_dead_end"]]
 

@@ -51,10 +51,9 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         recon.set_param('tax_id', "263815")  # pcystis murina
 
         gap_filler = proto.get_process("gap_filler")
-        gap_filler.set_param('tax_id', "4753")  # pcystis
-        # gap_filler.set_param('tax_id', "4751")
-        # #fungi
-        # gap_filler.set_param('tax_id', "2759")    #eukaryota
+        gap_filler.set_param('tax_id', "4753")      # pcystis
+        # gap_filler.set_param('tax_id', "4751")    # fungi
+        # gap_filler.set_param('tax_id', "2759")    # eukaryota
         # gap_filler.set_param('biomass_and_medium_gaps_only', True)
         # gap_filler.set_param('add_sink_reactions', True)
 
@@ -62,7 +61,6 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             # file_path = os.path.join(data_dir, file_name+"_net.csv")
             # with open(file_path, 'w', encoding="utf-8") as f:
             #     f.write(net.to_csv())
-
             # file_path = os.path.join(data_dir, file_name+"_net.json")
             # with open(file_path, 'w', encoding="utf-8") as f:
             #     json.dump(net.dumps(), f)
@@ -75,7 +73,6 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             # with open(file_path, 'w', encoding="utf-8") as f:
             #     table = net.get_compound_stats_as_table()
             #     f.write(table.to_csv())
-
             # file_path = os.path.join(data_dir, file_name+"_gaps.csv")
             # with open(file_path, 'w', encoding="utf-8") as f:
             #     table = net.get_gaps_as_table()

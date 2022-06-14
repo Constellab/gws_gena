@@ -105,15 +105,15 @@ class ReactionBiotaHelper:
     def create_reaction_from_biota(cls, rhea_rxn: BiotaReaction, enzyme: BiotaEnzyme):
         """ Create a reaction """
 
-        from ..compound import Compound
+        from ..compartment import Compartment
         from ..reaction import Reaction
 
         e: EnzymeDict = cls.create_reaction_enzyme_dict_from_biota(enzyme)
 
         rxn: Reaction = Reaction(name=rhea_rxn.rhea_id+"_"+enzyme.ec_number,
-                            rhea_id=rhea_rxn.rhea_id,
-                            direction=rhea_rxn.direction,
-                            enzyme=e)
+                                 rhea_id=rhea_rxn.rhea_id,
+                                 direction=rhea_rxn.direction,
+                                 enzyme=e)
         rxn.layout = rhea_rxn.layout
 
         tab = re.split(EQN_SPLIT_REGEXP, rhea_rxn.data["definition"])
@@ -142,9 +142,9 @@ class ReactionBiotaHelper:
 
             litteral_comp_name = substrate_definition[count]
             if litteral_comp_name.endswith("(out)"):
-                compartment = Compound.COMPARTMENT_EXTRACELL
+                compartment = Compartment.EXTRACELLULAR_SPACE
             else:
-                compartment = Compound.COMPARTMENT_CYTOSOL
+                compartment = Compartment.CYTOSOL
 
             tab = re.findall(OLIG_REGEXP, litteral_comp_name)
             oligo = tab[0][0] if len(tab) else None
@@ -175,9 +175,9 @@ class ReactionBiotaHelper:
 
             litteral_comp_name = product_definition[count]
             if litteral_comp_name.endswith("(out)"):
-                compartment = Compound.COMPARTMENT_EXTRACELL
+                compartment = Compartment.EXTRACELLULAR_SPACE
             else:
-                compartment = Compound.COMPARTMENT_CYTOSOL
+                compartment = Compartment.CYTOSOL
 
             tab = re.findall(OLIG_REGEXP, litteral_comp_name)
             oligo = tab[0][0] if len(tab) else None

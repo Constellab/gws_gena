@@ -7,14 +7,15 @@ import json
 from typing import Type
 
 from gws_core import (BadRequestException, BoolParam, ConfigParams,
-                      ConfigSpecs, File, ResourceExporter, ResourceImporter,
-                      StrParam, exporter_decorator, importer_decorator)
+                      ConfigSpecs, File, FileHelper, ResourceExporter,
+                      ResourceImporter, StrParam, exporter_decorator,
+                      importer_decorator)
 
 from ..network import Network
 
 
 @importer_decorator("NetworkImporter_001", human_name="Network importer", source_type=File,
-                    target_type=Network, supported_extensions=[".json"])
+                    target_type=Network, supported_extensions=["json"])
 class NetworkImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
         "skip_orphans":

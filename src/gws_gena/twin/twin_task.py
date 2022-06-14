@@ -8,7 +8,7 @@ import os
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      ResourceExporter, ResourceImporter, StrParam,
+                      FileHelper, ResourceExporter, ResourceImporter, StrParam,
                       exporter_decorator, importer_decorator)
 
 from .twin import Twin
@@ -21,10 +21,10 @@ from .twin import Twin
 
 
 @importer_decorator("TwinImporter", human_name="Twin importer", source_type=File, target_type=Twin,
-                    supported_extensions=[".json"])
+                    supported_extensions=["json"])
 class TwinImporter(ResourceImporter):
     config_specs: ConfigSpecs = {
-        'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format")
+        'file_format': StrParam(allowed_values=["json"], default_value="json", short_description="File format")
     }
 
     async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Twin]) -> Twin:
@@ -38,13 +38,13 @@ class TwinImporter(ResourceImporter):
         """
 
         twin: Twin
-        file_format = params.get_value("file_format", ".json")
-        if file_format == ".json":
+        file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
+        if file_format == "json":
             with open(file.path, 'r', encoding="utf-8") as fp:
                 try:
                     _json = json.load(fp)
-                except Exception as _:
-                    raise BadRequestException(f"Cannot load JSON file {file.path}")
+                except Exception as err:
+                    raise BadRequestException(f"Cannot load JSON file {file.path}") from err
                 if _json.get("networks"):
                     # is a raw dump twin
                     twin = target_type.loads(_json)
@@ -69,7 +69,7 @@ class TwinExporter(ResourceExporter):
     config_specs: ConfigSpecs = {
         'file_name': StrParam(default_value="twin", short_description="File name (without extension)"),
         'file_format': StrParam(
-            allowed_values=[".json"], default_value=".json",
+            allowed_values=["json"], default_value="json",
             short_description="File format.")}
 
     async def export_to_path(self, resource: Twin, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
@@ -81,7 +81,7 @@ class TwinExporter(ResourceExporter):
         """
 
         file_name = params.get_value("file_name", "twin")
-        file_format = params.get_value("file_format", ".json")
+        file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
         file_path = os.path.join(dest_dir, file_name+file_format)
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(resource.dumps(), f)

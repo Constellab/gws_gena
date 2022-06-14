@@ -35,6 +35,8 @@ class NetworkLoaderHelper:
         is_bigg_data_format = False
         chebi_id_list = []
         ec_number_list = []
+
+        Logger.info(f"{len(data[ckey])} compounds detected.")
         for val in data[ckey]:
             chebi_id = val.get("chebi_id", "")
             is_bigg_data_format = is_bigg_data_format or ("annotation" in val)
@@ -43,10 +45,16 @@ class NetworkLoaderHelper:
                 if isinstance(annotation, list):
                     annotation = cls._convert_bigg_annotation_list_to_dict(annotation)
                 current_ids = annotation.get("chebi", []) or annotation.get("CHEBI", [])
-                chebi_id_list.extend(current_ids)
+                if current_ids:
+                    if isinstance(current_ids, str):
+                        chebi_id_list.append(current_ids)
+                    elif isinstance(current_ids, list):
+                        chebi_id_list.extend(current_ids)
             else:
-                chebi_id_list.append(chebi_id)
+                if chebi_id:
+                    chebi_id_list.append(chebi_id)
 
+        Logger.info(f"{len(data['reactions'])} reactions detected.")
         for val in data["reactions"]:
             if is_bigg_data_format and val["id"].startswith("EX_"):
                 continue
@@ -105,7 +113,11 @@ class NetworkLoaderHelper:
                 alt_chebi_ids = annotation.get("chebi", []) or annotation.get("CHEBI", [])
                 inchikey = annotation.get("inchi_key", [""])[0]
                 if alt_chebi_ids:
-                    chebi_id = alt_chebi_ids.pop(0)
+                    if isinstance(alt_chebi_ids, str):
+                        chebi_id = alt_chebi_ids
+                        alt_chebi_ids = []
+                    elif isinstance(alt_chebi_ids, list):
+                        chebi_id = alt_chebi_ids.pop(0)
 
             comp_id = val["id"]
             biota_comp = None
@@ -230,6 +242,7 @@ class NetworkLoaderHelper:
     def loads(cls, data: 'NetworkDict', *, skip_bigg_exchange_reactions: bool = True, loads_biota_info: bool = False,
               biomass_reaction_id: str = None, skip_orphans: bool = False) -> 'Network':
         """ Load JSON data and create a Network  """
+        from ..compartment import Compartment
         from ..compound import Compound
         from ..network import Network
 
@@ -249,15 +262,15 @@ class NetworkLoaderHelper:
         if loads_biota_info:
             Logger.info("Loading all compounds and enzymes from biota. This operation may take a while.")
             chebi_id_list, ec_number_list = cls._extracts_all_ids_from_dump(data)
-            # query = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_id_list))
-            query = BiotaCompound.search_by_chebi_ids(chebi_id_list)
+            query = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_id_list))
+            # query = BiotaCompound.search_by_chebi_ids(chebi_id_list)
             for c in query:
                 biota_comps[c.chebi_id] = c
-            Logger.info(f"{len(query)} compounds loaded.")
+            Logger.info(f"{len(query)} compounds loaded from BIOTA.")
             query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_number_list))
             for r in query:
                 biota_enzymes[r.ec_number] = r
-            Logger.info(f"{len(query)} reactions loaded.")
+            Logger.info(f"{len(query)} reactions loaded from BIOTA.")
 
         Logger.info("Creating compounds ...")
         net, added_comps, is_bigg_data_format = cls._create_compounds_from_dump(
@@ -280,7 +293,7 @@ class NetworkLoaderHelper:
         )
 
         # check if the biomass compartment exists
-        biomass_compartment: str = Compound.COMPARTMENT_BIOMASS
+        biomass_compartment: str = Compartment.BIOMASS
         if net.get_biomass_compound() is None:
             Logger.warning(
                 "No explicit biomass compound found.\nTry inferring the biomass reaction and adding an explicit dummy biomass compound")
@@ -290,7 +303,7 @@ class NetworkLoaderHelper:
                     rxn = net.reactions[biomass_reaction_id]
                     biomass = Compound(name="Biomass", compartment=biomass_compartment)
                     rxn.add_product(biomass, 1)
-                    net.compartments[biomass_compartment] = Compound.COMPARTMENTS[biomass_compartment]["name"]
+                    net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]["name"]
                     net.update_reaction(rxn)
                 else:
                     raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
@@ -301,7 +314,7 @@ class NetworkLoaderHelper:
                         # can be used as biomas reaction
                         biomass = Compound(name="Biomass", compartment=biomass_compartment)
                         rxn.add_product(biomass, 1)
-                        net.compartments[biomass_compartment] = Compound.COMPARTMENTS[biomass_compartment]["name"]
+                        net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]["name"]
                         net.update_reaction(rxn)
                         Logger.warning(
                             f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')

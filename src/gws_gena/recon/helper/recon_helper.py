@@ -13,7 +13,8 @@ from gws_core import (BadRequestException, ConfigParams, Logger, Task,
 from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.ec_table import ECTable
 from ...data.medium_table import MediumTable
-from ...network.compound import Compound
+from ...network.compartment import Compartment
+from ...network.compound import Compartment, Compound
 from ...network.network import Network, ReactionDuplicate
 from ...network.reaction import Reaction
 
@@ -115,8 +116,9 @@ class ReconHelper(TaskHelper):
         chebi_ids = medium_table.get_chebi_ids()
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
-            subs = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_EXTRACELL)
-            prod = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
+            subs = ReconHelper._retrieve_or_create_comp(
+                net, chebi_id, name, compartment=Compartment.EXTRACELLULAR_SPACE)
+            prod = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compartment.CYTOSOL)
             try:
                 rxn = Reaction(id=prod.name+"_ex")
                 rxn.add_product(prod, 1)
@@ -199,10 +201,10 @@ class ReconHelper(TaskHelper):
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
             if name == biomass_col_name:
-                comp = Compound(name=name, compartment=Compound.COMPARTMENT_BIOMASS)
+                comp = Compound(name=name, compartment=Compartment.BIOMASS)
                 _comps.append(comp)
             else:
-                comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compound.COMPARTMENT_CYTOSOL)
+                comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compartment.CYTOSOL)
                 _comps.append(comp)
 
         return _comps

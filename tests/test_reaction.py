@@ -4,7 +4,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import GTest, Settings
-from gws_gena import Compound, Network, Reaction, Twin, Context
+from gws_gena import Compartment, Compound, Context, Network, Reaction, Twin
 from pandas import DataFrame
 
 settings = Settings.retrieve()
@@ -20,16 +20,16 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         rxn1 = Reaction(id="my-reaction")
         net.add_reaction(rxn1)
 
-        comp1 = Compound(name="ATP", chebi_id="CHEBI:17234", compartment=Compound.COMPARTMENT_CYTOSOL)
+        comp1 = Compound(name="ATP", chebi_id="CHEBI:17234", compartment=Compartment.CYTOSOL)
         rxn1.add_substrate(comp1, -1)
 
-        comp2 = Compound(name="ADP", chebi_id="CHEBI:17235", compartment=Compound.COMPARTMENT_NUCLEUS)
+        comp2 = Compound(name="ADP", chebi_id="CHEBI:17235", compartment=Compartment.NUCLEUS)
         rxn1.add_product(comp2, +1)
 
-        comp3 = Compound(name="Creatine", chebi_id="CHEBI:17236", compartment=Compound.COMPARTMENT_CYTOSOL)
+        comp3 = Compound(name="Creatine", chebi_id="CHEBI:17236", compartment=Compartment.CYTOSOL)
         rxn1.add_substrate(comp3, -1)
 
-        comp4 = Compound(name="Phosphocreatine", chebi_id="CHEBI:17237", compartment=Compound.COMPARTMENT_NUCLEUS)
+        comp4 = Compound(name="Phosphocreatine", chebi_id="CHEBI:17237", compartment=Compartment.NUCLEUS)
         rxn1.add_product(comp4, 1)
         rxn1.enzyme = {"ec_number": "MyEnzyme"}
 

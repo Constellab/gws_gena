@@ -21,6 +21,7 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
                       resource_decorator, view)
 from pandas import DataFrame
 
+from .compartment import Compartment
 from .compound import Compound
 from .helper.network_loader_helper import NetworkLoaderHelper
 from .reaction import Reaction
@@ -146,8 +147,8 @@ class Network(Resource):
         if not comp.compartment:
             raise NoCompartmentFound("No compartment defined for the compound")
         if not comp.compartment in self.compartments:
-            suffix = comp.compartment.split(Compound.COMPARTMENT_DELIMITER)[-1]
-            self.compartments[comp.compartment] = Compound.COMPARTMENTS[suffix]["name"]
+            suffix = comp.compartment.split(Compartment.DELIMITER)[-1]
+            self.compartments[comp.compartment] = Compartment.COMPARTMENTS[suffix]["name"]
 
         self.compounds[comp.id] = comp
         self._stats = {}
@@ -324,7 +325,8 @@ class Network(Resource):
                 biomass_rxn.substrates[comp_id]["compound"].append_biomass_layout()
             for comp_id in biomass_rxn.products:
                 biomass_comps.append(comp_id)
-                biomass_rxn.products[comp_id]["compound"].append_biomass_layout()
+                if not biomass_rxn.products[comp_id]["compound"].is_biomass():
+                    biomass_rxn.products[comp_id]["compound"].append_biomass_layout()
 
         for _met in self.compounds.values():
             #is_in_biomass_reaction = _met.id in biomass_comps
@@ -444,20 +446,20 @@ class Network(Resource):
         Get gap information
         """
 
-        from .helper.gap_finder_helper import GapFinder
-        return GapFinder.find(self)
+        from .helper.gap_finder_helper import GapFinderHelper
+        return GapFinderHelper.find(self)
 
     def get_orphan_compound_ids(self) -> List[str]:
         """ Get the ids of orphan compounds """
-        from .helper.deadend_finder_helper import DeadendFinder
-        df = DeadendFinder.find(self)
+        from .helper.deadend_finder_helper import DeadendFinderHelper
+        df = DeadendFinderHelper.find(self)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         return comp_ids
 
     def get_deadend_compound_ids(self) -> List[str]:
         """ Get the ids of dead-end compounds """
-        from .helper.deadend_finder_helper import DeadendFinder
-        df = DeadendFinder.find(self)
+        from .helper.deadend_finder_helper import DeadendFinderHelper
+        df = DeadendFinderHelper.find(self)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_dead_end"]]
         return comp_ids
 

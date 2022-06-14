@@ -6,14 +6,14 @@ import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import (Context, ContextImporter, DeadendFinder, FlatTwin,
+from gws_gena import (Context, ContextImporter, DeadendFinderHelper, FlatTwin,
                       Network, NetworkImporter, Twin, TwinHelper)
 from pandas import DataFrame
 
 settings = Settings.retrieve()
 
 
-class TestDeadendFinder(BaseTestCaseUsingFullBiotaDB):
+class TestDeadendFinderHelper(BaseTestCaseUsingFullBiotaDB):
 
     def test_toy(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
@@ -25,7 +25,7 @@ class TestDeadendFinder(BaseTestCaseUsingFullBiotaDB):
             params=ConfigParams()
         )
 
-        df = DeadendFinder.find(net)
+        df = DeadendFinderHelper.find(net)
         print(df)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         self.assertEqual(len(comp_ids), 0)
@@ -43,7 +43,7 @@ class TestDeadendFinder(BaseTestCaseUsingFullBiotaDB):
             params=ConfigParams()
         )
 
-        df = DeadendFinder.find(net)
+        df = DeadendFinderHelper.find(net)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         self.assertEqual(len(comp_ids), 0)
 
@@ -60,7 +60,7 @@ class TestDeadendFinder(BaseTestCaseUsingFullBiotaDB):
             params=ConfigParams()
         )
 
-        df = DeadendFinder.find(net)
+        df = DeadendFinderHelper.find(net)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         self.assertEqual(comp_ids, ["X_orphan_c"])
 

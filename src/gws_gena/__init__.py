@@ -24,11 +24,11 @@ from .fva.fva_result import FVAResult
 from .koa.koa import KOA
 from .koa.koa_result import KOAResult
 # network
+from .network.compartment import Compartment, InvalidCompartmentException
 from .network.compound import (Compound, CompoundNotFoundException,
-                               InvalidCompartmentException,
                                InvalidCompoundIdException)
-from .network.helper.deadend_finder_helper import DeadendFinder
-from .network.helper.isolate_finder_helper import IsolateFinder
+from .network.helper.deadend_finder_helper import DeadendFinderHelper
+from .network.helper.isolate_finder_helper import IsolateFinderHelper
 from .network.helper.reaction_adder_helper import ReactionAdderHelper
 from .network.helper.reaction_remover_helper import ReactionRemoverHelper
 from .network.network import Network

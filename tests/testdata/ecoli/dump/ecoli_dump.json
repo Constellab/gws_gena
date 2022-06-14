@@ -437,8 +437,8 @@
             "chebi_id": "CHEBI:16004",
             "kegg_id": "",
             "layout": {
-                "x": 200,
-                "y": 50,
+                "x": 400,
+                "y": -150,
                 "level": 1,
                 "clusters": {
                     "pyruvate metabolism": {
@@ -509,7 +509,7 @@
             "chebi_id": "CHEBI:15589",
             "kegg_id": "",
             "layout": {
-                "x": -75.0,
+                "x": -275.0,
                 "y": 200,
                 "level": 1,
                 "clusters": {
@@ -1210,7 +1210,7 @@
             "kegg_id": "",
             "layout": {
                 "x": 100,
-                "y": -100,
+                "y": 100,
                 "level": 1,
                 "clusters": {
                     "pyruvate metabolism": {
@@ -1369,7 +1369,7 @@
             "kegg_id": "",
             "layout": {
                 "x": -400,
-                "y": 300,
+                "y": 100,
                 "level": 1,
                 "clusters": {
                     "pyruvate metabolism": {
@@ -1475,7 +1475,7 @@
             "chebi_id": "CHEBI:40533",
             "kegg_id": "",
             "layout": {
-                "x": 300,
+                "x": 100,
                 "y": -100,
                 "level": 1,
                 "clusters": {
@@ -1845,7 +1845,7 @@
             "kegg_id": "",
             "layout": {
                 "x": 275.0,
-                "y": 300,
+                "y": 500,
                 "level": 1,
                 "clusters": {
                     "TCA cycle": {
@@ -2033,7 +2033,7 @@
             "kegg_id": "",
             "layout": {
                 "x": 600,
-                "y": -1100,
+                "y": -900,
                 "level": 1,
                 "clusters": {
                     "carbon fixation": {
@@ -2109,14 +2109,40 @@
             "formula": "C3H5O6P",
             "inchi": "",
             "is_cofactor": false,
-            "level": 2,
+            "level": 1,
             "compartment": "c",
             "chebi_id": "CHEBI:14341",
             "kegg_id": "",
             "layout": {
-                "x": null,
-                "y": null,
-                "clusters": {}
+                "x": 500,
+                "y": -1000,
+                "level": 1,
+                "clusters": {
+                    "carbon fixation": {
+                        "x": 500,
+                        "y": -1000,
+                        "level": 1,
+                        "name": "carbon fixation",
+                        "alt": [
+                            ""
+                        ],
+                        "parent": "energy_metabolism"
+                    },
+                    "methane metabolism": {
+                        "x": 500,
+                        "y": -1000,
+                        "level": 1,
+                        "name": "methane metabolism",
+                        "alt": [
+                            "CHEBI:39571",
+                            "CHEBI:5454",
+                            "CHEBI:14342",
+                            "CHEBI:14341",
+                            "CHEBI:24355"
+                        ],
+                        "parent": "energy_metabolism"
+                    }
+                }
             }
         },
         {
@@ -2213,8 +2239,8 @@
             "chebi_id": "CHEBI:42377",
             "kegg_id": "",
             "layout": {
-                "x": 200,
-                "y": 100,
+                "x": 400,
+                "y": -100,
                 "level": 1,
                 "clusters": {
                     "ethanol metabolism": {
@@ -2361,7 +2387,7 @@
             "kegg_id": "",
             "layout": {
                 "x": -300,
-                "y": 100,
+                "y": -100,
                 "level": 1,
                 "clusters": {
                     "pyruvate metabolism": {
