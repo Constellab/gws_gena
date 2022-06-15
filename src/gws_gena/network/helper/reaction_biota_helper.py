@@ -88,7 +88,7 @@ class ReactionBiotaHelper:
                 if enzyme.related_deprecated_enzyme:
                     e["related_deprecated_enzyme"] = {
                         "ec_number": enzyme.related_deprecated_enzyme.ec_number,
-                        "reason": enzyme.related_deprecated_enzyme.data["reason"],
+                        "reason": enzyme.related_deprecated_enzyme.reason,
                     }
 
             e["pathways"] = {}

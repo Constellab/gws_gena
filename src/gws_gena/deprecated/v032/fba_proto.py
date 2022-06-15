@@ -6,12 +6,14 @@
 from gws_core import (FIFO2, ConfigParams, ProcessSpec, Protocol, Sink, Source,
                       protocol_decorator)
 
-from ..fba.fba import FBA
-from ..twin.twin_annotator import TwinAnnotator
-from ..twin.twin_builder import TwinBuilder
+from ...twin.twin_annotator import TwinAnnotator
+from ...twin.twin_builder import TwinBuilder
+from .dep_fba.fba import FBA
 
 
-@protocol_decorator("FBAProto_002", human_name="FBA protocol", short_description="Flux balance analysis protocol")
+@task_decorator("FBAProto_001", human_name="Deprecated FBA protocol",
+                short_description="Flux balance analysis protocol", hide=True, deprecated_since='0.4.0',
+                deprecated_message="Use new version of FBAProto")
 class FBAProto(Protocol):
 
     def configure_protocol(self) -> None:

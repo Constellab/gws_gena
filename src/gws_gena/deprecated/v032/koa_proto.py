@@ -6,11 +6,13 @@
 from gws_core import (FIFO2, ConfigParams, ProcessSpec, Protocol, Sink, Source,
                       protocol_decorator)
 
-from ..koa.koa import KOA
-from ..twin.twin_builder import TwinBuilder
+from ...twin.twin_builder import TwinBuilder
+from .dep_koa.koa import KOA
 
 
-@protocol_decorator("KOAProto_002", human_name="KOA protocol", short_description="Knockout analysis protocol")
+@task_decorator("KOAProto_001", human_name="Deprecated KOA protocol",
+                short_description="Knockout analysis protocol", hide=True, deprecated_since='0.4.0',
+                deprecated_message="Use new version of KOAProto")
 class KOAProto(Protocol):
 
     def configure_protocol(self) -> None:
