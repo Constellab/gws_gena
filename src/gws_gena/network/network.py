@@ -931,7 +931,7 @@ class Network(Resource):
                 ec = rxn.enzyme.get("ec_number", "--")
                 deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
-                    comment.append(deprecated_enz.ec_number + " (" + str(deprecated_enz.reason) + ")")
+                    comment.append(str(deprecated_enz["ec_number"]) + " (" + str(deprecated_enz["reason"]) + ")")
                 if rxn.enzyme.get("pathways"):
                     bkms = ['brenda', 'kegg', 'metacyc']
                     pw = rxn.enzyme.get("pathways")

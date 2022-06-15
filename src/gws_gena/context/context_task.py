@@ -8,8 +8,8 @@ import os
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      JSONDict, ResourceExporter, ResourceImporter, StrParam,
-                      exporter_decorator, importer_decorator)
+                      FileHelper, JSONDict, ResourceExporter, ResourceImporter,
+                      StrParam, exporter_decorator, importer_decorator)
 
 from .context import Context
 
@@ -21,10 +21,11 @@ from .context import Context
 
 
 @importer_decorator("ContextImporter", human_name="Context importer", source_type=File,
-                    target_type=Context, supported_extensions=[".json"])
+                    target_type=Context, supported_extensions=["json"])
 class ContextImporter(ResourceImporter):
+    """ ContextImporter """
     config_specs: ConfigSpecs = {
-        'file_format': StrParam(allowed_values=[".json"], default_value=".json", short_description="File format")
+        'file_format': StrParam(allowed_values=["json"], default_value="json", short_description="File format")
     }
 
     async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Context]) -> Context:
@@ -35,8 +36,8 @@ class ContextImporter(ResourceImporter):
         :rtype: Context
         """
 
-        file_format = params.get_value("file_format", ".json")
-        if file_format in [".json"]:
+        file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
+        if file_format in ["json"]:
             with open(file.path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         else:
@@ -51,12 +52,13 @@ class ContextImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator("ContextExporter", human_name="Network context exporter", source_type=Context, target_type=File)
+@exporter_decorator("ContextExporter", human_name="Context exporter", source_type=Context, target_type=File)
 class ContextExporter(ResourceExporter):
+    """ ContextExporter """
     config_specs: ConfigSpecs = {
         'file_name': StrParam(default_value="context", short_description="File name (without extension)"),
         'file_format': StrParam(
-            allowed_values=[".json"], default_value=".json",
+            allowed_values=["json"], default_value="json",
             short_description="File format.")}
 
     async def export_to_path(self, resource: Context, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
@@ -68,7 +70,7 @@ class ContextExporter(ResourceExporter):
         """
 
         file_name = params.get_value("file_name", "context")
-        file_format = params.get_value("file_format", ".json")
+        file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
         file_path = os.path.join(dest_dir, file_name+file_format)
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(resource.dumps(), f)

@@ -14,8 +14,8 @@ from ..network.reaction import Reaction
 from .context import Context, Measure, Variable
 
 
-@task_decorator("ContextBuilder", human_name="Network context builder",
-                short_description="Build a context of metabolic network using a flux table")
+@task_decorator("ContextBuilder", human_name="Context builder",
+                short_description="Build a context for a metabolic network using a flux table")
 class ContextBuilder(Task):
     input_specs = {'network': InputSpec(Network), 'flux_table': InputSpec(FluxTable)}
     output_specs = {'context': OutputSpec(Context)}
