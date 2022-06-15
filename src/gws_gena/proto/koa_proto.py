@@ -10,7 +10,7 @@ from ..koa.koa import KOA
 from ..twin.twin_builder import TwinBuilder
 
 
-@protocol_decorator("KOAProto_002", human_name="KOA protocol", short_description="Knockout analysis protocol")
+@protocol_decorator("KOAProto_001", human_name="KOA protocol", short_description="KnockOut analysis protocol")
 class KOAProto(Protocol):
 
     def configure_protocol(self) -> None:

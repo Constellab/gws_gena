@@ -11,7 +11,7 @@ from ..twin.twin_annotator import TwinAnnotator
 from ..twin.twin_builder import TwinBuilder
 
 
-@protocol_decorator("FVAProto_002", human_name="FVA protocol", short_description="Flux variability analysis protocol")
+@protocol_decorator("FVAProto_001", human_name="FVA protocol", short_description="Flux variability analysis protocol")
 class FVAProto(Protocol):
 
     def configure_protocol(self) -> None:
