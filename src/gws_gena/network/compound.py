@@ -173,9 +173,8 @@ class Compound:
         if "clusters" not in self.layout:
             self.layout["clusters"] = {}
 
-        self.layout["clusters"].update(
-            LayoutHelper.create_biomass_layout(is_biomass=is_biomass)["clusters"]
-        )
+        clusters = LayoutHelper.create_biomass_layout(is_biomass=is_biomass)["clusters"]
+        self.layout["clusters"].update(clusters)
 
     # -- C --
 

@@ -321,15 +321,16 @@ class Network(Resource):
         biomass_rxn = self.get_biomass_reaction()
         if biomass_rxn is not None:
             for comp_id in biomass_rxn.substrates:
+                comp = self.compounds[comp_id]
                 biomass_comps.append(comp_id)
-                biomass_rxn.substrates[comp_id]["compound"].append_biomass_layout()
+                comp.append_biomass_layout()
             for comp_id in biomass_rxn.products:
+                comp = self.compounds[comp_id]
                 biomass_comps.append(comp_id)
-                if not biomass_rxn.products[comp_id]["compound"].is_biomass():
-                    biomass_rxn.products[comp_id]["compound"].append_biomass_layout()
+                if not comp.is_biomass():
+                    comp.append_biomass_layout()
 
         for _met in self.compounds.values():
-            #is_in_biomass_reaction = _met.id in biomass_comps
             _met_json.append({
                 "id": _met.id,
                 "name": _met.name,
@@ -899,7 +900,7 @@ class Network(Resource):
             "products",
             "mass_balance",
             "charge_balance",
-            *BiotaTaxo._tax_tree,
+            *BiotaTaxo.get_tax_tree(),
             *bkms
         ]
         rxn_row = {}
@@ -920,7 +921,7 @@ class Network(Resource):
                 pathway_cols[f] = ""
 
             tax_cols = {}
-            for f in BiotaTaxo._tax_tree:
+            for f in BiotaTaxo.get_tax_tree():
                 tax_cols[f] = ""
 
             flag = self.get_reaction_recon_tag(rxn.id, "is_from_gap_filling")
@@ -942,7 +943,7 @@ class Network(Resource):
                                                                             ["id"] if pw[db]["id"] else "--") + ")"
                 if rxn.enzyme.get("tax"):
                     tax = rxn.enzyme.get("tax")
-                    for f in BiotaTaxo._tax_tree:
+                    for f in BiotaTaxo.get_tax_tree():
                         if f in tax:
                             tax_cols[f] = tax[f]["name"] + " (" + str(tax[f]["tax_id"]) + ")"
                 if rxn.enzyme.get("ec_number"):
