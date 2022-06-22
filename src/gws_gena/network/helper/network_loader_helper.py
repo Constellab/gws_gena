@@ -15,6 +15,8 @@ from .reaction_biota_helper import ReactionBiotaHelper
 class NetworkLoaderHelper:
     """ NetworkLoaderHelper """
 
+    BIGG_REACTION_PREFIX_TO_IGNORE = ["EX_", "DM_"]
+
     @classmethod
     def _convert_bigg_annotation_list_to_dict(cls, annotation):
         if isinstance(annotation, list):
@@ -56,8 +58,16 @@ class NetworkLoaderHelper:
 
         Logger.info(f"{len(data['reactions'])} reactions detected.")
         for val in data["reactions"]:
-            if is_bigg_data_format and val["id"].startswith("EX_"):
-                continue
+
+            if is_bigg_data_format:
+                skip = False
+                for pref in cls.BIGG_REACTION_PREFIX_TO_IGNORE:
+                    if val["id"].startswith(pref):
+                        skip = True
+                        break
+                if skip:
+                    continue
+
             if is_bigg_data_format:
                 annotation = val["annotation"]
                 if isinstance(annotation, list):
@@ -153,7 +163,7 @@ class NetworkLoaderHelper:
 
     @ classmethod
     def _creates_reactions_from_dump(
-            cls, net, data: 'NetworkDict', added_comps, biota_enzymes, loads_biota_info, is_bigg_data_format,
+            cls, net, data: 'NetworkDict', *, added_comps, biota_enzymes, loads_biota_info, is_bigg_data_format,
             skip_bigg_exchange_reactions):
 
         from ..reaction import Reaction
@@ -170,8 +180,14 @@ class NetworkLoaderHelper:
                 perc = int(100 * count/total_number_of_reactions)
                 Logger.info(f"... {perc}%")
 
-            if is_bigg_data_format and skip_bigg_exchange_reactions and val["id"].startswith("EX_"):
-                continue
+            if is_bigg_data_format and skip_bigg_exchange_reactions:
+                skip = False
+                for pref in cls.BIGG_REACTION_PREFIX_TO_IGNORE:
+                    if val["id"].startswith(pref):
+                        skip = True
+                        break
+                if skip:
+                    continue
 
             rxn = Reaction(
                 id=val["id"],
@@ -285,11 +301,11 @@ class NetworkLoaderHelper:
         net = cls._creates_reactions_from_dump(
             net,
             data,
-            added_comps,
-            biota_enzymes,
-            loads_biota_info,
-            is_bigg_data_format,
-            skip_bigg_exchange_reactions
+            added_comps=added_comps,
+            biota_enzymes=biota_enzymes,
+            loads_biota_info=loads_biota_info,
+            is_bigg_data_format=is_bigg_data_format,
+            skip_bigg_exchange_reactions=skip_bigg_exchange_reactions
         )
 
         # check if the biomass compartment exists
