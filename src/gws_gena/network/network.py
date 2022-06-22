@@ -11,6 +11,7 @@ import uuid
 from typing import Dict, List, Optional, TypedDict, Union
 
 import numpy as np
+from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_biota import EnzymeClass
 from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
@@ -344,7 +345,7 @@ class Network(Resource):
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
-                "layout": _met.layout,
+                "layout": _met.get_layout(),
             })
 
         for _rxn in self.reactions.values():
@@ -1018,13 +1019,26 @@ class Network(Resource):
     def get_summary(self) -> dict:
         """ Return the summary of the network """
         biomass_rxn = self.get_biomass_reaction()
+        dem = self.get_deadend_compound_ids()
+        urxn = {}
+        for rxn_id, rxn in self.reactions.items():
+            balance = rxn.compute_mass_and_charge_balance()
+            if (balance["charge"] is not None and balance["charge"] > 0) or \
+                    (balance["mass"] is not None and balance["mass"] > 0):
+                urxn[rxn_id] = balance
 
         data = {
             "Name": self.name,
-            "Number of reactions": len(self.reactions),
             "Number of metabolites": len(self.compounds),
+            "Number of reactions": len(self.reactions),
             "Number of compartments": len(self.compartments),
-            "Compartments": [c for c in self.compartments.values()]
+            "List of compartments": [c for c in self.compartments.values()],
+            "Quality control": {
+                "Number of deadend metabolites": len(dem),
+                "Number of unbalanced reactions": len(urxn),
+                "List of deadend metabolites": dem,
+                "List of unbalanced reactions": urxn,
+            }
         }
 
         if biomass_rxn:

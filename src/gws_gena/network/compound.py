@@ -168,7 +168,7 @@ class Compound:
         if self.layout is None:
             # check attribute for retro-compatiblity
             # TODO: remove on next major
-            self.layout = {}
+            self.layout = BiotaCompoundLayout.get_empty_layout()
 
         if "clusters" not in self.layout:
             self.layout["clusters"] = {}
@@ -190,6 +190,13 @@ class Compound:
         c.alt_chebi_ids = copy.deepcopy(self.alt_chebi_ids)
         c.kegg_id = self.kegg_id
         c.inchikey = self.inchikey
+
+        if self.layout is None:
+            # check attribute for retro-compatiblity
+            # TODO: remove on next major
+            self.layout = {}
+
+        c.layout = self.layout
         return c
 
     @ classmethod
@@ -326,6 +333,13 @@ class Compound:
         return c
 
     # -- G --
+
+    def get_layout(self) -> int:
+        """ Get compound layout """
+        if self.layout is None:
+            return BiotaCompoundLayout.get_empty_layout()
+        else:
+            return self.layout
 
     def get_level(self) -> int:
         """ Get compound level """

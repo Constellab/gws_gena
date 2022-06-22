@@ -224,6 +224,7 @@ class Reaction:
         return rxn
 
     def compute_mass_and_charge_balance(self) -> dict:
+        """ Compute the mass and charge balance of a reaction """
         charge = 0.0
         mass = 0.0
         for sub in self.substrates.values():
