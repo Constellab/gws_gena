@@ -351,7 +351,7 @@ class Reaction:
                     raise BadRequestException(f"No taxonomy found with tax_id {tax_id}")
 
                 query = BiotaEnzyme.select_and_follow_if_deprecated(
-                    ec_number=ec_number, tax_id=tax_id, fields=['id'])
+                    ec_number=ec_number, tax_id=tax_id, fields=['id', 'ec_number'])
 
                 if len(query) == 0:
                     if tax_search_method == 'bottom_up':
@@ -397,7 +397,7 @@ class Reaction:
                     raise BadRequestException(f"No reactions found with ec_number {ec_number}.")
             else:
                 query = BiotaEnzyme.select_and_follow_if_deprecated(
-                    ec_number=ec_number, fields=['id'])
+                    ec_number=ec_number, fields=['id', 'ec_number'])
                 if len(query) == 0:
                     raise BadRequestException(f"No enzyme found with ec_number {ec_number}")
                 _added_rxns = []
