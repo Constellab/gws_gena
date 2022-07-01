@@ -58,7 +58,14 @@ class ReconHelper(TaskHelper):
                 rxns = Reaction.from_biota(ec_number=enzyme.ec_number,
                                            tax_id=tax_id, tax_search_method=tax_search_method)
                 for rxn in rxns:
-                    net.add_reaction(rxn)
+                    try:
+                        net.add_reaction(rxn)
+                    except Exception as err:
+                        Logger.warning(f"An non-blocking error occured: {err}")
+                        net.set_reaction_recon_tag(enzyme.ec_number, {
+                            "ec_number": enzyme.ec_number,
+                            "error": str(err)
+                        })
             except Exception as _:
                 pass
                 # net.set_reaction_recon_tag(enzyme.ec_number, {
@@ -100,7 +107,14 @@ class ReconHelper(TaskHelper):
                 try:
                     rxns = Reaction.from_biota(ec_number=ec, tax_id=tax_id, tax_search_method=tax_search_method)
                     for rxn in rxns:
-                        net.add_reaction(rxn)
+                        try:
+                            net.add_reaction(rxn)
+                        except Exception as err:
+                            Logger.warning(f"An non-blocking error occured: {err}")
+                            net.set_reaction_recon_tag(ec, {
+                                "ec_number": ec,
+                                "error": str(err)
+                            })
                 except Exception as err:
                     Logger.warning(f"An non-blocking error occured: {err}")
                     net.set_reaction_recon_tag(ec, {

@@ -320,6 +320,9 @@ class Reaction:
 
         rxns = []
 
+        if ec_number == '2.1.1.43':
+            print("stop")
+
         if biota_reaction:
             rhea_rxn = biota_reaction
             _added_rxns = []
@@ -359,7 +362,7 @@ class Reaction:
                         query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
                         tab = {}
                         for e in query:
-                            if not e.ec_number in tab:
+                            if e.ec_number not in tab:
                                 tab[e.ec_number] = []
                             tab[e.ec_number].append(e)
                         for t in tax.ancestors:
