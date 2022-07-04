@@ -4,7 +4,7 @@
 # About us: https://gencovery.com
 
 
-from gws_core import BadRequestException, Utils
+from gws_core import BadRequestException
 
 from .helper.slugify_helper import SlugifyHelper
 

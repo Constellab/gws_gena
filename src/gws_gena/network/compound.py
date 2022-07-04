@@ -11,7 +11,7 @@ from gws_biota import Compound as BiotaCompound
 from gws_biota import CompoundClusterDict as BiotaCompoundClusterDict
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
-from gws_core import BadRequestException, Utils
+from gws_core import BadRequestException
 
 from ..deprecated.v032.retrocompatibilty import CompoundPosition
 from .compartment import Compartment
