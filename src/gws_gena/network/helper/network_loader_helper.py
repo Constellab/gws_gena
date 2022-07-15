@@ -327,15 +327,17 @@ class NetworkLoaderHelper:
                     raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
             else:
                 Logger.warning('No user biomass given')
+                biomass = None
                 for rxn in net.reactions.values():
                     if "biomass" in rxn.id.lower():
                         # can be used as biomas reaction
-                        biomass = Compound(name="Biomass", compartment=biomass_compartment)
+                        if biomass is None:
+                            biomass = Compound(name="Biomass", compartment=biomass_compartment)
                         rxn.add_product(biomass, 1)
                         net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]  # ["name"]
                         net.update_reaction(rxn)
                         Logger.warning(
                             f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')
-                        break
+                        # break
 
         return net

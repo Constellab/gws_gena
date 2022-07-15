@@ -13,7 +13,7 @@ from .view.network_view import NetworkView
                     short_description="Metabolic network file")
 class NetworkFile(File):
 
-    @view(view_type=NetworkView, default_view=True, human_name="Network")
+    @view(view_type=NetworkView, human_name="Network")
     def view_as_network(self, params: ConfigParams) -> NetworkView:
         """ View as network """
         from .network_tasks.network_importer import NetworkImporter

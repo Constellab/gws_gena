@@ -19,8 +19,8 @@ class LayoutHelper:
     def create_biomass_layout(cls, is_biomass=False):
         """ Create biomass layout """
         if is_biomass:
-            x = BiotaCompoundLayout.get_biomass_position()["x"]
-            y = BiotaCompoundLayout.get_biomass_position()["y"]
+            x = None #BiotaCompoundLayout.get_biomass_position()["x"]
+            y = None #BiotaCompoundLayout.get_biomass_position()["y"]
         else:
             x = None
             y = None

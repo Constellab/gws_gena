@@ -349,6 +349,12 @@ class Network(Resource):
                 "layout": _met.get_layout(refresh=refresh_layout),
             })
 
+            if _met.compartment == "e":
+                pass
+
+            if _met.compartment == "c":
+                pass
+
         for _rxn in self.reactions.values():
             _rxn_met = {}
             for sub in _rxn.substrates.values():
