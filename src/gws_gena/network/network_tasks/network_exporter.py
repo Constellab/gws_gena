@@ -45,6 +45,9 @@ class NetworkExporter(ResourceExporter):
             if file_format == "json":
                 data = resource.dumps()
                 json.dump(data, fp)
+            elif file_format in ["xls", "xlsx"]:
+                table: DataFrame = resource.to_dataframe()
+                table.to_excel(fp)
             elif file_format in ["csv", "txt", "tsv"]:
                 fp.write(resource.to_csv())
             else:
