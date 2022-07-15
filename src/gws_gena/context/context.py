@@ -7,7 +7,7 @@ import copy
 from typing import Dict, List, TypedDict
 
 from gws_core import (BadRequestException, DictRField, Resource, StrRField,
-                      Utils, resource_decorator)
+                      StringHelper, resource_decorator)
 
 from ..network.helper.slugify_helper import SlugifyHelper
 
@@ -127,7 +127,7 @@ class Measure:
     @classmethod
     def __generate_unique_id(cls):
         while True:
-            id = Utils.generate_random_chars(9)
+            id = StringHelper.generate_random_chars(9)
             if not id in cls._ids:
                 cls._ids.append(id)
                 return id

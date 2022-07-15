@@ -14,6 +14,12 @@ class NetworkView(View):
     _type: ViewType = ViewType.NETWORK
     _data: "Network"
     _specs: ViewSpecs = {
+        "refresh_layout":
+        BoolParam(
+            default_value=False,
+            visibility=BoolParam.PROTECTED_VISIBILITY,
+            human_name="Refresh layout",
+            short_description="Set True to refresh layout"),
         "skip_orphans":
         BoolParam(
             default_value=False,
@@ -41,5 +47,5 @@ class NetworkView(View):
     def to_dict(self, params: ConfigParams) -> dict:
         return {
             **super().to_dict(params),
-            "data": self._data.dumps()
+            "data": self._data.dumps(refresh_layout=params["refresh_layout"])
         }

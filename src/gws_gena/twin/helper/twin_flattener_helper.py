@@ -37,9 +37,9 @@ class TwinFalltenerHelper:
         for net in twin.networks.values():
             net_data = net.dumps()
             for k in net_data["compartments"]:
-                c_name = Compound.flatten_compartment_id(k, net.name)
-                c_desc = net_data["compartments"][k]
-                _comps[c_name] = c_desc
+                compart_name = Compound.flatten_compartment_id(k, net.name)
+                compart_data = net_data["compartments"][k]
+                _comps[compart_name] = compart_data
 
             for _met in net_data["metabolites"]:
                 _met["id"] = Compound.flatten_compound_id(_met["id"], net.name)

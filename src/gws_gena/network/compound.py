@@ -11,7 +11,7 @@ from gws_biota import Compound as BiotaCompound
 from gws_biota import CompoundClusterDict as BiotaCompoundClusterDict
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
-from gws_core import BadRequestException, Utils
+from gws_core import BadRequestException
 
 from ..deprecated.v032.retrocompatibilty import CompoundPosition
 from .compartment import Compartment
@@ -334,12 +334,22 @@ class Compound:
 
     # -- G --
 
-    def get_layout(self) -> int:
+    def get_layout(self, refresh: bool = False) -> int:
         """ Get compound layout """
         if self.layout is None:
             return BiotaCompoundLayout.get_empty_layout()
         else:
-            return self.layout
+            if refresh:
+                if self.chebi_id:
+                    layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
+                        synonym_chebi_ids=self.chebi_id,
+                        compartment=self.compartment)
+                else:
+                    layout = self.layout
+            else:
+                layout = self.layout
+
+            return layout
 
     def get_level(self) -> int:
         """ Get compound level """

@@ -3,7 +3,7 @@
     "author"        : "Gencovery",
     "author_email"  : "admin@gencovery.com",
     "description"   : "Genome-based Regulatory Network Analytics (GENA)",
-    "version"       : "0.4.0",
+    "version"       : "0.4.1",
     "variables":{
         "gws_gena:testdata_dir" : "${CURRENT_DIR}/tests/testdata"
     },
@@ -24,7 +24,7 @@
             {
                 "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core",
                 "packages":[
-                    {"name": "gws_core", "version": "0.3.9", "is_brick": true},
+                    {"name": "gws_core", "version": "0.3.12", "is_brick": true},
                     {"name": "gws_biota", "version": "0.4.0", "is_brick": true},
                     {"name": "gws_ode", "version": "0.3.0", "is_brick": true},
                     {"name": "gws_stats", "version": "0.3.0", "is_brick": true}

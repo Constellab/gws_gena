@@ -41,22 +41,23 @@ class FlatTwin(Twin):
         return _json
 
     @classmethod
-    def loads(cls, flat_data) -> 'FlatTwin':
+    def loads(cls, data) -> 'FlatTwin':
         """ Loads form a JSON dump """
-        if len(flat_data["networks"]) > 1:
+        if len(data["networks"]) > 1:
             raise BadRequestException("More than one network found. The data are not compatible with a FlatTwin.")
-        if len(flat_data["contexts"]) > 1:
+        if len(data["contexts"]) > 1:
             raise BadRequestException("More than one context found. The data are not compatible with a FlatTwin.")
 
         twin: Twin = cls()
 
-        net = Network.loads(flat_data["networks"][0])
-        ctx = Context.loads(flat_data["contexts"][0])
-        twin.add_network(net, related_context=ctx)
-        twin.name = flat_data["name"]
-        twin.description = flat_data["description"]
-        twin._mapping = flat_data["mapping"]
-        twin._reverse_mapping = flat_data["reverse_mapping"]
+        net = Network.loads(data["networks"][0])
+        if len(data["contexts"]):
+            ctx = Context.loads(data["contexts"][0])
+            twin.add_network(net, related_context=ctx)
+        twin.name = data["name"]
+        twin.description = data["description"]
+        twin._mapping = data["mapping"]
+        twin._reverse_mapping = data["reverse_mapping"]
         return twin
 
     def dumps_flat(self) -> dict:

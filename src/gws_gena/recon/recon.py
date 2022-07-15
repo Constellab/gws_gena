@@ -8,7 +8,7 @@ from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, ConfigParams, InputSpec,
                       OutputSpec, StrParam, Task, TaskInputs, TaskOutputs,
-                      Utils, task_decorator)
+                      StringHelper, task_decorator)
 
 from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
@@ -48,7 +48,7 @@ class DraftRecon(Task):
     output_specs = {'network': OutputSpec(Network)}
     config_specs = {
         'unique_name': StrParam(
-            default_value=Utils.generate_random_chars(4), human_name="Network name", short_description="The unique name of the network. Required to uniquely identify taxa in microbial communities"),
+            default_value=StringHelper.generate_random_chars(4), human_name="Network name", short_description="The unique name of the network. Required to uniquely identify taxa in microbial communities"),
         'tax_id': StrParam(
             default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id. For example: `tax_id = 562` for E. Coli"),
         'tax_search_method':
