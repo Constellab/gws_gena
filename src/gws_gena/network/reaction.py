@@ -320,9 +320,6 @@ class Reaction:
 
         rxns = []
 
-        if ec_number == '2.1.1.43':
-            print("stop")
-
         if biota_reaction:
             rhea_rxn = biota_reaction
             _added_rxns = []

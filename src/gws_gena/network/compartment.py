@@ -36,31 +36,93 @@ class Compartment:
     PERIPLASM = "p"
 
     COMPARTMENTS = {
-        "b": {"name": "biomass", "is_steady": False},
-        "c": {"name": "cytosol", "is_steady": True},
-        "cm": {"name": "cytosolic membrane", "is_steady": True},
-        "cx": {"name": "carboxyzome", "is_steady": True},
-        "e": {"name": "extracellular space", "is_steady": False},
-        "g": {"name": "golgi apparatus", "is_steady": True},
-        "h": {"name": "chloroplast", "is_steady": True},
-        "f": {"name": "flagellum", "is_steady": True},
-        "i": {"name": "inner mitochondrial compartment", "is_steady": True},
-        "im": {"name": "mitochondrial intermembrane space", "is_steady": True},
-        "l": {"name": "lysosome", "is_steady": True},
-        "m": {"name": "mitochondria", "is_steady": True},
-        "mm": {"name": "mitochondria intermembrane", "is_steady": True},
-        "n": {"name": "nucleus", "is_steady": True},
-        "o": {"name": "other", "is_steady": True},
-        "p": {"name": "periplasm", "is_steady": True},
-        "r": {"name": "endoplasmic reticulum", "is_steady": True},
-        "s": {"name": "eyespot", "is_steady": True},
-        "sk": {"name": "sink", "is_steady": False},
-        "u": {"name": "thylakoid", "is_steady": True},
-        "um": {"name": "thylakoid membrane", "is_steady": True},
-        "v": {"name": "vacuole", "is_steady": True},
-        "x": {"name": "peroxisome/glyoxysome", "is_steady": True},
-        "y": {"name": "cytochrome complex", "is_steady": True}
+        "b": {"id": "b", "name": "biomass", "is_steady": False},
+        "c": {"id": "c", "name": "cytosol", "is_steady": True},
+        "cm": {"id": "cm", "name": "cytosolic membrane", "is_steady": True},
+        "cx": {"id": "cx", "name": "carboxyzome", "is_steady": True},
+        "e": {"id": "e", "name": "extracellular space", "is_steady": False},
+        "g": {"id": "g", "name": "golgi apparatus", "is_steady": True},
+        "h": {"id": "h", "name": "chloroplast", "is_steady": True},
+        "f": {"id": "f", "name": "flagellum", "is_steady": True},
+        "i": {"id": "i", "name": "inner mitochondrial compartment", "is_steady": True},
+        "im": {"id": "im", "name": "mitochondrial intermembrane space", "is_steady": True},
+        "l": {"id": "l", "name": "lysosome", "is_steady": True},
+        "m": {"id": "m", "name": "mitochondria", "is_steady": True},
+        "mm": {"id": "mm", "name": "mitochondria intermembrane", "is_steady": True},
+        "n": {"id": "n", "name": "nucleus", "is_steady": True},
+        "o": {"id": "o", "name": "other", "is_steady": True},
+        "p": {"id": "p", "name": "periplasm", "is_steady": True},
+        "r": {"id": "r", "name": "endoplasmic reticulum", "is_steady": True},
+        "s": {"id": "s", "name": "eyespot", "is_steady": True},
+        "sk": {"id": "sk", "name": "sink", "is_steady": False},
+        "u": {"id": "u", "name": "thylakoid", "is_steady": True},
+        "um": {"id": "um", "name": "thylakoid membrane", "is_steady": True},
+        "v": {"id": "v", "name": "vacuole", "is_steady": True},
+        "x": {"id": "x", "name": "peroxisome/glyoxysome", "is_steady": True},
+        "y": {"id": "y", "name": "cytochrome complex", "is_steady": True},
     }
+
+    @classmethod
+    def clean(cls, data):
+        """ Clean compartment data """
+        replaced_compartments = {}
+        compart_data = data["compartments"]
+        cleaned_compart_data = {}
+        for k, val in compart_data.item():
+
+            if isinstance(val, str):
+                compart_id = k
+                compart_name = val
+            else:
+                compart_id = val["id"]
+                compart_name = val["name"]
+
+            if compart_id in cls.COMPARTMENTS:
+                # ensure that "biomass" key is not used
+                if compart_id == cls.BIOMASS:
+                    if compart_name != cls.COMPARTMENTS[compart_id]["name"]:
+                        # cannot used "biomass" key => we consider that is the "other" compartment
+                        cleaned_compart_data["o"] = cls.COMPARTMENTS["o"]
+                        replaced_compartments[k] = "o"
+                    else:
+                        cleaned_compart_data[k] = cls.COMPARTMENTS[k]
+                else:
+                    cleaned_compart_data[k] = cls.COMPARTMENTS[k]
+            else:
+                # we consider that it is the "other" compartment
+                cleaned_compart_data["o"] = cls.COMPARTMENTS["o"]
+                replaced_compartments[k] = "o"
+
+        data["compartments"] = cleaned_compart_data
+        replaced_met = {}
+
+        if replaced_compartments:
+            for i, met in enumerate(data["metabolites"]):
+                old_compart = met["compartment"]
+                if old_compart in replaced_compartments:
+                    new_compart = replaced_compartments[old_compart]
+                    old_id = met["id"]
+                    new_id = "_".join(met["id"].split("_")[:-1]) + "_" + new_compart
+
+                    met["compartment"] = new_compart
+                    met["id"] = new_id
+                    replaced_met[old_id] = new_id
+
+                    data["metabolites"][i] = met
+
+        if replaced_met:
+            for i, rxn in enumerate(data["reactions"]):
+                new_rxn_nets = {}
+                for name in rxn["metabolites"]:
+                    if name in replaced_met:
+                        new_name = replaced_met[name]
+                        new_rxn_nets[new_name] = rxn["metabolites"][name]
+                    else:
+                        new_rxn_nets[name] = rxn["metabolites"][name]
+
+                data["reactions"][i]["metabolites"] = new_rxn_nets
+
+        return data
 
     @classmethod
     def check_and_retrieve_suffix(cls, compartment):

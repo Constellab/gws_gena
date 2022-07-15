@@ -148,8 +148,9 @@ class Network(Resource):
         if not comp.compartment:
             raise NoCompartmentFound("No compartment defined for the compound")
         if not comp.compartment in self.compartments:
-            suffix = comp.compartment.split(Compartment.DELIMITER)[-1]
-            self.compartments[comp.compartment] = Compartment.COMPARTMENTS[suffix]["name"]
+            compartment_id = comp.compartment.split(Compartment.DELIMITER)[-1]
+            #self.compartments[comp.compartment] = Compartment.get_by_id(compartment_id)
+            self.compartments[comp.compartment] = Compartment.COMPARTMENTS[compartment_id]  # ["name"]
 
         self.compounds[comp.id] = comp
         self._stats = {}
@@ -309,7 +310,7 @@ class Network(Resource):
 
     # -- D --
 
-    def dumps(self) -> NetworkDict:
+    def dumps(self, refresh_layout: bool = False) -> NetworkDict:
         """
         Dumps the network
         """
@@ -345,7 +346,7 @@ class Network(Resource):
                 "compartment": _met.compartment,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
-                "layout": _met.get_layout(),
+                "layout": _met.get_layout(refresh=refresh_layout),
             })
 
         for _rxn in self.reactions.values():

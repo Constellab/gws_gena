@@ -334,12 +334,22 @@ class Compound:
 
     # -- G --
 
-    def get_layout(self) -> int:
+    def get_layout(self, refresh: bool = False) -> int:
         """ Get compound layout """
         if self.layout is None:
             return BiotaCompoundLayout.get_empty_layout()
         else:
-            return self.layout
+            if refresh:
+                if self.chebi_id:
+                    layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
+                        synonym_chebi_ids=self.chebi_id,
+                        compartment=self.compartment)
+                else:
+                    layout = self.layout
+            else:
+                layout = self.layout
+
+            return layout
 
     def get_level(self) -> int:
         """ Get compound level """

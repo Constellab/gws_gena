@@ -263,6 +263,8 @@ class NetworkLoaderHelper:
         from ..network import Network
 
         net = Network()
+        #data = Compartment.clean(data)
+
         net.name = data.get("name", Network.DEFAULT_NAME)
         net.compartments = data["compartments"]
 
@@ -284,9 +286,9 @@ class NetworkLoaderHelper:
                 biota_comps[c.chebi_id] = c
             Logger.info(f"{len(query)} compounds loaded from BIOTA.")
             query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_number_list))
-            for r in query:
-                biota_enzymes[r.ec_number] = r
-            Logger.info(f"{len(query)} reactions loaded from BIOTA.")
+            for e in query:
+                biota_enzymes[e.ec_number] = e
+            Logger.info(f"{len(query)} enzyme ortholog found in BIOTA.")
 
         Logger.info("Creating compounds ...")
         net, added_comps, is_bigg_data_format = cls._create_compounds_from_dump(
@@ -319,7 +321,7 @@ class NetworkLoaderHelper:
                     rxn = net.reactions[biomass_reaction_id]
                     biomass = Compound(name="Biomass", compartment=biomass_compartment)
                     rxn.add_product(biomass, 1)
-                    net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]["name"]
+                    net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]  # ["name"]
                     net.update_reaction(rxn)
                 else:
                     raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
@@ -330,7 +332,7 @@ class NetworkLoaderHelper:
                         # can be used as biomas reaction
                         biomass = Compound(name="Biomass", compartment=biomass_compartment)
                         rxn.add_product(biomass, 1)
-                        net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]["name"]
+                        net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]  # ["name"]
                         net.update_reaction(rxn)
                         Logger.warning(
                             f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')

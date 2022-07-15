@@ -4,8 +4,8 @@
 # About us: https://gencovery.com
 
 from gws_core import (BoolParam, CheckBeforeTaskResult, ConfigParams,
-                      InputSpec, OutputSpec, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+                      InputSpec, OutputSpec, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ..context.context import Context
 from ..network.network import Network
@@ -35,7 +35,7 @@ class TwinBuilder(Task):
     def check_before_run(self, params: ConfigParams, inputs: TaskInputs) -> CheckBeforeTaskResult:
         if params["use_context"]:
             if not inputs.get("context"):
-                return {"result": False, "message": None}
+                return {"result": False, "message": "No context given"}
         return {"result": True, "message": None}
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

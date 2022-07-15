@@ -40,6 +40,7 @@ class NetworkExporter(ResourceExporter):
         file_name = params.get_value("file_name", resource.name or "network")
         file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
         file_path = os.path.join(dest_dir, file_name + '.' + file_format)
+
         with open(file_path, 'w', encoding="utf-8") as fp:
             if file_format == "json":
                 data = resource.dumps()
