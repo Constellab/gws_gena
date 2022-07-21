@@ -34,6 +34,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba = proto.get_process("fba")
             fba.set_param('solver', solver)
             fba.set_param('relax_qssa', relax_qssa)
+            fba.set_param('qssa_relaxation_strength', 1)
             if organism == 'ecoli':
                 #fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
                 fba.set_param('biomass_optimization', "maximize")

@@ -19,22 +19,20 @@ from gws_core import BadRequestException, StrRField, Table, resource_decorator
                     short_description="Table of culture medium composition")
 class MediumTable(Table):
     """
-    Represents medium composition data table
+    MediumTable class
 
-    * The first column the a compound name (offical or user-defined name)
+    A resource table representing a culture medium composition
+
+    * The first column the a compound name (offical or user-defined name) `[required]`
     * The next columns are:
       * chebi_id: the list chebi ids
 
     For example:
 
-    ```
-    -------------------------------------
-    component           | chebi_id
-    -------------------------------------
-    2-oxoglutarate      | CEHBI:16810
-    H20                 | CHEBI:15377
-    -------------------------------------
-    ```
+    | component           | chebi_id     |
+    | --------------------|--------------|
+    | 2-oxoglutarate      | CEHBI:16810  |
+    | glutamine           | CHEBI:18050  |
     """
 
     DEFAULT_CHEBI_COLUMN = "chebi_id"

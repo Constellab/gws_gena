@@ -10,26 +10,24 @@ from gws_core import BadRequestException, StrRField, Table, resource_decorator
 
 
 @resource_decorator("EntityIDTable", human_name="Entity ID table",
-                    short_description="Table of entity IDs (e.g. CheBI IDs, Rhea IDs, EC Numbers, reaction IDs, ...)")
+                    short_description="Generic table of entity IDs (e.g. CheBI IDs, Rhea IDs, EC Numbers, User-defined IDs, ...)")
 class EntityIDTable(Table):
     """
-    Generic table of entity IDs (e.g. CheBI, Rhea IDs, reaction ID, EC Numbers...)
+    EntityIDTable class
 
-    * The first column the ID of the entity (official or user-defined ID) [REQUIRED]
+    A generic resource table of entity IDs (CheBI IDs, Rhea IDs, EC Numbers, User-defined IDs, ...)
+
+    * The first column the ID of the entity (official or user-defined ID) `[required]`
     * The next columns are optional [OPTIONAL]
 
     For example:
 
-    ```
-    -------------------------------------
-    id           |  name
-    -------------------------------------
-    CHEBI:57972  |  L-alanine
-    CHEBI:32682  |  L-argininium(1+)
-    EC:1.1.1.1   |  alcohol dehydrogenase
-    RHEA:16505   |  Chorismate lysis
-    -------------------------------------
-    ```
+    | id           |  name                  |
+    | -------------|------------------------|
+    | CHEBI:57972  |  L-alanine             |
+    | CHEBI:32682  |  L-argininium(1+)      |
+    | EC:1.1.1.1   |  alcohol dehydrogenase |
+    | RHEA:16505   |  Chorismate lysis      |
     """
 
     DEFAULT_ID_COLUMN = "id"

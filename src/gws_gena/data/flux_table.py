@@ -13,25 +13,23 @@ from gws_core import BadRequestException, StrRField, Table, resource_decorator
                     short_description="Table of metabolic flux measurements")
 class FluxTable(Table):
     """
-    Represents experimentally-measured (or user-defined) flux data table
+    FluxTable class.
 
-    * The first column is the list of `reaction ids` and/or `ec numbers` [REQUIRED]. They uniquely identify each reaction of a network.
+    A resource table of experimentally measured (or user-defined) metabolic fluxes.
+
+    * The first column is the list of `reaction ids` and/or `ec numbers` `[required]`. They uniquely identify each reaction of a network.
     * The next columns are:
-      * target: value of flux measured experimentally (e.g. `mol/g DW/h`) [REQUIRED]
-      * upper_bound: the upper bound of the flux (e.g. `mol/g DW/h`) [REQUIRED]
-      * lower_bound: the lower bound of the flux (e.g. `mol/g DW/h`) [REQUIRED]
-      * confidence_score: the confidence score of the flux [REQUIRED]
+      * target: the value of the flux measured experimentally (e.g. `mol/gDW/h`) `[required]`
+      * upper_bound: the upper bound of the flux (e.g. `mol/gDW/h`) `[required]`
+      * lower_bound: the lower bound of the flux (e.g. `mol/gDW/h`) `[required]`
+      * confidence_score: the confidence score of the flux `[required]`
 
     For example:
 
-    ```
-    ------------------------------------------------------------------------------------
-    id                      | target    | lower_bound  | lower_bound  | confidence_score
-    ------------------------------------------------------------------------------------
-    RHEA_62620_1_11_1_24    | 0.234     | 0            | 1000         | 1.0
-    6.3.1.2                 | -1.234    | -5           | 0            | 1.0
-    ------------------------------------------------------------------------------------
-    ```
+    | id                      | target    | lower_bound  | lower_bound  | confidence_score   |
+    | ------------------------|-----------|--------------|--------------|--------------------|
+    | RHEA_62620_1_11_1_24    | 0.234     | 0            | 1000         | 1.0                |
+    | 6.3.1.2                 | -1.234    | -5           | 0            | 1.0                |
     """
 
     DEFAULT_REACTION_ID_COLUMN = "reaction_id"

@@ -20,6 +20,12 @@ from .entity_id_table import EntityIDTable
 @importer_decorator("EntityIDTableImporter", human_name="Entity ID table importer",
                     target_type=EntityIDTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class EntityIDTableImporter(TableImporter):
+    """
+    EntityIDTableImporter class
+
+    Allows to import a `csv` or `xls` file and create a `EntityIDTable` resource object.
+    """
+
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
         'id_column': StrParam(default_value=EntityIDTable.DEFAULT_ID_COLUMN, short_description="The column containing the IDs entities"),

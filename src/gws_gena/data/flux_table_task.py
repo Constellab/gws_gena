@@ -18,8 +18,16 @@ from .flux_table import FluxTable
 
 
 @importer_decorator("FluxTableImporter", human_name="Flux table importer",
-                    target_type=FluxTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    short_description="Metabolic flux table importer importer", target_type=FluxTable,
+                    supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class FluxTableImporter(TableImporter):
+    """
+    FluxTableImporter class
+
+    Allows to import a `csv` or `xls` file and create a `FluxTable` resource object.
+    The `FluxTable` is a generic table of entity IDs (CheBI IDs, Rhea IDs, EC Numbers, User-defined IDs, ...).
+    """
+
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
         'reaction_id_column':

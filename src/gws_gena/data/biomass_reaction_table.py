@@ -13,35 +13,33 @@ from gws_core import BadRequestException, StrRField, Table, resource_decorator
                     short_description="Stoichiometry table describing the biomass composition")
 class BiomassReactionTable(Table):
     """
-    Represents biomass data table
+    BiomassReactionTable class
 
-    * The first column is the compound name (offical or user-defined name) [REQUIRED]
+    A stoichiometry resource table describing the composition of the biomass.
+
+    * The first column is the compound name (offical or user-defined name) `[required]`
     * The next columns are:
-      * chebi_id: the chebi ids of componds of they are known (each chebi id must be prefixed by the keyword CHEBI:). [REQUIRED]
-      * biomass: the biomass reaction data (described like a stoichiometric matrix) [REQUIRED]
-      * other colums: these columns describe the reaction of the intermediate biomass constituents (described like a stoichiometric matrix) [REQUIRED]
+      * chebi_id: the chebi ids of componds of they are known (each chebi id must be prefixed by the keyword CHEBI:). `[required]`
+      * biomass: the biomass reaction data (described like a stoichiometric matrix) `[required]`
+      * other colums: these columns describe the reaction of the intermediate biomass constituents (described like a stoichiometric matrix) `[required]`
 
     For example:
 
-    ```
-    -------------------------------------------------------------------
-    component               | chebi_id    | biomass      | protein
-    -------------------------------------------------------------------
-    biomass                 |             | 1            |
-    protein                 |             | -0,317663551 | 1
-    DNA                     |             | -0,050537383 |
-    RNA                     |             | -0,025990654 |
-    Cofactors               |             | -0,021658879 |
-    Cell wall               |             | -0,115       |
-    Carbohydrates           |             | -0,202149533 |
-    Phospholipids           |             | -0,154266667 |
-    L-alanine zwitterion    | CHEBI:57972 |              | -0,587530055
-    L-argininium(1+)        | CHEBI:32682 |              | -0,104025999
-    L-asparagine zwitterion | CHEBI:58048 |              | -0,47552295
-    L-aspartate(1-)         | CHEBI:29991 |              | -0,610918536
-    L-cysteine zwitterion   | CHEBI:35235 |              | -0,475540207
-    -------------------------------------------------------------------
-    ```
+    | component               | chebi_id    | biomass      | protein |
+    |-------------------------|-------------|--------------|---------|
+    | biomass                 |             | 1            |         |
+    | protein                 |             | -0.3176      | 1       |
+    | DNA                     |             | -0.0503      |         |
+    | RNA                     |             | -0.0259      |         |
+    | Cofactors               |             | -0.0216      |         |
+    | Cell wall               |             | -0.115       |         |
+    | Carbohydrates           |             | -0.2021      |         |
+    | Phospholipids           |             | -0.1542      |         |
+    | L-alanine zwitterion    | CHEBI:57972 |              | -0.5875 |
+    | L-argininium(1+)        | CHEBI:32682 |              | -0.1040 |
+    | L-asparagine zwitterion | CHEBI:58048 |              | -0.4755 |
+    | L-aspartate(1-)         | CHEBI:29991 |              | -0.6109 |
+    | L-cysteine zwitterion   | CHEBI:35235 |              | -0.4755 |
     """
 
     DEFAULT_CHEBI_COLUMN = "chebi_id"

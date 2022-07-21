@@ -17,6 +17,17 @@ from .context import Context, Measure, Variable
 @task_decorator("ContextBuilder", human_name="Context builder",
                 short_description="Build a context for a metabolic network using a flux table")
 class ContextBuilder(Task):
+    """
+    ContextBuilder Task
+
+    This task creates a `Context` object using a `FluxTable` and metabolic `Network`.
+    A `Context` object is used to create digital twins and perform metabolic flux analyses.
+
+    - The `FluxTable` gives a list of metabolic fluxes experimentally measured.
+    It generally corresponds to the consupmtion or production rates of a list on metabolites measured in a bioreactor.
+    - The `Network` is a metabolic network
+    """
+
     input_specs = {'network': InputSpec(Network), 'flux_table': InputSpec(FluxTable)}
     output_specs = {'context': OutputSpec(Context)}
     config_specs = {}

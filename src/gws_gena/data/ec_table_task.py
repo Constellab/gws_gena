@@ -20,6 +20,13 @@ from .ec_table import ECTable
 @importer_decorator("ECTableImporter", human_name="EC number table importer",
                     target_type=ECTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class ECTableImporter(TableImporter):
+    """
+    ECTableImporter class
+
+    Allows to import a `csv` or `xls` file and create a `ECTable` resource object.
+    The `ECTable` is a table of EC numbers.
+    """
+
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
         'ec_column':

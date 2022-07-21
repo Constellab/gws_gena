@@ -42,7 +42,9 @@ class OptimizeResult:
 @resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True)
 class FBAResult(ResourceSet):
     """
-    FBAResult class
+    FBAResult class.
+
+    A resource object containing the result of a flux balance analysis.
     """
 
     FLUX_TABLE_NAME = "Flux table"

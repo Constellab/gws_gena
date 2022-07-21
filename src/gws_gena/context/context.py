@@ -6,8 +6,8 @@
 import copy
 from typing import Dict, List, TypedDict
 
-from gws_core import (BadRequestException, DictRField, Resource, StrRField,
-                      StringHelper, resource_decorator)
+from gws_core import (BadRequestException, DictRField, Resource, StringHelper,
+                      StrRField, resource_decorator)
 
 from ..network.helper.slugify_helper import SlugifyHelper
 
@@ -19,6 +19,12 @@ from ..network.helper.slugify_helper import SlugifyHelper
 
 
 class Variable:
+    """
+    Variable class
+
+    A `Variable` is an object representing a reaction flux (e.g. a flux carried by a metabolic reaction).
+    """
+
     coefficient = None
     reference_id = None
     reference_type = None  # reaction | ...
@@ -59,6 +65,17 @@ class Variable:
 class Measure:
     """
     Measure class
+
+    A `Measure` is an object representing a measurable flux. It could correspond to a single (or a sum of) `Variable(s)`.
+
+    For instance:
+
+    Let `v1` and `v2` be the fluxes carried by 2 metabolic reactions `R1` and `R2`.
+    - If `v1` is experimentally mesurable, then `M1 = v1` will be a measure.
+    - If `v1` and `v2` are experimentally undistinguishable but only the sum of `v1` and `v2` can be detected,
+    then `M2 = v1 + v2` will be a measure.
+
+    These measures are used to build `Context` objects for the analysis of digital twins of cell metabolism.
     """
 
     id: str = None
@@ -156,7 +173,10 @@ ContextDict = TypedDict("ContextDict", {
 class Context(Resource):
     """
     Context class
+
+    A network `Context` is a resource object used to contextualize metabolic `Network` and create digital twin of cell metaolbism.
     """
+
     DEFAULT_NAME = "Context"
 
     measures: Dict[str, Measure] = DictRField()

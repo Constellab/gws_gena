@@ -71,7 +71,8 @@ class FBAHelper(TaskHelper):
     __CVXPY_SOLVER_PRIORITY = [cp.OSQP, cp.ECOS]
 
     def run(self, twin: Twin, solver, fluxes_to_maximize=None, fluxes_to_minimize=None, biomass_optimization=None,
-            fill_gaps_with_sinks: bool = None, ignore_cofactors: bool = None, relax_qssa: bool = None) -> FBAResult:
+            fill_gaps_with_sinks: bool = None, ignore_cofactors: bool = None, relax_qssa: bool = None,
+            qssa_relaxation_strength: float = None) -> FBAResult:
         cls = type(self)
         self.notify_info_message(message="Creating problem ...")
         if relax_qssa and solver != "quad":
@@ -98,7 +99,8 @@ class FBAHelper(TaskHelper):
         if solver == "quad":
             res, _ = cls.solve_cvxpy(
                 c, A_eq, b_eq, bounds,
-                relax_qssa=relax_qssa
+                relax_qssa=relax_qssa,
+                qssa_relaxation_strength=qssa_relaxation_strength
             )
         else:
             res: OptimizeResult = cls.solve_scipy(
@@ -265,7 +267,7 @@ class FBAHelper(TaskHelper):
                 ___do_solve_cvxpy_prob_i(1, prob, has_switched=True, verbose=verbose)
 
     @classmethod
-    def solve_cvxpy(cls, c, A_eq, b_eq, bounds, relax_qssa, verbose=False):
+    def solve_cvxpy(cls, c, A_eq, b_eq, bounds, relax_qssa, qssa_relaxation_strength, verbose=False):
         x_names = A_eq.columns
         con_names = A_eq.index
         A_eq = A_eq.to_numpy()
@@ -304,7 +306,9 @@ class FBAHelper(TaskHelper):
         lb_par = cp.Parameter(shape=(m,), value=lb)
 
         if relax_qssa:
-            qssa_cost = cp.sum_squares(A_eq @ x - b_eq_par)
+            if qssa_relaxation_strength is None:
+                qssa_relaxation_strength = 1
+            qssa_cost = qssa_relaxation_strength * cp.sum_squares(A_eq @ x - b_eq_par)
             if has_sink:
                 prob = cp.Problem(
                     cp.Minimize((1/2)*cp.quad_form(x, P) + c_par.T@x + qssa_cost),

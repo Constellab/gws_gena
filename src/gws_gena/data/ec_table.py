@@ -10,26 +10,24 @@ from gws_core import BadRequestException, StrRField, Table, resource_decorator
 
 @resource_decorator("ECTable",
                     human_name="EC number table",
-                    short_description="CSV table of EC numbers")
+                    short_description="Table of EC numbers")
 class ECTable(Table):
     """
-    Represents an ec number data table
+    ECTable class
 
-    * The first column is the compound name (official or user-defined name) [REQUIRED]
+    A resource table of EC numbers
+
+    * The first column is the compound name (official or user-defined name) `[required]`
     * The next columns are:
-      * ec_number: the list of ec numbers [REQUIRED]
+      * ec_number: the list of ec numbers `[required]`
       * other user informations [OPTIONAL]
 
     For example:
 
-    ```
-    -------------------------------------
-    component           | ec_number
-    -------------------------------------
-    PNEG_00964          | 1.4.1.2
-    PNEG_02355          | 4.2.1.10
-    -------------------------------------
-    ```
+    | component           | ec_number |
+    |---------------------|-----------|
+    | PNEG_00964          | 1.4.1.2   |
+    | PNEG_02355          | 4.2.1.10  |
     """
 
     DEFAULT_EC_COLUMN = "ec_number"

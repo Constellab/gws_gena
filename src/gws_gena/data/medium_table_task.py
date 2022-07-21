@@ -18,8 +18,16 @@ from .medium_table import MediumTable
 
 
 @importer_decorator("MediumTableImporter", human_name="Medium table importer",
-                    target_type=MediumTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    short_description="Culture medium table importer", target_type=MediumTable,
+                    supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class MediumTableImporter(TableImporter):
+    """
+    MediumTableImporter class
+
+    Allows to import a `csv` or `xls` file and create a `MediumTable` object resource.
+    The `MediumTable` is a table representing a culture medium composition.
+    """
+
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
         'entity_column':

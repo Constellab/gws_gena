@@ -20,6 +20,13 @@ from .biomass_reaction_table import BiomassReactionTable
 @importer_decorator("BiomassReactionTableImporter", human_name="Biomass reaction table importer",
                     target_type=BiomassReactionTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class BiomassReactionTableImporter(TableImporter):
+    """
+    BiomassReactionTableImporter class
+
+    Allows to import a `json` file and create a `BiomassReactionTable` resource object.
+    The `BiomassReactionTable` is a stoichiometry table describing the composition of a cell (or organism) biomass.
+    """
+
     config_specs: ConfigSpecs = {
         **TableImporter.config_specs,
         'entity_column':

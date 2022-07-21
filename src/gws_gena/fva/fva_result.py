@@ -12,4 +12,6 @@ from ..fba.fba_result import FBAResult
 class FVAResult(FBAResult):
     """
     FVAResult class
+
+    A resource object containing the result of a flux variability analysis.
     """

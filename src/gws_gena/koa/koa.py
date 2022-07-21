@@ -47,11 +47,13 @@ class KOA(Task):
         ko_table: ECTable = inputs["ko_table"]
         twin: FlatTwin = inputs["twin"].flatten()
         solver = params["solver"]
+        biomass_optimization = params["biomass_optimization"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
         fill_gaps_with_sinks = params["fill_gaps_with_sinks"]
         ignore_cofactors = params["ignore_cofactors"]
         relax_qssa = params["relax_qssa"]
+        qssa_relaxation_strength = params["qssa_relaxation_strength"]
         monitored_fluxes = params.get_value("monitored_fluxes", [])
         ko_delimiter = params.get_value("ko_delimiter", ",")
 
@@ -76,7 +78,9 @@ class KOA(Task):
             fba_helper.attach(self)
             current_result: FBAResult = fba_helper.run(
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
-                fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
+                biomass_optimization=biomass_optimization, fill_gaps_with_sinks=fill_gaps_with_sinks,
+                ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa,
+                qssa_relaxation_strength=qssa_relaxation_strength)
 
             if monitored_fluxes:
                 if len(monitored_fluxes) == 1 and monitored_fluxes[0].lower() == 'biomass':

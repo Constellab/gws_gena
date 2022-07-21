@@ -92,11 +92,13 @@ class FVA(Task):
     """
     FVA class
 
-    Performs flux variability analysis based on the work of [1].
+    Performs flux variability analysis. It is based on the paper of (Gudmundsson and Thiele, Bioinformatics 2010).
 
-    [1] Steinn Gudmundsson & Ines Thiele, Computationally efficient flux variability analysis,
-        BMC Bioinformatics, volume 11, Article number: 489 (2010),
-        https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
+    See also:
+
+    > Steinn Gudmundsson & Ines Thiele, Computationally efficient flux variability analysis,
+    BMC Bioinformatics, volume 11, Article number: 489 (2010),
+    https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
     """
 
     input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
