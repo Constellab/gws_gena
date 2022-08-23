@@ -1,8 +1,8 @@
 ,value
 toy_cell_X1_c,0.0
 toy_cell_X2_c,0.0
-toy_cell_X3_c,1.1368683772161603e-13
+toy_cell_X3_c,0.0
 toy_cell_X4_c,0.0
 toy_cell_X5_c,0.0
-measure_R1_ex,3.552713678800501e-15
-measure_R1_ex_obsv,1.4210854715202004e-14
+measure_R1_ex,0.0
+measure_R1_ex_obsv,6.394884621840902e-14

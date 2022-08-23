@@ -117,6 +117,7 @@ class FVA(Task):
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
         ignore_cofactors = params["ignore_cofactors"]
+        qssa_relaxation_strength = params["qssa_relaxation_strength"]
 
         if relax_qssa and solver != "quad":
             self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
@@ -140,6 +141,7 @@ class FVA(Task):
             res, warm_solver = FBAHelper.solve_cvxpy(
                 c, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
+                qssa_relaxation_strength=qssa_relaxation_strength,
                 verbose=False
             )
         else:
@@ -163,14 +165,10 @@ class FVA(Task):
 
         if solver == "quad":
             xmin, xmax = self.__solve_with_cvxpy_using_warm_solver(warm_solver,
-                                                                   c, A_eq, b_eq, bounds, x0,
+                                                                   c, x0,
                                                                    fluxes_to_maximize,
                                                                    fluxes_to_minimize,
-                                                                   step, m, solver, relax_qssa)
-            # xmin, xmax = self.__solve_with_parloop( c, A_eq, b_eq, bounds, x0,
-            #                                         fluxes_to_maximize,
-            #                                         fluxes_to_minimize,
-            #                                         step, m, solver, relax_qssa)
+                                                                   step, m)
         else:
             xmin, xmax = self.__solve_with_parloop(c, A_eq, b_eq, bounds, x0,
                                                    fluxes_to_maximize,
@@ -219,12 +217,16 @@ class FVA(Task):
         return xmin, xmax
 
     @staticmethod
+    # def __solve_with_cvxpy_using_warm_solver(warm_solver,
+    #                                          c, A_eq, b_eq, bounds, x0,
+    #                                          fluxes_to_maximize,
+    #                                          fluxes_to_minimize,
+    #                                          step, m, solver, relax_qssa):
     def __solve_with_cvxpy_using_warm_solver(warm_solver,
-                                             c, A_eq, b_eq, bounds, x0,
+                                             c, x0,
                                              fluxes_to_maximize,
                                              fluxes_to_minimize,
-                                             step, m, solver, relax_qssa):
-
+                                             step, m):
         max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
         min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
         lb = warm_solver["lb_par"]

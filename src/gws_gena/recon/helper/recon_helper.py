@@ -7,19 +7,24 @@ import math
 
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import (BadRequestException, ConfigParams, Logger, Task,
-                      TaskHelper, TaskInputs)
+from gws_core import (BadRequestException, ConfigParams, Logger,
+                      MessageDispatcher, Task, TaskInputs)
 
 from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.ec_table import ECTable
 from ...data.medium_table import MediumTable
-from ...network.compartment import Compartment
-from ...network.compound import Compartment, Compound
-from ...network.network import Network, ReactionDuplicate
-from ...network.reaction import Reaction
+from ...helper.base_helper import BaseHelper
+from ...network.compartment.compartment import Compartment
+from ...network.compound.compound import Compound
+from ...network.exceptions.reaction_exceptions import ReactionDuplicate
+from ...network.network import Network
+from ...network.reaction.reaction import Reaction
+from ...network.typing.compound_typing import CompoundDict
+from ...network.typing.reaction_typing import ReactionDict
 
 
-class ReconHelper(TaskHelper):
+class ReconHelper(BaseHelper):
+    """ ReconHelper """
 
     def add_biomass_equation_to_network(self, net: Network, biomass_table: BiomassReactionTable):
         """ Add the biomass equation to a network """
@@ -42,16 +47,16 @@ class ReconHelper(TaskHelper):
         net.name = unique_name
 
         total_enzymes = len(enzymes)
-        self.notify_info_message(f"{total_enzymes} enzymes found")
+        self.log_info_message(f"{total_enzymes} enzymes found")
         counter = 1
         nb_interval = int(total_enzymes/10) + 1
         perc = 0
-        self.notify_progress_value(perc, message=f"enzyme {counter} ...")
+        self.update_progress_value(perc, message=f"enzyme {counter} ...")
 
         for enzyme in enzymes:
             if (counter % nb_interval) == 0:
                 perc = 100*(counter/total_enzymes)
-                self.notify_progress_value(perc, message=f"enzyme {counter} ...")
+                self.update_progress_value(perc, message=f"enzyme {counter} ...")
             counter += 1
 
             try:
@@ -60,13 +65,13 @@ class ReconHelper(TaskHelper):
                 for rxn in rxns:
                     try:
                         net.add_reaction(rxn)
-                    except Exception as err:
+                    except BadRequestException as err:
                         Logger.warning(f"An non-blocking error occured: {err}")
                         net.set_reaction_recon_tag(enzyme.ec_number, {
                             "ec_number": enzyme.ec_number,
                             "error": str(err)
                         })
-            except Exception as _:
+            except BadRequestException as _:
                 pass
                 # net.set_reaction_recon_tag(enzyme.ec_number, {
                 #     "ec_number": enzyme.ec_number,
@@ -83,16 +88,16 @@ class ReconHelper(TaskHelper):
         net.name = unique_name
 
         total_enzymes = len(ec_list)
-        self.notify_info_message(f"{total_enzymes} enzymes to process")
+        self.log_info_message(f"{total_enzymes} enzymes to process")
         counter = 1
         nb_interval = int(total_enzymes/10) + 1
         perc = 0
-        self.notify_progress_value(perc, message=f"enzyme {counter} ...")
+        self.update_progress_value(perc, message=f"enzyme {counter} ...")
 
         for ec in ec_list:
             if (counter % nb_interval) == 0:
                 perc = 100*(counter/total_enzymes)
-                self.notify_progress_value(perc, message=f"enzyme {counter} ...")
+                self.update_progress_value(perc, message=f"enzyme {counter} ...")
             counter += 1
 
             ec = str(ec).strip()
@@ -109,13 +114,13 @@ class ReconHelper(TaskHelper):
                     for rxn in rxns:
                         try:
                             net.add_reaction(rxn)
-                        except Exception as err:
+                        except BadRequestException as err:
                             Logger.warning(f"An non-blocking error occured: {err}")
                             net.set_reaction_recon_tag(ec, {
                                 "ec_number": ec,
                                 "error": str(err)
                             })
-                except Exception as err:
+                except BadRequestException as err:
                     Logger.warning(f"An non-blocking error occured: {err}")
                     net.set_reaction_recon_tag(ec, {
                         "ec_number": ec,
@@ -134,9 +139,9 @@ class ReconHelper(TaskHelper):
                 net, chebi_id, name, compartment=Compartment.EXTRACELLULAR_SPACE)
             prod = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compartment.CYTOSOL)
             try:
-                rxn = Reaction(id=prod.name+"_ex")
-                rxn.add_product(prod, 1)
-                rxn.add_substrate(subs, 1)
+                rxn = Reaction(ReactionDict(id=prod.name+"_ex"))
+                rxn.add_product(prod, 1, net)
+                rxn.add_substrate(subs, 1, net)
                 net.add_reaction(rxn)
                 for comp in [subs, prod]:
                     net.set_compound_recon_tag(comp.id, {
@@ -156,15 +161,15 @@ class ReconHelper(TaskHelper):
             chebi_id = str(chebi_id)
         chebi_id = chebi_id.upper()
         if "CHEBI" not in chebi_id:
-            comp = Compound(name=name, compartment=compartment)
+            comp = Compound(CompoundDict(name=name, compartment=compartment))
         else:
             comps = net.get_compounds_by_chebi_id(chebi_id, compartment=compartment)
             if not comps:
                 try:
                     comp = Compound.from_biota(chebi_id=chebi_id, compartment=compartment)
-                except Exception as _:
+                except BadRequestException as _:
                     # invalid chebi_id
-                    comp = Compound(name=name, compartment=compartment)
+                    comp = Compound(CompoundDict(name=name, compartment=compartment))
             else:
                 comp = comps[0]
 
@@ -176,7 +181,7 @@ class ReconHelper(TaskHelper):
         for col_name in col_names:
             if col_name == chebi_col_name:
                 continue
-            rxn = Reaction(id=col_name, direction="R", lower_bound=0.0)
+            rxn = Reaction(ReactionDict(id=col_name, direction="R", lower_bound=0.0))
             coefs = biomass_table.get_column_as_list(col_name)
             error_message = "The reaction is empty"
             for i, coef in enumerate(coefs):
@@ -186,7 +191,7 @@ class ReconHelper(TaskHelper):
                         continue
                     try:
                         stoich = float(coef)
-                    except Exception as _:
+                    except BadRequestException as _:
                         error_message = f"Coefficient '{coef}' is not a valid float"
                         break
                 else:
@@ -195,9 +200,9 @@ class ReconHelper(TaskHelper):
                     stoich = coef
                 comp = biomass_comps[i]
                 if stoich > 0:
-                    rxn.add_product(comp, stoich)
+                    rxn.add_product(comp, stoich, net)
                 else:
-                    rxn.add_substrate(comp, stoich)
+                    rxn.add_substrate(comp, stoich, net)
             if not rxn.is_empty():
                 net.add_reaction(rxn)
             else:
@@ -215,7 +220,7 @@ class ReconHelper(TaskHelper):
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
             if name == biomass_col_name:
-                comp = Compound(name=name, compartment=Compartment.BIOMASS)
+                comp = Compound(CompoundDict(name=name, compartment=Compartment.BIOMASS))
                 _comps.append(comp)
             else:
                 comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compartment.CYTOSOL)

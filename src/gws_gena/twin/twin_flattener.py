@@ -10,8 +10,14 @@ from .flat_twin import FlatTwin
 from .twin import Twin
 
 
-@task_decorator("TwinFlattener", human_name="Twin flattener", short_description="Flatten a twin")
+@task_decorator("TwinFlattener", human_name="Twin flattener",
+                short_description="Flatten a digital twin of cell metabolism")
 class TwinFlattener(Task):
+    """ TwinFlattener
+
+    Flatten a digital twin of cell metabolism
+    """
+    
     input_specs = {
         'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to flatten"),
     }

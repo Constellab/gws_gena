@@ -3,11 +3,10 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BoolParam, ConfigParams, InputSpec, ListParam,
-                      OutputSpec, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
+                      ListParam, OutputSpec, StrParam, Task, TaskInputs,
+                      TaskOutputs, task_decorator)
 
-from ...fba.fba_helper.fba_helper import FBAHelper
 from ...fba.fba_result import FBAResult
 from ...twin.twin import Twin
 
@@ -31,20 +30,4 @@ class FBA(Task):
     }
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        twin = inputs["twin"]
-        solver = params["solver"]
-        fluxes_to_maximize = params["fluxes_to_maximize"]
-        fluxes_to_minimize = params["fluxes_to_minimize"]
-        fill_gaps_with_sinks = params["fill_gaps_with_sinks"]
-        ignore_cofactors = params["ignore_cofactors"]
-        relax_qssa = params["relax_qssa"]
-
-        helper = FBAHelper()
-        helper.attach(self)
-        fba_result: FBAResult = helper.run(
-            twin, solver, fluxes_to_maximize=fluxes_to_maximize, fluxes_to_minimize=fluxes_to_minimize,
-            fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa)
-
-        return {"result": fba_result}
-
-    # -- B --
+        raise BadRequestException("This task is deprecated and deactivated.")

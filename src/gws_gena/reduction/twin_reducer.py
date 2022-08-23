@@ -9,7 +9,7 @@ from gws_core import (BoolParam, ConfigParams, InputSpec, ListParam,
                       OutputSpec, Task, TaskInputs, TaskOutputs,
                       task_decorator)
 
-from ..network.reaction import Reaction
+from ..network.reaction.reaction import Reaction
 from ..twin.flat_twin import FlatTwin
 from ..twin.helper.twin_helper import TwinHelper
 from ..twin.twin import Twin

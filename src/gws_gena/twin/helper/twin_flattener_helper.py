@@ -5,8 +5,8 @@
 
 import copy
 
-from ...network.compound import Compound
-from ...network.reaction import Reaction
+from ...network.compound.compound import Compound
+from ...network.reaction.reaction import Reaction
 from ..flat_twin import FlatTwin, Twin
 
 # ####################################################################
@@ -17,11 +17,12 @@ from ..flat_twin import FlatTwin, Twin
 
 
 class TwinFalltenerHelper:
-
+    """ TwinFalltenerHelper """
     @classmethod
     def flatten(cls, twin: Twin) -> FlatTwin:
         """ Flatten the digital twin """
-        return FlatTwin.loads(twin.dumps_flat())
+        data = twin.dumps_flat()
+        return FlatTwin.loads(data)
 
     @classmethod
     def dumps_flat(cls, twin: Twin) -> dict:

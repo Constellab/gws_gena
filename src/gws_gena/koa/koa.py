@@ -14,7 +14,8 @@ from ..data.entity_id_table import EntityIDTable
 from ..fba.fba import FBA
 from ..fba.fba_helper.fba_helper import FBAHelper
 from ..fba.fba_result import FBAResult
-from ..network.helper.reaction_knockout_helper import ReactionKnockOutHelper
+from ..network.reaction.helper.reaction_knockout_helper import \
+    ReactionKnockOutHelper
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
 from .koa_result import KOAResult
@@ -70,9 +71,11 @@ class KOA(Task):
                 perc, message=f"Step {i+1}/{ko_table.nb_rows}: analyzing knockout '{ko_id}' ...")
 
             current_ko_twin = twin.copy()
+            helper = ReactionKnockOutHelper()
+            helper.attach_task(self)
             for _, net in current_ko_twin.networks.items():
-                _, not_found_ids = ReactionKnockOutHelper.knockout_list_of_reactions(
-                    net, current_ko_table, ko_delimiter=ko_delimiter, current_task=self, inplace=True)
+                _, not_found_ids = helper.knockout_list_of_reactions(
+                    net, current_ko_table, ko_delimiter=ko_delimiter, inplace=True)
 
             fba_helper = FBAHelper()
             fba_helper.attach(self)

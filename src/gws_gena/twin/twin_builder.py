@@ -19,8 +19,13 @@ from .twin import Twin
 
 
 @task_decorator("TwinBuilder", human_name="Twin builder",
-                short_description="Build a twin using a metabolic network and a context")
+                short_description="Build a digital twin of cell metabolism using a metabolic network and a context")
 class TwinBuilder(Task):
+    """ TwinBuilder
+
+    Build a digital twin of cell metabolism using a metabolic network and a context
+    """
+
     input_specs = {
         'network': InputSpec(Network, human_name="Network", short_description="The metabolic network"),
         'context': InputSpec(Context, human_name="Context", short_description="The metabolic context", is_skippable=True)

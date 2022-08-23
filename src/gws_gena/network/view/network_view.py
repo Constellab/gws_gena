@@ -17,7 +17,7 @@ class NetworkView(View):
         "refresh_layout":
         BoolParam(
             default_value=False,
-            visibility=BoolParam.PROTECTED_VISIBILITY,
+            visibility=BoolParam.PUBLIC_VISIBILITY,
             human_name="Refresh layout",
             short_description="Set True to refresh layout"),
         "skip_orphans":

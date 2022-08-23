@@ -13,8 +13,8 @@ from pandas import DataFrame
 from scipy import stats
 
 from ..network.network import Network
-from ..network.reaction import Reaction
-from ..network.typing.reaction_enzyme_typing import ReactionPathwayDict
+from ..network.reaction.reaction import Reaction
+from ..network.typing.pathway_typing import ReactionPathwayDict
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
 
@@ -126,7 +126,7 @@ class FBAResult(ResourceSet):
         rxn: Reaction
         pathways: ReactionPathwayDict
         for rxn_id in res.x_names:
-            if rxn_id in net.reactions:
+            if rxn_id in net.reactions.get_elements():
                 rxn = net.reactions[rxn_id]
                 pathways = rxn.get_pathways_as_flat_dict()
                 kegg_pw.append(pathways.get("kegg", ""))
@@ -175,7 +175,7 @@ class FBAResult(ResourceSet):
             t.append(data.loc[[flat_id], :])
         return pd.concat(t)
 
-    def get_fluxes_by_reaction_ids(self, reaction_ids: Union[List, str]) -> DataFrame:
+    def get_flux_dataframe_by_reaction_ids(self, reaction_ids: Union[List, str]) -> DataFrame:
         """ Get flux values by reaction ids """
         if isinstance(reaction_ids, str):
             reaction_ids = [reaction_ids]

@@ -12,8 +12,8 @@ from gws_core import BadRequestException
 from pandas import DataFrame
 from scipy.linalg import null_space
 
-from ...context.context import Variable
 from ..flat_twin import FlatTwin
+from ...context.measure import Measure
 
 # ####################################################################
 #
@@ -170,8 +170,7 @@ class TwinHelper:
             columns=["target", "lb", "ub", "confidence_score"],
             data=np.zeros((len(measure_ids), 4))
         )
-        for k in flat_ctx.measures:
-            measure = flat_ctx.measures[k]
+        for measure in flat_ctx.measures.values():
             meas_id = measure.id
             b.loc[meas_id, :] = [
                 measure.target,
@@ -179,15 +178,15 @@ class TwinHelper:
                 measure.upper_bound,
                 measure.confidence_score
             ]
-            for v in measure.variables:
-                ref_id = v.reference_id
-                ref_type = v.reference_type
-                coef = v.coefficient
-                if ref_type == Variable.REACTION_REFERENCE_TYPE:
+            for var_ in measure.variables:
+                ref_id = var_["reference_id"]
+                ref_type = var_["reference_type"]
+                coef = var_["coefficient"]
+                if ref_type == Measure.REACTION_REFERENCE_TYPE:
                     rxn_id = ref_id
                     C.at[meas_id, rxn_id] = coef
                 else:
-                    raise BadRequestException("Variables of type metabolite/compound are not supported in context")
+                    raise BadRequestException("Variables of type Metabolite are not supported in Context objects")
         return ObsvMatrices(C=C, b=b)
 
     @classmethod

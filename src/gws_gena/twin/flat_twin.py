@@ -15,8 +15,13 @@ from .twin import Twin
 
 
 @resource_decorator("FlatTwin", human_name="Flat twin",
-                    short_description="Flat twin of cell metabolism")
+                    short_description="Flat digital twin of cell metabolism")
 class FlatTwin(Twin):
+    """ FlatTwin
+
+    A flat digital twin of cell metabolism
+    """
+
     _mapping: Dict[str, dict] = DictRField()
     _reverse_mapping: Dict[str, str] = DictRField()
 
@@ -35,10 +40,10 @@ class FlatTwin(Twin):
         return self._reverse_mapping
 
     def dumps(self, *args, **kwargs):
-        _json = super().dumps(*args, **kwargs)
-        _json["mapping"] = self._mapping
-        _json["reverse_mapping"] = self._reverse_mapping
-        return _json
+        data = super().dumps(*args, **kwargs)
+        data["mapping"] = self._mapping
+        data["reverse_mapping"] = self._reverse_mapping
+        return data
 
     @classmethod
     def loads(cls, data) -> 'FlatTwin':
@@ -64,9 +69,11 @@ class FlatTwin(Twin):
         return self.dumps()
 
     def get_flat_network(self):
+        """ Get the flat network """
         return list(self.networks.values())[0]
 
     def get_flat_context(self):
+        """ Get the  flat context """
         return list(self.contexts.values())[0]
 
     # -- V --

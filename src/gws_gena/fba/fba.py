@@ -26,9 +26,9 @@ class FBA(Task):
     input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
     output_specs = {'result': OutputSpec(FBAResult, human_name="FBA result", short_description="The FBA result")}
     config_specs = {
-        "biomass_optimization": StrParam(allowed_values=["", "maximize", "minimize"], default_value="", human_name="Biomass optimization", short_description="Biomass optimization"),
-        "fluxes_to_maximize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
-        "fluxes_to_minimize": ListParam(default_value="[]", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
+        "biomass_optimization": StrParam(allowed_values=["", "maximize", "minimize"], default_value=None, optional=True, human_name="Biomass optimization", short_description="Biomass optimization"),
+        "fluxes_to_maximize": ListParam(default_value=None, optional=True, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
+        "fluxes_to_minimize": ListParam(default_value=None, optional=True, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
         "solver": StrParam(default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY, allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], human_name="Solver", short_description="The optimization solver"),
         "relax_qssa": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state assumption (QSSA) constrain (quad solver is used). False otherwise."),
         "qssa_relaxation_strength": FloatParam(default_value=1, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY, human_name="QSSA relaxation", short_description="Used only if QSSA is relaxed. The higher it is, the stronger is the QSSA. Hint: Set to the number of reactions to have strong QSSA contrain."),

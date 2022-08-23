@@ -20,14 +20,14 @@ from .context import Context
 # ####################################################################
 
 
-@importer_decorator("ContextImporter", human_name="Context importer", source_type=File,
-                    target_type=Context, supported_extensions=["json"])
+@importer_decorator("ContextImporter", human_name="Context importer",
+                    short_description="Metabolic context importer",
+                    source_type=File, target_type=Context, supported_extensions=["json"])
 class ContextImporter(ResourceImporter):
     """
     ContextImporter Task
 
-    Allows to import a `json` file to create a `Context` resource object.
-    A `Context` object is used to create digital twins and perform metabolic flux analyses.
+    Import a metabolic context
     """
 
     config_specs: ConfigSpecs = {
@@ -58,13 +58,14 @@ class ContextImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator("ContextExporter", human_name="Context exporter", source_type=Context, target_type=File)
+@exporter_decorator("ContextExporter", human_name="Context exporter",
+                    short_description="Metabolic context exporter",
+                    source_type=Context, target_type=File)
 class ContextExporter(ResourceExporter):
     """
-    ContextExporter Task
+    ContextExporter
 
-    Allows to export a `Context` resource object to a human-raadable `json` file.
-    A `Context` object is used to create digital twins and perform metabolic flux analyses.
+    Exports a metabolic context
     """
 
     config_specs: ConfigSpecs = {

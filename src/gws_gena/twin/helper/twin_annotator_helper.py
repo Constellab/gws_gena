@@ -29,31 +29,19 @@ class TwinAnnotatorHelper():
         for net in twin.networks.values():
             ctx_name = twin.network_contexts[net.name]
             ctx = twin.contexts[ctx_name]
-            for rnx_id in net.reactions:
+            for rnx_id in net.reactions.get_elements():
                 rxn = net.reactions[rnx_id]
                 net_name = net.name
                 flat_rxn_id = flux_rev_mapping[net_name][rnx_id]
-                fluxes = fba_result.get_fluxes_by_reaction_ids([flat_rxn_id])
-                rxn.set_estimate({
-                    "value": fluxes.at[flat_rxn_id, "value"],
-                    "lower_bound": fluxes.at[flat_rxn_id, "lower_bound"],
-                    "upper_bound": fluxes.at[flat_rxn_id, "upper_bound"],
-                })
+                fluxes = fba_result.get_flux_dataframe_by_reaction_ids([flat_rxn_id])
+                rxn.add_data_slot(
+                    "flux_estimates",
+                    {
+                        "values": [fluxes.at[flat_rxn_id, "value"]],
+                        "lower_bounds": [fluxes.at[flat_rxn_id, "lower_bound"]],
+                        "upper_bounds": [fluxes.at[flat_rxn_id, "upper_bound"]],
+                        "labels": [],
+                    }
+                )
             annotated_twin.add_network(net, related_context=ctx)
         return annotated_twin
-
-        # if isinstance(twin, FlatTwin):
-        #     raise BadRequestException("Cannot annotate a FlatTwin. A non-flat Twin is required")
-        # flat_twin: FlatTwin = twin.flatten()
-        # flux_rev_mapping = flat_twin.reverse_mapping
-        # flux_data = fba_result.get_flux_table().get_data()
-        # for net in twin.networks.values():
-        #     for rnx_id in net.reactions:
-        #         rxn = net.reactions[rnx_id]
-        #         net_name = net.name
-        #         flat_rxn_id = flux_rev_mapping[net_name][rnx_id]
-        #         rxn.set_estimate({
-        #             "value": flux_data.at[flat_rxn_id, "value"],
-        #             "lower_bound": flux_data.at[flat_rxn_id, "lower_bound"],
-        #             "upper_bound": flux_data.at[flat_rxn_id, "upper_bound"],
-        #         })

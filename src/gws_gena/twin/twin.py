@@ -10,8 +10,9 @@ from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
                       Resource, ResourceService, ResourceSet, StrRField,
                       resource_decorator, view)
 
-from ..context.context import Context, Variable
-from ..network.network import Compound, Network, Reaction
+from ..context.context import Context
+from ..context.measure import Measure
+from ..network.network import Network
 
 TwinDict = TypedDict("TwinDict", {
     "name": str,
@@ -87,16 +88,16 @@ class Twin(ResourceSet):
 
             # ckeck that the context is consistent with the related network
             reaction_ids = related_network.get_reaction_ids()
-            for k in ctx.measures:
-                measure = ctx.measures[k]
-                for v in measure.variables:
-                    if v.reference_type == Variable.REACTION_REFERENCE_TYPE:
-                        if not v.reference_id in reaction_ids:
+
+            for measure in ctx.measures.get_elements().values():
+                for var_ in measure.variables:
+                    if var_["reference_type"] == Measure.REACTION_REFERENCE_TYPE:
+                        if not var_["reference_id"] in reaction_ids:
                             raise BadRequestException(
-                                f"The reaction '{v.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
+                                f"The reaction '{var_['reference_id']}' of the context measure '{measure.id}' is not found in the list of reactions")
                     else:
                         raise BadRequestException(
-                            f"Invalid reference type '{v.reference_type}' for the context measure '{measure.id}'")
+                            f"Invalid reference type '{var_['reference_type']}' for the context measure '{measure.id}'")
             self.network_contexts[related_network.name] = ctx.name
 
     # -- B --
@@ -153,6 +154,7 @@ class Twin(ResourceSet):
                 "context_name": _ctx_name
             })
         _json = {
+            "name": self.name,
             "networks": _net_json,
             "contexts": _ctx_json,
             "network_contexts": _net_ctx_json

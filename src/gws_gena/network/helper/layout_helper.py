@@ -5,18 +5,13 @@
 
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 
-# ####################################################################
-#
-# CompoundCluster class
-#
-# ####################################################################
+from ...helper.base_helper import BaseHelper
 
 
-class LayoutHelper:
+class LayoutHelper(BaseHelper):
     """ Layout Helper """
 
-    @classmethod
-    def create_biomass_layout(cls, is_biomass=False):
+    def create_biomass_layout(self, is_biomass=False):
         """ Create biomass layout """
         if is_biomass:
             x = BiotaCompoundLayout.get_biomass_position()["x"]

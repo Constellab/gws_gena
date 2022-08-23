@@ -6,15 +6,15 @@
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import (BadRequestException, ConfigParams, InputSpec,
-                      OutputSpec, StrParam, Task, TaskInputs, TaskOutputs,
-                      StringHelper, task_decorator)
+from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
+                      StringHelper, StrParam, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
 from ..data.medium_table import MediumTable
 from ..network.network import Network
-from ..network.reaction import Reaction
+from ..network.reaction.reaction import Reaction
 from .helper.recon_helper import ReconHelper
 
 
@@ -59,7 +59,7 @@ class DraftRecon(Task):
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = self._create_network(params, inputs)
         helper = ReconHelper()
-        helper.attach(self)
+        helper.attach_task(self)
 
         if 'biomass_table' in inputs:
             biomass_table = inputs['biomass_table']

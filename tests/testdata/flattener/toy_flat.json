@@ -17,9 +17,10 @@
                     "compartment": "toy_cell_c",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {}
                     }
                 },
                 {
@@ -35,9 +36,10 @@
                     "compartment": "toy_cell_c",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {}
                     }
                 },
                 {
@@ -49,13 +51,22 @@
                     "formula": "",
                     "inchi": "",
                     "is_cofactor": false,
-                    "level": 1,
+                    "level": 2,
                     "compartment": "toy_cell_c",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {
+                            "biomass": {
+                                "x": null,
+                                "y": null,
+                                "level": 1,
+                                "name": "biomass",
+                                "parent": "biomass"
+                            }
+                        }
                     }
                 },
                 {
@@ -71,9 +82,10 @@
                     "compartment": "toy_cell_c",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {}
                     }
                 },
                 {
@@ -85,13 +97,22 @@
                     "formula": "",
                     "inchi": "",
                     "is_cofactor": false,
-                    "level": 1,
+                    "level": 2,
                     "compartment": "toy_cell_c",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {
+                            "biomass": {
+                                "x": null,
+                                "y": null,
+                                "level": 1,
+                                "name": "biomass",
+                                "parent": "biomass"
+                            }
+                        }
                     }
                 },
                 {
@@ -103,13 +124,22 @@
                     "formula": "",
                     "inchi": "",
                     "is_cofactor": false,
-                    "level": 1,
+                    "level": 2,
                     "compartment": "toy_cell_b",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {
+                            "biomass": {
+                                "x": null,
+                                "y": null,
+                                "level": 1,
+                                "name": "biomass",
+                                "parent": "biomass"
+                            }
+                        }
                     }
                 },
                 {
@@ -125,9 +155,10 @@
                     "compartment": "e",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {}
                     }
                 },
                 {
@@ -143,9 +174,10 @@
                     "compartment": "e",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {}
                     }
                 },
                 {
@@ -161,9 +193,10 @@
                     "compartment": "e",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {}
                     }
                 },
                 {
@@ -179,9 +212,10 @@
                     "compartment": "e",
                     "chebi_id": "",
                     "kegg_id": "",
-                    "position": {
+                    "layout": {
                         "x": null,
-                        "y": null
+                        "y": null,
+                        "clusters": {}
                     }
                 }
             ],
@@ -193,21 +227,18 @@
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X1_c": {
-                            "stoich": -1.0,
-                            "points": null
+                            "stoich": -1.0
                         },
                         "toy_cell_X2_c": {
-                            "stoich": 1.0,
-                            "points": null
+                            "stoich": 1.0
                         },
                         "toy_cell_X3_c": {
-                            "stoich": 1.0,
-                            "points": null
+                            "stoich": 1.0
                         }
                     },
                     "lower_bound": -1000.0,
                     "upper_bound": 1000.0,
-                    "position": {
+                    "layout": {
                         "x": null,
                         "y": null
                     },
@@ -224,17 +255,15 @@
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X4_c": {
-                            "stoich": -1.0,
-                            "points": null
+                            "stoich": -1.0
                         },
                         "toy_cell_X3_c": {
-                            "stoich": 1.0,
-                            "points": null
+                            "stoich": 1.0
                         }
                     },
                     "lower_bound": -1000.0,
                     "upper_bound": 1000.0,
-                    "position": {
+                    "layout": {
                         "x": null,
                         "y": null
                     },
@@ -251,21 +280,18 @@
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X3_c": {
-                            "stoich": -1.0,
-                            "points": null
+                            "stoich": -1.0
                         },
                         "toy_cell_X5_c": {
-                            "stoich": -2.0,
-                            "points": null
+                            "stoich": -2.0
                         },
                         "toy_cell_XB_b": {
-                            "stoich": 3.0,
-                            "points": null
+                            "stoich": 3.0
                         }
                     },
                     "lower_bound": -1000.0,
                     "upper_bound": 1000.0,
-                    "position": {
+                    "layout": {
                         "x": null,
                         "y": null
                     },
@@ -282,17 +308,15 @@
                     "rhea_id": "",
                     "metabolites": {
                         "X1_e": {
-                            "stoich": -1.0,
-                            "points": null
+                            "stoich": -1.0
                         },
                         "toy_cell_X1_c": {
-                            "stoich": 1.0,
-                            "points": null
+                            "stoich": 1.0
                         }
                     },
                     "lower_bound": -1000.0,
                     "upper_bound": 1000.0,
-                    "position": {
+                    "layout": {
                         "x": null,
                         "y": null
                     },
@@ -309,17 +333,15 @@
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X2_c": {
-                            "stoich": -1.0,
-                            "points": null
+                            "stoich": -1.0
                         },
                         "X2_e": {
-                            "stoich": 1.0,
-                            "points": null
+                            "stoich": 1.0
                         }
                     },
                     "lower_bound": -1000.0,
                     "upper_bound": 1000.0,
-                    "position": {
+                    "layout": {
                         "x": null,
                         "y": null
                     },
@@ -336,17 +358,15 @@
                     "rhea_id": "",
                     "metabolites": {
                         "X4_e": {
-                            "stoich": -1.0,
-                            "points": null
+                            "stoich": -1.0
                         },
                         "toy_cell_X4_c": {
-                            "stoich": 1.0,
-                            "points": null
+                            "stoich": 1.0
                         }
                     },
                     "lower_bound": -1000.0,
                     "upper_bound": 1000.0,
-                    "position": {
+                    "layout": {
                         "x": null,
                         "y": null
                     },
@@ -363,17 +383,15 @@
                     "rhea_id": "",
                     "metabolites": {
                         "X5_e": {
-                            "stoich": -1.0,
-                            "points": null
+                            "stoich": -1.0
                         },
                         "toy_cell_X5_c": {
-                            "stoich": 1.0,
-                            "points": null
+                            "stoich": 1.0
                         }
                     },
                     "lower_bound": -1000.0,
                     "upper_bound": 1000.0,
-                    "position": {
+                    "layout": {
                         "x": null,
                         "y": null
                     },
@@ -398,32 +416,32 @@
                 {
                     "id": "M1",
                     "name": "M1",
+                    "lower_bound": 25.0,
+                    "upper_bound": 35.0,
+                    "target": 30.0,
+                    "confidence_score": 1.0,
                     "variables": [
                         {
                             "reference_id": "toy_cell_R1_ex",
                             "reference_type": "reaction",
                             "coefficient": 1.0
                         }
-                    ],
-                    "lower_bound": 25.0,
-                    "upper_bound": 35.0,
-                    "target": 30.0,
-                    "confidence_score": 1.0
+                    ]
                 },
                 {
                     "id": "M2",
                     "name": "M2",
+                    "lower_bound": 0.5,
+                    "upper_bound": 1.0,
+                    "target": 0.75,
+                    "confidence_score": 1.0,
                     "variables": [
                         {
                             "reference_id": "toy_cell_R5_ex",
                             "reference_type": "reaction",
                             "coefficient": 1.0
                         }
-                    ],
-                    "lower_bound": 0.5,
-                    "upper_bound": 1.0,
-                    "target": 0.75,
-                    "confidence_score": 1.0
+                    ]
                 }
             ]
         }

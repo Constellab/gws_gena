@@ -10,8 +10,12 @@ from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
 
 from ..data.flux_table import FluxTable
 from ..network.network import Network
-from ..network.reaction import Reaction
-from .context import Context, Measure, Variable
+from ..network.reaction.reaction import Reaction
+from .context import Context
+from .measure import Measure
+from .typing.measure_typing import MeasureDict
+from .typing.variable_typing import VariableDict
+from .variable import Variable
 
 
 @task_decorator("ContextBuilder", human_name="Context builder",
@@ -42,7 +46,6 @@ class ContextBuilder(Task):
         scores = flux.get_confidence_scores()
         for i, ref_id in enumerate(flux.get_reaction_ids()):
             ref = net.get_reaction_by_id(ref_id)
-            ref_type = Variable.REACTION_REFERENCE_TYPE
             if ref is not None:
                 if ubounds[i] < lbounds[i]:
                     raise BadRequestException(f"Flux {ref_id}: the lower bound must be greater than upper bound")
@@ -66,18 +69,19 @@ class ContextBuilder(Task):
                     score = 0.0  # set the output confidence score to zero if it is NaN
 
                 measure = Measure(
-                    id="measure_" + ref_id,
-                    target=target,
-                    upper_bound=ubound,
-                    lower_bound=lbound,
-                    confidence_score=score
-                )
-                variable = Variable(
-                    coefficient=1.0,
-                    reference_id=ref_id,
-                    reference_type=ref_type
-                )
-                measure.add_variable(variable)
+                    MeasureDict(
+                        id="measure_" + ref_id,
+                        target=target,
+                        upper_bound=ubound,
+                        lower_bound=lbound,
+                        confidence_score=score,
+                        variables=[
+                            VariableDict(
+                                coefficient=1.0,
+                                reference_id=ref_id,
+                                reference_type=Variable.REACTION_REFERENCE_TYPE
+                            )]
+                    ))
                 ctx.add_measure(measure)
             else:
                 self.log_warning_message(f"No reference reaction found with id {ref_id}")

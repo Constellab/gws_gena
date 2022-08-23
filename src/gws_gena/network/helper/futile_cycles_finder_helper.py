@@ -4,15 +4,15 @@
 # About us: https://gencovery.com
 
 from gws_core import Table
-from pandas import DataFrame
 
-from ...network.network import Network
+from ...helper.base_helper import BaseHelper
+from ..network import Network
 
 
-class FutileCyclesFinderHelper:
+class FutileCyclesFinderHelper(BaseHelper):
+    """ FutileCyclesFinderHelper """
 
-    @staticmethod
-    def find(network: Network) -> Table:
+    def find(self, network: Network) -> Table:
         """ Find futile cycle """
 
         # S = network.create_stoichiometric_matrix()

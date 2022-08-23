@@ -13,8 +13,8 @@ from gws_core import BadRequestException, Logger, TaskHelper
 from pandas import DataFrame
 from scipy.optimize import linprog
 
+from ...gap.helper.sink_helper import SinkHelper
 from ...network.network import Network
-from ...recon.helper.sink_helper import SinkHelper
 from ...twin.flat_twin import FlatTwin
 from ...twin.helper.twin_helper import TwinHelper
 from ...twin.twin import Twin
@@ -135,8 +135,8 @@ class FBAHelper(TaskHelper):
                 fluxes_to_minimize = list(set(fluxes_to_minimize))
 
         flat_net: Network = flat_twin.get_flat_network()
-        if fill_gaps_with_sinks:
-            SinkHelper.fill_gaps_with_sinks(flat_net)
+        # if fill_gaps_with_sinks:
+        #     SinkHelper.fill_gaps_with_sinks(flat_net)
 
         # reshape problem
         obsv_matrix = TwinHelper.create_observation_matrices(flat_twin)
@@ -210,6 +210,9 @@ class FBAHelper(TaskHelper):
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_maximize, direction="max")
         A_eq, b_eq = cls.__upgrade_Aeq_beq_with_output_coefficient_score(A_eq, b_eq, beq_confidence_score)
 
+        print(A_eq)
+        print(b_eq)
+
         return c, A_eq, b_eq, bounds
 
     # -- C --
@@ -219,7 +222,9 @@ class FBAHelper(TaskHelper):
     @classmethod
     def _expand_fluxes_by_names(cls, fluxes_to_minmax, flat_net):
         expanded_fluxes_to_minmax = []
-        list_of_rxn_names = list(flat_net.reactions.keys())
+        if fluxes_to_minmax is None:
+            return []
+        list_of_rxn_names = list(flat_net.reactions.get_elements().keys())
         for k in fluxes_to_minmax:
             tab = k.split(":")
             rxn_name = tab[0]
@@ -487,6 +492,9 @@ class FBAHelper(TaskHelper):
 
     @classmethod
     def __upgrade_c_with_fluxes_to_min_max(cls, c, flat_net, fluxes_to_minmax, direction):
+        if fluxes_to_minmax is None:
+            fluxes_to_minmax = []
+
         for k in fluxes_to_minmax:
             tab = k.split(":")
             rxn_name = tab[0]
