@@ -3,7 +3,6 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import copy
 from typing import Dict, TypedDict
 
 from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
@@ -11,21 +10,9 @@ from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
                       resource_decorator, view)
 
 from ..context.context import Context
-from ..context.measure import Measure
+from ..context.variable import Variable
 from ..network.network import Network
-
-TwinDict = TypedDict("TwinDict", {
-    "name": str,
-    "networks": list,
-    "contexts": list,
-    "network_contexts": list
-})
-
-# ####################################################################
-#
-# Twin class
-#
-# ####################################################################
+from .typing.twin_typing import TwinDict
 
 
 @resource_decorator("Twin", human_name="Twin", short_description="Twin of cell metabolism")
@@ -36,9 +23,14 @@ class Twin(ResourceSet):
     A twin is defined by a set of networks related to a set of contexts. It
     can therefore be used for simulation and prediction.
     """
-
-    description: str = StrRField(default_value="", searchable=True)
+    DEFAUTL_NAME = "twin"
+    # description: str = StrRField(default_value="", searchable=True)
     network_contexts: Dict[str, str] = DictRField()
+
+    def __init__(self):
+        super().__init__()
+        if not self.name:
+            self.name = self.DEFAUTL_NAME
 
     # -- A --
 
@@ -89,15 +81,16 @@ class Twin(ResourceSet):
             # ckeck that the context is consistent with the related network
             reaction_ids = related_network.get_reaction_ids()
 
-            for measure in ctx.measures.get_elements().values():
-                for var_ in measure.variables:
-                    if var_["reference_type"] == Measure.REACTION_REFERENCE_TYPE:
-                        if not var_["reference_id"] in reaction_ids:
+            for measure in ctx.measures.values():
+                for variable in measure.variables:
+                    print(variable)
+                    if variable.reference_type == Variable.REACTION_REFERENCE_TYPE:
+                        if not variable.reference_id in reaction_ids:
                             raise BadRequestException(
-                                f"The reaction '{var_['reference_id']}' of the context measure '{measure.id}' is not found in the list of reactions")
+                                f"The reaction '{variable.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
                     else:
                         raise BadRequestException(
-                            f"Invalid reference type '{var_['reference_type']}' for the context measure '{measure.id}'")
+                            f"Invalid reference type '{variable.reference_type}' for the context measure '{measure.id}'")
             self.network_contexts[related_network.name] = ctx.name
 
     # -- B --
@@ -116,7 +109,7 @@ class Twin(ResourceSet):
         """ Copy the twin """
         twin = type(self)()
         twin.name = self.name
-        twin.description = self.description
+        # twin.description = self.description
         # keep same networks
         for net in self.networks.values():
             twin.add_network(net.copy())
@@ -215,7 +208,7 @@ class Twin(ResourceSet):
                     twin.add_context(ctx, related_network=nets[net_name])
                     break
 
-        twin.description = data.get("description", "")
+        # twin.description = data.get("description", "")
         return twin
 
     # -- M --

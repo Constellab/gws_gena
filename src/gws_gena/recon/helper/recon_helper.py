@@ -136,8 +136,9 @@ class ReconHelper(BaseHelper):
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
             subs = ReconHelper._retrieve_or_create_comp(
-                net, chebi_id, name, compartment=Compartment.EXTRACELLULAR_SPACE)
-            prod = ReconHelper._retrieve_or_create_comp(net, chebi_id, name, compartment=Compartment.CYTOSOL)
+                net, chebi_id, name, compartment=Compartment.create_extracellular_compartment())
+            prod = ReconHelper._retrieve_or_create_comp(
+                net, chebi_id, name, compartment=Compartment.create_cytosol_compartment())
             try:
                 rxn = Reaction(ReactionDict(id=prod.name+"_ex"))
                 rxn.add_product(prod, 1, net)
@@ -161,15 +162,23 @@ class ReconHelper(BaseHelper):
             chebi_id = str(chebi_id)
         chebi_id = chebi_id.upper()
         if "CHEBI" not in chebi_id:
-            comp = Compound(CompoundDict(name=name, compartment=compartment))
+            comp = Compound(
+                CompoundDict(
+                    name=name,
+                    compartment=compartment
+                ))
         else:
             comps = net.get_compounds_by_chebi_id(chebi_id, compartment=compartment)
             if not comps:
                 try:
-                    comp = Compound.from_biota(chebi_id=chebi_id, compartment=compartment)
+                    comp = Compound.from_biota(chebi_id=chebi_id, compartment_go_id=compartment.go_id)
                 except BadRequestException as _:
                     # invalid chebi_id
-                    comp = Compound(CompoundDict(name=name, compartment=compartment))
+                    comp = Compound(
+                        CompoundDict(
+                            name=name,
+                            compartment=compartment
+                        ))
             else:
                 comp = comps[0]
 
@@ -178,8 +187,9 @@ class ReconHelper(BaseHelper):
     def _create_biomass_rxns(self, net, biomass_comps, biomass_table):
         col_names = biomass_table.column_names
         chebi_col_name = biomass_table.chebi_column
+        entity_column = biomass_table.entity_column
         for col_name in col_names:
-            if col_name == chebi_col_name:
+            if col_name == chebi_col_name or col_name == entity_column:
                 continue
             rxn = Reaction(ReactionDict(id=col_name, direction="R", lower_bound=0.0))
             coefs = biomass_table.get_column_as_list(col_name)
@@ -220,10 +230,15 @@ class ReconHelper(BaseHelper):
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
             if name == biomass_col_name:
-                comp = Compound(CompoundDict(name=name, compartment=Compartment.BIOMASS))
+                comp = Compound(
+                    CompoundDict(
+                        name=name,
+                        compartment=Compartment.create_cytosol_compartment()
+                    ))
                 _comps.append(comp)
             else:
-                comp = self._retrieve_or_create_comp(net, chebi_id, name, compartment=Compartment.CYTOSOL)
+                comp = self._retrieve_or_create_comp(
+                    net, chebi_id, name, compartment=Compartment.create_cytosol_compartment())
                 _comps.append(comp)
 
         return _comps

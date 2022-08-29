@@ -28,68 +28,88 @@ class TwinFalltenerHelper:
     def dumps_flat(cls, twin: Twin) -> dict:
         """ Generates a flat dump of the digital twin """
 
-        _comps = {}
-        _mets = []
-        _rxns = []
+        all_compart_data = []
+        all_met_data = []
+        all_rxn_data = []
 
-        _mapping = {}
-        _rev_mapping = {}
+        _rxn_mapping = {}
+        _rev_rxn_mapping = {}
 
         for net in twin.networks.values():
             net_data = net.dumps()
-            for k in net_data["compartments"]:
-                compart_name = Compound.flatten_compartment_id(k, net.name)
-                compart_data = net_data["compartments"][k]
-                _comps[compart_name] = compart_data
 
-            for _met in net_data["metabolites"]:
-                _met["id"] = Compound.flatten_compound_id(_met["id"], net.name)
-                _met["compartment"] = Compound.flatten_compartment_id(_met["compartment"], net.name)
-                _mets.append(_met)
+            # flatten all compartments ids
+            for current_compart_data in net_data["compartments"]:
+                compart_id = current_compart_data["id"]
+                compart = net.compartments[compart_id]
+                flat_compart_id = net.flatten_compartment_id(compart)
+                current_compart_data["id"] = flat_compart_id
+                current_compart_data["network_name"] = net.name
+                all_compart_data.append(current_compart_data)
 
-            for _rxn in net_data["reactions"]:
-                _original_rxn_id = _rxn["id"]
-                _rxn["id"] = Reaction.flatten_id(_rxn["id"], net.name)
-                _rxn["lower_bound"] = _rxn["lower_bound"]
-                _rxn["upper_bound"] = _rxn["upper_bound"]
-                _mapping[_rxn["id"]] = {
+            # flatten all compound ids
+            for current_met_data in net_data["metabolites"]:
+                original_met_id = current_met_data["id"]
+                met = net.compounds[original_met_id]
+                current_met_data["id"] = net.flatten_compound_id(met)
+
+                compart_id = current_met_data["compartment"]
+                compart = net.compartments[compart_id]
+                flat_compart_id = net.flatten_compartment_id(compart)
+                current_met_data["compartment"] = flat_compart_id
+
+                all_met_data.append(current_met_data)
+
+            # flatten all reaction ids
+            for current_rxn_data in net_data["reactions"]:
+                original_rxn_id = current_rxn_data["id"]
+                rxn = net.reactions[original_rxn_id]
+                current_rxn_data["id"] = net.flatten_reaction_id(rxn)
+
+                _rxn_mapping[current_rxn_data["id"]] = {
                     "network_name": net.name,
-                    "reaction_id": _original_rxn_id
+                    "reaction_id": original_rxn_id
                 }
-                if not net.name in _rev_mapping:
-                    _rev_mapping[net.name] = {}
-                _rev_mapping[net.name][_original_rxn_id] = _rxn["id"]
-                _rxn_mets = {}
-                for _met_id in _rxn["metabolites"]:
-                    _flat_met_id = Compound.flatten_compound_id(_met_id, net.name)
-                    stoich = _rxn["metabolites"][_met_id]
-                    _rxn_mets[_flat_met_id] = stoich
-                _rxn["metabolites"] = _rxn_mets
-                _rxns.append(_rxn)
 
-        _measures = []
+                if not net.name in _rev_rxn_mapping:
+                    _rev_rxn_mapping[net.name] = {}
+                _rev_rxn_mapping[net.name][original_rxn_id] = current_rxn_data["id"]
+
+                current_rxn_stoichs = {}
+                for original_met_id, stoich in current_rxn_data["metabolites"].items():
+                    met = net.compounds[original_met_id]
+                    flat_met_id = net.flatten_compound_id(met)
+                    current_rxn_stoichs[flat_met_id] = stoich
+
+                current_rxn_data["metabolites"] = current_rxn_stoichs
+                all_rxn_data.append(current_rxn_data)
+
+        all_measure_data = []
         for ctx in twin.contexts.values():
             related_network = twin.get_related_network(ctx)
             if related_network:
                 ctx_data = ctx.dumps()
                 for _meas in ctx_data["measures"]:
                     for _var in _meas["variables"]:
-                        _var["reference_id"] = Reaction.flatten_id(_var["reference_id"], related_network.name)
-                _measures.extend(ctx_data["measures"])
+                        rxn_id = _var["reference_id"]
+                        rxn = related_network.reactions[rxn_id]
+                        _var["reference_id"] = related_network.flatten_reaction_id(rxn)
 
-        _json = {
+                all_measure_data.extend(ctx_data["measures"])
+
+        data = {
             "name": twin.name,
-            "description": twin.description,
+            # "description": twin.description,
             "networks": [{
-                "metabolites": _mets,
-                "reactions": _rxns,
-                "compartments": _comps,
+                "metabolites": all_met_data,
+                "reactions": all_rxn_data,
+                "compartments": all_compart_data,
             }],
             "contexts": [{
-                "measures": _measures
+                "measures": all_measure_data
             }],
-            "mapping": _mapping,
-            "reverse_mapping": _rev_mapping
+            "reaction_mapping": _rxn_mapping,
+            "reverse_reaction_mapping": _rev_rxn_mapping
         }
 
-        return _json
+        return data

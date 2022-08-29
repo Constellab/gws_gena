@@ -24,12 +24,12 @@ class TwinAnnotatorHelper():
             raise BadRequestException("Cannot annotate a FlatTwin. A non-flat Twin is required")
 
         flat_twin: FlatTwin = twin.flatten()
-        flux_rev_mapping = flat_twin.reverse_mapping
+        flux_rev_mapping = flat_twin.reverse_reaction_mapping
         annotated_twin = Twin()
         for net in twin.networks.values():
             ctx_name = twin.network_contexts[net.name]
             ctx = twin.contexts[ctx_name]
-            for rnx_id in net.reactions.get_elements():
+            for rnx_id in net.reactions:
                 rxn = net.reactions[rnx_id]
                 net_name = net.name
                 flat_rxn_id = flux_rev_mapping[net_name][rnx_id]

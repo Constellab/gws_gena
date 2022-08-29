@@ -73,7 +73,7 @@ class DraftRecon(Task):
 
     def _create_network(self, params, inputs):
         helper = ReconHelper()
-        helper.attach(self)
+        helper.attach_task(self)
         unique_name = params["unique_name"]
         tax_id = params['tax_id']
         tax_search_method = params['tax_search_method']

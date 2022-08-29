@@ -14,5 +14,5 @@ class ReactionNotFoundException(BadRequestException):
     """ ReactionNotFoundException """
 
 
-class InvalidReactionIdException(BadRequestException):
-    """ InvalidReactionIdException """
+class InvalidReactionException(BadRequestException):
+    """ InvalidReactionException """

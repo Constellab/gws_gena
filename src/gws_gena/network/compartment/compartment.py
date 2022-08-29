@@ -4,9 +4,16 @@
 # About us: https://gencovery.com
 
 
-from gws_core import BadRequestException
+from typing import Dict
+
+from gws_biota import Compartment as BiotaCompartment
+from gws_biota import \
+    CompartmentNotFoundException as BiotaCompartmentNotFoundException
+from gws_core import BadRequestException, SerializableRField
 
 from ..exceptions.compartment_exceptions import InvalidCompartmentException
+from ..helper.slugify_helper import SlugifyHelper
+from ..typing.compartment_typing import CompartmentDict
 
 
 class Compartment:
@@ -15,173 +22,164 @@ class Compartment:
     Use BiGG DB nomenclature
     """
 
-    DELIMITER = "_"
+    CYTOSOL_GO_ID = "GO:0005829"
+    BIOMASS_GO_ID = "GO:0016049"
+    EXTRACELL_SPACE_GO_ID = "GO:0005615"
+    EXTRACELL_REGION_GO_ID = "GO:0005576"
+    NUCLEUS_GO_ID = "GO:0005634"
+    OTHER_GO_ID = "GO:0005575"
+    SINK_GO_ID = "GO:0005576"
 
-    CYTOSOL = "c"
-    NUCLEUS = "n"
-    MITOCHONDRIA = "m"
-    BIOMASS = "b"
-    EXTRACELLULAR_SPACE = "e"
-    SINK = "s"
-    PERIPLASM = "p"
+    id = None
+    go_id = None
+    bigg_id = None
+    name = None
+    is_steady: bool = None
 
-    COMPARTMENTS = {
-        "b": {"id": "b", "name": "biomass", "is_steady": False},
-        "c": {"id": "c", "name": "cytosol", "is_steady": True},
-        "cm": {"id": "cm", "name": "cytosolic membrane", "is_steady": True},
-        "cx": {"id": "cx", "name": "carboxyzome", "is_steady": True},
-        "e": {"id": "e", "name": "extracellular space", "is_steady": False},
-        "g": {"id": "g", "name": "golgi apparatus", "is_steady": True},
-        "h": {"id": "h", "name": "chloroplast", "is_steady": True},
-        "f": {"id": "f", "name": "flagellum", "is_steady": True},
-        "i": {"id": "i", "name": "inner mitochondrial compartment", "is_steady": True},
-        "im": {"id": "im", "name": "mitochondrial intermembrane space", "is_steady": True},
-        "l": {"id": "l", "name": "lysosome", "is_steady": True},
-        "m": {"id": "m", "name": "mitochondria", "is_steady": True},
-        "mm": {"id": "mm", "name": "mitochondria intermembrane", "is_steady": True},
-        "n": {"id": "n", "name": "nucleus", "is_steady": True},
-        "o": {"id": "o", "name": "other", "is_steady": True},
-        "p": {"id": "p", "name": "periplasm", "is_steady": True},
-        "r": {"id": "r", "name": "endoplasmic reticulum", "is_steady": True},
-        "s": {"id": "s", "name": "eyespot", "is_steady": True},
-        "sk": {"id": "sk", "name": "sink", "is_steady": False},
-        "u": {"id": "u", "name": "thylakoid", "is_steady": True},
-        "um": {"id": "um", "name": "thylakoid membrane", "is_steady": True},
-        "v": {"id": "v", "name": "vacuole", "is_steady": True},
-        "x": {"id": "x", "name": "peroxisome/glyoxysome", "is_steady": True},
-        "y": {"id": "y", "name": "cytochrome complex", "is_steady": True},
-    }
+    def __init__(self, dict_: CompartmentDict = None):
+        super().__init__()
+        if dict_ is None:
+            dict_ = {}
+        for key, val in dict_.items():
+            setattr(self, key, val)
 
-    @classmethod
-    def clean(cls, data):
-        """ Clean compartment data """
-        replaced_compartments = {}
-        compart_data = data["compartments"]
-        cleaned_compart_data = {}
-        for k, val in compart_data.item():
-
-            if isinstance(val, str):
-                compart_id = k
-                compart_name = val
-            else:
-                compart_id = val["id"]
-                compart_name = val["name"]
-
-            if compart_id in cls.COMPARTMENTS:
-                # ensure that "biomass" key is not used
-                if compart_id == cls.BIOMASS:
-                    if compart_name != cls.COMPARTMENTS[compart_id]["name"]:
-                        # cannot used "biomass" key => we consider that is the "other" compartment
-                        cleaned_compart_data["o"] = cls.COMPARTMENTS["o"]
-                        replaced_compartments[k] = "o"
-                    else:
-                        cleaned_compart_data[k] = cls.COMPARTMENTS[k]
-                else:
-                    cleaned_compart_data[k] = cls.COMPARTMENTS[k]
-            else:
-                # we consider that it is the "other" compartment
-                cleaned_compart_data["o"] = cls.COMPARTMENTS["o"]
-                replaced_compartments[k] = "o"
-
-        data["compartments"] = cleaned_compart_data
-        replaced_met = {}
-
-        if replaced_compartments:
-            for i, met in enumerate(data["metabolites"]):
-                old_compart = met["compartment"]
-                if old_compart in replaced_compartments:
-                    new_compart = replaced_compartments[old_compart]
-                    old_id = met["id"]
-                    new_id = "_".join(met["id"].split("_")[:-1]) + "_" + new_compart
-
-                    met["compartment"] = new_compart
-                    met["id"] = new_id
-                    replaced_met[old_id] = new_id
-
-                    data["metabolites"][i] = met
-
-        if replaced_met:
-            for i, rxn in enumerate(data["reactions"]):
-                new_rxn_nets = {}
-                for name in rxn["metabolites"]:
-                    if name in replaced_met:
-                        new_name = replaced_met[name]
-                        new_rxn_nets[new_name] = rxn["metabolites"][name]
-                    else:
-                        new_rxn_nets[name] = rxn["metabolites"][name]
-
-                data["reactions"][i]["metabolites"] = new_rxn_nets
-
-        return data
-
-    @classmethod
-    def check_and_retrieve_suffix(cls, compartment):
-        """ Check compartment """
-        if len(compartment) == 1:
-            if compartment not in cls.COMPARTMENTS:
-                raise InvalidCompartmentException(f"Invalid compartment '{compartment}'")
-            compartment_suffix = compartment
+        # only the go_id is used to retreive a valid compartment
+        if self.go_id:
+            biota_compart = BiotaCompartment.get_by_go_id(go_id=self.go_id)
         else:
-            compartment_suffix = compartment.split(cls.DELIMITER)[-1]
-            if compartment_suffix not in cls.COMPARTMENTS:
-                raise InvalidCompartmentException(f"Invalid compartment '{compartment}'")
+            raise InvalidCompartmentException("A valid compartment go_id is required")
 
-        return compartment_suffix
+        if not self.id:
+            self.id = self.go_id
+
+        self.id = SlugifyHelper.slugify_id(self.id)
+        self.name = biota_compart.name
+        self.is_steady = biota_compart.data["is_steady"]
+        self.bigg_id = biota_compart.bigg_id
+
+    def copy(self):
+        """ Deep copy the compartment """
+        compart = Compartment(
+            CompartmentDict(
+                id=self.id,
+                go_id=self.go_id,
+                bigg_id=self.bigg_id,
+                name=self.name,
+                is_steady=self.is_steady
+            ))
+        return compart
+
+    def dumps(self) -> Dict:
+        """ Dumps as JSON """
+        return {
+            "id": None,
+            "go_id": self.go_id,
+            "bigg_id": self.bigg_id,
+            "name": self.name
+        }
+
+    def loads(self, data: dict) -> 'Compartment':
+        """ Loads from as JSON """
+        return Compartment(data)
 
     @classmethod
-    def retrieve_suffix_from_compound_id(cls, compound_id):
-        """ Check compartment """
-        for compartment in Compartment.COMPARTMENTS:
-            if compound_id.endswith(Compartment.DELIMITER + compartment):
-                return compartment
-        return None
+    def exists(cls, go_id: str = None, bigg_id: str = None):
+        """ Returns True if the compartment exists """
+        return cls.from_biota(go_id=go_id, bigg_id=bigg_id) is not None
 
     @classmethod
-    def is_intracellular(cls, compartment) -> bool:
+    def from_biota(cls, *, go_id: str = None, bigg_id: str = None):
+        """
+        Loads from biota using its `go_id` or `bigg_id`
+        The `go_id` is tested in priority if provied
+        """
+
+        if (go_id is None) and (bigg_id is None):
+            raise BadRequestException("The go_id or bigg_id is required")
+
+        try:
+            if go_id:
+                biota_compart = BiotaCompartment.get_by_go_id(go_id)
+            elif bigg_id:
+                biota_compart = BiotaCompartment.get_by_bigg_id(bigg_id)
+        except BiotaCompartmentNotFoundException as _:
+            return None
+        except Exception as err:
+            raise BadRequestException("An error occured when fetching compartment from biota") from err
+
+        if biota_compart:
+            return Compartment(
+                CompartmentDict(
+                    go_id=biota_compart.go_id,
+                    bigg_id=biota_compart.bigg_id,
+                    name=biota_compart.name,
+                    is_steady=biota_compart.data["is_steady"]
+                ))
+        else:
+            return None
+
+    @ classmethod
+    def create_cytosol_compartment(cls):
+        """ Create cytosol compartment """
+        return cls.from_biota(go_id=cls.CYTOSOL_GO_ID)
+
+    @ classmethod
+    def create_nucleus_compartment(cls):
+        """ Create nucleus compartment """
+        return cls.from_biota(go_id=cls.NUCLEUS_GO_ID)
+
+    @ classmethod
+    def create_biomass_compartment(cls):
+        """ Create bioamss compartment """
+        return cls.from_biota(go_id=cls.BIOMASS_GO_ID)
+
+    @ classmethod
+    def create_extracellular_compartment(cls):
+        """ Create extracellular space compartment """
+        return cls.from_biota(go_id=cls.EXTRACELL_SPACE_GO_ID)
+
+    @ classmethod
+    def create_sink_compartment(cls):
+        """ Create extracellular space compartment """
+        return cls.from_biota(go_id=cls.SINK_GO_ID)
+
+    def is_extracellular(self) -> bool:
         """
         Test if the compartment is intracellular
 
-        :return: True if the compartment is intracellular, False otherwise
-        :rtype: `bool`
+        : return: True if the compartment is intracellular, False otherwise
+        : rtype: `bool`
         """
 
-        compartment_suffix = compartment.split(cls.DELIMITER)[-1]
-        return compartment_suffix != cls.EXTRACELLULAR_SPACE and \
-            compartment_suffix != cls.BIOMASS and \
-            compartment_suffix != cls.SINK
+        return self.go_id in [self.EXTRACELL_SPACE_GO_ID, self.EXTRACELL_REGION_GO_ID]
 
-    @classmethod
-    def is_biomass(cls, compartment) -> bool:
+    def is_intracellular(self) -> bool:
+        """
+        Test if the compartment is intracellular
+
+        : return: True if the compartment is intracellular, False otherwise
+        : rtype: `bool`
+        """
+
+        return self.go_id not in [
+            self.EXTRACELL_SPACE_GO_ID, self.EXTRACELL_REGION_GO_ID, self.BIOMASS_GO_ID, self.SINK_GO_ID]
+
+    def is_biomass(self) -> bool:
         """
         Test if the compartment is the biomass compartment
 
-        :return: True if the compartment is the biomass compartment, False otherwise
-        :rtype: `bool`
+        : return: True if the compartment is the biomass compartment, False otherwise
+        : rtype: `bool`
         """
 
-        compartment_suffix = compartment.split(cls.DELIMITER)[-1]
-        return compartment_suffix == cls.BIOMASS
+        return self.go_id == self.BIOMASS_GO_ID
 
-    @classmethod
-    def is_sink(cls, compartment) -> bool:
+    def is_sink(self) -> bool:
         """
         Test if the compartment is a sink compartment
 
-        :return: True if the compartment is a sink compartment, False otherwise
-        :rtype: `bool`
+        : return: True if the compartment is a sink compartment, False otherwise
+        : rtype: `bool`
         """
 
-        compartment_suffix = compartment.split(cls.DELIMITER)[-1]
-        return compartment_suffix == cls.SINK
-
-    @classmethod
-    def is_steady(cls, compartment) -> bool:
-        """
-        Test if the compartment is a steady-state compartment (is intracellular)
-
-        :return: True if the compartment is steady, False otherwise
-        :rtype: `bool`
-        """
-
-        compartment_suffix = compartment.split(cls.DELIMITER)[-1]
-        return cls.COMPARTMENTS[compartment_suffix]["is_steady"]
+        return self.go_id == self.SINK_GO_ID

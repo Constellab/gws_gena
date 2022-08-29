@@ -11,6 +11,7 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, JSONView,
                       resource_decorator, view)
 from pandas import DataFrame
 
+from .compartment.compartment import Compartment
 from .compound.compound import Compound
 from .network_data.network_data import NetworkData
 from .reaction.reaction import Reaction
@@ -65,13 +66,19 @@ class Network(Resource):
     # -- C --
 
     @property
-    def compounds(self):
+    def compartments(self) -> dict:
+        """ Get the list of compartments """
+        return self.network_data.compartments
+
+    @property
+    def compounds(self) -> dict:
         """ Get the list of compounds """
         return self.network_data.compounds
 
     def copy(self) -> 'Network':
         """ Returns a deep copy """
         net = Network()
+        net.name = self.name
         net.network_data = self.network_data.copy()
         return net
 
@@ -163,11 +170,15 @@ class Network(Resource):
 
     def flatten_reaction_id(self, rxn: Reaction) -> str:
         """ Flatten the id of a reaction """
-        return self.flatten_reaction_id(rxn)
+        return self.network_data.flatten_reaction_id(rxn)
 
     def flatten_compound_id(self, comp: Compound) -> str:
         """ Flatten the id of a compound """
-        return self.flatten_compound_id(comp)
+        return self.network_data.flatten_compound_id(comp)
+
+    def flatten_compartment_id(self, compartment: Compartment) -> str:
+        """ Flatten the id of a compartment """
+        return self.network_data.flatten_compartment_id(compartment)
 
     def get_compound_ids(self) -> List[str]:
         """ Get all compound ids """
@@ -366,6 +377,7 @@ class Network(Resource):
             skip_orphans=skip_orphans,
             task=task
         )
+        network.name = network.network_data.name
         return network
 
     # -- N --
@@ -375,7 +387,7 @@ class Network(Resource):
     # -- R --
 
     @property
-    def reactions(self):
+    def reactions(self) -> dict:
         """ Get the list of reactions """
         return self.network_data.reactions
 

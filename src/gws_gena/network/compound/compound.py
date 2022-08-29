@@ -52,6 +52,8 @@ class Compound:
     :type kegg_id: `str`
     """
 
+    DELIMITER = "_"
+
     id: str = ""
     name: str = ""
     charge: float = None
@@ -59,14 +61,12 @@ class Compound:
     monoisotopic_mass: float = None
     formula: str = ""
     inchi: str = ""
-    compartment: str = ""
+    compartment: Compartment = None
     chebi_id: str = ""
     alt_chebi_ids: List = None
     kegg_id: str = ""
     inchikey: str = ""
     layout: BiotaCompoundLayoutDict = None
-
-    FLATTENING_DELIMITER = "_"
 
     def __init__(self, dict_: CompoundDict = None):
         if dict_ is None:
@@ -79,29 +79,17 @@ class Compound:
         if self.inchikey is None:
             self.inchikey = ""
 
+        if not isinstance(self.compartment, Compartment):
+            raise BadRequestException("The compartment is not valid")
         if not isinstance(self.chebi_id, str):
             raise BadRequestException("The chebi_id must be a string")
         if not isinstance(self.inchikey, str):
             raise BadRequestException("The inchikey must be a string")
 
-        if not self.compartment:
-            self.compartment = Compartment.CYTOSOL
-
-        compartment_suffix = Compartment.check_and_retrieve_suffix(self.compartment)
-
         if self.id:
             self.id = SlugifyHelper.slugify_id(self.id)
-            id_compartment_suffix = Compartment.retrieve_suffix_from_compound_id(self.id)
-            if id_compartment_suffix is None:
-                raise InvalidCompoundIdException(f"Invalid compound id '{self.id}'. No compartment suffix found.")
-
-            # ensure that the compartment suffix is compatible with the compound id
-            if id_compartment_suffix != compartment_suffix:
-                raise InvalidCompoundIdException(
-                    f"Invalid compound id '{self.id}'. The id suffix must be {compartment_suffix}.")
         else:
             if not self.name:
-                # if not is_found and chebi_id:
                 if self.chebi_id:
                     c = BiotaCompound.get_or_none(BiotaCompound.chebi_id == self.chebi_id)
                     if c is not None:
@@ -111,7 +99,9 @@ class Compound:
                 else:
                     raise CompoundNotFoundException("The chebi_id is not valid")
 
-            self.id = SlugifyHelper.slugify_id(self.name + Compartment.DELIMITER + compartment_suffix)
+            self.id = SlugifyHelper.slugify_id(
+                self.name + self.DELIMITER + self.compartment.name
+            )
 
         if not self.name:
             self.name = self.id
@@ -122,8 +112,7 @@ class Compound:
         if self.layout is None:
             # refresh layout
             self.layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
-                synonym_chebi_ids=self.chebi_id,
-                compartment=self.compartment)
+                synonym_chebi_ids=self.chebi_id)
 
         if self.is_biomass():
             self.append_biomass_layout(is_biomass=True)
@@ -148,7 +137,12 @@ class Compound:
 
     def copy(self) -> 'Compound':
         """ Create a copy of the compound """
-        c = Compound(CompoundDict(id=self.id, name=self.name, compartment=self.compartment))
+        c = Compound(
+            CompoundDict(
+                id=self.id,
+                name=self.name,
+                compartment=self.compartment
+            ))
         c.charge = self.charge
         c.mass = self.mass
         c.monoisotopic_mass = self.monoisotopic_mass
@@ -169,59 +163,59 @@ class Compound:
     @ classmethod
     def create_sink_compound(cls, related_compound: 'Compound') -> 'Compound':
         """ Create a sink compound """
-        if related_compound.compartment.endswith(Compartment.DELIMITER + Compartment.SINK):
+        compart = related_compound.compartment
+        if compart.is_sink():
             raise BadRequestException("Cannot add a sink reaction to another sink reaction")
 
         return Compound(
             CompoundDict(
-                id=related_compound.id + "_s",
+                id=None,
                 name=related_compound.name,
-                compartment=Compartment.SINK,
+                compartment=Compartment.create_sink_compartment(),
                 chebi_id=related_compound.chebi_id,
                 inchikey=related_compound.inchikey,
             ))
 
     # -- F --
 
-    @ classmethod
-    def flatten_compound_id(cls, comp_id, net_name) -> str:
-        """
-        Flattens a compound id
+    # @ classmethod
+    # def flatten_compound_id(cls, compart_go_id, net_name) -> str:
+    #     """
+    #     Flattens a compound id
 
-        :param comp_id: The id
-        :type comp_id: `str`
-        :param net_name: The name of the (metabolic, biological, network) context
-        :type net_name: `str`
-        :return: The flattened id
-        :rtype: `str`
-        """
+    #     :param compart_go_id: The id
+    #     :type compart_go_id: `str`
+    #     :param net_name: The name of the (metabolic, biological, network) context
+    #     :type net_name: `str`
+    #     :return: The flattened id
+    #     :rtype: `str`
+    #     """
 
-        flat_delim = Compound.FLATTENING_DELIMITER
-        skip_list = [Compartment.EXTRACELLULAR_SPACE]
-        for compart in skip_list:
-            if comp_id.endswith(Compartment.DELIMITER + compart):
-                return comp_id
-        return SlugifyHelper.slugify_id(net_name + flat_delim + comp_id)
+    #     skip_list = [Compartment.EXTRACELLULAR_SPACE]
+    #     for compart_go_id in skip_list:
+    #         if compart_go_id.endswith(Compartment.DELIMITER + compart):
+    #             return compart_go_id
+    #     return SlugifyHelper.slugify_id(net_name + Compound.FLATTENING_DELIMITER + compart_go_id)
 
-    @ classmethod
-    def flatten_compartment_id(cls, comp_id, net_name) -> str:
-        """
-        Flattens a compartment id
+    # @ classmethod
+    # def flatten_compartment_id(cls, compart_go_id, net_name) -> str:
+    #     """
+    #     Flattens a compartment id
 
-        :param comp_id: The id
-        :type comp_id: `str`
-        :param net_name: The name of the (metabolic, biological, network) context
-        :type net_name: `str`
-        :return: The flattened id
-        :rtype: `str`
-        """
+    #     :param compart_go_id: The id
+    #     :type compart_go_id: `str`
+    #     :param net_name: The name of the (metabolic, biological, network) context
+    #     :type net_name: `str`
+    #     :return: The flattened id
+    #     :rtype: `str`
+    #     """
 
-        flat_delim = Compound.FLATTENING_DELIMITER
-        skip_list = [Compartment.EXTRACELLULAR_SPACE]
-        for compart in skip_list:
-            if comp_id.endswith(Compartment.DELIMITER + compart) or comp_id == compart:
-                return comp_id
-        return SlugifyHelper.slugify_id(net_name + flat_delim + comp_id)
+    #     flat_delim = Compound.FLATTENING_DELIMITER
+    #     skip_list = [Compartment.EXTRACELLULAR_SPACE]
+    #     for compart_go_id in skip_list:
+    #         if compart_go_id.endswith(Compartment.DELIMITER + compart) or compart_go_id == compart:
+    #             return compart_go_id
+    #     return SlugifyHelper.slugify_id(net_name + flat_delim + compart_go_id)
 
     # @classmethod
     # def from_bulk_biota(cls, chebi_ids: List = None, compartment="") -> dict:
@@ -250,8 +244,8 @@ class Compound:
     #     return list_of_comps
 
     @ classmethod
-    def from_biota(
-            cls, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="", compartment="") -> 'Compound':
+    def from_biota(cls, *, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="",
+                   compartment_go_id="") -> 'Compound':
         """
         Create a network compound from a ChEBI of Kegg id
 
@@ -280,8 +274,10 @@ class Compound:
             # raise CompoundNotFoundException(
             #     f"Cannot find compound (chebi_id={chebi_id}, inchikey={inchikey}, kegg_id={kegg_id})")
 
-        if not compartment:
-            compartment = Compartment.CYTOSOL
+        if not compartment_go_id:
+            compart = Compartment.create_cytosol_compartment()
+        else:
+            compart = Compartment.from_biota(go_id=compartment_go_id)
         if not name:
             name = biota_compound.name
 
@@ -289,7 +285,7 @@ class Compound:
             CompoundDict(
                 id=id,
                 name=name,
-                compartment=compartment,
+                compartment=compart,
                 chebi_id=biota_compound.chebi_id,
                 kegg_id=biota_compound.kegg_id,
                 inchikey=biota_compound.inchikey,
@@ -311,8 +307,7 @@ class Compound:
             if refresh:
                 if self.chebi_id:
                     layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
-                        synonym_chebi_ids=self.chebi_id,
-                        compartment=self.compartment)
+                        synonym_chebi_ids=self.chebi_id)
                 else:
                     layout = self.layout
             else:
@@ -370,7 +365,7 @@ class Compound:
         :rtype: `bool`
         """
 
-        return Compartment.is_intracellular(self.compartment)
+        return self.compartment.is_intracellular()
 
     def is_biomass(self) -> bool:
         """
@@ -380,7 +375,7 @@ class Compound:
         :rtype: `bool`
         """
 
-        return Compartment.is_biomass(self.compartment)
+        return self.compartment.is_biomass()
 
     def is_sink(self) -> bool:
         """
@@ -390,7 +385,7 @@ class Compound:
         :rtype: `bool`
         """
 
-        return Compartment.is_sink(self.compartment)
+        return self.compartment.is_sink()
 
     def is_steady(self) -> bool:
         """
@@ -400,7 +395,7 @@ class Compound:
         :rtype: `bool`
         """
 
-        return Compartment.is_steady(self.compartment)
+        return self.compartment.is_steady
 
     def is_cofactor(self) -> bool:
         """

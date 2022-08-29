@@ -224,7 +224,7 @@ class FBAHelper(TaskHelper):
         expanded_fluxes_to_minmax = []
         if fluxes_to_minmax is None:
             return []
-        list_of_rxn_names = list(flat_net.reactions.get_elements().keys())
+        list_of_rxn_names = list(flat_net.reactions.keys())
         for k in fluxes_to_minmax:
             tab = k.split(":")
             rxn_name = tab[0]

@@ -13,6 +13,7 @@ from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxo
 
 from ....helper.base_helper import BaseHelper
+from ...compartment.compartment import Compartment
 from ...typing.compound_typing import CompoundDict
 from ...typing.enzyme_typing import EnzymeDict
 from ...typing.reaction_typing import ReactionDict
@@ -26,13 +27,13 @@ class ReactionBiotaHelper(BaseHelper):
 
     def merge_compounds_and_add_to_reaction(
             self, comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
-            compartment=None, alt_litteral_comppound_name=None, oligomerization=None):
+            compartment_go_id=None, alt_litteral_comppound_name=None, oligomerization=None):
         """ Merge a list of compounds (oligomerisation) """
 
         from ...compound.compound import Compound
 
-        if compartment is None:
-            compartment = comps[0].compartment
+        if compartment_go_id is None:
+            compartment_go_id = comps[0].compartment.go_id
 
         names = []
         for comp in comps:
@@ -42,12 +43,20 @@ class ReactionBiotaHelper(BaseHelper):
             names.append(oligomerization)
 
         is_substrate = not is_product
-        c = Compound(CompoundDict(name=",".join(names), compartment=compartment))
+        c = Compound(
+            CompoundDict(
+                name=",".join(names),
+                compartment=Compartment.from_biota(go_id=compartment_go_id)
+            ))
         if is_substrate:
             comp_id_exists_in_products = (c.id in rxn.products)
             if comp_id_exists_in_products and alt_litteral_comppound_name:
                 # use the litteral name to uniquify the compound id
-                c = Compound(CompoundDict(name=alt_litteral_comppound_name, compartment=compartment))
+                c = Compound(
+                    CompoundDict(
+                        name=alt_litteral_comppound_name,
+                        compartment=Compartment.from_biota(go_id=compartment_go_id)
+                    ))
 
         c.chebi_id = ",".join([comp_.chebi_id or "" for comp_ in comps])
         c.kegg_id = ",".join([comp_.kegg_id or "" for comp_ in comps])
@@ -144,9 +153,9 @@ class ReactionBiotaHelper(BaseHelper):
 
             litteral_comp_name = substrate_definition[count]
             if litteral_comp_name.endswith("(out)"):
-                compartment = Compartment.EXTRACELLULAR_SPACE
+                compartment_go_id = Compartment.EXTRACELL_SPACE_GO_ID
             else:
-                compartment = Compartment.CYTOSOL
+                compartment_go_id = Compartment.CYTOSOL_GO_ID
 
             tab = re.findall(OLIG_REGEXP, litteral_comp_name)
             oligo = tab[0][0] if len(tab) else None
@@ -155,7 +164,7 @@ class ReactionBiotaHelper(BaseHelper):
                 stoich,
                 rxn,
                 is_product=True,
-                compartment=compartment,
+                compartment_go_id=compartment_go_id,
                 alt_litteral_comppound_name=None,
                 oligomerization=oligo
             )
@@ -177,9 +186,9 @@ class ReactionBiotaHelper(BaseHelper):
 
             litteral_comp_name = product_definition[count]
             if litteral_comp_name.endswith("(out)"):
-                compartment = Compartment.EXTRACELLULAR_SPACE
+                compartment_go_id = Compartment.EXTRACELL_SPACE_GO_ID
             else:
-                compartment = Compartment.CYTOSOL
+                compartment_go_id = Compartment.CYTOSOL_GO_ID
 
             tab = re.findall(OLIG_REGEXP, litteral_comp_name)
             oligo = tab[0][0] if len(tab) else None
@@ -188,7 +197,7 @@ class ReactionBiotaHelper(BaseHelper):
                 stoich,
                 rxn=rxn,
                 is_product=False,
-                compartment=compartment,
+                compartment_go_id=compartment_go_id,
                 alt_litteral_comppound_name=litteral_comp_name,
                 oligomerization=oligo
             )

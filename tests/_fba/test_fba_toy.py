@@ -73,11 +73,11 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
                 self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
         # highs
-        for context in [True]:
+        for context in [False, True]:
             self.print(f"Test FBAProto: Small network (toy + context={context} + linprog)")
             await run_fba(context=context, solver="highs")
 
-        # # quad
-        # for relax in [False, True]:
-        #     self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
-        #     await run_fba(context=True, solver="quad", relax_qssa=relax)
+        # quad
+        for relax in [False, True]:
+            self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
+            await run_fba(context=True, solver="quad", relax_qssa=relax)

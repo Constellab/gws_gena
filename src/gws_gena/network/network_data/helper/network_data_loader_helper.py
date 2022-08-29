@@ -3,6 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import copy
 import re
 
 from gws_biota import Compound as BiotaCompound
@@ -10,6 +11,7 @@ from gws_biota import EnzymeOrtholog as BiotaEnzymeOrtholog
 from gws_core import BadRequestException
 
 from ....helper.base_helper import BaseHelper
+from ...compartment.compartment import Compartment
 from ...reaction.helper.reaction_biota_helper import ReactionBiotaHelper
 from ...typing.compound_typing import CompoundDict
 from ...typing.reaction_typing import ReactionDict
@@ -40,11 +42,12 @@ class NetworkDataLoaderHelper(BaseHelper):
         ec_number_list = []
 
         self.log_info_message(f"{len(data[ckey])} compounds detected.")
-        for val in data[ckey]:
-            chebi_id = val.get("chebi_id", "")
-            is_bigg_data_format = is_bigg_data_format or ("annotation" in val)
+
+        for comp_data in data[ckey]:
+            chebi_id = comp_data.get("chebi_id", "")
+            is_bigg_data_format = is_bigg_data_format or ("annotation" in comp_data)
             if not chebi_id and is_bigg_data_format:
-                annotation = val["annotation"]
+                annotation = comp_data["annotation"]
                 if isinstance(annotation, list):
                     annotation = self._convert_bigg_annotation_list_to_dict(annotation)
                 current_ids = annotation.get("chebi", []) or annotation.get("CHEBI", [])
@@ -58,25 +61,25 @@ class NetworkDataLoaderHelper(BaseHelper):
                     chebi_id_list.append(chebi_id)
 
         self.log_info_message(f"{len(data['reactions'])} reactions detected.")
-        for val in data["reactions"]:
 
+        for rxn_data in data["reactions"]:
             if is_bigg_data_format:
                 skip = False
                 for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
-                    if val["id"].startswith(pref):
+                    if rxn_data["id"].startswith(pref):
                         skip = True
                         break
                 if skip:
                     continue
-
             if is_bigg_data_format:
-                annotation = val["annotation"]
+                annotation = rxn_data["annotation"]
                 if isinstance(annotation, list):
                     annotation = self._convert_bigg_annotation_list_to_dict(annotation)
                 ec_number = annotation.get(
                     "ec-code") or annotation.get("ec-number") or annotation.get("EC Number")
             else:
-                ec_number = val.get("ec-code") or val.get("ec-number") or val.get("ec") or val.get("EC Number")
+                ec_number = rxn_data.get(
+                    "ec-code") or rxn_data.get("ec-number") or rxn_data.get("ec") or rxn_data.get("EC Number")
             if ec_number:
                 if isinstance(ec_number, list):
                     ec_number_list.extend(ec_number)
@@ -94,29 +97,35 @@ class NetworkDataLoaderHelper(BaseHelper):
         added_comps = {}
         ckey = "compounds" if "compounds" in data else "metabolites"
 
+        # compartment_dict = {}
+        # for compart_data in data["compartments"]:
+        #     compart_id = compart_data["id"]
+        #     go_id = compart_data["go_id"]
+        #     compart = Compartment.from_biota(go_id=go_id)
+        #     compartment_dict[compart_id] = compart
+
         count = 0
         total_number_of_compounds = len(data[ckey])
         total_number_of_prints = 3
         comp_print_interval = int(total_number_of_compounds / total_number_of_prints) or 1
 
-        for val in data[ckey]:
+        for comp_data in data[ckey]:
             count += 1
             if not count % comp_print_interval:
                 perc = int(100 * count/total_number_of_compounds)
                 self.log_info_message(f"... {perc}%")
 
-            compart = val["compartment"]
-            if not compart in net.compartments:
-                raise BadRequestException(
-                    f"The compartment '{compart}' of the compound '{val['id']}' not declared in the lists of compartments")
+            # if not Compartment.exists(go_id=compart_go_id):
+            #     raise BadRequestException(
+            #         f"The compartment '{compart_go_id}' of the compound '{comp_data['id']}' is not valid")
 
-            chebi_id = val.get("chebi_id", "")
-            inchikey = val.get("inchikey", "")
-            is_bigg_data_format = ("annotation" in val)
+            chebi_id = comp_data.get("chebi_id", "")
+            inchikey = comp_data.get("inchikey", "")
+            is_bigg_data_format = ("annotation" in comp_data)
 
             alt_chebi_ids = []
             if not chebi_id and not inchikey and is_bigg_data_format:
-                annotation = val["annotation"]
+                annotation = comp_data["annotation"]
                 if isinstance(annotation, list):
                     annotation = self._convert_bigg_annotation_list_to_dict(annotation)
 
@@ -129,30 +138,36 @@ class NetworkDataLoaderHelper(BaseHelper):
                     elif isinstance(alt_chebi_ids, list):
                         chebi_id = alt_chebi_ids.pop(0)
 
-            comp_id = val["id"]
+            comp_id = comp_data["id"]
             biota_comp = None
             if loads_biota_info:
                 for c_id in alt_chebi_ids:
                     biota_comp = biota_comps.get(c_id)
-                    for k in val:
+                    for k in comp_data:
                         if hasattr(biota_comp, k):
-                            val[k] = getattr(biota_comp, k)
+                            comp_data[k] = getattr(biota_comp, k)
 
+            # create compartment
+            compart_id = comp_data["compartment"]
+            compartment = Compartment(data["compartments"][compart_id])
+
+            # create compound
             comp = Compound(
-                CompoundDict(id=comp_id,
-                             name=val.get("name", ""),
-                             compartment=compart,
-                             charge=val.get("charge", ""),
-                             mass=val.get("mass", ""),
-                             monoisotopic_mass=val.get("monoisotopic_mass", ""),
-                             formula=val.get("formula", ""),
-                             inchi=val.get("inchi", ""),
-                             inchikey=val.get("inchikey", ""),
-                             chebi_id=chebi_id,
-                             alt_chebi_ids=alt_chebi_ids,
-                             kegg_id=val.get("kegg_id", ""),
-                             layout=val.get("layout")
-                             ))
+                CompoundDict(
+                    id=comp_id,
+                    name=comp_data.get("name", ""),
+                    compartment=compartment,
+                    charge=comp_data.get("charge", ""),
+                    mass=comp_data.get("mass", ""),
+                    monoisotopic_mass=comp_data.get("monoisotopic_mass", ""),
+                    formula=comp_data.get("formula", ""),
+                    inchi=comp_data.get("inchi", ""),
+                    inchikey=comp_data.get("inchikey", ""),
+                    chebi_id=chebi_id,
+                    alt_chebi_ids=alt_chebi_ids,
+                    kegg_id=comp_data.get("kegg_id", ""),
+                    layout=comp_data.get("layout")
+                ))
 
             if not skip_orphans:
                 # add all compounds by default
@@ -176,7 +191,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         rxn_biota_helper = ReactionBiotaHelper()
         rxn_biota_helper.attach_task(self._task)
 
-        for val in data["reactions"]:
+        for rxn_data in data["reactions"]:
             count += 1
             if not count % rxn_print_interval:
                 perc = int(100 * count/total_number_of_reactions)
@@ -185,7 +200,7 @@ class NetworkDataLoaderHelper(BaseHelper):
             if is_bigg_data_format and skip_bigg_exchange_reactions:
                 skip = False
                 for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
-                    if val["id"].startswith(pref):
+                    if rxn_data["id"].startswith(pref):
                         skip = True
                         break
                 if skip:
@@ -193,27 +208,28 @@ class NetworkDataLoaderHelper(BaseHelper):
 
             rxn = Reaction(
                 ReactionDict(
-                    id=val["id"],
-                    name=val.get("name"),
-                    lower_bound=val.get("lower_bound", Reaction.lower_bound),
-                    upper_bound=val.get("upper_bound", Reaction.upper_bound),
-                    enzyme=val.get("enzyme", {}),
-                    direction=val.get("direction", "B"),
-                    rhea_id=val.get("rhea_id", "")
+                    id=rxn_data["id"],
+                    name=rxn_data.get("name"),
+                    lower_bound=rxn_data.get("lower_bound", Reaction.lower_bound),
+                    upper_bound=rxn_data.get("upper_bound", Reaction.upper_bound),
+                    enzyme=rxn_data.get("enzyme", {}),
+                    direction=rxn_data.get("direction", "B"),
+                    rhea_id=rxn_data.get("rhea_id", "")
                 ))
-            rxn.layout = val.get("layout", {})
+            rxn.layout = rxn_data.get("layout", {})
 
             if loads_biota_info:
                 if not rxn.enzyme:
                     if is_bigg_data_format:
-                        annotation = val["annotation"]
+                        annotation = rxn_data["annotation"]
                         if isinstance(annotation, list):
                             annotation = self._convert_bigg_annotation_list_to_dict(annotation)
 
                         ec_number = annotation.get(
                             "ec-code") or annotation.get("ec-number") or annotation.get("EC Number")
                     else:
-                        ec_number = val.get("ec-code") or val.get("ec-number") or val.get("ec") or val.get("EC Number")
+                        ec_number = rxn_data.get(
+                            "ec-code") or rxn_data.get("ec-number") or rxn_data.get("ec") or rxn_data.get("EC Number")
 
                     if ec_number:
                         if isinstance(ec_number, list):
@@ -230,24 +246,24 @@ class NetworkDataLoaderHelper(BaseHelper):
                                 rxn.set_enzyme(enzyme_dict)
                                 break
 
-            if val.get("data"):
-                rxn.set_data(val.get("data"))
+            if rxn_data.get("data"):
+                rxn.set_data(rxn_data.get("data"))
 
             reg_exp = re.compile(r"CHEBI\:\d+$")
-            for comp_id in val[ckey]:
+            for comp_id in rxn_data[ckey]:
                 comp = added_comps[comp_id]
                 # search according to compound ids
                 if reg_exp.match(comp_id):
                     comps = net.get_compounds_by_chebi_id(comp_id)
                     # select the compound in the good compartment
                     for c in comps:
-                        if c.compartment == comp.compartment:
+                        if c.compartment.go_id == comp.compartment.go_id:
                             break
 
-                if isinstance(val[ckey][comp_id], dict):
-                    stoich = float(val[ckey][comp_id].get("stoich"))
+                if isinstance(rxn_data[ckey][comp_id], dict):
+                    stoich = float(rxn_data[ckey][comp_id].get("stoich"))
                 else:
-                    stoich = float(val[ckey][comp_id])  # for retro compatiblity
+                    stoich = float(rxn_data[ckey][comp_id])  # for retro compatiblity
                 if stoich < 0:
                     rxn.add_substrate(comp, stoich, net)
                 elif stoich > 0:
@@ -258,17 +274,16 @@ class NetworkDataLoaderHelper(BaseHelper):
         return net
 
     def loads(self, data: 'NetworkDict', *, skip_bigg_exchange_reactions: bool = True, loads_biota_info: bool = False,
-              biomass_reaction_id: str = None, skip_orphans: bool = False) -> 'Network':
+              biomass_reaction_id: str = None, skip_orphans: bool = False) -> 'NetworkData':
         """ Load JSON data and create a Network  """
         from ...compartment.compartment import Compartment
         from ...compound.compound import Compound
         from ...network import NetworkData
 
+        data = self._prepare_data(data)
         net = NetworkData()
-        #data = Compartment.clean(data)
 
         net.name = data.get("name", NetworkData.DEFAULT_NAME)
-        net.compartments = data["compartments"]
 
         if not data.get("compartments"):
             raise BadRequestException("Invalid network dump. Compartments not found")
@@ -313,7 +328,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         )
 
         # check if the biomass compartment exists
-        biomass_compartment: str = Compartment.BIOMASS
+        biomass_compartment_go_id: str = Compartment.BIOMASS_GO_ID
         if net.get_biomass_compound() is None:
             self.log_warning_message(
                 "No explicit biomass compound found.\nTry inferring the biomass reaction and adding an explicit dummy biomass compound")
@@ -321,9 +336,12 @@ class NetworkDataLoaderHelper(BaseHelper):
                 self.log_warning_message(f'Looking for user biomass reaction "{biomass_reaction_id}" ...')
                 if biomass_reaction_id in net.reactions.get_elements():
                     rxn = net.reactions[biomass_reaction_id]
-                    biomass = Compound(CompoundDict(name="Biomass", compartment=biomass_compartment))
+                    biomass = Compound(
+                        CompoundDict(
+                            name="biomass",
+                            compartment=Compartment.create_biomass_compartment()
+                        ))
                     rxn.add_product(biomass, 1, net)
-                    net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]  # ["name"]
                 else:
                     raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
             else:
@@ -333,10 +351,46 @@ class NetworkDataLoaderHelper(BaseHelper):
                     if "biomass" in rxn.id.lower():
                         # can be used as biomas reaction
                         if biomass is None:
-                            biomass = Compound(CompoundDict(name="Biomass", compartment=biomass_compartment))
+                            biomass = Compound(
+                                CompoundDict(
+                                    name="biomass",
+                                    compartment=Compartment.create_biomass_compartment()
+                                ))
                         rxn.add_product(biomass, 1, net)
-                        net.compartments[biomass_compartment] = Compartment.COMPARTMENTS[biomass_compartment]  # ["name"]
                         self.log_warning_message(
                             f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')
 
         return net
+
+    def _prepare_data(self, data):
+        """ Clean data """
+        out_data = copy.deepcopy(data)
+        out_data["compartments"] = {}
+
+        if isinstance(data["compartments"], dict):
+            # -> is bigg data
+            for bigg_id in data["compartments"].keys():
+                compart = Compartment.from_biota(bigg_id=bigg_id)
+                if compart is None:
+                    raise BadRequestException(f"The compartment bigg_id '{bigg_id}' is not known")
+                out_data["compartments"][bigg_id] = {
+                    "id": bigg_id,
+                    "go_id": compart.go_id,
+                    "name": compart.name
+                }
+            # append biomass compartment
+            biomass_compart = Compartment.create_biomass_compartment()
+            bigg_id = biomass_compart.bigg_id
+            out_data["compartments"][bigg_id] = {
+                "id": bigg_id,
+                "go_id": biomass_compart.go_id,
+                "name": biomass_compart.name
+            }
+        elif isinstance(data["compartments"], list):
+            for compart_data in data["compartments"]:
+                id_ = compart_data["id"]
+                out_data["compartments"][id_] = compart_data
+        else:
+            raise BadRequestException("Invalid compartment data")
+
+        return out_data

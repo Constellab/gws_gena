@@ -21,8 +21,12 @@ class NetworkDataDumperHelper(BaseHelper):
         Dumps the network
         """
 
+        # Allway ensure that the ids are flat
+        # ....
+
         met_data = []
         rxn_data = []
+        compart_data = []
 
         # switch all biomass compounds as majors
         biomass_comps = []
@@ -49,16 +53,11 @@ class NetworkDataDumperHelper(BaseHelper):
                 "inchi": _met.inchi,
                 "is_cofactor": _met.is_cofactor(),
                 "level": _met.get_level(),
-                "compartment": _met.compartment,
+                "compartment": _met.compartment.id,
                 "chebi_id": _met.chebi_id,
                 "kegg_id": _met.kegg_id,
                 "layout": _met.get_layout(refresh=refresh_layout),
             })
-
-            if _met.compartment == "e":
-                pass
-            if _met.compartment == "c":
-                pass
 
         for _rxn in network_data.reactions.values():
             _rxn_met = {}
@@ -85,10 +84,18 @@ class NetworkDataDumperHelper(BaseHelper):
                 "balance": _rxn.compute_mass_and_charge_balance()
             })
 
+        for _compart in network_data.compartments.values():
+            compart_data.append({
+                "id": _compart.id,
+                "go_id": _compart.go_id,
+                "bigg_id": _compart.bigg_id,
+                "name": _compart.name,
+            })
+
         return NetworkDict(
             name=network_data.name,
             metabolites=met_data,
             reactions=rxn_data,
-            compartments=network_data.compartments,
+            compartments=compart_data,
             recon_tags=network_data._recon_tags
         )

@@ -7,6 +7,8 @@ from typing import TypedDict
 
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 
+from ..compartment.compartment import Compartment
+
 CompoundDict = TypedDict("CompoundDict", {
     "id": str,
     "name": str,
@@ -15,7 +17,7 @@ CompoundDict = TypedDict("CompoundDict", {
     "monoisotopic_mass": float,
     "formula": str,
     "inchi": str,
-    "compartment": str,
+    "compartment": Compartment,
     "chebi_id": str,
     "alt_chebi_ids": list,
     "kegg_id": str,

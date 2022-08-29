@@ -15,7 +15,7 @@ from gws_core import BadRequestException
 from ..compound.compound import Compound
 from ..exceptions.compound_exceptions import (ProductDuplicateException,
                                               SubstrateDuplicateException)
-from ..exceptions.reaction_exceptions import InvalidReactionIdException
+from ..exceptions.reaction_exceptions import InvalidReactionException
 from ..helper.numeric_helper import NumericHelper
 from ..helper.slugify_helper import SlugifyHelper
 from ..reaction.helper.reaction_biota_helper import ReactionBiotaHelper
@@ -63,8 +63,6 @@ class Reaction:
     data: dict = None
     layout: BiotaReactionLayoutDict = None
 
-    _FLATTENING_DELIMITER = ":"
-
     def __init__(self, dict_: ReactionDict = None):
         if dict_ is None:
             dict_ = {}
@@ -85,7 +83,7 @@ class Reaction:
                 self.name = self.id
 
         if not self.id:
-            raise InvalidReactionIdException("At least a valid reaction id or name is required")
+            raise InvalidReactionException("A valid reaction id or name is required")
 
         if self.direction not in ["B", "L", "R"]:
             self.direction = "B"
@@ -153,7 +151,8 @@ class Reaction:
             network.add_compound(comp)
         self.substrates[comp.id] = Substrate(comp, stoich)
 
-    def add_product(self, comp: Compound, stoich: float, network: Union['Network', 'NetworkData'] = None, update_if_exists=False):
+    def add_product(
+            self, comp: Compound, stoich: float, network: Union['Network', 'NetworkData'] = None, update_if_exists=False):
         """
         Adds a product to the reaction
 
@@ -215,11 +214,11 @@ class Reaction:
         for substrate in self.substrates.values():
             comp = substrate.compound
             stoich = substrate.stoich
-            if isinstance(comp.charge, float) and isinstance(charge, float):
+            if isinstance(charge, float) and isinstance(comp.charge, float):
                 charge += stoich * comp.charge
             else:
                 charge = None
-            if isinstance(comp.mass, float) and isinstance(mass, float):
+            if isinstance(mass, float) and isinstance(comp.mass, float):
                 mass += stoich * comp.mass
             else:
                 mass = None
@@ -227,11 +226,11 @@ class Reaction:
         for product in self.products.values():
             comp = product.compound
             stoich = product.stoich
-            if isinstance(comp.charge, float) and isinstance(comp.charge, float):
+            if isinstance(charge, float) and isinstance(comp.charge, float):
                 charge -= stoich * comp.charge
             else:
                 charge = None
-            if isinstance(comp.mass, float) and isinstance(comp.mass, float):
+            if isinstance(mass, float) and isinstance(comp.mass, float):
                 mass -= stoich * comp.mass
             else:
                 mass = None
@@ -263,25 +262,25 @@ class Reaction:
 
     # -- F --
 
+    # @ classmethod
+    # def flatten_id(cls, rxn_id: str, net_name: str) -> str:
+    #     """
+    #     Flattens a reaction id
+
+    #     :param id: The id
+    #     :type id: `str`
+    #     :param net_name: The name of the network
+    #     :type net_name: `str`
+    #     :return: The flattened id
+    #     :rtype: `str`
+    #     """
+
+    #     delim = cls._FLATTENING_DELIMITER
+    #     return SlugifyHelper.slugify_id(net_name + delim + rxn_id)
+
     @ classmethod
-    def flatten_id(cls, rxn_id: str, net_name: str) -> str:
-        """
-        Flattens a reaction id
-
-        :param id: The id
-        :type id: `str`
-        :param net_name: The name of the network
-        :type net_name: `str`
-        :return: The flattened id
-        :rtype: `str`
-        """
-
-        delim = cls._FLATTENING_DELIMITER
-        return SlugifyHelper.slugify_id(net_name + delim + rxn_id)
-
-    @ classmethod
-    def from_biota(
-            cls, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None, tax_search_method='bottom_up') -> List['Reaction']:
+    def from_biota(cls, *, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None,
+                   tax_search_method='bottom_up') -> List['Reaction']:
         """
         Create a biota reaction from a Rhea id or an EC number.
 

@@ -3,8 +3,6 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import Dict
-
 from gws_core import BadRequestException
 
 from .typing.variable_typing import VariableDict
@@ -14,7 +12,7 @@ class Variable:
     """
     Variable class
 
-    A `Variable` represents a reaction flux (e.g. a flux carried by a metabolic reaction).
+    Represents a reaction flux (for instance, a flux carried by a metabolic reaction).
     """
 
     coefficient: float = None
@@ -37,11 +35,11 @@ class Variable:
         """ Deep copy to variable """
         return Variable(self.dumps())
 
-    def dumps(self):
+    def dumps(self) -> VariableDict:
         """ Dumps the variable """
-        data = {
-            "reference_id": self.reference_id,
-            "reference_type": self.reference_type,
-            "coefficient": self.coefficient
-        }
+        data = VariableDict(
+            reference_id=self.reference_id,
+            reference_type=self.reference_type,
+            coefficient=self.coefficient
+        )
         return data

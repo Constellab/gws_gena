@@ -12,8 +12,8 @@ from gws_core import BadRequestException
 from pandas import DataFrame
 from scipy.linalg import null_space
 
+from ...context.variable import Variable
 from ..flat_twin import FlatTwin
-from ...context.measure import Measure
 
 # ####################################################################
 #
@@ -178,11 +178,11 @@ class TwinHelper:
                 measure.upper_bound,
                 measure.confidence_score
             ]
-            for var_ in measure.variables:
-                ref_id = var_["reference_id"]
-                ref_type = var_["reference_type"]
-                coef = var_["coefficient"]
-                if ref_type == Measure.REACTION_REFERENCE_TYPE:
+            for variable in measure.variables:
+                ref_id = variable.reference_id
+                ref_type = variable.reference_type
+                coef = variable.coefficient
+                if ref_type == Variable.REACTION_REFERENCE_TYPE:
                     rxn_id = ref_id
                     C.at[meas_id, rxn_id] = coef
                 else:

@@ -65,6 +65,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         ]
         )
         S = problem["S"]
+        print(S.index)
         expected_S = expected_S.loc[S.index, :]
         expected_S = expected_S.loc[:, S.columns]
         self.assertTrue(S.equals(expected_S))

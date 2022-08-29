@@ -65,6 +65,7 @@ class GapFiller(Task):
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
+
         i = 0
         nb_gaps_filled = 0
         max_gaps_filled = 0
@@ -114,8 +115,6 @@ class GapFiller(Task):
             list_fo_rxns = []
             comp: Compound = net.compounds[k]
 
-            print(comp.to_str())
-
             if comp.is_sink():
                 raise BadRequestException("Coherence check. A sink reaction compound should not be a gap compound.")
             if not comp.is_steady():
@@ -137,8 +136,6 @@ class GapFiller(Task):
 
             reaction_enzyme_cls = BiotaReaction.enzymes.get_through_model()
             for biota_c in biota_c_list:
-                print(len(biota_c.reactions))
-
                 if tax is None:
                     for biota_rxn in biota_c.reactions:
                         enzymes = BiotaEnzyme.select(BiotaEnzyme.id) \

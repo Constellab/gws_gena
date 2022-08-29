@@ -59,10 +59,10 @@ class ContextData(SerializableObject):
 
     def copy(self) -> 'ContextData':
         """ Copy the context """
-        ctx = ContextData()
-        ctx.name = self.name
-        ctx.measures = {k: v.copy() for k, v in self.measures.items()}
-        return ctx
+        ctx_data = ContextData()
+        ctx_data.name = self.name
+        ctx_data.measures = {k: v.copy() for k, v in self.measures.items()}
+        return ctx_data
 
     # -- B --
 

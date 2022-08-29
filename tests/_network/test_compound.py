@@ -6,15 +6,16 @@ import unittest
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_biota import Compound as BiotaCompound
 from gws_core import GTest, Settings
-from gws_gena import (BiomassReactionTable, Compound, Compartment, Network, Reaction, Twin)
+from gws_gena import (BiomassReactionTable, Compartment, Compound, Network,
+                      Reaction, Twin)
 from pandas import DataFrame
 
 
 class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
     def test_compound(self):
-        self.print("Test Compound")
-        comp1 = Compound(dict(name="gluc", compartment=Compartment.CYTOSOL, chebi_id="CHEBI:17234"))
+        compart = Compartment.from_biota(go_id=Compartment.CYTOSOL_GO_ID)
+        comp1 = Compound(dict(name="gluc", compartment=compart, chebi_id="CHEBI:17234"))
         bc1 = comp1.get_related_biota_compound()
         self.assertEqual(bc1.name, "glucose")
         self.assertEqual(bc1.kegg_id, "C00293")
@@ -22,7 +23,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(bc1.mass, 180.15588)
         self.assertEqual(bc1.monoisotopic_mass, 180.06339)
 
-        comp2 = Compound(dict(name="gluc2", compartment=Compartment.CYTOSOL))
+        comp2 = Compound(dict(name="gluc2", compartment=compart))
         comp2.kegg_id = "C00293"
         bc2 = comp2.get_related_biota_compound()
         self.assertEqual(bc2.name, "glucose")

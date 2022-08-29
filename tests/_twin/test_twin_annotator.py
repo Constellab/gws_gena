@@ -79,11 +79,10 @@ class TestTwinAnnotator(BaseTestCaseUsingFullBiotaDB):
 
         self.assertEqual(len(twin.networks), 1)
 
-        for k in twin.networks.get_elements():
+        for k in twin.networks:
             net = twin.networks[k]
-
             rxn = net.reactions["RB"]
-            self.assertAlmostEqual(rxn.estimate["value"], 0.374999, delta=1e-3)
+            self.assertAlmostEqual(rxn.data["flux_estimates"]["values"][0], 0.374999, delta=1e-3)
 
             rxn = net.reactions["R1"]
-            self.assertAlmostEqual(rxn.estimate["value"], 29.99999, delta=1e-3)
+            self.assertAlmostEqual(rxn.data["flux_estimates"]["values"][0], 29.99999, delta=1e-3)

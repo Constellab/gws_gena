@@ -20,16 +20,18 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         rxn1 = Reaction(dict(id="my-reaction"))
         net.add_reaction(rxn1)
 
-        comp1 = Compound(dict(name="ATP", chebi_id="CHEBI:17234", compartment=Compartment.CYTOSOL))
+        comp1 = Compound(dict(name="ATP", chebi_id="CHEBI:17234", compartment=Compartment.create_cytosol_compartment()))
         rxn1.add_substrate(comp1, -1, net)
 
-        comp2 = Compound(dict(name="ADP", chebi_id="CHEBI:17235", compartment=Compartment.NUCLEUS))
+        comp2 = Compound(dict(name="ADP", chebi_id="CHEBI:17235", compartment=Compartment.create_nucleus_compartment()))
         rxn1.add_product(comp2, +1, net)
 
-        comp3 = Compound(dict(name="Creatine", chebi_id="CHEBI:17236", compartment=Compartment.CYTOSOL))
+        comp3 = Compound(dict(name="Creatine", chebi_id="CHEBI:17236",
+                         compartment=Compartment.create_cytosol_compartment()))
         rxn1.add_substrate(comp3, -1, net)
 
-        comp4 = Compound(dict(name="Phosphocreatine", chebi_id="CHEBI:17237", compartment=Compartment.NUCLEUS))
+        comp4 = Compound(dict(name="Phosphocreatine", chebi_id="CHEBI:17237",
+                         compartment=Compartment.create_nucleus_compartment()))
         rxn1.add_product(comp4, 1, net)
         rxn1.enzyme = {"ec_number": "MyEnzyme"}
 
@@ -37,18 +39,18 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertRaises(Exception, rxn1.add_product, comp4, 2)
         self.assertEqual(
             rxn1.to_str(),
-            "(1.0) ATP_c + (1.0) Creatine_c <==(MyEnzyme)==> (1.0) ADP_n + (1.0) Phosphocreatine_n")
+            "(1.0) ATP_cytosol + (1.0) Creatine_cytosol <==(MyEnzyme)==> (1.0) ADP_nucleus + (1.0) Phosphocreatine_nucleus")
 
         rxn1.direction = "R"
         self.assertEqual(
             rxn1.to_str(),
-            "(1.0) ATP_c + (1.0) Creatine_c ==(MyEnzyme)==> (1.0) ADP_n + (1.0) Phosphocreatine_n")
+            "(1.0) ATP_cytosol + (1.0) Creatine_cytosol ==(MyEnzyme)==> (1.0) ADP_nucleus + (1.0) Phosphocreatine_nucleus")
         print(rxn1.to_str())
 
         rxn1.direction = "L"
         self.assertEqual(
             rxn1.to_str(),
-            "(1.0) ATP_c + (1.0) Creatine_c <==(MyEnzyme)== (1.0) ADP_n + (1.0) Phosphocreatine_n")
+            "(1.0) ATP_cytosol + (1.0) Creatine_cytosol <==(MyEnzyme)== (1.0) ADP_nucleus + (1.0) Phosphocreatine_nucleus")
         print(rxn1.to_str())
 
         print("--->")

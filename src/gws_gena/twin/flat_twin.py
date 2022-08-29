@@ -27,22 +27,22 @@ class FlatTwin(Twin):
 
     def copy(self) -> 'FlatTwin':
         twin = super().copy()
-        twin._mapping = copy.deepcopy(self._mapping)
-        twin._reverse_mapping = copy.deepcopy(self._reverse_mapping)
+        twin._reaction_mapping = copy.deepcopy(self._reaction_mapping)
+        twin._reverse_reaction_mapping = copy.deepcopy(self._reverse_reaction_mapping)
         return twin
 
     @property
-    def mapping(self) -> Dict[str, dict]:
-        return self._mapping
+    def reaction_mapping(self) -> Dict[str, dict]:
+        return self._reaction_mapping
 
     @property
-    def reverse_mapping(self) -> Dict[str, str]:
-        return self._reverse_mapping
+    def reverse_reaction_mapping(self) -> Dict[str, str]:
+        return self._reverse_reaction_mapping
 
     def dumps(self, *args, **kwargs):
         data = super().dumps(*args, **kwargs)
-        data["mapping"] = self._mapping
-        data["reverse_mapping"] = self._reverse_mapping
+        data["reaction_mapping"] = self._reaction_mapping
+        data["reverse_reaction_mapping"] = self._reverse_reaction_mapping
         return data
 
     @classmethod
@@ -60,9 +60,9 @@ class FlatTwin(Twin):
             ctx = Context.loads(data["contexts"][0])
             twin.add_network(net, related_context=ctx)
         twin.name = data["name"]
-        twin.description = data["description"]
-        twin._mapping = data["mapping"]
-        twin._reverse_mapping = data["reverse_mapping"]
+        # twin.description = data["description"]
+        twin._reaction_mapping = data["reaction_mapping"]
+        twin._reverse_reaction_mapping = data["reverse_reaction_mapping"]
         return twin
 
     def dumps_flat(self) -> dict:

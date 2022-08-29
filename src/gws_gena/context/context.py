@@ -42,6 +42,7 @@ class Context(Resource):
     def copy(self) -> 'Context':
         """ Copy the context """
         ctx = Context()
+        ctx.name = self.name
         ctx.context_data = self.context_data.copy()
         return ctx
 
@@ -76,4 +77,12 @@ class Context(Resource):
         """ Loads the context """
         ctx = Context()
         ctx.context_data = ContextData.loads(data)
+        ctx.name = ctx.context_data.name
         return ctx
+
+    # -- M --
+
+    @property
+    def measures(self):
+        """ Get the liste of measures """
+        return self.context_data.measures

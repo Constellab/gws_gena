@@ -28,6 +28,7 @@ from ..compound.compound import Compound
 from ..exceptions.compartment_exceptions import NoCompartmentFound
 from ..exceptions.compound_exceptions import CompoundDuplicate
 from ..exceptions.reaction_exceptions import ReactionDuplicate
+from ..helper.slugify_helper import SlugifyHelper
 from ..reaction.reaction import Reaction
 from ..typing.network_typing import NetworkDict, NetworkReconTagDict
 from ..view.network_view import NetworkView
@@ -43,6 +44,7 @@ class NetworkData(SerializableObject):
     """
 
     DEFAULT_NAME = "network"
+    DELIMITER = "_"
 
     name: str = None
     compounds: Dict[str, Compound] = None
@@ -109,18 +111,18 @@ class NetworkData(SerializableObject):
             raise CompoundDuplicate(f'Compound id "{comp.id}" is duplicated')
         if not comp.compartment:
             raise NoCompartmentFound("No compartment defined for the compound")
-        if not comp.compartment in self.compartments:
-            compartment_id = comp.compartment.split(Compartment.DELIMITER)[-1]
-            self.compartments[comp.compartment] = Compartment.COMPARTMENTS[compartment_id]  # ["name"]
 
         self.compounds[comp.id] = comp
+        self.add_compartment(comp.compartment)
 
+        # update maps
         if comp.chebi_id:
-            if comp.compartment not in self._compartment_chebi_ids:
-                self._compartment_chebi_ids[comp.compartment] = {}
-            self._compartment_chebi_ids[comp.compartment][comp.chebi_id] = comp.id
+            if comp.compartment.go_id not in self._compartment_chebi_ids:
+                self._compartment_chebi_ids[comp.compartment.go_id] = {}
+            self._compartment_chebi_ids[comp.compartment.go_id][comp.chebi_id] = comp.id
+            # also add alternative chebi_ids
             for chebi_id in comp.alt_chebi_ids:
-                self._compartment_chebi_ids[comp.compartment][chebi_id] = comp.id
+                self._compartment_chebi_ids[comp.compartment.go_id][chebi_id] = comp.id
 
     def add_reaction(self, rxn: Reaction):
         """
@@ -149,6 +151,7 @@ class NetworkData(SerializableObject):
         # add the reaction
         self.reactions[rxn.id] = rxn
 
+        # update maps
         if rxn.rhea_id:
             self._rhea_rxn_ids_map[rxn.rhea_id] = rxn.id
         if rxn.enzyme:
@@ -156,22 +159,27 @@ class NetworkData(SerializableObject):
             if ec_number:
                 self._ec_rxn_ids_map[ec_number] = rxn.id
 
+    def add_compartment(self, compartment: Compartment):
+        if not isinstance(compartment, Compartment):
+            raise BadRequestException("The compartment must an instance of Compartment")
+        self.compartments[compartment.id] = compartment
+
     # -- B --
 
     # -- C --
 
-    def copy(self) -> 'Network':
+    def copy(self) -> 'NetworkData':
         from ..network import Network
-        net: Network = Network()
-        net.name = self.name
-        net.compounds = {k: v.copy() for k, v in self.compounds.items()}
-        net.reactions = {k: v.copy() for k, v in self.reactions.items()}
-        net.compartments = {k: v.copy() for k, v in self.compartments.items()}
-        net._recon_tags = copy.deepcopy(self._recon_tags)
-        net._compartment_chebi_ids = copy.deepcopy(self._compartment_chebi_ids)
-        net._ec_rxn_ids_map = copy.deepcopy(self._ec_rxn_ids_map)
-        net._rhea_rxn_ids_map = copy.deepcopy(self._rhea_rxn_ids_map)
-        return net
+        net_data: NetworkData = NetworkData()
+        net_data.name = self.name
+        net_data.compounds = {k: v.copy() for k, v in self.compounds.items()}
+        net_data.reactions = {k: v.copy() for k, v in self.reactions.items()}
+        net_data.compartments = {k: v.copy() for k, v in self.compartments.items()}
+        net_data._recon_tags = copy.deepcopy(self._recon_tags)
+        net_data._compartment_chebi_ids = copy.deepcopy(self._compartment_chebi_ids)
+        net_data._ec_rxn_ids_map = copy.deepcopy(self._ec_rxn_ids_map)
+        net_data._rhea_rxn_ids_map = copy.deepcopy(self._rhea_rxn_ids_map)
+        return net_data
 
     def create_stoichiometric_matrix(self) -> DataFrame:
         """
@@ -270,6 +278,12 @@ class NetworkData(SerializableObject):
 
     # -- E --
 
+    def compartment_exists(self, compartment: Compartment) -> bool:
+        if not isinstance(compartment, Compartment):
+            raise BadRequestException("The compartment must be an instance of Compartment")
+
+        return compartment.id in self.compartments
+
     def compound_exists(self, comp: Compound) -> bool:
         """
         Check that a compound exists in the network
@@ -310,7 +324,8 @@ class NetworkData(SerializableObject):
             raise BadRequestException("The reaction must be an instance of Reaction")
         if not self.reaction_exists(rxn):
             raise BadRequestException(f"The reaction {rxn.id} does not exist in the network")
-        return rxn.flatten_id(rxn.id, self.name)
+
+        return SlugifyHelper.slugify_id(self.name + self.DELIMITER + rxn.id)
 
     def flatten_compound_id(self, comp: Compound) -> str:
         """ Flatten the id of a compound """
@@ -318,7 +333,33 @@ class NetworkData(SerializableObject):
             raise BadRequestException("The compound must be an instance of Compound")
         if not self.compound_exists(comp):
             raise BadRequestException(f"The reaction {comp.id} does not exist in the network")
-        return comp.flatten_id(comp.id, self.name)
+
+        if not comp.compartment.is_extracellular():
+            return SlugifyHelper.slugify_id(self.name + self.DELIMITER + comp.id)
+        else:
+            return comp.id
+
+    def flatten_compartment_id(self, compartment: Compartment) -> str:
+        """
+        Flattens a compartment id
+
+        :param compart_go_id: The id
+        :type compart_go_id: `str`
+        :param net_name: The name of the (metabolic, biological, network) context
+        :type net_name: `str`
+        :return: The flattened id
+        :rtype: `str`
+        """
+
+        if not isinstance(compartment, Compartment):
+            raise BadRequestException("The compartment must be an instance of Compartment")
+        if not self.compartment_exists(compartment):
+            raise BadRequestException(f"The compartment {compartment.id} does not exist in the network")
+
+        if not compartment.is_extracellular():
+            return SlugifyHelper.slugify_id(self.name + self.DELIMITER + compartment.id)
+        else:
+            return compartment.id
 
     def get_compound_recon_tag(self, comp_id: str, tag_name: str = None):
         """
@@ -382,14 +423,14 @@ class NetworkData(SerializableObject):
 
         return self.compounds[comp_id]
 
-    def get_compounds_by_chebi_id(self, chebi_id: str, compartment: Optional[str] = None) -> List[Compound]:
+    def get_compounds_by_chebi_id(self, chebi_id: str, compartment_go_id: Optional[str] = None) -> List[Compound]:
         """
         Get a compound by its chebi id and compartment.
 
         :param chebi_id: The chebi id of the compound
         :type chebi_id: `str`
-        :param compartment: The compartment of the compound
-        :type compartment: `str`
+        :param compartment_go_id: The go_id of the compartment
+        :type compartment_go_id: `str`
         :return: The compound or `None` if the compond is not found
         :rtype: `gena.network.Compound` or `None`
         """
@@ -400,10 +441,10 @@ class NetworkData(SerializableObject):
         if "CHEBI" not in chebi_id:
             chebi_id = f"CHEBI:{chebi_id}"
 
-        if compartment:
-            if compartment not in self._compartment_chebi_ids:
+        if compartment_go_id:
+            if compartment_go_id not in self._compartment_chebi_ids:
                 return []
-            c_id = self._compartment_chebi_ids[compartment].get(chebi_id)
+            c_id = self._compartment_chebi_ids[compartment_go_id].get(chebi_id)
             if c_id:
                 return [self.compounds[c_id]]
             else:
@@ -498,7 +539,7 @@ class NetworkData(SerializableObject):
                 return True
         return None
 
-    def get_compounds_by_compartments(self, compartment_list: List[str] = None) -> Dict[str, Compound]:
+    def get_compounds_by_compartments(self, compartment_go_ids: List[str] = None) -> Dict[str, Compound]:
         """
         Get the compounds in a compartments
 
@@ -508,7 +549,7 @@ class NetworkData(SerializableObject):
 
         comps = {}
         for comp_id, comp in self.compounds.items():
-            if comp.compartment in compartment_list:
+            if comp.compartment.go_id in compartment_go_ids:
                 comps[comp_id] = comp
         return comps
 

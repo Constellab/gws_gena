@@ -33,10 +33,11 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(len(net.compounds), 6)
         self.assertEqual(net.compounds["glc_D_e"].id, "glc_D_e")
         self.assertEqual(net.compounds["glc_D_e"].name, "D-Glucose")
-        self.assertEqual(net.compounds["glc_D_e"].compartment, "e")
+        self.assertEqual(net.compounds["glc_D_e"].compartment.id, "e")
+        self.assertEqual(net.compounds["glc_D_e"].compartment.is_steady, False)
         self.assertEqual(net.compounds["atp_c"].id, "atp_c")
         self.assertEqual(net.compounds["atp_c"].name, "ATP C10H12N5O13P3")
-        self.assertEqual(net.compounds["atp_c"].compartment, "c")
+        self.assertEqual(net.compounds["atp_c"].compartment.id, "c")
         self.assertEqual(len(net.reactions), 3)
         self.assertEqual(net.reactions["EX_glc_D_e"].to_str(), "(1.0) glc_D_e <==()==> *")
         self.assertEqual(
