@@ -21,7 +21,7 @@ from ..twin.twin import Twin
 from .koa_result import KOAResult
 
 
-@task_decorator("KOA_003", human_name="KOA", short_description="Knockout Analysis")
+@task_decorator("KOA", human_name="KOA", short_description="Knockout Analysis")
 class KOA(Task):
     """
     KOA class.

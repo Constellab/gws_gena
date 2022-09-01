@@ -417,15 +417,19 @@ class Reaction:
         else:
             return {"kegg": "", "brenda": "", "metacyc": ""}
 
+    def get_data_slot(self, slot: str):
+        """ Set data """
+        return self.data.get(slot)
+
     # -- I --
 
     def is_biomass_reaction(self):
         """ Returns True, if it is the biomass reaction; False otherwise """
-        tf = False
+        tf=False
         for product in self.products.values():
-            comp = product.compound
+            comp=product.compound
             if comp.is_biomass():
-                tf = True
+                tf=True
                 break
         return tf
 
@@ -489,13 +493,13 @@ class Reaction:
         """ Set enzyme """
         if not isinstance(enzyme_dict, dict):
             raise BadRequestException("The enzyme data must be a dictionary")
-        self.enzyme = enzyme_dict
+        self.enzyme=enzyme_dict
 
     def set_data(self, data: dict):
         """ Set data """
         if not isinstance(data, dict):
             raise BadRequestException("The data must be a dictionary")
-        self.data = data
+        self.data=data
 
     # -- T --
 
@@ -507,35 +511,35 @@ class Reaction:
         :rtype: `str`
         """
 
-        _left = []
-        _right = []
-        _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
+        _left=[]
+        _right=[]
+        _dir={"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
 
         for comp_id, substrate in self.substrates.items():
-            comp = substrate.compound
-            stoich = substrate.stoich
+            comp=substrate.compound
+            stoich=substrate.stoich
             if show_ids:
-                _id = comp.chebi_id if comp.chebi_id else comp.id
+                _id=comp.chebi_id if comp.chebi_id else comp.id
                 _left.append(f"({stoich}) {_id}")
             else:
                 _left.append(f"({stoich}) {comp.id}")
 
         for comp_id, product in self.products.items():
-            comp = product.compound
-            stoich = product.stoich
+            comp=product.compound
+            stoich=product.stoich
             if show_ids:
-                _id = comp.chebi_id if comp.chebi_id else comp.id
+                _id=comp.chebi_id if comp.chebi_id else comp.id
                 _right.append(f"({stoich}) {_id}")
             else:
                 _right.append(f"({stoich}) {comp.id}")
 
         if not _left:
-            _left = ["*"]
+            _left=["*"]
 
         if not _right:
-            _right = ["*"]
+            _right=["*"]
 
-        _str = " + ".join(_left) + \
+        _str=" + ".join(_left) + \
             _dir[self.direction].replace("E", self.enzyme.get("ec_number", "")) + " + ".join(_right)
         # _str = _str + " " + str(self.enzyme)
         return _str

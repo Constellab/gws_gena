@@ -218,10 +218,10 @@ class Twin(ResourceSet):
     @property
     def networks(self):
         """ Returns the networks """
-        contexts = {}
+        networks = {}
         for name in self.network_contexts:
-            contexts[name] = self.get_resource(name)
-        return contexts
+            networks[name] = self.get_resource(name)
+        return networks
 
     @property
     def number_of_compounds(self) -> int:

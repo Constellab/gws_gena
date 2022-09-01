@@ -17,7 +17,7 @@ from ..network.reaction.reaction import Reaction
 from .helper.gap_finder_helper import GapFinderHelper
 
 
-@task_decorator("GapFiller_001", human_name="Gap filler", short_description="Fills gaps in a networks")
+@task_decorator("GapFiller", human_name="Gap filler", short_description="Fills gaps in a networks")
 class GapFiller(Task):
     """
     GapFiller class.
@@ -128,7 +128,7 @@ class GapFiller(Task):
 
             if len(biota_c_list) == 0:
                 Logger.warning(f'No compound corresponds to chebi_id "{comp.chebi_id}" in biota db')
-                net.set_compound_recon_tag(comp.id, {
+                net.update_compound_recon_tag(comp.id, {
                     "id": comp.id,
                     "is_chebi_not_found": True,
                     "error": "CheBI ID not found"
@@ -155,7 +155,7 @@ class GapFiller(Task):
             #     # if rxn.i
             #     if not net.reaction_exists(rxn):  # an existing reaction may be given by biota
             #         net.add_reaction(rxn)
-            #         net.set_reaction_recon_tag(rxn.id, {
+            #         net.update_reaction_recon_tag(rxn.id, {
             #             "id": rxn.id,
             #             "is_from_gap_filling": True
             #         })

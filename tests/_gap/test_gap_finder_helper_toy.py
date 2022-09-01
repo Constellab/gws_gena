@@ -26,7 +26,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         )
 
         helper = GapFinderHelper()
-        df = helper.find(net)
+        df = helper.find_gaps(net)
         print(df)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         self.assertEqual(len(comp_ids), 0)
@@ -45,7 +45,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         )
 
         helper = GapFinderHelper()
-        df = helper.find(net)
+        df = helper.find_gaps(net)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         self.assertEqual(len(comp_ids), 0)
 
@@ -63,7 +63,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         )
 
         helper = GapFinderHelper()
-        df = helper.find(net)
+        df = helper.find_gaps(net)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         self.assertEqual(comp_ids, ["X_orphan_c"])
 

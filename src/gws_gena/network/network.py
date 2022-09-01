@@ -316,9 +316,13 @@ class Network(Resource):
         return self.network_data.get_reaction_bounds()
 
     def get_number_of_reactions(self) -> int:
+        """ Get number of reactions """
+
         return self.network_data.get_number_of_reactions()
 
     def get_number_of_compounds(self) -> int:
+        """ Get number of compounds """
+
         return self.network_data.get_number_of_compounds()
 
     def get_compound_stats_as_json(self) -> dict:
@@ -389,6 +393,7 @@ class Network(Resource):
     @property
     def reactions(self) -> dict:
         """ Get the list of reactions """
+
         return self.network_data.reactions
 
     def remove_reaction(self, rxn_id: str):
@@ -401,15 +406,15 @@ class Network(Resource):
 
         self.network_data.remove_reaction(rxn_id)
 
-    def set_reaction_recon_tag(self, tag_id, tag_data: dict):
+    def update_reaction_recon_tag(self, tag_id, tag_data: dict):
         """ Set a reaction recon tag """
 
-        self.network_data.set_reaction_recon_tag(tag_id, tag_data)
+        self.network_data.update_reaction_recon_tag(tag_id, tag_data)
 
-    def set_compound_recon_tag(self, tag_id, tag_data: dict):
+    def update_compound_recon_tag(self, tag_id, tag_data: dict):
         """ Set a compound recon tag """
 
-        self.network_data.set_compound_recon_tag(tag_id, tag_data)
+        self.network_data.update_compound_recon_tag(tag_id, tag_data)
 
     # -- T --
 
@@ -437,6 +442,7 @@ class Network(Resource):
 
         :rtype: `Table`
         """
+
         self.network_data.to_table()
 
     def to_dataframe(self) -> DataFrame:
@@ -462,7 +468,7 @@ class Network(Resource):
 
     @view(view_type=JSONView, default_view=True, human_name="Summary")
     def view_as_summary(self, _: ConfigParams) -> JSONView:
-        """ Return the summary View of the network """
+        """  View as summary """
         data = self.get_summary()
         j_view = JSONView()
         j_view.set_data(data=data)
@@ -487,7 +493,7 @@ class Network(Resource):
         """ View gaps as table """
         from ..gap.helper.gap_finder_helper import GapFinderHelper
         helper = GapFinderHelper()
-        data: DataFrame() = helper.find(self)
+        data: DataFrame() = helper.find_gaps(self)
         table = Table(data)
         t_view = TableView()
         t_view.set_data(data=table)

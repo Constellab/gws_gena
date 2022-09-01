@@ -15,7 +15,7 @@ from ...network.network import Network
 class GapFinderHelper(BaseHelper):
     """ GapFinderHelper """
 
-    def find(self, network: Network) -> DataFrame:
+    def find_gaps(self, network: Network) -> DataFrame:
         """ Find all gaps """
         mat: DataFrame = network.create_stoichiometric_matrix()
         mat[mat != 0] = 1
@@ -35,14 +35,18 @@ class GapFinderHelper(BaseHelper):
 
         return deadend_mat
 
+    # def has_deadend_compounds(self, network: Network) -> bool:
+    #     """ Returns True if the network has deadend metabolites; False otherwise """
+    #     return len(self.find_deadend_compound_ids(network))
+
     def find_orphan_compound_ids(self, network: Network) -> List[str]:
         """ Find only orphan compounds as list """
-        df = self.find(network)
+        df = self.find_gaps(network)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         return comp_ids
 
     def find_deadend_compound_ids(self, network: Network) -> List[str]:
         """ Find dead-end compounds as list """
-        df = self.find(network)
+        df = self.find_gaps(network)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_dead_end"]]
         return comp_ids

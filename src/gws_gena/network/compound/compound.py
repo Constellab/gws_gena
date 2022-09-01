@@ -178,45 +178,6 @@ class Compound:
 
     # -- F --
 
-    # @ classmethod
-    # def flatten_compound_id(cls, compart_go_id, net_name) -> str:
-    #     """
-    #     Flattens a compound id
-
-    #     :param compart_go_id: The id
-    #     :type compart_go_id: `str`
-    #     :param net_name: The name of the (metabolic, biological, network) context
-    #     :type net_name: `str`
-    #     :return: The flattened id
-    #     :rtype: `str`
-    #     """
-
-    #     skip_list = [Compartment.EXTRACELLULAR_SPACE]
-    #     for compart_go_id in skip_list:
-    #         if compart_go_id.endswith(Compartment.DELIMITER + compart):
-    #             return compart_go_id
-    #     return SlugifyHelper.slugify_id(net_name + Compound.FLATTENING_DELIMITER + compart_go_id)
-
-    # @ classmethod
-    # def flatten_compartment_id(cls, compart_go_id, net_name) -> str:
-    #     """
-    #     Flattens a compartment id
-
-    #     :param compart_go_id: The id
-    #     :type compart_go_id: `str`
-    #     :param net_name: The name of the (metabolic, biological, network) context
-    #     :type net_name: `str`
-    #     :return: The flattened id
-    #     :rtype: `str`
-    #     """
-
-    #     flat_delim = Compound.FLATTENING_DELIMITER
-    #     skip_list = [Compartment.EXTRACELLULAR_SPACE]
-    #     for compart_go_id in skip_list:
-    #         if compart_go_id.endswith(Compartment.DELIMITER + compart) or compart_go_id == compart:
-    #             return compart_go_id
-    #     return SlugifyHelper.slugify_id(net_name + flat_delim + compart_go_id)
-
     # @classmethod
     # def from_bulk_biota(cls, chebi_ids: List = None, compartment="") -> dict:
     #     """

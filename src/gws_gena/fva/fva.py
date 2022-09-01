@@ -87,7 +87,7 @@ def _do_parallel_loop(kwargs):
     return xmin, xmax
 
 
-@task_decorator("FVA_002", human_name="FVA", short_description="Flux variability analysis")
+@task_decorator("FVA", human_name="FVA", short_description="Flux variability analysis")
 class FVA(Task):
     """
     FVA class

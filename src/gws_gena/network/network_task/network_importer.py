@@ -14,7 +14,7 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams,
 from ..network import Network
 
 
-@importer_decorator("NetworkImporter_001", human_name="Network importer", source_type=File,
+@importer_decorator("NetworkImporter", human_name="Network importer", source_type=File,
                     target_type=Network, supported_extensions=["json"])
 class NetworkImporter(ResourceImporter):
     """ NetworkImporter """

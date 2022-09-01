@@ -11,7 +11,7 @@ from ..twin.twin_annotator import TwinAnnotator
 from ..twin.twin_builder import TwinBuilder
 
 
-@protocol_decorator("FBAProto_001", human_name="FBA protocol", short_description="Flux balance analysis protocol")
+@protocol_decorator("FBAProto", human_name="FBA protocol", short_description="Flux balance analysis protocol")
 class FBAProto(Protocol):
 
     def configure_protocol(self) -> None:

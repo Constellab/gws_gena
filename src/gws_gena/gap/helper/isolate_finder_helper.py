@@ -13,7 +13,7 @@ class IsolateFinderHelper(BaseHelper):
 
     """ IsolateFinderHelper """
 
-    def find(self, network: Network) -> Table:
+    def find_isolates(self, network: Network) -> Table:
         """ Find isolates """
         # S: DataFrame = network.create_steady_stoichiometric_matrix()
         # sum_S = S.sum(axis=1)

@@ -97,13 +97,6 @@ class NetworkDataLoaderHelper(BaseHelper):
         added_comps = {}
         ckey = "compounds" if "compounds" in data else "metabolites"
 
-        # compartment_dict = {}
-        # for compart_data in data["compartments"]:
-        #     compart_id = compart_data["id"]
-        #     go_id = compart_data["go_id"]
-        #     compart = Compartment.from_biota(go_id=go_id)
-        #     compartment_dict[compart_id] = compart
-
         count = 0
         total_number_of_compounds = len(data[ckey])
         total_number_of_prints = 3
@@ -114,10 +107,6 @@ class NetworkDataLoaderHelper(BaseHelper):
             if not count % comp_print_interval:
                 perc = int(100 * count/total_number_of_compounds)
                 self.log_info_message(f"... {perc}%")
-
-            # if not Compartment.exists(go_id=compart_go_id):
-            #     raise BadRequestException(
-            #         f"The compartment '{compart_go_id}' of the compound '{comp_data['id']}' is not valid")
 
             chebi_id = comp_data.get("chebi_id", "")
             inchikey = comp_data.get("inchikey", "")
@@ -139,13 +128,19 @@ class NetworkDataLoaderHelper(BaseHelper):
                         chebi_id = alt_chebi_ids.pop(0)
 
             comp_id = comp_data["id"]
-            biota_comp = None
             if loads_biota_info:
                 for c_id in alt_chebi_ids:
                     biota_comp = biota_comps.get(c_id)
-                    for k in comp_data:
-                        if hasattr(biota_comp, k):
-                            comp_data[k] = getattr(biota_comp, k)
+                    if biota_comp is not None:
+                        for k in comp_data:
+                            if hasattr(biota_comp, k):
+                                comp_data[k] = getattr(biota_comp, k)
+
+                        # retreive valid chebi_id and kegg_id information
+                        comp_data["chebi_id"] = biota_comp.chebi_id
+                        comp_data["kegg_id"] = biota_comp.kegg_id
+
+                        break
 
             # create compartment
             compart_id = comp_data["compartment"]
@@ -163,8 +158,8 @@ class NetworkDataLoaderHelper(BaseHelper):
                     formula=comp_data.get("formula", ""),
                     inchi=comp_data.get("inchi", ""),
                     inchikey=comp_data.get("inchikey", ""),
-                    chebi_id=chebi_id,
-                    alt_chebi_ids=alt_chebi_ids,
+                    chebi_id=comp_data.get("chebi_id", chebi_id),
+                    # alt_chebi_ids=alt_chebi_ids,
                     kegg_id=comp_data.get("kegg_id", ""),
                     layout=comp_data.get("layout")
                 ))
@@ -328,7 +323,6 @@ class NetworkDataLoaderHelper(BaseHelper):
         )
 
         # check if the biomass compartment exists
-        biomass_compartment_go_id: str = Compartment.BIOMASS_GO_ID
         if net.get_biomass_compound() is None:
             self.log_warning_message(
                 "No explicit biomass compound found.\nTry inferring the biomass reaction and adding an explicit dummy biomass compound")

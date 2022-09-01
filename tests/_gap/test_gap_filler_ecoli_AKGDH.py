@@ -20,9 +20,8 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
             ConfigParams({"loads_biota_info": True})
         )
 
-        params = {'fill_each_gap_once': True}
-        params['tax_id'] = "562"  # ecoli
-        # params['tax_id'] = "2"  # bacteria
+        params = {"tax_id":  "562"}  # ecoli
+        # params = {"tax_id":  "2"}  # bacteria
 
         tester = TaskRunner(
             params=params,

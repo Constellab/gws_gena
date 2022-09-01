@@ -67,13 +67,13 @@ class ReconHelper(BaseHelper):
                         net.add_reaction(rxn)
                     except BadRequestException as err:
                         Logger.warning(f"An non-blocking error occured: {err}")
-                        net.set_reaction_recon_tag(enzyme.ec_number, {
+                        net.update_reaction_recon_tag(enzyme.ec_number, {
                             "ec_number": enzyme.ec_number,
                             "error": str(err)
                         })
             except BadRequestException as _:
                 pass
-                # net.set_reaction_recon_tag(enzyme.ec_number, {
+                # net.update_reaction_recon_tag(enzyme.ec_number, {
                 #     "ec_number": enzyme.ec_number,
                 #     "error": str(err)
                 # })
@@ -103,7 +103,7 @@ class ReconHelper(BaseHelper):
             ec = str(ec).strip()
             is_incomplete_ec = (not ec) or ("-" in ec)
             if is_incomplete_ec:
-                net.set_reaction_recon_tag(ec, {
+                net.update_reaction_recon_tag(ec, {
                     "ec_number": ec,
                     "is_partial_ec_number": True,
                     "error": "Partial ec number"
@@ -116,13 +116,13 @@ class ReconHelper(BaseHelper):
                             net.add_reaction(rxn)
                         except BadRequestException as err:
                             Logger.warning(f"An non-blocking error occured: {err}")
-                            net.set_reaction_recon_tag(ec, {
+                            net.update_reaction_recon_tag(ec, {
                                 "ec_number": ec,
                                 "error": str(err)
                             })
                 except BadRequestException as err:
                     Logger.warning(f"An non-blocking error occured: {err}")
-                    net.set_reaction_recon_tag(ec, {
+                    net.update_reaction_recon_tag(ec, {
                         "ec_number": ec,
                         "error": str(err)
                     })
@@ -145,7 +145,7 @@ class ReconHelper(BaseHelper):
                 rxn.add_substrate(subs, 1, net)
                 net.add_reaction(rxn)
                 for comp in [subs, prod]:
-                    net.set_compound_recon_tag(comp.id, {
+                    net.update_compound_recon_tag(comp.id, {
                         "id": comp.id,
                         "is_supplemented": True
                     })
@@ -217,7 +217,7 @@ class ReconHelper(BaseHelper):
                 net.add_reaction(rxn)
             else:
                 ec = col_name
-                net.set_reaction_recon_tag(ec, {
+                net.update_reaction_recon_tag(ec, {
                     "ec_number": ec,
                     "error": error_message
                 })

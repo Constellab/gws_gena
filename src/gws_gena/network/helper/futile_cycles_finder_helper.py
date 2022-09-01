@@ -12,7 +12,7 @@ from ..network import Network
 class FutileCyclesFinderHelper(BaseHelper):
     """ FutileCyclesFinderHelper """
 
-    def find(self, network: Network) -> Table:
+    def find_futile_cycles(self, network: Network) -> Table:
         """ Find futile cycle """
 
         # S = network.create_stoichiometric_matrix()

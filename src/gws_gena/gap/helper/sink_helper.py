@@ -19,14 +19,14 @@ class SinkHelper(BaseHelper):
         """ Fill gaps with sink reactions """
 
         helper = GapFinderHelper()
-        dead_end: DataFrame = helper.find(net)
+        dead_end: DataFrame = helper.find_gaps(net)
         nb_filled = 0
         for k in dead_end.index:
             comp: Compound = net.compounds[k]
             if comp.is_sink():
                 raise BadRequestException("A sink reaction compound cannot not be a gap compound.")
             rxn = Reaction.create_sink_reaction(related_compound=comp, network=net)
-            net.set_reaction_recon_tag(rxn.id, {
+            net.update_reaction_recon_tag(rxn.id, {
                 "id": rxn.id,
                 "is_from_gap_filling": True
             })

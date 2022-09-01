@@ -605,9 +605,13 @@ class NetworkData(SerializableObject):
         return bounds
 
     def get_number_of_reactions(self) -> int:
+        """ Get number of reactions """
+
         return len(self.reactions)
 
     def get_number_of_compounds(self) -> int:
+        """ Get number of compounds """
+
         return len(self.compounds)
 
     def generate_stats(self) -> dict:
@@ -702,8 +706,9 @@ class NetworkData(SerializableObject):
         """ Get the total absolute flux as table """
         total_flux = 0
         for rxn in self.reactions.values():
-            if rxn.estimate:
-                total_flux += abs(rxn.estimate["value"])
+            flux_estimates = rxn.get_data_slot("flux_estimates")
+            if flux_estimates is not None:
+                total_flux += abs(flux_estimates["values"][0])
         df = DataFrame.from_dict({"0": [total_flux]}, columns=["total_abs_flux"], orient="index")
         return Table(data=df)
 
@@ -715,16 +720,16 @@ class NetworkData(SerializableObject):
 
     # -- S --
 
-    def set_reaction_recon_tag(self, tag_id, tag: dict):
-        """ Set a reaction recon tag """
+    def update_reaction_recon_tag(self, tag_id, tag: dict):
+        """ Update a reaction recon tag """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
         if not tag_id in self._recon_tags["reactions"]:
             self._recon_tags["reactions"][tag_id] = {}
         self._recon_tags["reactions"][tag_id].update(tag)
 
-    def set_compound_recon_tag(self, tag_id, tag: dict):
-        """ Set a compound recon tag """
+    def update_compound_recon_tag(self, tag_id, tag: dict):
+        """ Update a compound recon tag """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
         if not tag_id in self._recon_tags["compounds"]:
@@ -927,7 +932,7 @@ class NetworkData(SerializableObject):
                 "ID": biomass_rxn.id,
                 "Name": biomass_rxn.name,
                 "Formula": [biomass_rxn.to_str()],
-                "Flux estimate": biomass_rxn.estimate
+                "Flux estimate": biomass_rxn.get_data_slot("flux_estimates")
             }
         else:
             data["Biomass reaction"] = {}
@@ -961,7 +966,7 @@ class NetworkData(SerializableObject):
         """ View gaps as table """
         from ...gap.helper.gap_finder_helper import GapFinderHelper
         helper = GapFinderHelper()
-        data: DataFrame() = helper.find(self)
+        data: DataFrame() = helper.find_gaps(self)
         table = Table(data)
         t_view = TableView()
         t_view.set_data(data=table)
