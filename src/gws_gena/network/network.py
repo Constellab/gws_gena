@@ -477,8 +477,7 @@ class Network(Resource):
     @ view(view_type=TableView, human_name="Reaction table")
     def view_as_table(self, _: ConfigParams) -> TableView:
         """ View as table """
-        t_view = TableView()
-        t_view.set_data(data=self.to_table())
+        t_view = TableView(self.to_table())
         return t_view
 
     @ view(view_type=JSONView, human_name="JSON view")
@@ -495,14 +494,12 @@ class Network(Resource):
         helper = GapFinderHelper()
         data: DataFrame() = helper.find_gaps(self)
         table = Table(data)
-        t_view = TableView()
-        t_view.set_data(data=table)
+        t_view = TableView(table)
         return t_view
 
     @ view(view_type=TableView, human_name="Compound distrib.")
     def view_compound_stats_as_table(self, _: ConfigParams) -> TableView:
         """ View compound stats as table """
         table: Table = self.get_compound_stats_as_table()
-        t_view = TableView()
-        t_view.set_data(data=table)
+        t_view = TableView(table)
         return t_view
