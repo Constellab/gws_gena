@@ -74,9 +74,9 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
                 self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
             # # export annotated network
-            # annotated_twin = proto.get_output("annotated_twin")
+            # annotated_twin = proto.get_output("twin")
             # net = list(annotated_twin.networks.values())[0]
-            # with open(os.path.join(result_dir, 'toy_fba_dump.json'), 'w', encoding="utf-8") as fp:
+            # with open(os.path.join(result_dir, './toy_fba_dump.json'), 'w', encoding="utf-8") as fp:
             #     data = net.dumps()
             #     json.dump(data, fp, indent=4)
 
@@ -85,7 +85,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             self.print(f"Test FBAProto: Small network (toy + context={context} + linprog)")
             await run_fba(context=context, solver="highs")
 
-        # # quad
-        # for relax in [False, True]:
-        #     self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
-        #     await run_fba(context=True, solver="quad", relax_qssa=relax)
+        # quad
+        for relax in [False, True]:
+            self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
+            await run_fba(context=True, solver="quad", relax_qssa=relax)

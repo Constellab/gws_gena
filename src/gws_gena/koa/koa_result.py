@@ -3,14 +3,16 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import List
+from typing import List, Union
 
 from gws_core import (BadRequestException, BarPlotView, ConfigParams,
                       DataFrameRField, ListParam, ListRField, MultiViews,
-                      Resource, ResourceRField, ResourceSet, StrParam, Table,
-                      resource_decorator, view)
+                      Resource, ResourceRField, ResourceSet, StringHelper,
+                      StrParam, Table, TechnicalInfo, resource_decorator, view)
 from pandas import DataFrame
 
+from ..data.ec_table import ECTable
+from ..data.entity_id_table import EntityIDTable
 from ..twin.twin import Twin
 
 
@@ -24,36 +26,73 @@ class KOAResult(ResourceSet):
     """
 
     FLUX_TABLE_NAME = "Flux table"
+    _simulations = ListRField()
     _twin: Twin = ResourceRField()
+    _ko_table: Twin = ResourceRField()
 
-    def __init__(self, data: DataFrame = None, twin: Twin = None):
+    def __init__(self, data: List[DataFrame] = None, twin: Twin = None, ko_table: Union[ECTable, EntityIDTable] = None):
         super().__init__()
-        if twin is not None:
+        if twin is None:
+            self._simulations = []
+        else:
             if not isinstance(twin, Twin):
                 raise BadRequestException("A twin is required")
 
-            flux_table = Table(data=data)
-            flux_table.name = self.FLUX_TABLE_NAME
-            self.add_resource(flux_table)
+            if not isinstance(ko_table, (ECTable, EntityIDTable)):
+                raise BadRequestException("The ko table must be an isntance of ECTable or EntityIDTable")
 
             self._twin = twin
+            self._ko_table = ko_table
+
+            ko_ids = ko_table.get_ids()
+            for i, current_data in enumerate(data):
+                flux_df = current_data["fluxes"]
+                invalid_ko_ids = current_data["invalid_ko_ids"]
+                flux_table = Table(data=flux_df)
+                flux_table.name = self._create_flux_table_name(ko_ids[i])
+                flux_table.add_technical_info(TechnicalInfo(key="invalid_ko_ids", value=f"{invalid_ko_ids}"))
+                self.add_resource(flux_table)
+
             self._set_technical_info()
+
+    # -- C --
+
+    def _create_flux_table_name(self, ko_id):
+        slug_id = StringHelper.slugify(ko_id, snakefy=True, to_lower=False)
+        return f"{self.FLUX_TABLE_NAME} - {slug_id}"
+
+    # -- G --
+
+    def get_simulations(self):
+        """ Get simulations """
+        return self._simulations
 
     def get_twin(self):
         """ Get the realted twin """
         return self._twin
 
-    def get_flux_table(self):
+    def get_flux_table(self, ko_id):
         """ Get the flux table """
-        return self.get_resource(self.FLUX_TABLE_NAME)
+        name = self._create_flux_table_name(ko_id)
+        return self.get_resource(name)
 
-    def get_flux_dataframe(self):
+    def get_flux_dataframe(self, ko_id):
         """ Get the flux table """
-        return self.get_resource(self.FLUX_TABLE_NAME).get_data()
+        name = self._create_flux_table_name(ko_id)
+
+        return self.get_resource(name).get_data()
 
     def get_ko_ids(self) -> List[str]:
         """ Get the ids of the knock-outed reactions """
-        return self.get_flux_dataframe().loc[:, "ko_id"].unique().tolist()
+        return self._ko_table.get_ids()
+
+    # -- S --
+
+    def set_simulations(self, simulations: list):
+        """ Set simulations """
+        if not isinstance(simulations, list):
+            raise BadRequestException("The simulations must be a list")
+        self._simulations = simulations
 
     def _set_technical_info(self):
         pass

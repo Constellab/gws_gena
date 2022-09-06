@@ -1,3 +1,4 @@
+import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
@@ -36,7 +37,6 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
                 'ko_table': ko_table
             },
             params={
-                "monitored_fluxes": [],  # ["toy_cell_RB"],
                 "fluxes_to_maximize": ["toy_cell_RB"],
                 "relax_qssa": False,
                 "ko_delimiter": ","
@@ -45,22 +45,30 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         )
 
         outputs = await tester.run()
-        ko_results = outputs["result"]
+        ko_result = outputs["koa_result"]
 
-        print(ko_results.get_flux_dataframe())
+        print(ko_result.get_flux_dataframe("toy_cell_R1"))
 
-        self.assertEqual(ko_results.get_flux_dataframe().at[2, "ko_id"], "toy_cell_R1")
-        self.assertEqual(ko_results.get_flux_dataframe().at[2, "flux_name"], "toy_cell_RB")
-        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[2, "flux_value"], 5.0, delta=1e-2)
+        # KO: toy_cell_R1
+        table = ko_result.get_flux_dataframe("toy_cell_R1")
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 5.0, delta=1e-2)
 
-        self.assertEqual(ko_results.get_flux_dataframe().at[11, "ko_id"], "toy_cell_R2")
-        self.assertEqual(ko_results.get_flux_dataframe().at[11, "flux_name"], "toy_cell_RB")
-        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[11, "flux_value"], 5.0, delta=1e-2)
+        # KO: toy_cell_R2
+        table = ko_result.get_flux_dataframe("toy_cell_R2")
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 5.0, delta=1e-2)
 
-        self.assertEqual(ko_results.get_flux_dataframe().at[20, "ko_id"], "toy_cell_RB")
-        self.assertEqual(ko_results.get_flux_dataframe().at[20, "flux_name"], "toy_cell_RB")
-        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[20, "flux_value"], 1e-9, delta=1e-2)
+        # KO: toy_cell_RB
+        table = ko_result.get_flux_dataframe("toy_cell_RB")
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 1e-9, delta=1e-2)
 
-        self.assertEqual(ko_results.get_flux_dataframe().at[29, "ko_id"], "toy_cell_R1,toy_cell_R2")
-        self.assertEqual(ko_results.get_flux_dataframe().at[29, "flux_name"], "toy_cell_RB")
-        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[29, "flux_value"], 1e-9, delta=1e-2)
+        # KO: toy_cell_R1,toy_cell_R2
+        table = ko_result.get_flux_dataframe("toy_cell_R1,toy_cell_R2")
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 1e-9, delta=1e-2)
+
+        # export annotated network
+        result_dir = os.path.join(data_dir, "koa")
+        annotated_twin = outputs["twin"]
+        net = list(annotated_twin.networks.values())[0]
+        with open(os.path.join(result_dir, './toy_koa_dump.json'), 'w', encoding="utf-8") as fp:
+            data = net.dumps()
+            json.dump(data, fp, indent=4)

@@ -22,7 +22,7 @@ class GapFinderHelper(BaseHelper):
         sum_ = mat.sum(axis=1)
         orphan_mat: Series = (sum_ == 0)
         deadend_mat: Series = (sum_ <= 1)
-
+        
         deadend_mat = pd.concat([
             deadend_mat.to_frame(name="is_dead_end"),
             orphan_mat.to_frame(name="is_orphan"),

@@ -27,7 +27,6 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         json_data = net.dumps()
         print(json_data)
         print(net.loads(json_data))
-
         print(net.compounds)
 
         self.assertEqual(len(net.compounds), 6)
@@ -105,7 +104,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         # import 1
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams({"skip_orphans": False, "loads_biota_info": True})
+            params=ConfigParams({"skip_orphans": False})
         )
         self.print("ecoli successffuly imported - skip exchange reactions")
         self.assertEqual(len(net.compounds), 73)
@@ -123,12 +122,3 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.print("ecoli successffuly imported - skip exchange reactions")
         self.assertEqual(len(net.compounds), 73)
         self.assertEqual(len(net.reactions), 75)
-
-        # import 3
-        net = NetworkImporter.call(
-            File(path=file_path),
-            params=ConfigParams({"skip_bigg_exchange_reactions": False})
-        )
-        self.print("ecoli successffuly imported - keep exchange reactions")
-        self.assertEqual(len(net.compounds), 73)
-        self.assertEqual(len(net.reactions), 95)

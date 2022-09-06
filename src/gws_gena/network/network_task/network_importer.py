@@ -24,16 +24,6 @@ class NetworkImporter(ResourceImporter):
             default_value=False,
             visibility=BoolParam.PROTECTED_VISIBILITY,
             short_description="Set True to remove orphan compounds; False to keep them"),
-        "loads_biota_info":
-        BoolParam(
-            default_value=True,
-            visibility=BoolParam.PROTECTED_VISIBILITY,
-            short_description="Set True to loads Biota DB info related to entities (slower) False otherwise (fast)."),
-        "skip_bigg_exchange_reactions":
-        BoolParam(
-            default_value=True,
-            visibility=BoolParam.PROTECTED_VISIBILITY,
-            short_description="Set True to skip `exchange reactions` when importing BiGG data files; False otherwise"),
     }
 
     async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Network]) -> Network:
@@ -47,8 +37,6 @@ class NetworkImporter(ResourceImporter):
         """
 
         net: Network
-        loads_biota_info = params.get_value("loads_biota_info", True)
-        skip_bigg_exchange_reactions = params.get_value("skip_bigg_exchange_reactions", True)
         skip_orphans = params.get_value("skip_orphans", False)
 
         with open(file.path, 'r', encoding="utf-8") as fp:
@@ -61,8 +49,6 @@ class NetworkImporter(ResourceImporter):
                 # is an unknown dump network (e.g. BiGG database, classical bioinformatics exchange files)
                 net = Network.loads(
                     data,
-                    skip_bigg_exchange_reactions=skip_bigg_exchange_reactions,
-                    loads_biota_info=loads_biota_info,
                     skip_orphans=skip_orphans)
             elif data.get("network"):
                 # is gws resource

@@ -78,6 +78,13 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
             self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())
 
+            # # export annotated network
+            # annotated_twin = proto.get_output("twin")
+            # net = list(annotated_twin.networks.values())[0]
+            # with open(os.path.join(result_dir, './toy_fva_dump.json'), 'w', encoding="utf-8") as fp:
+            #     data = net.dumps()
+            #     json.dump(data, fp, indent=4)
+
         GTest.print("Test FVAProto: Small network (toy + linprog)")
         await run_fva(solver="highs")
 

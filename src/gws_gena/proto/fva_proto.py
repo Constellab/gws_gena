@@ -3,11 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (FIFO2, ConfigParams, ProcessSpec, Protocol, Sink, Source,
-                      protocol_decorator)
+from gws_core import ProcessSpec, Protocol, protocol_decorator
 
 from ..fva.fva import FVA
-from ..twin.twin_annotator import TwinAnnotator
 from ..twin.twin_builder import TwinBuilder
 
 
@@ -18,16 +16,13 @@ class FVAProto(Protocol):
         # fva
         fva: ProcessSpec = self.add_process(FVA, 'fva')
         twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder').set_param("use_context", True)
-        twin_annotator: ProcessSpec = self.add_process(TwinAnnotator, 'twin_annotator')
 
         self.add_connectors([
             (twin_builder >> "twin", fva << "twin"),
-            (twin_builder >> "twin", twin_annotator << "twin"),
-            (fva >> "result", twin_annotator << "fba_result")
         ])
 
         self.add_interface('network', twin_builder, 'network')
         self.add_interface('context', twin_builder, 'context')
 
-        self.add_outerface('fva_result', fva, 'result')
-        self.add_outerface('annotated_twin', twin_annotator, 'twin')
+        self.add_outerface('fva_result', fva, 'fva_result')
+        self.add_outerface('twin', fva, 'twin')

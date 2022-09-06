@@ -74,8 +74,8 @@ class BiomassReactionTable(Table):
             raise BadRequestException("The entity_column is required and must be selected")
         return table
 
-    def select_by_column_names(self, names: List[str], use_regex=False) -> 'BiomassReactionTable':
-        table = super().select_by_column_names(names, use_regex)
+    def select_by_column_names(self, filters: List['DataframeFilterName']) -> 'BiomassReactionTable':
+        table = super().select_by_column_names(filters)
         if not self.biomass_column in table.column_names:
             raise BadRequestException("The biomass_column is required and must be selected")
         if not table.chebi_column in table.column_names:

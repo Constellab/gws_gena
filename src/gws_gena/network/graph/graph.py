@@ -7,56 +7,55 @@ from typing import Dict, List
 
 import networkx as nx
 from gws_biota import Cofactor as BiotaCofactor
-from gws_biota.unicell.unicell_service import \
-    UnicellService as BiotaUnicellService
+from gws_core import BadRequestException, Logger
 
 
 class Graph:
     """ Graph """
     _nxgraph = None
-    _rhea_edge_map: Dict[str, List[str]] = None
     _chebi_ids = None
 
     def __init__(self, network: 'Network' = None):
         if network is None:
             self._graph = nx.Graph()
-            self._rhea_edge_map = {}
         else:
-            (nxgraph, rhea_edge_map) = self._create_nxgraph_from_network(network)
+            nxgraph = self._create_nxgraph_from_network(network)
             self._nxgraph = nxgraph
-            self._rhea_edge_map = rhea_edge_map
 
-    def gap_fill(self, from_graph=None, tax_id=None, weight=None, partial=True):
-        """ Finds set of edges to gap-fill graph """
-        if from_graph:
-            avail = from_graph.edges()
-        else:
-            unicell = BiotaUnicellService.create_unicell(tax_id=tax_id)
-            avail = []
-            unicell_edges = unicell.get_graph().edges()
+    def find_neigbors(self, nodes: list, radius: int = 1, exclude_nodes: list = None):
+        """ Finds the neighbors of a list of nodes """
 
-            print("XXXXX")
-            print(len(unicell_edges))
-            print(len(self._nxgraph.edges()))
+        if not isinstance(nodes, list):
+            raise BadRequestException("The nodes must be a list")
+        neigbors = []
+        for node in nodes:
+            subgraph = nx.ego_graph(self._nxgraph, node, radius=radius)
+            neigbors.extend(list(subgraph.nodes()))
 
-            for edge in unicell_edges:
-                if edge in self._nxgraph.edges():
-                    avail.append(edge)
+        neigbors = list(set(neigbors))
+        if exclude_nodes is not None:
+            neigbors = [n for n in neigbors if n not in exclude_nodes]
 
-            print(avail)
-
-        return list(nx.k_edge_augmentation(self._nxgraph, k=1, avail=avail, weight=weight, partial=partial))
+        return neigbors
 
     def get_all_rhea_ids(self) -> List:
         """ Get all rhea ids """
-        return list(self._rhea_edge_map.keys())
+        rhea_ids = set([edge[3] for edge in self._nxgraph.edges.data("rhea_id", default=None)])
+        rhea_ids = [id_ for id_ in rhea_ids if id_ is not None]
+        return rhea_ids
 
     def get_all_chebi_ids(self) -> List:
         """ Get all chebi ids """
+        chebi_id_tuples = [edge[3] for edge in self._nxgraph.edges.data("chebi_ids", default=None)]
         chebi_ids = set()
-        for list_ in self._rhea_edge_map.values():
+        for list_ in chebi_id_tuples:
             chebi_ids.update(*list_)
-        return list(chebi_ids)
+        chebi_ids = [id_ for id_ in chebi_ids if id_ is not None]
+        return chebi_ids
+
+    def get_nx_graph(self):
+        """ Get nx graph """
+        return self._nxgraph
 
     # def edge_disjoint_paths(self, source, target, flow_func=None, cutoff=None, auxiliary=None, residual=None):
     #     pass
@@ -65,23 +64,42 @@ class Graph:
     def _create_nxgraph_from_network(cls, network: 'Network'):
         """ Construct a `Graph` from a `Network` """
 
+        added_rhea_ids = []
+        is_warning_shown = False
         nxgraph = nx.Graph()
-        rhea_edge_map = {}
 
         cofactor_list: List[str] = BiotaCofactor.get_factors_as_list()
         for rxn in network.reactions.values():
-            for comp1 in rxn.substrates.values():
-                chebi_id_1 = comp1.compound.chebi_id
-                if chebi_id_1 in cofactor_list:
-                    continue
-                for comp2 in rxn.products.values():
-                    chebi_id_2 = comp2.compound.chebi_id
-                    if chebi_id_2 in cofactor_list:
-                        continue
-                    nxgraph.add_edge(chebi_id_1, chebi_id_2, rhea_id=rxn.rhea_id, dg_prime=1.0)
-                    if rxn.rhea_id in rhea_edge_map:
-                        rhea_edge_map[rxn.rhea_id].append((chebi_id_1, chebi_id_2))
-                    else:
-                        rhea_edge_map[rxn.rhea_id] = [(chebi_id_1, chebi_id_2)]
+            if rxn.rhea_id in added_rhea_ids:
+                continue
 
-        return (nxgraph, rhea_edge_map)
+            for comp1 in rxn.substrates.values():
+                comp_id_1 = comp1.compound.chebi_id or comp1.compound.id
+                if not comp_id_1:
+                    if not is_warning_shown:
+                        Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                        is_warning_shown = True
+                    continue
+
+                if comp_id_1 in cofactor_list:
+                    continue
+
+                for comp2 in rxn.products.values():
+                    comp_id_2 = comp2.compound.chebi_id or comp2.compound.id
+                    if not comp_id_2:
+                        if not is_warning_shown:
+                            Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                            is_warning_shown = True
+                        continue
+
+                    if comp_id_2 in cofactor_list:
+                        continue
+
+                    chebi_ids = (comp1.compound.chebi_id, comp2.compound.chebi_id)
+                    nxgraph.add_edge(comp_id_1, comp_id_2, rxn_id=rxn.id,
+                                     rhea_id=rxn.rhea_id, chebi_ids=chebi_ids, dg_prime=1.0)
+
+            if rxn.rhea_id:
+                added_rhea_ids.append(rxn.rhea_id)
+
+        return nxgraph

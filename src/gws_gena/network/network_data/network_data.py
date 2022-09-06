@@ -8,7 +8,7 @@ import json
 import os
 import re
 import uuid
-from typing import Dict, List, Optional, TypedDict, Union
+from typing import Any, Dict, List, Optional, TypedDict, Union
 
 import numpy as np
 from gws_biota import CompoundLayout as BiotaCompoundLayout
@@ -31,7 +31,7 @@ from ..exceptions.reaction_exceptions import ReactionDuplicate
 from ..helper.slugify_helper import SlugifyHelper
 from ..reaction.reaction import Reaction
 from ..typing.network_typing import NetworkDict, NetworkReconTagDict
-from ..view.network_view import NetworkView
+from ..typing.simulation_typing import SimulationDict
 from .helper.network_data_dumper_helper import NetworkDataDumperHelper
 from .helper.network_data_loader_helper import NetworkDataLoaderHelper
 
@@ -50,8 +50,8 @@ class NetworkData(SerializableObject):
     compounds: Dict[str, Compound] = None
     reactions: Dict[str, Reaction] = None
     compartments: Dict[str, Compartment] = None
-
-    _recon_tags: Dict[str, NetworkReconTagDict] = None
+    simulations: Dict[str, SimulationDict] = None
+    recon_tags: Dict[str, NetworkReconTagDict] = None
 
     # created by the class
     _compartment_chebi_ids: Dict[str, str] = None
@@ -65,8 +65,8 @@ class NetworkData(SerializableObject):
             self.compounds = {}
             self.reactions = {}
             self.compartments = {}
-
-            self._recon_tags = NetworkReconTagDict(reactions={}, compounds={})
+            self.simulations = {}
+            self.recon_tags = NetworkReconTagDict(reactions={}, compounds={})
 
             self._compartment_chebi_ids = {}
             self._ec_rxn_ids_map = {}
@@ -87,8 +87,6 @@ class NetworkData(SerializableObject):
 
         return cls.loads(
             data,
-            skip_bigg_exchange_reactions=True,
-            loads_biota_info=False,
             biomass_reaction_id=None,
             skip_orphans=False
         )
@@ -96,6 +94,20 @@ class NetworkData(SerializableObject):
     # =========================== CLASS LOGIC ===========================
 
     # -- A --
+
+    def add_simulation(self, sim: SimulationDict):
+        """
+        Adds a simulation
+
+        :param sim: The simulation dictionary
+        :type sim: `SimulationDict`,
+        """
+        id_ = sim["id"]
+        self.simulations[id_] = {
+            "id": id_,
+            "name": sim["name"],
+            "description": sim["description"]
+        }
 
     def add_compound(self, comp: Compound):
         """
@@ -175,7 +187,9 @@ class NetworkData(SerializableObject):
         net_data.compounds = {k: v.copy() for k, v in self.compounds.items()}
         net_data.reactions = {k: v.copy() for k, v in self.reactions.items()}
         net_data.compartments = {k: v.copy() for k, v in self.compartments.items()}
-        net_data._recon_tags = copy.deepcopy(self._recon_tags)
+        net_data.simulations = copy.deepcopy(self.simulations)
+        net_data.recon_tags = copy.deepcopy(self.recon_tags)
+
         net_data._compartment_chebi_ids = copy.deepcopy(self._compartment_chebi_ids)
         net_data._ec_rxn_ids_map = copy.deepcopy(self._ec_rxn_ids_map)
         net_data._rhea_rxn_ids_map = copy.deepcopy(self._rhea_rxn_ids_map)
@@ -386,7 +400,7 @@ class NetworkData(SerializableObject):
         :rtype: `dict`
         """
 
-        return self._recon_tags["compounds"]
+        return self.recon_tags["compounds"]
 
     def get_compound_ids(self) -> List[str]:
         return list(self.compounds.keys())
@@ -407,9 +421,9 @@ class NetworkData(SerializableObject):
         """
 
         if tag_name:
-            return self._recon_tags.get(rxn_id, {}).get(tag_name)
+            return self.recon_tags.get(rxn_id, {}).get(tag_name)
         else:
-            return self._recon_tags.get(rxn_id, {})
+            return self.recon_tags.get(rxn_id, {})
 
     def get_compound_by_id(self, comp_id: str) -> Compound:
         """
@@ -648,7 +662,7 @@ class NetworkData(SerializableObject):
     # -- L --
 
     @ classmethod
-    def loads(cls, data: NetworkDict, *, skip_bigg_exchange_reactions: bool = True, loads_biota_info: bool = False,
+    def loads(cls, data: NetworkDict, *,
               biomass_reaction_id: str = None, skip_orphans: bool = False, task: Task = None) -> 'NetworkData':
         """ Load JSON data and create a Network  """
 
@@ -664,8 +678,6 @@ class NetworkData(SerializableObject):
             helper.attach_task(task)
         return helper.loads(
             data,
-            skip_bigg_exchange_reactions=skip_bigg_exchange_reactions,
-            loads_biota_info=loads_biota_info,
             biomass_reaction_id=biomass_reaction_id,
             skip_orphans=skip_orphans
         )
@@ -695,11 +707,13 @@ class NetworkData(SerializableObject):
 
     def get_compound_stats_as_table(self) -> Table:
         """ Get compound stats as table """
-        _dict = self.generate_stats()["compounds"]
-        for comp_id in _dict:
-            _dict[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
-        df = DataFrame.from_dict(_dict, columns=["count", "frequency", "chebi_id"], orient="index")
+        dict_ = self.generate_stats()["compounds"]
+        for comp_id in dict_.key():
+            dict_[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
+
+        df = DataFrame.from_dict(dict_, columns=["count", "frequency", "chebi_id"], orient="index")
         df = df.sort_values(by=['frequency'], ascending=False)
+
         return Table(data=df)
 
     def get_total_abs_flux_as_table(self) -> Table:
@@ -719,22 +733,6 @@ class NetworkData(SerializableObject):
     # -- R --
 
     # -- S --
-
-    def update_reaction_recon_tag(self, tag_id, tag: dict):
-        """ Update a reaction recon tag """
-        if not isinstance(tag, dict):
-            raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self._recon_tags["reactions"]:
-            self._recon_tags["reactions"][tag_id] = {}
-        self._recon_tags["reactions"][tag_id].update(tag)
-
-    def update_compound_recon_tag(self, tag_id, tag: dict):
-        """ Update a compound recon tag """
-        if not isinstance(tag, dict):
-            raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self._recon_tags["compounds"]:
-            self._recon_tags["compounds"][tag_id] = {}
-        self._recon_tags["compounds"][tag_id].update(tag)
 
     # -- T --
 
@@ -865,8 +863,8 @@ class NetworkData(SerializableObject):
             data.append(list(_rxn_row.values()))
 
         # add the errored ec numbers
-        for k in self._recon_tags:
-            t = self._recon_tags[k]
+        for k in self.recon_tags:
+            t = self.recon_tags[k]
             ec = t.get("ec_number")
             is_partial_ec_number = t.get("is_partial_ec_number")
             error = t.get("error")
@@ -886,3 +884,21 @@ class NetworkData(SerializableObject):
         data = DataFrame(data, columns=column_names)
         data = data.sort_values(by=['id'])
         return data
+
+    # -- U --
+
+    def update_reaction_recon_tag(self, tag_id, tag: dict):
+        """ Update a reaction recon tag """
+        if not isinstance(tag, dict):
+            raise BadRequestException("The tag must be a dictionary")
+        if not tag_id in self.recon_tags["reactions"]:
+            self.recon_tags["reactions"][tag_id] = {}
+        self.recon_tags["reactions"][tag_id].update(tag)
+
+    def update_compound_recon_tag(self, tag_id, tag: dict):
+        """ Update a compound recon tag """
+        if not isinstance(tag, dict):
+            raise BadRequestException("The tag must be a dictionary")
+        if not tag_id in self.recon_tags["compounds"]:
+            self.recon_tags["compounds"][tag_id] = {}
+        self.recon_tags["compounds"][tag_id].update(tag)

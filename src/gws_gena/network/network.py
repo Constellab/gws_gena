@@ -16,6 +16,7 @@ from .compound.compound import Compound
 from .network_data.network_data import NetworkData
 from .reaction.reaction import Reaction
 from .typing.network_typing import NetworkDict
+from .typing.simulation_typing import SimulationDict
 from .view.network_view import NetworkView
 
 
@@ -41,6 +42,16 @@ class Network(Resource):
 
     # -- A --
 
+    def add_simulation(self, sim: SimulationDict):
+        """
+        Adds a simulation
+
+        :param sim: The simulation dictionary
+        :type sim: `SimulationDict`,
+        """
+
+        self.network_data.add_simulation(sim)
+
     def add_compound(self, comp: Compound):
         """
         Adds a compound
@@ -64,6 +75,11 @@ class Network(Resource):
     # -- B --
 
     # -- C --
+
+    @property
+    def simulations(self) -> dict:
+        """ Get the list of simulations """
+        return self.network_data.simulations
 
     @property
     def compartments(self) -> dict:
@@ -367,16 +383,13 @@ class Network(Resource):
     # -- L --
 
     @ classmethod
-    def loads(cls, data: NetworkDict, *, skip_bigg_exchange_reactions: bool = True,
-              loads_biota_info: bool = False, biomass_reaction_id: str = None,
+    def loads(cls, data: NetworkDict, *, biomass_reaction_id: str = None,
               skip_orphans: bool = False, task: Task = None) -> 'Network':
         """ Create a Network from JSON data  """
 
         network = cls()
         network.network_data = NetworkData.loads(
             data,
-            skip_bigg_exchange_reactions=skip_bigg_exchange_reactions,
-            loads_biota_info=loads_biota_info,
             biomass_reaction_id=biomass_reaction_id,
             skip_orphans=skip_orphans,
             task=task
@@ -406,15 +419,11 @@ class Network(Resource):
 
         self.network_data.remove_reaction(rxn_id)
 
-    def update_reaction_recon_tag(self, tag_id, tag_data: dict):
-        """ Set a reaction recon tag """
+    # -- S --
 
-        self.network_data.update_reaction_recon_tag(tag_id, tag_data)
-
-    def update_compound_recon_tag(self, tag_id, tag_data: dict):
-        """ Set a compound recon tag """
-
-        self.network_data.update_compound_recon_tag(tag_id, tag_data)
+    def set_simulations(self, simulations: Dict):
+        """ Set simulations """
+        self.network_data.set_simulations(simulations)
 
     # -- T --
 
@@ -453,6 +462,18 @@ class Network(Resource):
         """
 
         return self.network_data.to_dataframe()
+
+    # -- U --
+
+    def update_reaction_recon_tag(self, tag_id, tag_data: dict):
+        """ Set a reaction recon tag """
+
+        self.network_data.update_reaction_recon_tag(tag_id, tag_data)
+
+    def update_compound_recon_tag(self, tag_id, tag_data: dict):
+        """ Set a compound recon tag """
+
+        self.network_data.update_compound_recon_tag(tag_id, tag_data)
 
     # -- V --
 

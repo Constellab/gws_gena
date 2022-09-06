@@ -118,9 +118,18 @@ class ReactionBiotaHelper(BaseHelper):
 
         e: EnzymeDict = self.create_reaction_enzyme_dict_from_biota(enzyme)
 
+        # TODO: to delete after
+        # temporary fix
+        # -----------------------------
+        if enzyme:
+            ec_number = enzyme.ec_number
+        else:
+            ec_number = ""
+        # -----------------------------
+
         rxn: Reaction = Reaction(
             ReactionDict(
-                name=rhea_rxn.rhea_id+"_"+enzyme.ec_number,
+                name=rhea_rxn.rhea_id+"_"+ec_number,
                 rhea_id=rhea_rxn.rhea_id,
                 direction=rhea_rxn.direction,
                 enzyme=e

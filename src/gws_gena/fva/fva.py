@@ -16,9 +16,10 @@ from pandas import DataFrame
 
 from ..fba.fba import FBA
 from ..fba.fba_helper.fba_helper import FBAHelper
-from ..fba.fba_result import OptimizeResult
+from ..fba.fba_result import FBAOptimizeResult
 from ..network.network import Network
 from ..twin.flat_twin import FlatTwin
+from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
 from .fva_result import FVAResult
 
@@ -36,6 +37,7 @@ def _do_parallel_loop(kwargs):
     m = kwargs["m"]
     solver = kwargs["solver"]
     relax_qssa = kwargs["relax_qssa"]
+    qssa_relaxation_strength = kwargs["qssa_relaxation_strength"]
 
     if (i % step) == 0:
         Logger.progress(f" flux {i+1}/{m} ...")
@@ -61,10 +63,11 @@ def _do_parallel_loop(kwargs):
             res_fva, _ = FBAHelper.solve_cvxpy(
                 cf, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
+                qssa_relaxation_strength=qssa_relaxation_strength,
                 verbose=False
             )
         else:
-            res_fva: OptimizeResult = FBAHelper.solve_scipy(
+            res_fva: FBAOptimizeResult = FBAHelper.solve_scipy(
                 cf, A_eq, b_eq, bounds,
                 solver=solver
             )
@@ -76,10 +79,11 @@ def _do_parallel_loop(kwargs):
             res_fva, _ = FBAHelper.solve_cvxpy(
                 cf, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
+                qssa_relaxation_strength=qssa_relaxation_strength,
                 verbose=False
             )
         else:
-            res_fva: OptimizeResult = FBAHelper.solve_scipy(
+            res_fva: FBAOptimizeResult = FBAHelper.solve_scipy(
                 cf, A_eq, b_eq, bounds,
                 solver=solver
             )
@@ -102,7 +106,10 @@ class FVA(Task):
     """
 
     input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
-    output_specs = {'result': OutputSpec(FVAResult, human_name="FVA result", short_description="The FVA result")}
+    output_specs = {
+        'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
+        'fva_result': OutputSpec(FVAResult, human_name="FVA result table", short_description="The FVA result tables")
+    }
     config_specs = {
         **FBA.config_specs
     }
@@ -145,7 +152,7 @@ class FVA(Task):
                 verbose=False
             )
         else:
-            res: OptimizeResult = FBAHelper.solve_scipy(
+            res: FBAOptimizeResult = FBAHelper.solve_scipy(
                 c, A_eq, b_eq, bounds,
                 solver=solver
             )
@@ -173,17 +180,36 @@ class FVA(Task):
             xmin, xmax = self.__solve_with_parloop(c, A_eq, b_eq, bounds, x0,
                                                    fluxes_to_maximize,
                                                    fluxes_to_minimize,
-                                                   step, m, solver, relax_qssa)
+                                                   step, m, solver, relax_qssa, qssa_relaxation_strength)
         res.xmin = xmin
         res.xmax = xmax
-        result = FVAResult(twin=twin, optimize_result=res)
-        return {"result": result}
+        fva_result = FVAResult(twin=twin, optimize_result=res)
+
+        # @TODO : should be given by the current experiment
+        simulations = [
+            {
+                "id": "fva_sim",
+                "name": "fva simulation",
+                "description": "Metabolic flux variability analysis"
+            }
+        ]
+        fva_result.set_simulations(simulations)
+
+        # annotate twin
+        helper = TwinAnnotatorHelper()
+        helper.attach_task(self)
+        twin = helper.annotate_from_fva_result(twin, fva_result)
+
+        return {
+            "fva_result": fva_result,
+            "twin": twin
+        }
 
     @staticmethod
     def __solve_with_parloop(c, A_eq, b_eq, bounds, x0,
                              fluxes_to_maximize,
                              fluxes_to_minimize,
-                             step, m, solver, relax_qssa):
+                             step, m, solver, relax_qssa, qssa_relaxation_strength):
 
         max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
         min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
@@ -204,9 +230,9 @@ class FVA(Task):
                 step=step,
                 m=m,
                 solver=solver,
-                relax_qssa=relax_qssa
-            )
-            )
+                relax_qssa=relax_qssa,
+                qssa_relaxation_strength=qssa_relaxation_strength
+            ))
         result = pool.map(_do_parallel_loop, params)
         # gather results
         xmin = np.zeros(x0.shape)

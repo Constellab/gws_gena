@@ -18,7 +18,7 @@ from ..network.compound.compound import Compound
 from ..network.graph.graph import Graph
 from ..network.network import Network
 from ..network.reaction.reaction import Reaction
-from .helper.gap_finder_helper import GapFinderHelper
+from .helper.gap_filler_helper import GapFillerHelper
 
 
 @task_decorator("GapFiller", human_name="Fast gap filler", short_description="Fills gaps in a networks")
@@ -47,20 +47,10 @@ class GapFiller(Task):
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
-        helper = GapFinderHelper()
+        tax_id = params["tax_id"]
+
+        helper = GapFillerHelper()
         helper.attach_task(self)
-        dead_ends = helper.find_deadend_compound_ids(net)
-        if len(dead_ends) > 0:
-            self.log_info_message(f"{len(dead_ends)} dead-end metabolites found")
-            tax_id = params.get("tax_id")
-            graph = Graph(net)
-            added_edges = graph.gap_fill(tax_id=tax_id)
-            added_rhea_ids = [edge["rhea_id"] for edge in added_edges]
-            for rhea_id in added_rhea_ids:
-                rxns = Reaction.from_biota(rhea_id=rhea_id)
-                net.add_reaction(rxns[0])
-                net.update_reaction_recon_tag(rxns[0].id, {"is_from_gap_fill": True})
-        else:
-            self.log_info_message("No dead-end metabolites found")
+        net = helper.fill_gaps(net, tax_id=tax_id)
 
         return {'network': net}

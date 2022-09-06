@@ -9,19 +9,18 @@ import re
 import cvxpy as cp
 import numpy as np
 import pandas as pd
-from gws_core import BadRequestException, Logger, TaskHelper
+from gws_core import BadRequestException, Logger
 from pandas import DataFrame
 from scipy.optimize import linprog
 
-from ...gap.helper.sink_helper import SinkHelper
 from ...network.network import Network
 from ...twin.flat_twin import FlatTwin
 from ...twin.helper.twin_helper import TwinHelper
 from ...twin.twin import Twin
-from ..fba_result import FBAResult, OptimizeResult
+from ..fba_result import FBAResult, FBAOptimizeResult
+from ...helper.base_helper import BaseHelper
 
-
-class FBAHelper(TaskHelper):
+class FBAHelper(BaseHelper):
 
     """
     FBA helper class
@@ -74,9 +73,9 @@ class FBAHelper(TaskHelper):
             fill_gaps_with_sinks: bool = None, ignore_cofactors: bool = None, relax_qssa: bool = None,
             qssa_relaxation_strength: float = None) -> FBAResult:
         cls = type(self)
-        self.notify_info_message(message="Creating problem ...")
+        self.log_info_message(message="Creating problem ...")
         if relax_qssa and solver != "quad":
-            self.notify_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
+            self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
 
         if not isinstance(twin, Twin):
@@ -95,7 +94,7 @@ class FBAHelper(TaskHelper):
             fill_gaps_with_sinks=fill_gaps_with_sinks,
             ignore_cofactors=ignore_cofactors,
         )
-        self.notify_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
+        self.update_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
             res, _ = cls.solve_cvxpy(
                 c, A_eq, b_eq, bounds,
@@ -103,11 +102,11 @@ class FBAHelper(TaskHelper):
                 qssa_relaxation_strength=qssa_relaxation_strength
             )
         else:
-            res: OptimizeResult = cls.solve_scipy(
+            res: FBAOptimizeResult = cls.solve_scipy(
                 c, A_eq, b_eq, bounds,
                 solver=solver
             )
-        self.notify_progress_value(90, message=res.message)
+        self.update_progress_value(90, message=res.message)
         result = FBAResult(twin=twin, optimize_result=res)
         return result
 
@@ -209,9 +208,6 @@ class FBAHelper(TaskHelper):
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_minimize, direction="min")
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_maximize, direction="max")
         A_eq, b_eq = cls.__upgrade_Aeq_beq_with_output_coefficient_score(A_eq, b_eq, beq_confidence_score)
-
-        print(A_eq)
-        print(b_eq)
 
         return c, A_eq, b_eq, bounds
 
@@ -372,7 +368,7 @@ class FBAHelper(TaskHelper):
         warm_solver = dict(x=x, c_par=c_par, b_eq_par=b_eq_par, lb_par=lb_par, ub_par=ub_par, prob=prob)
         if verbose:
             Logger.progress(f"Optimization status: {prob.status}")
-        return OptimizeResult(res), warm_solver
+        return FBAOptimizeResult(res), warm_solver
 
     @classmethod
     def solve_cvxpy_using_warm_solver(
@@ -409,7 +405,7 @@ class FBAHelper(TaskHelper):
         return x.value
 
     @classmethod
-    def solve_scipy(cls, c, A_eq, b_eq, bounds, *, solver="interior-point", verbose=False) -> OptimizeResult:
+    def solve_scipy(cls, c, A_eq, b_eq, bounds, *, solver="interior-point", verbose=False) -> FBAOptimizeResult:
         x_names = A_eq.columns
         con_names = A_eq.index
         has_sink = False
@@ -476,7 +472,7 @@ class FBAHelper(TaskHelper):
         )
         if verbose:
             Logger.progress(res["message"])
-        return OptimizeResult(res)
+        return FBAOptimizeResult(res)
 
     # -- U --
 

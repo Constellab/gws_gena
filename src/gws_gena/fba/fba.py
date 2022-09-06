@@ -7,6 +7,7 @@ from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
                       ListParam, OutputSpec, StrParam, Task, TaskInputs,
                       TaskOutputs, task_decorator)
 
+from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
 from .fba_helper.fba_helper import FBAHelper
 from .fba_result import FBAResult
@@ -24,7 +25,10 @@ class FBA(Task):
     """
 
     input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
-    output_specs = {'result': OutputSpec(FBAResult, human_name="FBA result", short_description="The FBA result")}
+    output_specs = {
+        'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
+        'fba_result': OutputSpec(FBAResult, human_name="FBA result tables", short_description="The FBA result tables")
+    }
     config_specs = {
         "biomass_optimization": StrParam(allowed_values=["", "maximize", "minimize"], default_value=None, optional=True, human_name="Biomass optimization", short_description="Biomass optimization"),
         "fluxes_to_maximize": ListParam(default_value=None, optional=True, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
@@ -54,6 +58,24 @@ class FBA(Task):
             fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa,
             qssa_relaxation_strength=qssa_relaxation_strength)
 
-        return {"result": fba_result}
+        # @TODO : should be given by the current experiment
+        simulations = [
+            {
+                "id": "fba_sim",
+                "name": "fba simulation",
+                "description": "Metabolic flux simulation"
+            }
+        ]
+        fba_result.set_simulations(simulations)
+
+        # annotate twin
+        helper = TwinAnnotatorHelper()
+        helper.attach_task(self)
+        twin = helper.annotate_from_fba_result(twin, fba_result)
+
+        return {
+            "fba_result": fba_result,
+            "twin": twin
+        }
 
     # -- B --

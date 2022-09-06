@@ -92,10 +92,19 @@ class NetworkDataDumperHelper(BaseHelper):
                 "name": _compart.name,
             })
 
+        sim_data = []
+        for sim in network_data.simulations.values():
+            sim_data.append({
+                "id": sim["id"],
+                "name": sim["name"],
+                "description": sim["description"],
+            })
+
         return NetworkDict(
             name=network_data.name,
             metabolites=met_data,
             reactions=rxn_data,
             compartments=compart_data,
-            recon_tags=network_data._recon_tags
+            simulations=sim_data,
+            recon_tags=network_data.recon_tags
         )

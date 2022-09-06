@@ -14,7 +14,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
     async def test_gap_filler_with_no_gaps(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        file_path = os.path.join(data_dir, "./ecoli/gaps/ecoli_without_AKGDH.json")
+        file_path = os.path.join(data_dir, "./ecoli/gaps/ecoli_without_SUCOAS.json")
         net = NetworkImporter.call(
             File(path=file_path),
             ConfigParams({})

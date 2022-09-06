@@ -318,11 +318,19 @@ class Reaction:
                 raise BadRequestException(f"No reaction found with rhea_id {rhea_id}")
             _added_rxns = []
             for rhea_rxn in query:
-                for e in rhea_rxn.enzymes:
-                    if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
-                        continue
-                    _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                    rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, e))
+                if len(rhea_rxn.enzymes) == 0:
+                    # TODO: To delete after
+                    # temporary fix
+                    # -----------------------------
+                    _added_rxns.append(rhea_rxn.rhea_id)
+                    rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, None))
+                    # -----------------------------
+                else:
+                    for e in rhea_rxn.enzymes:
+                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
+                            continue
+                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
+                        rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, e))
             return rxns
         elif ec_number:
             tax = None
@@ -417,19 +425,19 @@ class Reaction:
         else:
             return {"kegg": "", "brenda": "", "metacyc": ""}
 
-    def get_data_slot(self, slot: str):
+    def get_data_slot(self, slot: str, default=None):
         """ Set data """
-        return self.data.get(slot)
+        return self.data.get(slot, default)
 
     # -- I --
 
     def is_biomass_reaction(self):
         """ Returns True, if it is the biomass reaction; False otherwise """
-        tf=False
+        tf = False
         for product in self.products.values():
-            comp=product.compound
+            comp = product.compound
             if comp.is_biomass():
-                tf=True
+                tf = True
                 break
         return tf
 
@@ -493,13 +501,13 @@ class Reaction:
         """ Set enzyme """
         if not isinstance(enzyme_dict, dict):
             raise BadRequestException("The enzyme data must be a dictionary")
-        self.enzyme=enzyme_dict
+        self.enzyme = enzyme_dict
 
     def set_data(self, data: dict):
         """ Set data """
         if not isinstance(data, dict):
             raise BadRequestException("The data must be a dictionary")
-        self.data=data
+        self.data = data
 
     # -- T --
 
@@ -511,35 +519,35 @@ class Reaction:
         :rtype: `str`
         """
 
-        _left=[]
-        _right=[]
-        _dir={"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
+        _left = []
+        _right = []
+        _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
 
         for comp_id, substrate in self.substrates.items():
-            comp=substrate.compound
-            stoich=substrate.stoich
+            comp = substrate.compound
+            stoich = substrate.stoich
             if show_ids:
-                _id=comp.chebi_id if comp.chebi_id else comp.id
+                _id = comp.chebi_id if comp.chebi_id else comp.id
                 _left.append(f"({stoich}) {_id}")
             else:
                 _left.append(f"({stoich}) {comp.id}")
 
         for comp_id, product in self.products.items():
-            comp=product.compound
-            stoich=product.stoich
+            comp = product.compound
+            stoich = product.stoich
             if show_ids:
-                _id=comp.chebi_id if comp.chebi_id else comp.id
+                _id = comp.chebi_id if comp.chebi_id else comp.id
                 _right.append(f"({stoich}) {_id}")
             else:
                 _right.append(f"({stoich}) {comp.id}")
 
         if not _left:
-            _left=["*"]
+            _left = ["*"]
 
         if not _right:
-            _right=["*"]
+            _right = ["*"]
 
-        _str=" + ".join(_left) + \
+        _str = " + ".join(_left) + \
             _dir[self.direction].replace("E", self.enzyme.get("ec_number", "")) + " + ".join(_right)
         # _str = _str + " " + str(self.enzyme)
         return _str

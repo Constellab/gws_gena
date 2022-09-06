@@ -3,11 +3,12 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import List, Union
+from typing import Any, Dict, List, Union
 
 import pandas as pd
-from gws_core import (BadRequestException, Resource, ResourceRField,
-                      ResourceSet, RField, Table, TechnicalInfo,
+from gws_core import (BadRequestException, ListRField, Resource,
+                      ResourceRField, ResourceSet, SerializableObject,
+                      SerializableRField, Table, TechnicalInfo,
                       resource_decorator)
 from pandas import DataFrame
 from scipy import stats
@@ -17,26 +18,7 @@ from ..network.reaction.reaction import Reaction
 from ..network.typing.pathway_typing import ReactionPathwayDict
 from ..twin.flat_twin import FlatTwin
 from ..twin.twin import Twin
-
-
-class OptimizeResult:
-    """
-    OptimizeResult class.
-
-    A simple proxy of SciPy OptimizeResult
-    """
-
-    def __init__(self, res: dict):
-        self.x = res["x"]
-        self.xmin = res["xmin"]
-        self.xmax = res["xmax"]
-        self.x_names = res["x_names"]
-        self.constraints = res["constraints"]
-        self.constraint_names = res["constraint_names"]
-        self.niter = res["niter"]
-        self.message = res["message"]
-        self.success = res["success"]
-        self.status = res["status"]
+from .fba_optimize_result import FBAOptimizeResult
 
 
 @resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True)
@@ -44,52 +26,51 @@ class FBAResult(ResourceSet):
     """
     FBAResult class.
 
-    A resource object containing the result of a flux balance analysis.
+    A resource set object containing the result tables of a flux balance analysis.
     """
 
     FLUX_TABLE_NAME = "Flux table"
     SV_TABLE_NAME = "SV table"
 
     _twin: Twin = ResourceRField()
-    _optimize_result = RField(default_value=None)
+    _simulations = ListRField()
+    _optimize_result = SerializableRField(FBAOptimizeResult)  # DictRField(default_value={})
     _default_zero_flux_threshold = 0.05
 
-    def __init__(self, twin: Twin = None, optimize_result: OptimizeResult = None):
+    def __init__(self, twin: Twin = None, optimize_result: FBAOptimizeResult = None):
         super().__init__()
-        if twin is not None:
+        if twin is None:
+            self._simulations = []
+            self._optimize_result = FBAOptimizeResult()
+        else:
             if not isinstance(twin, Twin):
                 raise BadRequestException("A twin is required")
 
+            self._twin = twin
             self._optimize_result = optimize_result
 
+            # add flux table
             flux_table = Table(data=self._create_fluxes_dataframe())
             flux_table.name = self.FLUX_TABLE_NAME
             self.add_resource(flux_table)
 
+            # add sv table
             sv_table = Table(data=self._create_sv_dataframe())
             sv_table.name = self.SV_TABLE_NAME
             self.add_resource(sv_table)
-            self._twin = twin
-            self._set_technical_info()
 
-    def _set_technical_info(self):
-        value, pval = self.compute_zero_flux_threshold()
-        self.add_technical_info(TechnicalInfo(key="zero_flux_threshold", value=value))
-        self.add_technical_info(TechnicalInfo(key="zero_flux_pvalue", value=pval))
-        for resource in self.get_resources().values():
-            resource.add_technical_info(TechnicalInfo(key="zero_flux_threshold", value=value))
-            resource.add_technical_info(TechnicalInfo(key="zero_flux_pvalue", value=pval))
+            self._set_technical_info()
 
     # -- C --
 
     def compute_zero_flux_threshold(self) -> (float, float):
         """ Compute the zero-flux threshold """
         data = self._create_sv_dataframe()
-        val = data["value"]
+        value = data["value"]
         try:
-            if val.shape[0] >= 20:
-                _, p = stats.normaltest(val)
-                return 3.0 * val.std(), p
+            if value.shape[0] >= 20:
+                _, p = stats.normaltest(value)
+                return 3.0 * value.std(), p
             else:
                 return self._default_zero_flux_threshold, None
         except Exception as _:
@@ -98,22 +79,23 @@ class FBAResult(ResourceSet):
     # -- C --
 
     def _create_fluxes_dataframe(self) -> DataFrame:
-        res: OptimizeResult = self._optimize_result
-        val = DataFrame(data=res.x, index=res.x_names, columns=["value"])
+        res: FBAOptimizeResult = self._optimize_result
+        value = DataFrame(data=res.x, index=res.x_names, columns=["value"])
         if res.xmin is None:
-            lb = DataFrame(data=res.x, index=res.x_names, columns=["lower_bound"])
+            lower_bound = DataFrame(data=res.x, index=res.x_names, columns=["lower_bound"])
         else:
-            lb = DataFrame(data=res.xmin, index=res.x_names, columns=["lower_bound"])
-        if res.xmax is None:
-            ub = DataFrame(data=res.x, index=res.x_names, columns=["upper_bound"])
-        else:
-            ub = DataFrame(data=res.xmax, index=res.x_names, columns=["upper_bound"])
+            lower_bound = DataFrame(data=res.xmin, index=res.x_names, columns=["lower_bound"])
 
-        data = pd.concat([val, lb, ub], axis=1)
+        if res.xmax is None:
+            upper_bound = DataFrame(data=res.x, index=res.x_names, columns=["upper_bound"])
+        else:
+            upper_bound = DataFrame(data=res.xmax, index=res.x_names, columns=["upper_bound"])
+
+        data = pd.concat([value, lower_bound, upper_bound], axis=1)
         return data
 
     def _create_pathways_dataframe(self) -> DataFrame:
-        res: OptimizeResult = self._optimize_result
+        res: FBAOptimizeResult = self._optimize_result
         kegg_pw = []
         brenda_pw = []
         metacyc_pw = []
@@ -147,11 +129,15 @@ class FBAResult(ResourceSet):
         return pd.concat([self._create_fluxes_dataframe(), self._create_pathways_dataframe()], axis=1)
 
     def _create_sv_dataframe(self) -> DataFrame:
-        res: OptimizeResult = self._optimize_result
+        res: FBAOptimizeResult = self._optimize_result
         data = DataFrame(data=res.constraints, index=res.constraint_names, columns=["value"])
         return data
 
     # -- G --
+
+    def get_simulations(self):
+        """ Get simulations """
+        return self._simulations
 
     def get_twin(self):
         """ Get the digital twin """
@@ -205,4 +191,18 @@ class FBAResult(ResourceSet):
         """ Get SV as dataframe """
         return self.get_sv_table().get_data()
 
-    # -- V --
+    # -- S --
+
+    def set_simulations(self, simulations: list):
+        """ Set simulations """
+        if not isinstance(simulations, list):
+            raise BadRequestException("The simulations must be a list")
+        self._simulations = simulations
+
+    def _set_technical_info(self):
+        value, pval = self.compute_zero_flux_threshold()
+        self.add_technical_info(TechnicalInfo(key="zero_flux_threshold", value=value))
+        self.add_technical_info(TechnicalInfo(key="zero_flux_pvalue", value=pval))
+        for resource in self.get_resources().values():
+            resource.add_technical_info(TechnicalInfo(key="zero_flux_threshold", value=value))
+            resource.add_technical_info(TechnicalInfo(key="zero_flux_pvalue", value=pval))

@@ -50,8 +50,8 @@ class ECTable(Table):
             raise BadRequestException("The ec_column is required and must be selected")
         return table
 
-    def select_by_column_names(self, names: List[str], filters: List['DataframeFilterName']) -> 'ECTable':
-        table = super().select_by_column_names(names, filters)
+    def select_by_column_names(self, filters: List['DataframeFilterName']) -> 'ECTable':
+        table = super().select_by_column_names(filters)
         if not self.ec_column in table.column_names:
             raise BadRequestException("The ec_column is required and must be selected")
         return table
