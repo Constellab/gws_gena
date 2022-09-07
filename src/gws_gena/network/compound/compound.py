@@ -14,9 +14,7 @@ from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_core import BadRequestException
 
 from ..compartment.compartment import Compartment
-from ..exceptions.compound_exceptions import (CompoundNotFoundException,
-                                              InvalidCompoundIdException)
-from ..helper.layout_helper import LayoutHelper
+from ..exceptions.compound_exceptions import CompoundNotFoundException
 from ..helper.slugify_helper import SlugifyHelper
 from ..typing.compound_typing import CompoundDict
 
@@ -129,9 +127,8 @@ class Compound:
         if "clusters" not in self.layout:
             self.layout["clusters"] = {}
 
-        helper = LayoutHelper()
-        clusters = helper.create_biomass_layout(is_biomass=is_biomass)["clusters"]
-        self.layout["clusters"].update(clusters)
+        bioass_cluster = BiotaCompoundLayout.get_biomass_layout()["clusters"]
+        self.layout["clusters"].update(bioass_cluster)
 
     # -- C --
 
@@ -270,7 +267,8 @@ class Compound:
                     layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
                         synonym_chebi_ids=self.chebi_id)
                     layout = copy.deepcopy(layout)
-                    if self.compartment.is_extracellular():
+
+                    if not self.compartment.is_cytosol() and not self.compartment.is_biomass():
                         for clust in layout["clusters"].values():
                             if clust.get("x"):
                                 clust["x"] = None
