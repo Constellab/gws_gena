@@ -29,8 +29,9 @@ class GapFillerHelper(BaseHelper):
         self.log_info_message(f"{len(rhea_ids)} reaction(s) added")
         for rhea_id in rhea_ids:
             rxns = Reaction.from_biota(rhea_id=rhea_id)
-            net.add_reaction(rxns[0])
-            net.update_reaction_recon_tag(rxns[0].id, {"is_from_gap_fill": True})
+            if not net.reaction_exists(rxns[0]):
+                net.add_reaction(rxns[0])
+                net.update_reaction_recon_tag(rxns[0].id, {"is_from_gap_fill": True})
 
         return net
 

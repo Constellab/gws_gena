@@ -111,7 +111,7 @@ class Compound:
 
         if self.layout is None:
             # refresh layout
-            self.layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
+            self.layout = BiotaCompoundLayout.get_layout_by_chebi_id(
                 synonym_chebi_ids=self.chebi_id)
 
         if self.is_biomass():
@@ -269,6 +269,12 @@ class Compound:
                 if self.chebi_id:
                     layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
                         synonym_chebi_ids=self.chebi_id)
+                    layout = copy.deepcopy(layout)
+                    if self.compartment.is_extracellular():
+                        for clust in layout["clusters"].values():
+                            if clust.get("x"):
+                                clust["x"] = None
+                                clust["y"] = None
                 else:
                     layout = self.layout
             else:

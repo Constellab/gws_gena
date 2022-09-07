@@ -89,6 +89,7 @@ class NetworkDataDumperHelper(BaseHelper):
                 "id": _compart.id,
                 "go_id": _compart.go_id,
                 "bigg_id": _compart.bigg_id,
+                "color": _compart.color,
                 "name": _compart.name,
             })
 

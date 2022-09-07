@@ -34,6 +34,7 @@ class Compartment:
     go_id = None
     bigg_id = None
     name = None
+    color = None
     is_steady: bool = None
 
     def __init__(self, dict_: CompartmentDict = None):
@@ -56,6 +57,7 @@ class Compartment:
         self.name = biota_compart.name
         self.is_steady = biota_compart.data["is_steady"]
         self.bigg_id = biota_compart.bigg_id
+        self.color = biota_compart.color
 
     def copy(self):
         """ Deep copy the compartment """
@@ -64,6 +66,7 @@ class Compartment:
                 id=self.id,
                 go_id=self.go_id,
                 bigg_id=self.bigg_id,
+                color=self.color,
                 name=self.name,
                 is_steady=self.is_steady
             ))
@@ -75,6 +78,7 @@ class Compartment:
             "id": None,
             "go_id": self.go_id,
             "bigg_id": self.bigg_id,
+            "color": self.color,
             "name": self.name
         }
 
