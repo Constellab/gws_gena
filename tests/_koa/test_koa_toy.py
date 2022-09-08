@@ -72,3 +72,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         with open(os.path.join(result_dir, './toy_koa_dump.json'), 'w', encoding="utf-8") as fp:
             data = net.dumps()
             json.dump(data, fp, indent=4)
+
+        ko_result.view_ko_as_bar_plot(ConfigParams({
+            "flux_names": ["toy_cell_RB","toy_cell_R2"]
+        }))

@@ -5,10 +5,12 @@
 
 from typing import List, Union
 
+import pandas as pd
 from gws_core import (BadRequestException, BarPlotView, ConfigParams,
-                      DataFrameRField, ListParam, ListRField, MultiViews,
-                      Resource, ResourceRField, ResourceSet, StringHelper,
-                      StrParam, Table, TechnicalInfo, resource_decorator, view)
+                      DataFrameRField, JSONView, ListParam, ListRField,
+                      MultiViews, Resource, ResourceRField, ResourceSet,
+                      StringHelper, StrParam, Table, TechnicalInfo,
+                      resource_decorator, view)
 from pandas import DataFrame
 
 from ..data.ec_table import ECTable
@@ -68,15 +70,19 @@ class KOAResult(ResourceSet):
         return self._simulations
 
     def get_twin(self):
-        """ Get the realted twin """
+        """ Get the related twin """
         return self._twin
 
-    def get_flux_table(self, ko_id):
+    def get_ko_table(self):
+        """ Get the related KO table """
+        return self._ko_table
+
+    def get_flux_table(self, ko_id) -> Table:
         """ Get the flux table """
         name = self._create_flux_table_name(ko_id)
         return self.get_resource(name)
 
-    def get_flux_dataframe(self, ko_id):
+    def get_flux_dataframe(self, ko_id) -> DataFrame:
         """ Get the flux table """
         name = self._create_flux_table_name(ko_id)
 
@@ -132,28 +138,53 @@ class KOAResult(ResourceSet):
 
     #     return multi_view
 
-    @view(view_type=BarPlotView, human_name='KO Summary', short_description='View KO summary as 2D-bar plots',
+    @view(view_type=BarPlotView, human_name='KO Barplots', short_description='View KOA results as 2D-bar plots',
           specs={
-              "flux_name":
-              StrParam(
-                  human_name="Flux name",
+              "flux_names":
+              ListParam(
+                  human_name="Flux names",
                   optional=True,
-                  short_description="Flux to plot. Set 'biomass' to only the plot biomass reaction flux.")})
-    def view_ko_summary_as_bar_plot(self, params: ConfigParams) -> BarPlotView:
+                  short_description="List of fluxe to plot. Set 'biomass' to plot biomass reaction flux.")})
+    def view_as_bar_plot(self, params: ConfigParams) -> BarPlotView:
         """
         View one or several columns as 2D-bar plots
         """
 
-        flux_name = params.get_value("flux_name")
-        if flux_name:
-            idx = self.get_flux_dataframe()["flux_name"] == flux_name
-            current_data = self.get_flux_dataframe().loc[idx, "flux_value"]
-        else:
-            current_data = self.get_flux_dataframe().loc[:, "flux_value"]
+        flux_names: List = params.get_value("flux_names")
+        # if "biomass" in flux_names:
+        #     idx = flux_names.index("biomass")
+        #     biomass_reaction_name = self.
 
-        barplot_view = BarPlotView()
-        barplot_view.add_series(
-            y=current_data.values.tolist()
-        )
+        for flux_name in flux_names:
+            data = []
+            for ko_id in self.get_ko_ids():
+                current_data = self.get_flux_dataframe(ko_id).loc[[flux_name], ["value"]]
+                current_data = current_data.T
+                current_data.columns = [flux_name]
+                data.append(current_data)
+
+            data = pd.concat(data, axis=0, ignore_index=True)
+            data.index = self.get_ko_ids()
+
+            barplot_view = BarPlotView()
+            barplot_view.add_series(
+                y=data.values.tolist()
+            )
         barplot_view.x_tick_labels = self.get_ko_ids()
+        barplot_view.x_label = "KO simulations"
+        barplot_view.y_label = "flux"
+
         return barplot_view
+
+    @view(view_type=JSONView, human_name='Summary', short_description='View as summary')
+    def view_as_summary(self, _: ConfigParams) -> JSONView:
+        """
+        View as summary
+        """
+        json_v = JSONView()
+        data = {
+            "twin": self.get_twin().get_summary(),
+            "KO IDs": self.get_ko_ids()
+        }
+        json_v.set_data(data)
+        return json_v

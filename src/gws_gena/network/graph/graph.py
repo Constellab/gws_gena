@@ -10,7 +10,7 @@ from gws_biota import Cofactor as BiotaCofactor
 from gws_core import BadRequestException, Logger
 
 
-class Graph:
+class BaseGraph:
     """ Graph """
     _nxgraph = None
     _chebi_ids = None
@@ -98,6 +98,59 @@ class Graph:
                     chebi_ids = (comp1.compound.chebi_id, comp2.compound.chebi_id)
                     nxgraph.add_edge(comp_id_1, comp_id_2, rxn_id=rxn.id,
                                      rhea_id=rxn.rhea_id, chebi_ids=chebi_ids, dg_prime=1.0)
+
+            if rxn.rhea_id:
+                added_rhea_ids.append(rxn.rhea_id)
+
+        return nxgraph
+
+
+class Graph(BaseGraph):
+    pass
+
+
+class BipartiteGraph(BaseGraph):
+
+    @classmethod
+    def _create_nxgraph_from_network(cls, network: 'Network'):
+        """ Construct a `Graph` from a `Network` """
+
+        added_rhea_ids = []
+        is_warning_shown = False
+        nxgraph = nx.Graph()
+
+        cofactor_list: List[str] = BiotaCofactor.get_factors_as_list()
+        for rxn in network.reactions.values():
+            if rxn.rhea_id in added_rhea_ids:
+                continue
+
+            for comp1 in rxn.substrates.values():
+                comp_id_1 = comp1.compound.chebi_id or comp1.compound.id
+                if not comp_id_1:
+                    if not is_warning_shown:
+                        Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                        is_warning_shown = True
+                    continue
+
+                if comp_id_1 in cofactor_list:
+                    continue
+
+                nxgraph.add_edge(comp_id_1, rxn.id, rxn_id=rxn.id,
+                                 rhea_id=rxn.rhea_id, chebi_ids=(comp_id_1,), dg_prime=1.0)
+
+            for comp2 in rxn.products.values():
+                comp_id_2 = comp2.compound.chebi_id or comp2.compound.id
+                if not comp_id_2:
+                    if not is_warning_shown:
+                        Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                        is_warning_shown = True
+                    continue
+
+                if comp_id_2 in cofactor_list:
+                    continue
+
+                nxgraph.add_edge(rxn.id, comp_id_2, rxn_id=rxn.id,
+                                 rhea_id=rxn.rhea_id, chebi_ids=(comp_id_2,), dg_prime=1.0)
 
             if rxn.rhea_id:
                 added_rhea_ids.append(rxn.rhea_id)

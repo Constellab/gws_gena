@@ -36,14 +36,16 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         proto.set_input("ko_table", ko_table)
 
         koa = proto.get_process("koa")
-        koa.set_param("monitored_fluxes", ["ecoli_BIOMASS_Ecoli_core_w_GAM"])
         koa.set_param("fluxes_to_maximize", ["ecoli_BIOMASS_Ecoli_core_w_GAM"])
         koa.set_param("solver", "quad")
         koa.set_param("relax_qssa", True)
         await experiment.run()
-        ko_results = proto.get_output("ko_result")
+        ko_results = proto.get_output("koa_result")
 
         print(ko_results)
 
-        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[0, "flux_value"], 37.137627, delta=1e-6)
-        self.assertAlmostEqual(ko_results.get_flux_dataframe().at[1, "flux_value"], 51.262072, delta=1e-6)
+        table = ko_results.get_flux_dataframe(ko_id="ecoli_PGK")
+        self.assertAlmostEqual(table.at["ecoli_BIOMASS_Ecoli_core_w_GAM", "value"], 37.137627, delta=1e-6)
+
+        table = ko_results.get_flux_dataframe(ko_id="ecoli_glu_L_c")
+        self.assertAlmostEqual(table.at["ecoli_BIOMASS_Ecoli_core_w_GAM", "value"], 51.262072, delta=1e-6)

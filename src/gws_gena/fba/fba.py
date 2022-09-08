@@ -52,7 +52,7 @@ class FBA(Task):
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
 
         helper = FBAHelper()
-        helper.attach(self)
+        helper.attach_task(self)
         fba_result: FBAResult = helper.run(
             twin, solver, fluxes_to_maximize, fluxes_to_minimize, biomass_optimization=biomass_optimization,
             fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa,

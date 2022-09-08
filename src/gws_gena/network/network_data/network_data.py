@@ -628,6 +628,45 @@ class NetworkData(SerializableObject):
 
         return len(self.compounds)
 
+    def get_summary(self) -> dict:
+        """ Return the summary of the network """
+        from ...gap.helper.gap_finder_helper import GapFinderHelper
+        biomass_rxn = self.get_biomass_reaction()
+        helper = GapFinderHelper()
+        dem = helper.find_deadend_compound_ids(self)
+        urxn = {}
+        for rxn_id, rxn in self.reactions.items():
+            balance = rxn.compute_mass_and_charge_balance()
+            if (balance["charge"] is not None and balance["charge"] > 0) or \
+                    (balance["mass"] is not None and balance["mass"] > 0):
+                urxn[rxn_id] = balance
+
+        data = {
+            "Name": self.name,
+            "Number of metabolites": len(self.compounds),
+            "Number of reactions": len(self.reactions),
+            "Number of compartments": len(self.compartments),
+            "List of compartments": [c for c in self.compartments.values()],
+            "Quality control": {
+                "Number of deadend metabolites": len(dem),
+                "Number of unbalanced reactions": len(urxn),
+                "List of deadend metabolites": dem,
+                "List of unbalanced reactions": urxn,
+            }
+        }
+
+        if biomass_rxn:
+            data["Biomass reaction"] = {
+                "ID": biomass_rxn.id,
+                "Name": biomass_rxn.name,
+                "Formula": [biomass_rxn.to_str()],
+                "Data": biomass_rxn.data
+            }
+        else:
+            data["Biomass reaction"] = {}
+
+        return data
+
     def generate_stats(self) -> dict:
         """ Gather and return networks stats """
         stats = {
@@ -647,7 +686,7 @@ class NetworkData(SerializableObject):
                 stats["compounds"][comp_id]["count"] += 1
         if stats["compound_count"]:
             for comp_id in self.compounds:
-                stats["compounds"][comp_id]["freq"] = stats["compounds"][comp_id]["count"] / stats["compound_count"]
+                stats["compounds"][comp_id]["frequency"] = stats["compounds"][comp_id]["count"] / stats["compound_count"]
         return stats
 
     # -- H --
@@ -708,7 +747,7 @@ class NetworkData(SerializableObject):
     def get_compound_stats_as_table(self) -> Table:
         """ Get compound stats as table """
         dict_ = self.generate_stats()["compounds"]
-        for comp_id in dict_.key():
+        for comp_id in dict_.keys():
             dict_[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
 
         df = DataFrame.from_dict(dict_, columns=["count", "frequency", "chebi_id"], orient="index")

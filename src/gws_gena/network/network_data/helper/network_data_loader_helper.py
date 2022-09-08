@@ -351,7 +351,10 @@ class NetworkDataLoaderHelper(BaseHelper):
             if master_chebi_id is not None:
                 comp_data["chebi_id"] = master_chebi_id
             else:
-                comp_data["chebi_id"] = alt_chebi_ids[0]
+                if len(alt_chebi_ids) >= 1:
+                    comp_data["chebi_id"] = alt_chebi_ids[0]
+                else:
+                    comp_data["chebi_id"] = None
 
         # prepare reactions
         for rxn_data in out_data["reactions"]:
@@ -374,8 +377,7 @@ class NetworkDataLoaderHelper(BaseHelper):
                         ec_number_list = ec_number
                     else:
                         ec_number_list = [ec_number]
-
-                rxn_data['ec_number_list'] = ec_number_list
+                    rxn_data['ec_number_list'] = ec_number_list
             else:
                 ec_number = rxn_data["enzyme"]["ec_number"]
                 rxn_data['ec_number_list'] = [ec_number]

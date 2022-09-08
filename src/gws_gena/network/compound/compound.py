@@ -4,7 +4,8 @@
 # About us: https://gencovery.com
 
 import copy
-from typing import List, TypedDict
+import random
+from typing import List
 
 from gws_biota import Cofactor as BiotaCofactor
 from gws_biota import Compound as BiotaCompound
@@ -119,6 +120,9 @@ class Compound:
 
     def append_biomass_layout(self, is_biomass=False):
         """ Append biomass layout """
+        if self.is_cofactor():
+            return
+
         if self.layout is None:
             # check attribute for retro-compatiblity
             # TODO: remove on next major
@@ -259,6 +263,12 @@ class Compound:
 
     def get_layout(self, refresh: bool = False) -> int:
         """ Get compound layout """
+
+        def rnd_offset():
+            """ Random offset """
+            rnd_num = random.uniform(0, 1)
+            return -1 if rnd_num >= 0.5 else 1
+
         if self.layout is None:
             return BiotaCompoundLayout.get_empty_layout()
         else:
@@ -271,8 +281,8 @@ class Compound:
                     if not self.compartment.is_cytosol() and not self.compartment.is_biomass():
                         for clust in layout["clusters"].values():
                             if clust.get("x"):
-                                clust["x"] = None
-                                clust["y"] = None
+                                clust["x"] = clust["x"] + 100*rnd_offset()
+                                clust["y"] = clust["y"] + 100*rnd_offset()
                 else:
                     layout = self.layout
             else:

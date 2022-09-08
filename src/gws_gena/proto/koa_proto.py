@@ -22,5 +22,8 @@ class KOAProto(Protocol):
 
         self.add_interface('network', twin_builder, 'network')
         self.add_interface('context', twin_builder, 'context')
+
         self.add_interface('ko_table', koa, 'ko_table')
-        self.add_outerface('ko_result', koa, 'result')
+
+        self.add_outerface('twin', koa, 'twin')
+        self.add_outerface('koa_result', koa, 'koa_result')

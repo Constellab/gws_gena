@@ -5,28 +5,18 @@
 
 from typing import Dict
 
-from gws_core import (BadRequestException, BoolParam, ConfigParams, View,
-                      ViewSpecs, ViewType)
+import networkx as nx
+from gws_core import (BadRequestException, BoolParam, ConfigParams, StrParam,
+                      View, ViewSpecs, ViewType)
+
+from ..graph.graph import BipartiteGraph
 
 
 class NetworkView(View):
 
     _type: ViewType = ViewType.NETWORK
     _data: "Network"
-    _specs: ViewSpecs = {
-        "refresh_layout":
-        BoolParam(
-            default_value=False,
-            visibility=BoolParam.PUBLIC_VISIBILITY,
-            human_name="Refresh layout",
-            short_description="Set True to refresh layout"),
-        "skip_orphans":
-        BoolParam(
-            default_value=False,
-            visibility=BoolParam.PROTECTED_VISIBILITY,
-            human_name="Remove orphans",
-            short_description="Set True to remove orphan metabolites"),
-    }
+    _specs: ViewSpecs = {}
 
     def __init__(self, data):
         super().__init__()
@@ -45,7 +35,48 @@ class NetworkView(View):
         self._data = data
 
     def to_dict(self, params: ConfigParams) -> dict:
+        # if params["layout"] == "spring":
+        #     dump_data = self._spring_layout(params)
+        # else:
+        dump_data = self._data.dumps(refresh_layout=True)
         return {
             **super().to_dict(params),
-            "data": self._data.dumps(refresh_layout=params["refresh_layout"])
+            "data": dump_data
         }
+
+    # def _spring_layout(self, params: ConfigParams):
+    #     full = params["full"]
+    #     net = self._data
+    #     graph = BipartiteGraph(net)
+
+    #     dump_data = self._data.dumps(refresh_layout=True)
+
+    #     pos = {}
+    #     for comp_data in dump_data["metabolites"]:
+    #         chebi_id = comp_data["chebi_id"]
+    #         if chebi_id:
+    #             layout = comp_data["layout"]
+    #             if layout.get("x") is not None:
+    #                 pos[chebi_id] = (layout.get("x"), layout.get("y"))
+
+    #     if full:
+    #         fixed = None
+    #     else:
+    #         fixed = [chebi_id for chebi_id, data in pos.items() if data[0] is not None]
+
+    #     pos = nx.spring_layout(
+    #         graph.get_nx_graph(), k=None, pos=pos, fixed=fixed,
+    #         iterations=50, threshold=0.0001, weight=None, scale=1000, center=None, dim=2, seed=None
+    #     )
+
+    #     for comp_data in dump_data["metabolites"]:
+    #         chebi_id = comp_data["chebi_id"]
+    #         if chebi_id in pos:
+    #             layout = comp_data["layout"]
+    #             layout["x"] = pos[chebi_id][0]
+    #             layout["y"] = pos[chebi_id][1]
+    #             for cluster in layout["clusters"].values():
+    #                 cluster["x"] = pos[chebi_id][0]
+    #                 cluster["y"] = pos[chebi_id][1]
+
+    #     return dump_data

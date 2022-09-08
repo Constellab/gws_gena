@@ -186,7 +186,24 @@ class Twin(ResourceSet):
 
         return None
 
-        # -- L --
+    def get_summary(self):
+        json_ = {
+            "name": self.name,
+            "networks": [],
+            "contexts": []
+        }
+
+        for net in self.networks.values():
+            json_["networks"].append(net.get_summary())
+
+        for ctx in self.contexts.values():
+            json_["contexts"].append({
+                "Name": ctx.name,
+                "Number of measurements": len(ctx.measures)
+            })
+        return json_
+
+    # -- L --
 
     @classmethod
     def loads(cls, data: TwinDict):
@@ -255,19 +272,7 @@ class Twin(ResourceSet):
     @view(view_type=JSONView, human_name="Summary")
     def view_as_summary(self, _: ConfigParams) -> JSONView:
         """ view as summary """
-        j_view = {
-            "name": self.name,
-            "networks": [],
-            "contexts": []
-        }
-
-        for net in self.networks.values():
-            j_view["networks"].append(net.get_summary())
-
-        for ctx in self.contexts.values():
-            j_view["contexts"].append({
-                "Name": ctx.name,
-                "Number of measurements": len(ctx.measures)
-            })
-
+        data = self.get_summary()
+        j_view = JSONView()
+        j_view.set_data(data)
         return j_view

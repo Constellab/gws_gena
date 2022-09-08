@@ -452,7 +452,7 @@ class Network(Resource):
         :rtype: `Table`
         """
 
-        self.network_data.to_table()
+        return self.network_data.to_table()
 
     def to_dataframe(self) -> DataFrame:
         """
@@ -477,17 +477,11 @@ class Network(Resource):
 
     # -- V --
 
-    @view(view_type=NetworkView, human_name="Network",
-          specs={
-              "remove_blocked":
-              BoolParam(
-                  default_value=False, optional=True, human_name="Remove blocked reactions",
-                  short_description="Set True to remove blocked reactions; False otherwise"),
-          })
+    @view(view_type=NetworkView, default_view=True, human_name="Network")
     def view_as_network(self, _: ConfigParams) -> NetworkView:
         return NetworkView(data=self)
 
-    @view(view_type=JSONView, default_view=True, human_name="Summary")
+    @view(view_type=JSONView, human_name="Summary")
     def view_as_summary(self, _: ConfigParams) -> JSONView:
         """  View as summary """
         data = self.get_summary()
@@ -498,7 +492,8 @@ class Network(Resource):
     @ view(view_type=TableView, human_name="Reaction table")
     def view_as_table(self, _: ConfigParams) -> TableView:
         """ View as table """
-        t_view = TableView(self.to_table())
+        table = self.to_table()
+        t_view = TableView(table)
         return t_view
 
     @ view(view_type=JSONView, human_name="JSON view")
@@ -518,7 +513,7 @@ class Network(Resource):
         t_view = TableView(table)
         return t_view
 
-    @ view(view_type=TableView, human_name="Compound distrib.")
+    @ view(view_type=TableView, human_name="Compound distribution")
     def view_compound_stats_as_table(self, _: ConfigParams) -> TableView:
         """ View compound stats as table """
         table: Table = self.get_compound_stats_as_table()
