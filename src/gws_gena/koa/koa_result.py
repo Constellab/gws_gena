@@ -143,8 +143,7 @@ class KOAResult(ResourceSet):
               "flux_names":
               ListParam(
                   human_name="Flux names",
-                  optional=True,
-                  short_description="List of fluxe to plot. Set 'biomass' to plot biomass reaction flux.")})
+                  short_description="List of fluxes to plot. Set 'biomass' to plot biomass reaction flux.")})
     def view_as_bar_plot(self, params: ConfigParams) -> BarPlotView:
         """
         View one or several columns as 2D-bar plots
@@ -156,19 +155,19 @@ class KOAResult(ResourceSet):
         #     biomass_reaction_name = self.
 
         for flux_name in flux_names:
-            data = []
+            values = []
             for ko_id in self.get_ko_ids():
-                current_data = self.get_flux_dataframe(ko_id).loc[[flux_name], ["value"]]
-                current_data = current_data.T
-                current_data.columns = [flux_name]
-                data.append(current_data)
+                value = self.get_flux_dataframe(ko_id).at[flux_name, "value"]
+                #current_data = current_data.T
+                #current_data.columns = [flux_name]
+                values.append(value)
 
-            data = pd.concat(data, axis=0, ignore_index=True)
-            data.index = self.get_ko_ids()
+            #data = pd.concat(data, axis=0, ignore_index=True)
+            #data.index = self.get_ko_ids()
 
             barplot_view = BarPlotView()
             barplot_view.add_series(
-                y=data.values.tolist()
+                y=values
             )
         barplot_view.x_tick_labels = self.get_ko_ids()
         barplot_view.x_label = "KO simulations"
