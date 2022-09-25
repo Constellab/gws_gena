@@ -5,7 +5,7 @@
 
 import os
 
-from equilibrator_assets.local_compound_cache import LocalCompoundCache
+#from equilibrator_assets.local_compound_cache import LocalCompoundCache
 
 from utils._requests import Requests
 from utils._settings import Settings
@@ -70,4 +70,4 @@ def call_hook():
 
 
 if __name__ == "__main__":
-    call_hook()
+    #call_hook()
