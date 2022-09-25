@@ -21,23 +21,9 @@ from .helper.recon_helper import ReconHelper
 @task_decorator("DraftRecon", human_name="Draft recon", short_description="Draft network reconstruction")
 class DraftRecon(Task):
     """
-    DraftRecon class.
+    DraftRecon task.
 
-    This process performs a draft reconstruction of the metabolic network using a list of ec numbers.
-
-    * for each `ec_number`, we find all the corresponding enzymes from the biota DB. If the `tax_id` is also given, we only retrieve enzyme that match the `ec_number` and the taxonomy.
-      * if enzymes found
-        * for each enzyme
-          * we add the corresponding reaction to the network
-          * continue
-      * if no enzyme found
-        * if `tax_id` is given and `tax_search_method == bottom_up`, we traverse the taxonomy tree above the `tax_id` of retrieve all the enzymes matching against the `ec_number`.
-        * for each enzyme
-          * we add the reaction corresponding the lowest taxonomy lever (i.e. closest to `tax_id`)
-          * break the current loop
-      * continue
-
-    At the end of the process all the possible reactions existing in the biota DB will be added to the draft network.
+    This task performs a draft reconstruction of a metabolic network using a list of ec numbers or taxonmy id.
     """
 
     input_specs = {

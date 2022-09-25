@@ -70,8 +70,7 @@ class FBAHelper(BaseHelper):
     __CVXPY_SOLVER_PRIORITY = [cp.OSQP, cp.ECOS]
 
     def run(self, twin: Twin, solver, fluxes_to_maximize=None, fluxes_to_minimize=None, biomass_optimization=None,
-            fill_gaps_with_sinks: bool = None, ignore_cofactors: bool = None, relax_qssa: bool = None,
-            qssa_relaxation_strength: float = None) -> FBAResult:
+            relax_qssa: bool = None, qssa_relaxation_strength: float = None) -> FBAResult:
         cls = type(self)
         self.log_info_message(message="Creating problem ...")
         if relax_qssa and solver != "quad":
@@ -91,8 +90,6 @@ class FBAHelper(BaseHelper):
             biomass_optimization=biomass_optimization,
             fluxes_to_maximize=fluxes_to_maximize,
             fluxes_to_minimize=fluxes_to_minimize,
-            fill_gaps_with_sinks=fill_gaps_with_sinks,
-            ignore_cofactors=ignore_cofactors,
         )
         self.update_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
@@ -113,8 +110,7 @@ class FBAHelper(BaseHelper):
     @classmethod
     def build_problem(
             cls, flat_twin: FlatTwin, biomass_optimization=None, fluxes_to_maximize: list = None,
-            fluxes_to_minimize: list = None,
-            fill_gaps_with_sinks: bool = True, ignore_cofactors: bool = False):
+            fluxes_to_minimize: list = None):
 
         if fluxes_to_maximize is None:
             fluxes_to_maximize = []
@@ -134,15 +130,13 @@ class FBAHelper(BaseHelper):
                 fluxes_to_minimize = list(set(fluxes_to_minimize))
 
         flat_net: Network = flat_twin.get_flat_network()
-        # if fill_gaps_with_sinks:
-        #     SinkHelper.fill_gaps_with_sinks(flat_net)
 
         # reshape problem
         obsv_matrix = TwinHelper.create_observation_matrices(flat_twin)
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
 
-        S_int = TwinHelper.create_steady_stoichiometric_matrix(flat_twin, ignore_cofactors=ignore_cofactors)
+        S_int = TwinHelper.create_steady_stoichiometric_matrix(flat_twin)
         Y_names = C.index
         S_zeros = DataFrame(
             index=S_int.index,

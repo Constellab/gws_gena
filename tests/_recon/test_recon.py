@@ -77,6 +77,6 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         file_name = "recon"
         await assert_results(recon_net, file_name)
 
-        gapfill_net = proto.get_output("gap_filler_network")
-        file_name = "gapfill"
-        await assert_results(gapfill_net, file_name)
+        # gapfill_net = proto.get_output("gap_filler_network")
+        # file_name = "gapfill"
+        # await assert_results(gapfill_net, file_name)

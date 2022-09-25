@@ -5,7 +5,7 @@ import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, ExperimentService, File, GTest,
-                      IExperiment, Settings, TaskRunner, ViewTester)
+                      IExperiment, Settings, ViewTester)
 from gws_gena import (Context, ContextBuilder, ContextImporter, FBAProto,
                       FluxTableImporter, Network, NetworkImporter, Twin)
 

@@ -35,9 +35,7 @@ class FBA(Task):
         "fluxes_to_minimize": ListParam(default_value=None, optional=True, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
         "solver": StrParam(default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY, allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], human_name="Solver", short_description="The optimization solver"),
         "relax_qssa": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state assumption (QSSA) constrain (quad solver is used). False otherwise."),
-        "qssa_relaxation_strength": FloatParam(default_value=1, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY, human_name="QSSA relaxation", short_description="Used only if QSSA is relaxed. The higher it is, the stronger is the QSSA. Hint: Set to the number of reactions to have strong QSSA contrain."),
-        "fill_gaps_with_sinks": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fill gaps with sinks", short_description="True to fill gaps using sink reaction. False otherwise"),
-        "ignore_cofactors": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Ignore cofactors", short_description="True to ignore cofactors quasi-steady state for cofactors. False otherwise.")
+        "qssa_relaxation_strength": FloatParam(default_value=1, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY, human_name="QSSA relaxation", short_description="Used only if QSSA is relaxed. The higher it is, the stronger is the QSSA. Hint: Set to the number of reactions to have strong QSSA contrain.")
     }
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
@@ -46,8 +44,6 @@ class FBA(Task):
         biomass_optimization = params["biomass_optimization"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
-        fill_gaps_with_sinks = params["fill_gaps_with_sinks"]
-        ignore_cofactors = params["ignore_cofactors"]
         relax_qssa = params["relax_qssa"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
 
@@ -55,8 +51,7 @@ class FBA(Task):
         helper.attach_task(self)
         fba_result: FBAResult = helper.run(
             twin, solver, fluxes_to_maximize, fluxes_to_minimize, biomass_optimization=biomass_optimization,
-            fill_gaps_with_sinks=fill_gaps_with_sinks, ignore_cofactors=ignore_cofactors, relax_qssa=relax_qssa,
-            qssa_relaxation_strength=qssa_relaxation_strength)
+            relax_qssa=relax_qssa, qssa_relaxation_strength=qssa_relaxation_strength)
 
         # @TODO : should be given by the current experiment
         simulations = [
