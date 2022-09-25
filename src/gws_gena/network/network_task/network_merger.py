@@ -29,6 +29,7 @@ class NetworkMerger(Task):
         net_1 = inputs['network_1']
         net_2 = inputs['network_2']
         for rxn in net_2.reactions.values():
-            net_1.add_reaction(rxn)
+            if not net_1.reaction_exists(rxn):
+                net_1.add_reaction(rxn)
 
         return {'network': net_1}
