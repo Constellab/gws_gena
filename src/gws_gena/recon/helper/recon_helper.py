@@ -233,7 +233,7 @@ class ReconHelper(BaseHelper):
                 comp = Compound(
                     CompoundDict(
                         name=name,
-                        compartment=Compartment.create_cytosol_compartment()
+                        compartment=Compartment.create_biomass_compartment()
                     ))
                 _comps.append(comp)
             else:

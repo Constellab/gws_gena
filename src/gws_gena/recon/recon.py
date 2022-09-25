@@ -23,7 +23,7 @@ class DraftRecon(Task):
     """
     DraftRecon task.
 
-    This task performs a draft reconstruction of a metabolic network using a list of ec numbers or taxonmy id.
+    This task performs a draft reconstruction of a metabolic network using a list of EC numbers or taxonomy IDs.
     """
 
     input_specs = {
