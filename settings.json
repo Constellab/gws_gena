@@ -15,7 +15,8 @@
                 "source": "https://pypi.python.org/simple",
                 "packages":[
                     {"name": "efmtool", "version": "0.2.0"},
-                    {"name": "networkx", "version": "2.8.5"}
+                    {"name": "networkx", "version": "2.8.5"},
+                    {"name": "openpyxl", "version": "3.0.10"}
                 ]
             },
             {
