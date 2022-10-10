@@ -6,9 +6,9 @@
 from gws_core import BadRequestException
 from pandas import DataFrame
 
-from ...helper.base_helper import BaseHelper
-from ...network.compound.compound import Compound
-from ...network.reaction.reaction import Reaction
+from ....helper.base_helper import BaseHelper
+from ....network.compound.compound import Compound
+from ....network.reaction.reaction import Reaction
 from .gap_finder_helper import GapFinderHelper
 
 

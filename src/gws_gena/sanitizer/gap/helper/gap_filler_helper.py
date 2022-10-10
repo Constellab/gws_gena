@@ -12,10 +12,10 @@ from gws_biota.unicell.unicell_service import \
     UnicellService as BiotaUnicellService
 from pandas import DataFrame, Series
 
-from ...helper.base_helper import BaseHelper
-from ...network.graph.graph import Graph
-from ...network.network import Network
-from ...network.reaction.reaction import Reaction
+from ....helper.base_helper import BaseHelper
+from ....network.graph.graph import Graph
+from ....network.network import Network
+from ....network.reaction.reaction import Reaction
 from ..helper.gap_finder_helper import GapFinderHelper
 
 

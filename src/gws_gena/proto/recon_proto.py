@@ -9,8 +9,8 @@ from gws_core import (FIFO2, ConfigParams, Interface, Outerface, ProcessSpec,
 from ..data.biomass_reaction_table_task import BiomassReactionTableImporter
 from ..data.ec_table_task import ECTableImporter
 from ..data.medium_table_task import MediumTableImporter
-from ..gap.gap_filler import GapFiller
 from ..recon.recon import DraftRecon
+from ..sanitizer.gap.gap_filler import GapFiller
 
 
 @protocol_decorator("ReconProto", human_name="Recon protocol", short_description="Metabolic reconstruction protocol")

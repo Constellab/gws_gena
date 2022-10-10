@@ -120,10 +120,8 @@ class FVA(Task):
         twin = inputs["twin"]
         solver = params["solver"]
         relax_qssa = params["relax_qssa"]
-        fill_gaps_with_sinks = params["fill_gaps_with_sinks"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
-        ignore_cofactors = params["ignore_cofactors"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
 
         if relax_qssa and solver != "quad":
@@ -138,9 +136,7 @@ class FVA(Task):
         c, A_eq, b_eq, bounds = FBAHelper.build_problem(
             flat_twin,
             fluxes_to_maximize=fluxes_to_maximize,
-            fluxes_to_minimize=fluxes_to_minimize,
-            fill_gaps_with_sinks=fill_gaps_with_sinks,
-            ignore_cofactors=ignore_cofactors
+            fluxes_to_minimize=fluxes_to_minimize
         )
 
         self.log_info_message(message=f"Starting optimization with solver '{solver}' ...")

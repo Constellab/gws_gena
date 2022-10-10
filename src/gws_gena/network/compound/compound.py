@@ -12,6 +12,7 @@ from gws_biota import Compound as BiotaCompound
 from gws_biota import CompoundClusterDict as BiotaCompoundClusterDict
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
+from gws_biota import Residue as BiotaResidue
 from gws_core import BadRequestException
 
 from ..compartment.compartment import Compartment
@@ -52,6 +53,10 @@ class Compound:
     """
 
     DELIMITER = "_"
+
+    DEFAULT_TYPE = "default"
+    COFACTOR_TYPE = "cofactor"
+    RESIDUE_TYPE = "residue"
 
     id: str = ""
     name: str = ""
@@ -376,11 +381,33 @@ class Compound:
         """
         Test if the compound is a factor
 
-        :return: True if the compound is intracellular, False otherwise
+        :return: True if the compound is a cofactor, False otherwise
         :rtype: `bool`
         """
 
         return BiotaCofactor.is_cofactor(self.chebi_id, name=self.name, use_name_pattern=True)
+
+    def is_residue(self) -> bool:
+        """
+        Test if the compound is a residue
+
+        :return: True if the compound is a residue, False otherwise
+        :rtype: `bool`
+        """
+
+        return BiotaResidue.is_residue(name=self.name)
+
+    def get_type(self) -> bool:
+        """
+        Get the type of the compound
+        """
+
+        if self.is_cofactor():
+            return self.COFACTOR_TYPE
+        elif self.is_residue():
+            return self.RESIDUE_TYPE
+        else:
+            return self.DEFAULT_TYPE
 
     # -- S --
 

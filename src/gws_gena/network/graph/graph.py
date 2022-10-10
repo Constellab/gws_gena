@@ -15,11 +15,12 @@ class BaseGraph:
     _nxgraph = None
     _chebi_ids = None
 
-    def __init__(self, network: 'Network' = None):
+    def __init__(self, network: 'Network' = None, use_chebi_ids_as_nodes: bool = False, skip_cofactors: bool = False):
         if network is None:
             self._graph = nx.Graph()
         else:
-            nxgraph = self._create_nxgraph_from_network(network)
+            nxgraph = self._create_nxgraph_from_network(
+                network, use_chebi_ids_as_nodes=use_chebi_ids_as_nodes, skip_cofactors=skip_cofactors)
             self._nxgraph = nxgraph
 
     def find_neigbors(self, nodes: list, radius: int = 1, exclude_nodes: list = None):
@@ -61,7 +62,8 @@ class BaseGraph:
     #     pass
 
     @classmethod
-    def _create_nxgraph_from_network(cls, network: 'Network'):
+    def _create_nxgraph_from_network(
+            cls, network: 'Network', use_chebi_ids_as_nodes: bool = False, skip_cofactors: bool = False):
         """ Construct a `Graph` from a `Network` """
 
         added_rhea_ids = []
@@ -74,25 +76,33 @@ class BaseGraph:
                 continue
 
             for comp1 in rxn.substrates.values():
-                comp_id_1 = comp1.compound.chebi_id or comp1.compound.id
+                if use_chebi_ids_as_nodes:
+                    comp_id_1 = comp1.compound.chebi_id or comp1.compound.id
+                else:
+                    comp_id_1 = comp1.compound.id
+
                 if not comp_id_1:
                     if not is_warning_shown:
                         Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
                         is_warning_shown = True
                     continue
 
-                if comp_id_1 in cofactor_list:
+                if skip_cofactors and comp_id_1 in cofactor_list:
                     continue
 
                 for comp2 in rxn.products.values():
-                    comp_id_2 = comp2.compound.chebi_id or comp2.compound.id
+                    if use_chebi_ids_as_nodes:
+                        comp_id_2 = comp2.compound.chebi_id or comp2.compound.id
+                    else:
+                        comp_id_2 = comp2.compound.id
+
                     if not comp_id_2:
                         if not is_warning_shown:
                             Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
                             is_warning_shown = True
                         continue
 
-                    if comp_id_2 in cofactor_list:
+                    if skip_cofactors and comp_id_2 in cofactor_list:
                         continue
 
                     chebi_ids = (comp1.compound.chebi_id, comp2.compound.chebi_id)
@@ -112,7 +122,8 @@ class Graph(BaseGraph):
 class BipartiteGraph(BaseGraph):
 
     @classmethod
-    def _create_nxgraph_from_network(cls, network: 'Network'):
+    def _create_nxgraph_from_network(
+            cls, network: 'Network', use_chebi_ids_as_nodes: bool = False, skip_cofactors: bool = False):
         """ Construct a `Graph` from a `Network` """
 
         added_rhea_ids = []
@@ -125,28 +136,36 @@ class BipartiteGraph(BaseGraph):
                 continue
 
             for comp1 in rxn.substrates.values():
-                comp_id_1 = comp1.compound.chebi_id or comp1.compound.id
+                if use_chebi_ids_as_nodes:
+                    comp_id_1 = comp1.compound.chebi_id or comp1.compound.id
+                else:
+                    comp_id_1 = comp1.compound.id
+
                 if not comp_id_1:
                     if not is_warning_shown:
                         Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
                         is_warning_shown = True
                     continue
 
-                if comp_id_1 in cofactor_list:
+                if skip_cofactors and comp_id_1 in cofactor_list:
                     continue
 
                 nxgraph.add_edge(comp_id_1, rxn.id, rxn_id=rxn.id,
                                  rhea_id=rxn.rhea_id, chebi_ids=(comp_id_1,), dg_prime=1.0)
 
             for comp2 in rxn.products.values():
-                comp_id_2 = comp2.compound.chebi_id or comp2.compound.id
+                if use_chebi_ids_as_nodes:
+                    comp_id_2 = comp2.compound.chebi_id or comp2.compound.id
+                else:
+                    comp_id_2 = comp2.compound.id
+
                 if not comp_id_2:
                     if not is_warning_shown:
                         Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
                         is_warning_shown = True
                     continue
 
-                if comp_id_2 in cofactor_list:
+                if skip_cofactors and comp_id_2 in cofactor_list:
                     continue
 
                 nxgraph.add_edge(rxn.id, comp_id_2, rxn_id=rxn.id,

@@ -20,10 +20,6 @@ from .fba.fba_result import FBAResult
 # fva
 from .fva.fva import FVA
 from .fva.fva_result import FVAResult
-# recon
-from .gap.gap_filler import GapFiller
-from .gap.helper.gap_finder_helper import GapFinderHelper
-from .gap.helper.isolate_finder_helper import IsolateFinderHelper
 # KnockOut
 from .koa.koa import KOA
 from .koa.koa_result import KOAResult
@@ -60,6 +56,13 @@ from .recon.recon import DraftRecon
 from .reduction.twin_efm_table import TwinEFMTable
 from .reduction.twin_reducer import TwinReducer
 from .reduction.twin_reduction_table import TwinReductionTable
+# sanitizer
+from .sanitizer.gap.gap_filler import GapFiller
+from .sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
+from .sanitizer.isolate.helper.isolate_finder_helper import IsolateFinderHelper
+from .sanitizer.isolate.isolate_finder import IsolateFinder
+from .sanitizer.isolate.isolate_finder_result import IsolateFinderResult
+from .sanitizer.orphan.orphan_remover import OrphanRemover
 # twin
 from .twin.flat_twin import FlatTwin
 from .twin.helper.twin_helper import TwinHelper
@@ -67,3 +70,5 @@ from .twin.twin import Twin
 from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
 from .twin.twin_flattener import TwinFlattener
+
+# recon

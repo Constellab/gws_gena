@@ -8,8 +8,8 @@ from typing import List
 import pandas as pd
 from pandas import DataFrame, Series
 
-from ...helper.base_helper import BaseHelper
-from ...network.network import Network
+from ....helper.base_helper import BaseHelper
+from ....network.network import Network
 
 
 class GapFinderHelper(BaseHelper):
@@ -22,7 +22,7 @@ class GapFinderHelper(BaseHelper):
         sum_ = mat.sum(axis=1)
         orphan_mat: Series = (sum_ == 0)
         deadend_mat: Series = (sum_ <= 1)
-        
+
         deadend_mat = pd.concat([
             deadend_mat.to_frame(name="is_dead_end"),
             orphan_mat.to_frame(name="is_orphan"),

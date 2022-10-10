@@ -14,10 +14,10 @@ from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
                       Logger, OutputSpec, StrParam, Task, TaskInputs,
                       TaskOutputs, task_decorator)
 
-from ..network.compound.compound import Compound
-from ..network.graph.graph import Graph
-from ..network.network import Network
-from ..network.reaction.reaction import Reaction
+from ...network.compound.compound import Compound
+from ...network.graph.graph import Graph
+from ...network.network import Network
+from ...network.reaction.reaction import Reaction
 from .helper.gap_filler_helper import GapFillerHelper
 
 

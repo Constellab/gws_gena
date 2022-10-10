@@ -409,6 +409,16 @@ class Network(Resource):
 
         return self.network_data.reactions
 
+    def remove_compound(self, comp_id: str):
+        """
+        Remove a compound from the network
+
+        :param comp_id: The id of the compound to remove
+        :type comp_id: `str`
+        """
+
+        self.network_data.remove_compound(comp_id)
+
     def remove_reaction(self, rxn_id: str):
         """
         Remove a reaction from the network
@@ -506,7 +516,7 @@ class Network(Resource):
     @ view(view_type=TableView, human_name="Reaction gaps")
     def view_gaps_as_table(self, _: ConfigParams) -> TableView:
         """ View gaps as table """
-        from ..gap.helper.gap_finder_helper import GapFinderHelper
+        from ..sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
         helper = GapFinderHelper()
         data: DataFrame() = helper.find_gaps(self)
         table = Table(data)

@@ -550,7 +550,7 @@ class NetworkData(SerializableObject):
 
         for comp in self.compounds.values():
             if comp.is_biomass():
-                return True
+                return comp
         return None
 
     def get_compounds_by_compartments(self, compartment_go_ids: List[str] = None) -> Dict[str, Compound]:
@@ -630,7 +630,7 @@ class NetworkData(SerializableObject):
 
     def get_summary(self) -> dict:
         """ Return the summary of the network """
-        from ...gap.helper.gap_finder_helper import GapFinderHelper
+        from ...sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
         biomass_rxn = self.get_biomass_reaction()
         helper = GapFinderHelper()
         dem = helper.find_deadend_compound_ids(self)
@@ -726,6 +726,28 @@ class NetworkData(SerializableObject):
     # -- P --
 
     # -- R --
+
+    def remove_compound(self, comp_id: str):
+        """
+        Remove a compound from the network
+
+        :param comp_id: The id of the compound to remove
+        :type comp_id: `str`
+        """
+
+        if not isinstance(comp_id, str):
+            raise BadRequestException("The compound id must be a string")
+
+        comp = self.compounds[comp_id]
+
+        for rxn in self.reactions.values():
+            if comp_id in rxn.products:
+                rxn.remove_product(comp)
+                continue
+            if comp_id in rxn.substrates:
+                rxn.remove_substrate(comp)
+
+        del self.compounds[comp_id]
 
     def remove_reaction(self, rxn_id: str):
         """

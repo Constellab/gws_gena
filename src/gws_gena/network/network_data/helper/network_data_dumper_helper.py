@@ -51,6 +51,7 @@ class NetworkDataDumperHelper(BaseHelper):
                 "monoisotopic_mass": _met.monoisotopic_mass,
                 "formula": _met.formula,
                 "inchi": _met.inchi,
+                "type": _met.get_type(),
                 "is_cofactor": _met.is_cofactor(),
                 "level": _met.get_level(),
                 "compartment": _met.compartment.id,

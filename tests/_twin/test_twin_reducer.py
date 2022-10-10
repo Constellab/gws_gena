@@ -6,9 +6,9 @@ import unittest
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, GTest, Settings, TaskRunner
-from gws_gena import (FlatTwin, Network, NetworkImporter, Twin, Context,
-                      ContextImporter, TwinReducer)
+from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_gena import (Context, ContextImporter, FlatTwin, Network,
+                      NetworkImporter, Twin, TwinReducer)
 from pandas import DataFrame
 
 settings = Settings.retrieve()

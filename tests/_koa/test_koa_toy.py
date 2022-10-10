@@ -73,6 +73,6 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             data = net.dumps()
             json.dump(data, fp, indent=4)
 
-        ko_result.view_ko_as_bar_plot(ConfigParams({
-            "flux_names": ["toy_cell_RB","toy_cell_R2"]
-        }))
+        # ko_result.view_ko_as_bar_plot(ConfigParams({
+        #     "flux_names": ["toy_cell_RB","toy_cell_R2"]
+        # }))

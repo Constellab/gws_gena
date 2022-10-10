@@ -36,8 +36,8 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         merger = proto.get_process("merger")
 
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        file1 = File(path=os.path.join(data_dir, "recon", "recon_net.json"))
-        file2 = File(path=os.path.join(data_dir, "network_merger", "addon.json"))
+        file1 = File(path=os.path.join(data_dir, "network_merger", "net1.json"))
+        file2 = File(path=os.path.join(data_dir, "network_merger", "net2.json"))
         proto.set_input('file1', file1)
         proto.set_input('file2', file2)
 
