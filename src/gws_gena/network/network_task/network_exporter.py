@@ -41,17 +41,19 @@ class NetworkExporter(ResourceExporter):
         file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
         file_path = os.path.join(dest_dir, file_name + '.' + file_format)
 
-        with open(file_path, 'w', encoding="utf-8") as fp:
-            if file_format == "json":
-                data = resource.dumps()
-                json.dump(data, fp)
-            elif file_format in ["xls", "xlsx"]:
-                table: DataFrame = resource.to_dataframe()
-                table.to_excel(fp)
-            elif file_format in ["csv", "txt", "tsv"]:
-                fp.write(resource.to_csv())
-            else:
-                raise BadRequestException(
-                    f"Invalid file format. Valid file formats are {NetworkExporter.ALLOWED_FILE_FORMATS}")
+        if file_format in ["xls", "xlsx"]:
+            table: DataFrame = resource.to_dataframe()
+            table.to_excel(file_path)
+        else:
+            with open(file_path, 'w', encoding="utf-8") as fp:
+                if file_format == "json":
+                    data = resource.dumps()
+                    json.dump(data, fp)
+              
+                elif file_format in ["csv", "txt", "tsv"]:
+                    fp.write(resource.to_csv())
+                else:
+                    raise BadRequestException(
+                        f"Invalid file format. Valid file formats are {NetworkExporter.ALLOWED_FILE_FORMATS}")
 
         return target_type(path=file_path)

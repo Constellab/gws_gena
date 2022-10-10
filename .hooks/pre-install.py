@@ -70,4 +70,5 @@ def call_hook():
 
 
 if __name__ == "__main__":
+    pass
     #call_hook()
