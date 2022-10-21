@@ -5,15 +5,15 @@ from .context.context_builder import ContextBuilder
 from .context.context_task import ContextExporter, ContextImporter
 # table
 from .data.biomass_reaction_table import BiomassReactionTable
-from .data.biomass_reaction_table_task import BiomassReactionTableImporter
+from .data.task.biomass_reaction_table_task import BiomassReactionTableImporter
 from .data.ec_table import ECTable
-from .data.ec_table_task import ECTableImporter
+from .data.task.ec_table_task import ECTableImporter
 from .data.entity_id_table import EntityIDTable
-from .data.entity_id_table_task import EntityIDTableImporter
+from .data.task.entity_id_table_task import EntityIDTableImporter
 from .data.flux_table import FluxTable
-from .data.flux_table_task import FluxTableImporter
+from .data.task.flux_table_task import FluxTableImporter
 from .data.medium_table import MediumTable
-from .data.medium_table_task import MediumTableImporter
+from .data.task.medium_table_task import MediumTableImporter
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult

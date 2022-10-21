@@ -8,7 +8,7 @@ from typing import Type
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       StrParam, Table, TableImporter, importer_decorator)
 
-from .entity_id_table import EntityIDTable
+from ..entity_id_table import EntityIDTable
 
 # ####################################################################
 #
@@ -51,7 +51,18 @@ class EntityIDTableImporter(TableImporter):
 
         if not csv_table.column_exists(id_column):
             raise BadRequestException(
-                f"Cannot import Table. No ids found (no column with name '{id_column}')")
-
+                f"Cannot import the table. No column found with name '{id_column}'.")
         csv_table.id_column = id_column
+
+        ids = csv_table.get_ids()
+        if len(ids) == 0:
+            raise BadRequestException(
+                f"Cannot import the table. The list of ids is empty.")
+
+        unique_ids = len(set(ids))
+        if len(ids) > len(unique_ids):
+            duplicates = [ elt for elt in ids if elt not in unique_ids ]
+            raise BadRequestException(
+                f"Cannot import the table. The ids in the table must be unique. Duplicates are {duplicates}.")
+
         return csv_table

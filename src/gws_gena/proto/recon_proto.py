@@ -6,9 +6,9 @@
 from gws_core import (FIFO2, ConfigParams, Interface, Outerface, ProcessSpec,
                       Protocol, Settings, Source, Task, protocol_decorator)
 
-from ..data.biomass_reaction_table_task import BiomassReactionTableImporter
-from ..data.ec_table_task import ECTableImporter
-from ..data.medium_table_task import MediumTableImporter
+from ..data.task.biomass_reaction_table_task import BiomassReactionTableImporter
+from ..data.task.ec_table_task import ECTableImporter
+from ..data.task.medium_table_task import MediumTableImporter
 from ..recon.recon import DraftRecon
 from ..sanitizer.gap.gap_filler import GapFiller
 

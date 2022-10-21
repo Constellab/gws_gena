@@ -8,7 +8,7 @@ from typing import Type
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       StrParam, Table, TableImporter, importer_decorator)
 
-from .biomass_reaction_table import BiomassReactionTable
+from ..biomass_reaction_table import BiomassReactionTable
 
 # ####################################################################
 #

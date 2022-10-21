@@ -8,7 +8,7 @@ from typing import Type
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       StrParam, Table, TableImporter, importer_decorator)
 
-from .ec_table import ECTable
+from ..ec_table import ECTable
 
 # ####################################################################
 #

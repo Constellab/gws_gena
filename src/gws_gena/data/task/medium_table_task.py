@@ -8,7 +8,7 @@ from typing import Type
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       StrParam, Table, TableImporter, importer_decorator)
 
-from .medium_table import MediumTable
+from ..medium_table import MediumTable
 
 # ####################################################################
 #
