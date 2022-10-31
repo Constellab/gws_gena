@@ -136,7 +136,7 @@ class Compound:
         if "clusters" not in self.layout:
             self.layout["clusters"] = {}
 
-        bioass_cluster = BiotaCompoundLayout.get_biomass_layout()["clusters"]
+        bioass_cluster = BiotaCompoundLayout.get_biomass_layout(is_biomass=is_biomass)["clusters"]
         self.layout["clusters"].update(bioass_cluster)
 
     # -- C --

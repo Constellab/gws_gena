@@ -57,11 +57,11 @@ class EntityIDTableImporter(TableImporter):
         ids = csv_table.get_ids()
         if len(ids) == 0:
             raise BadRequestException(
-                f"Cannot import the table. The list of ids is empty.")
+                "Cannot import the table. The list of ids is empty.")
 
-        unique_ids = len(set(ids))
+        unique_ids = list(set(ids))
         if len(ids) > len(unique_ids):
-            duplicates = [ elt for elt in ids if elt not in unique_ids ]
+            duplicates = [elt for elt in ids if elt not in unique_ids]
             raise BadRequestException(
                 f"Cannot import the table. The ids in the table must be unique. Duplicates are {duplicates}.")
 

@@ -11,7 +11,7 @@ from ..gap.helper.gap_finder_helper import GapFinderHelper
 
 
 @task_decorator("OrphanRemover", human_name="Orphan remover",
-                short_description="Remov orphan compounds for a network")
+                short_description="Remove orphan compounds from a network")
 class OrphanRemover(Task):
     """
     OrphanRemover.
