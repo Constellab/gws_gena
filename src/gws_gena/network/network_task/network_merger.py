@@ -31,5 +31,6 @@ class NetworkMerger(Task):
         for rxn in net_2.reactions.values():
             if not net_1.reaction_exists(rxn):
                 net_1.add_reaction(rxn)
-
+            else:
+                self.log_info_message(f"Reaction {rxn.id} is ignored. It already exists.")
         return {'network': net_1}
