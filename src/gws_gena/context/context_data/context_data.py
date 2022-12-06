@@ -5,13 +5,13 @@
 
 from typing import Dict, List
 
-from gws_core import BadRequestException, SerializableObject
+from gws_core import BadRequestException, SerializableObjectJson
 
 from ..measure import Measure
 from ..typing.context_typing import ContextDict
 
 
-class ContextData(SerializableObject):
+class ContextData(SerializableObjectJson):
     """
     Context class
 

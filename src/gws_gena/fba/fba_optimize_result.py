@@ -5,10 +5,10 @@
 
 from typing import Any, Dict
 
-from gws_core import SerializableObject
+from gws_core import SerializableObjectJson
 
 
-class FBAOptimizeResult(SerializableObject):
+class FBAOptimizeResult(SerializableObjectJson):
     """
     OptimizeResult class.
 

@@ -18,7 +18,7 @@ from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
                       File, JSONView, Logger, Resource, ResourceExporter,
-                      RField, SerializableObject, SerializableRField,
+                      RField, SerializableObjectJson, SerializableRField,
                       StrRField, Table, TableView, Task, UUIDRField,
                       resource_decorator, view)
 from pandas import DataFrame
@@ -36,7 +36,7 @@ from .helper.network_data_dumper_helper import NetworkDataDumperHelper
 from .helper.network_data_loader_helper import NetworkDataLoaderHelper
 
 
-class NetworkData(SerializableObject):
+class NetworkData(SerializableObjectJson):
     """
     Class that represents a network.
 
