@@ -238,8 +238,6 @@ class Compound:
         if biota_compound is None:
             raise CompoundNotFoundException(
                 f"Cannot find compound (chebi_id={chebi_id})")
-            # raise CompoundNotFoundException(
-            #     f"Cannot find compound (chebi_id={chebi_id}, inchikey={inchikey}, kegg_id={kegg_id})")
 
         if not compartment_go_id:
             compart = Compartment.create_cytosol_compartment()

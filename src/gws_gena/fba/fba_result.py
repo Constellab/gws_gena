@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Union
 
 import pandas as pd
 from gws_core import (BadRequestException, ListRField, Resource,
-                      ResourceRField, ResourceSet, SerializableObject,
+                      ResourceRField, ResourceSet, SerializableObjectJson,
                       SerializableRField, Table, TechnicalInfo,
                       resource_decorator)
 from pandas import DataFrame

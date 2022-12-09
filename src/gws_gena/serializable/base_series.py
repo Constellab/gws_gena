@@ -6,10 +6,10 @@
 from typing import Any, Dict, List, Type
 
 from gws_biota import CompoundLayout as BiotaCompoundLayout
-from gws_core import BadRequestException, SerializableObject
+from gws_core import BadRequestException, SerializableObjectJson
 
 
-class BaseSeries(SerializableObject):
+class BaseSeries(SerializableObjectJson):
     """ BaseSeries """
 
     _elements: Dict[str, Any] = None

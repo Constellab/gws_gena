@@ -26,7 +26,7 @@
                                 "y": null,
                                 "level": 1,
                                 "name": "biomass",
-                                "parent": "biomass"
+                                "cluster": "biomass"
                             }
                         }
                     }
@@ -129,7 +129,7 @@
                                 "y": null,
                                 "level": 1,
                                 "name": "biomass",
-                                "parent": "biomass"
+                                "cluster": "biomass"
                             }
                         }
                     }
