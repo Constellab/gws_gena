@@ -7,7 +7,7 @@ from gws_core import ConfigParams, File, GTest, Settings
 from gws_gena import Compound, Network, NetworkImporter, Reaction, Twin
 from pandas import DataFrame
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestNetwork(BaseTestCaseUsingFullBiotaDB):

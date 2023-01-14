@@ -62,8 +62,9 @@
                                 "x": null,
                                 "y": null,
                                 "level": 1,
+                                "id": "biomass",
                                 "name": "biomass",
-                                "cluster": "biomass"
+                                "pathway": "biomass"
                             }
                         }
                     }
@@ -108,8 +109,9 @@
                                 "x": null,
                                 "y": null,
                                 "level": 1,
+                                "id": "biomass",
                                 "name": "biomass",
-                                "cluster": "biomass"
+                                "pathway": "biomass"
                             }
                         }
                     }
@@ -135,8 +137,9 @@
                                 "x": null,
                                 "y": null,
                                 "level": 1,
+                                "id": "biomass",
                                 "name": "biomass",
-                                "cluster": "biomass"
+                                "pathway": "biomass"
                             }
                         }
                     }

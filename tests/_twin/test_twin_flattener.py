@@ -6,7 +6,7 @@ from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings
 from gws_gena import Context, ContextImporter, Network, NetworkImporter, Twin
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestTwinFlattener(BaseTestCaseUsingFullBiotaDB):

@@ -6,7 +6,7 @@ from gws_core import ConfigParams, File, GTest, Settings, TaskRunner
 from gws_gena import (Context, ContextImporter, FlatTwin, Network,
                       NetworkImporter, Twin, TwinBuilder, TwinHelper)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestTwinBuilder(BaseTestCaseUsingFullBiotaDB):

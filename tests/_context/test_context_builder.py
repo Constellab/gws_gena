@@ -10,7 +10,7 @@ from gws_gena import (Compound, Context, ContextBuilder, ContextImporter,
                       FluxTable, FluxTableImporter, Network, NetworkImporter,
                       Reaction, Twin)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestContext(BaseTestCaseUsingFullBiotaDB):

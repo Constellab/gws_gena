@@ -7,7 +7,7 @@ from gws_gena import (KOA, Context, ContextImporter, EntityIDTable,
                       EntityIDTableImporter, KOAProto, Network,
                       NetworkImporter, Twin)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestKOA(BaseTestCaseUsingFullBiotaDB):

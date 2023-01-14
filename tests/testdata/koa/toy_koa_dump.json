@@ -10,7 +10,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "c",
             "chebi_id": "",
@@ -30,7 +29,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "c",
             "chebi_id": "",
@@ -50,7 +48,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "c",
             "chebi_id": "",
@@ -63,8 +60,9 @@
                         "x": null,
                         "y": null,
                         "level": 1,
+                        "id": "biomass",
                         "name": "biomass",
-                        "cluster": "biomass"
+                        "pathway": "biomass"
                     }
                 }
             }
@@ -78,7 +76,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "c",
             "chebi_id": "",
@@ -98,7 +95,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "c",
             "chebi_id": "",
@@ -111,8 +107,9 @@
                         "x": null,
                         "y": null,
                         "level": 1,
+                        "id": "biomass",
                         "name": "biomass",
-                        "cluster": "biomass"
+                        "pathway": "biomass"
                     }
                 }
             }
@@ -126,7 +123,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "e",
             "chebi_id": "",
@@ -146,7 +142,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "e",
             "chebi_id": "",
@@ -166,7 +161,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "e",
             "chebi_id": "",
@@ -186,7 +180,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "e",
             "chebi_id": "",
@@ -206,7 +199,6 @@
             "formula": "",
             "inchi": "",
             "type": "default",
-            "is_cofactor": false,
             "level": 2,
             "compartment": "b",
             "chebi_id": "",
@@ -219,8 +211,9 @@
                         "x": null,
                         "y": null,
                         "level": 1,
+                        "id": "biomass",
                         "name": "biomass",
-                        "cluster": "biomass"
+                        "pathway": "biomass"
                     }
                 }
             }

@@ -11,7 +11,7 @@ from gws_gena import (Context, ContextImporter, FlatTwin, Network,
                       NetworkImporter, Twin, TwinReducer)
 from pandas import DataFrame
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):

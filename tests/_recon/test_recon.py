@@ -8,7 +8,7 @@ from gws_gena import (BiomassReactionTableImporter, Context, DraftRecon,
                       ECTableImporter, GapFiller, MediumTableImporter,
                       NetworkMerger, ReconProto)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestRecon(BaseTestCaseUsingFullBiotaDB):

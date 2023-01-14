@@ -8,7 +8,7 @@ from gws_core import (ConfigParams, ExperimentService, File, GTest,
 from gws_gena import (Context, ContextImporter, FBAProto, Network,
                       NetworkImporter, Twin)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestFBA(BaseTestCaseUsingFullBiotaDB):
