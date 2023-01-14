@@ -7,11 +7,11 @@ import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import (FlatTwin, Network, NetworkImporter, Twin, Context,
-                      ContextImporter, TwinHelper)
+from gws_gena import (Context, ContextImporter, FlatTwin, Network,
+                      NetworkImporter, Twin, TwinHelper)
 from pandas import DataFrame
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestTwinReductionHelper(BaseTestCaseUsingFullBiotaDB):

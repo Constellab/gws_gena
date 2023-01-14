@@ -52,7 +52,7 @@ class NetworkDataDumperHelper(BaseHelper):
                 "formula": _met.formula,
                 "inchi": _met.inchi,
                 "type": _met.get_type(),
-                "is_cofactor": _met.is_cofactor(),
+                #"is_cofactor": _met.is_cofactor(),
                 "level": _met.get_level(),
                 "compartment": _met.compartment.id,
                 "chebi_id": _met.chebi_id,

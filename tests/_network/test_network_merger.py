@@ -7,7 +7,7 @@ from gws_core import (ConfigParams, Experiment, File, IExperiment, ProcessSpec,
                       Protocol, Settings, protocol_decorator)
 from gws_gena import Context, Network, NetworkImporter, NetworkMerger, Twin
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 @protocol_decorator("MergerProtocol")

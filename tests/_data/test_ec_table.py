@@ -9,7 +9,7 @@ from gws_gena import ECTableImporter
 class TestECTableImporter(BaseTestCaseUsingFullBiotaDB):
 
     async def test_importer(self):
-        settings = Settings.retrieve()
+        settings = Settings.get_instance()
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
         # run trainer

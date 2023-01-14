@@ -8,7 +8,7 @@ from gws_core import ExperimentService, File, GTest, IExperiment, Settings
 from gws_gena import (Context, ContextImporter, FVAProto, Network,
                       NetworkImporter, Twin)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestFVA(BaseTestCaseUsingFullBiotaDB):

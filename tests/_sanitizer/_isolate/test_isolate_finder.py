@@ -10,7 +10,7 @@ from gws_core import ConfigParams, File, Settings, TaskRunner
 from gws_gena import IsolateFinder, Network, NetworkImporter
 from pandas import DataFrame
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestIsolateFinder(BaseTestCaseUsingFullBiotaDB):

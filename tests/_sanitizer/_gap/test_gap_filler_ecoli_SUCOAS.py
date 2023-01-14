@@ -7,7 +7,7 @@ from gws_core import ConfigParams, File, Settings, TaskRunner
 from gws_gena import (Compound, Context, GapFiller, GapFinderHelper, Network,
                       NetworkImporter, Reaction, Twin)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestGapFinder(BaseTestCaseUsingFullBiotaDB):

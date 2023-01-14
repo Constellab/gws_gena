@@ -8,7 +8,7 @@ from gws_gena import (ECTable, ECTableImporter, EntityIDTable,
                       EntityIDTableImporter, Network, NetworkImporter,
                       ReactionRemover)
 
-settings = Settings.retrieve()
+settings = Settings.get_instance()
 
 
 class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
