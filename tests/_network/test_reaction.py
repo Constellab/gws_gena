@@ -33,7 +33,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         comp4 = Compound(dict(name="Phosphocreatine", chebi_id="CHEBI:17237",
                          compartment=Compartment.create_nucleus_compartment()))
         rxn1.add_product(comp4, 1, net)
-        rxn1.enzyme = {"ec_number": "MyEnzyme"}
+        rxn1.enzymes = [{"ec_number": "MyEnzyme"}]
 
         print(rxn1.to_str())
         self.assertRaises(Exception, rxn1.add_product, comp4, 2)

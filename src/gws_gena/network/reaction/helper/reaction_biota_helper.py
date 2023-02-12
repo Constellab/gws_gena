@@ -25,7 +25,7 @@ OLIG_REGEXP = re.compile(r"\((n(\+\d)?)\)$")
 class ReactionBiotaHelper(BaseHelper):
     """ ReactionBiotaHelper """
 
-    def merge_compounds_and_add_to_reaction(
+    def create_oligomer_if_required_and_add_to_reaction(
             self, comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
             compartment_go_id=None, alt_litteral_comppound_name=None, oligomerization=None):
         """ Merge a list of compounds (oligomerisation) """
@@ -48,14 +48,20 @@ class ReactionBiotaHelper(BaseHelper):
                 name=",".join(names),
                 compartment=Compartment.from_biota(go_id=compartment_go_id)
             ))
+
         if is_substrate:
             comp_id_exists_in_products = (c.id in rxn.products)
-            if comp_id_exists_in_products and alt_litteral_comppound_name:
-                # use the litteral name to uniquify the compound id
-                c = Compound(
-                    CompoundDict(
+            if comp_id_exists_in_products:
+                # try to use the litteral name to uniquify the compound id
+                if alt_litteral_comppound_name:
+                    c = Compound(CompoundDict(
                         name=alt_litteral_comppound_name,
-                        compartment=Compartment.from_biota(go_id=compartment_go_id)
+                        compartment=c.compartment
+                    ))
+                else:
+                    c = Compound(CompoundDict(
+                        name=c.name + "_alt",
+                        compartment=c.compartment
                     ))
 
         c.chebi_id = ",".join([comp_.chebi_id or "" for comp_ in comps])
@@ -67,72 +73,75 @@ class ReactionBiotaHelper(BaseHelper):
         c.layout = comps[0].layout
 
         if is_product:
-            rxn.add_product(c, stoich)
+            rxn.add_product(c, stoich, update_if_exists=True)
         else:
-            rxn.add_substrate(c, stoich)
+            rxn.add_substrate(c, stoich, update_if_exists=True)
 
     def create_reaction_enzyme_dict_from_biota(
-            self, enzyme: Union[BiotaEnzyme, BiotaEnzymeOrtholog], load_taxonomy=True, load_pathway=True) -> EnzymeDict:
+            self, enzymes: List[Union[BiotaEnzyme, BiotaEnzymeOrtholog]],
+            load_taxonomy=True, load_pathway=True) -> EnzymeDict:
         """ create_reaction_enzyme_dict_from_biota """
-        if enzyme:
-            e = {
-                "name": enzyme.get_name(),
-                "ec_number": enzyme.ec_number,
-            }
-            e["tax"] = {}
-            if isinstance(enzyme, BiotaEnzyme):
-                if load_taxonomy:
-                    tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == enzyme.tax_id)
-                    if tax:
-                        e["tax"][tax.rank] = {
-                            "tax_id": tax.tax_id,
-                            "name": tax.get_name()
-                        }
-                        for t in tax.ancestors:
-                            e["tax"][t.rank] = {
-                                "tax_id": t.tax_id,
-                                "name": t.get_name()
+
+        enzyme_list: List[EnzymeDict] = []
+
+        found_ec_list = []
+        for enzyme in enzymes:
+            if enzyme:
+                if enzyme.ec_number in found_ec_list:
+                    # ensure unique ec_numbers
+                    continue
+
+                found_ec_list.append(enzyme.ec_number)
+                enzyme_dict = EnzymeDict({
+                    "name": enzyme.get_name(),
+                    "tax": {},
+                    "ec_number": enzyme.ec_number,
+                    "pathways": {},
+                    "related_deprecated_enzyme": {}
+                })
+
+                if isinstance(enzyme, BiotaEnzyme):
+                    if load_taxonomy:
+                        tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == enzyme.tax_id)
+                        if tax:
+                            enzyme_dict["tax"][tax.rank] = {
+                                "tax_id": tax.tax_id,
+                                "name": tax.get_name()
                             }
+                            for t in tax.ancestors:
+                                enzyme_dict["tax"][t.rank] = {
+                                    "tax_id": t.tax_id,
+                                    "name": t.get_name()
+                                }
 
-                if enzyme.related_deprecated_enzyme:
-                    e["related_deprecated_enzyme"] = {
-                        "ec_number": enzyme.related_deprecated_enzyme.ec_number,
-                        "reason": enzyme.related_deprecated_enzyme.data["reason"],
-                    }
+                    if enzyme.related_deprecated_enzyme:
+                        enzyme_dict["related_deprecated_enzyme"] = {
+                            "ec_number": enzyme.related_deprecated_enzyme.ec_number,
+                            "reason": enzyme.related_deprecated_enzyme.data["reason"],
+                        }
 
-            e["pathways"] = {}
-            if load_pathway:
-                pwy = enzyme.pathway
-                if pwy:
-                    e["pathways"] = pwy.data
-        else:
-            e = {}
+                if load_pathway:
+                    pwy = enzyme.pathway
+                    if pwy:
+                        enzyme_dict["pathways"] = pwy.data
 
-        return e
+                enzyme_list.append(enzyme_dict)
 
-    def create_reaction_from_biota(self, rhea_rxn: BiotaReaction, enzyme: BiotaEnzyme):
+        return enzyme_list
+
+    def create_reaction_from_biota(self, rhea_rxn: BiotaReaction):
         """ Create a reaction """
 
-        from ...compartment.compartment import Compartment
         from ...reaction.reaction import Reaction
 
-        e: EnzymeDict = self.create_reaction_enzyme_dict_from_biota(enzyme)
-
-        # TODO: to delete after
-        # temporary fix
-        # -----------------------------
-        if enzyme:
-            ec_number = enzyme.ec_number
-        else:
-            ec_number = ""
-        # -----------------------------
+        enzyme_list: List[EnzymeDict] = self.create_reaction_enzyme_dict_from_biota(rhea_rxn.enzymes)
 
         rxn: Reaction = Reaction(
             ReactionDict(
-                name=rhea_rxn.rhea_id+"_"+ec_number,
+                name=rhea_rxn.rhea_id,
                 rhea_id=rhea_rxn.rhea_id,
                 direction=rhea_rxn.direction,
-                enzyme=e
+                enzymes=enzyme_list
             ))
         rxn.layout = rhea_rxn.layout
 
@@ -168,7 +177,7 @@ class ReactionBiotaHelper(BaseHelper):
 
             tab = re.findall(OLIG_REGEXP, litteral_comp_name)
             oligo = tab[0][0] if len(tab) else None
-            self.merge_compounds_and_add_to_reaction(
+            self.create_oligomer_if_required_and_add_to_reaction(
                 biota_comps,
                 stoich,
                 rxn,
@@ -201,7 +210,7 @@ class ReactionBiotaHelper(BaseHelper):
 
             tab = re.findall(OLIG_REGEXP, litteral_comp_name)
             oligo = tab[0][0] if len(tab) else None
-            self.merge_compounds_and_add_to_reaction(
+            self.create_oligomer_if_required_and_add_to_reaction(
                 biota_comps,
                 stoich,
                 rxn=rxn,

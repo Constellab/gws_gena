@@ -38,10 +38,6 @@ class KOA(Task):
     }
     config_specs = {
         **FBA.config_specs,
-        # 'monitored_fluxes':
-        # ListParam(
-        #     optional=True, human_name="Monitored fluxes", visibility=ListParam.PROTECTED_VISIBILITY,
-        #     short_description="The list of fluxes to monitor. By default, all the reactions are monitored. Set 'biomass' to only monitor the biomass reaction flux."),
         'ko_delimiter':
         StrParam(
             default_value=",", human_name="Multiple KO delimiter",
@@ -56,11 +52,9 @@ class KOA(Task):
         fluxes_to_minimize = params["fluxes_to_minimize"]
         relax_qssa = params["relax_qssa"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
-        # monitored_fluxes = params.get_value("monitored_fluxes", [])
         ko_delimiter = params.get_value("ko_delimiter", ",")
 
         # is_monitored_fluxes_expanded = False
-        # full_ko_result_df = DataFrame()
         full_ko_result_list = []
         for i in range(0, ko_table.nb_rows):
             current_ko_table = ko_table.select_by_row_positions([i])
@@ -87,61 +81,12 @@ class KOA(Task):
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength)
 
-            # if monitored_fluxes:
-            #     if len(monitored_fluxes) == 1 and monitored_fluxes[0].lower() == 'biomass':
-            #         current_fluxes = current_result.get_biomass_flux_dataframe()
-            #     else:
-            #         current_fluxes = current_result.get_fluxes_dataframe()
-            #         if not is_monitored_fluxes_expanded:
-            #             monitored_fluxes = FBAHelper._expand_fluxes_by_names(
-            #                 monitored_fluxes,
-            #                 current_ko_twin.get_flat_network()
-            #             )
-            #         monitored_fluxes_names = [name.split(":")[0] for name in monitored_fluxes]
-            #         current_fluxes = current_fluxes.loc[monitored_fluxes_names, :]
-            # else:
-            #     current_fluxes = current_result.get_fluxes_dataframe()
-
             current_fluxes = current_result.get_fluxes_dataframe()
-
-            # current_fluxes.columns = ["flux_value", "flux_lower_bound", "flux_upper_bound"]
-            # ko_id_df = DataFrame(
-            #     data=[ko_info] * current_fluxes.shape[0],
-            #     columns=current_ko_table.column_names,
-            #     index=current_fluxes.index
-            # )
-
-            # flux_name_df = DataFrame(
-            #     data=current_fluxes.index.T,
-            #     columns=["flux_name"],
-            #     index=current_fluxes.index
-            # )
-
-            # not_found_df = DataFrame(
-            #     data=[", ".join(invalid_ko_ids)] * current_fluxes.shape[0],
-            #     columns=["invalid_ko_ids"],
-            #     index=current_fluxes.index
-            # )
-
-            # current_ko_result_df = pandas.concat(
-            #     [ko_id_df, flux_name_df, current_fluxes, not_found_df],
-            #     axis=1
-            # )
-
-            # full_ko_result_df = pandas.concat(
-            #     [full_ko_result_df, current_ko_result_df],
-            #     axis=0,
-            # )
-            # full_ko_result_df.index = range(0, full_ko_result_df.shape[0])
 
             full_ko_result_list.append({
                 "fluxes": current_fluxes,
                 "invalid_ko_ids": invalid_ko_ids
             })
-
-        # full_ko_result_df.rename(
-        #     columns={ko_table.id_column: "ko_id"},
-        #     inplace=True)  # rename the `id_column` to `ko_id`
 
         koa_result = KOAResult(data=full_ko_result_list,
                                twin=inputs["twin"], ko_table=ko_table)

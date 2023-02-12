@@ -13,12 +13,13 @@ from gws_core import BadRequestException, Logger
 from pandas import DataFrame
 from scipy.optimize import linprog
 
+from ...helper.base_helper import BaseHelper
 from ...network.network import Network
 from ...twin.flat_twin import FlatTwin
 from ...twin.helper.twin_helper import TwinHelper
 from ...twin.twin import Twin
-from ..fba_result import FBAResult, FBAOptimizeResult
-from ...helper.base_helper import BaseHelper
+from ..fba_result import FBAOptimizeResult, FBAResult
+
 
 class FBAHelper(BaseHelper):
 
@@ -70,11 +71,14 @@ class FBAHelper(BaseHelper):
     __CVXPY_SOLVER_PRIORITY = [cp.OSQP, cp.ECOS]
 
     def run(self, twin: Twin, solver, fluxes_to_maximize=None, fluxes_to_minimize=None, biomass_optimization=None,
-            relax_qssa: bool = None, qssa_relaxation_strength: float = None) -> FBAResult:
+            relax_qssa: bool = None, qssa_relaxation_strength: float = None, parsimony_strength: float = 0.0) -> FBAResult:
         cls = type(self)
         self.log_info_message(message="Creating problem ...")
         if relax_qssa and solver != "quad":
-            self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
+            self.log_info_message(message=f"Change solver to '{solver}' to apply QSSA relaxation.")
+            solver = "quad"
+        if parsimony_strength > 0 and solver != "quad":
+            self.log_info_message(message=f"Change solver to '{solver}' to perform parsimonious FBA (pFBA).")
             solver = "quad"
 
         if not isinstance(twin, Twin):
@@ -91,12 +95,20 @@ class FBAHelper(BaseHelper):
             fluxes_to_maximize=fluxes_to_maximize,
             fluxes_to_minimize=fluxes_to_minimize,
         )
+
+        # has_sink = False
+        # for rxn_name in c.index:
+        #     if rxn_name.endswith("_sink"):
+        #         has_sink = True
+        #         break
+
         self.update_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
             res, _ = cls.solve_cvxpy(
                 c, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
-                qssa_relaxation_strength=qssa_relaxation_strength
+                qssa_relaxation_strength=qssa_relaxation_strength,
+                parsimony_strength=parsimony_strength
             )
         else:
             res: FBAOptimizeResult = cls.solve_scipy(
@@ -262,7 +274,7 @@ class FBAHelper(BaseHelper):
                 ___do_solve_cvxpy_prob_i(1, prob, has_switched=True, verbose=verbose)
 
     @classmethod
-    def solve_cvxpy(cls, c, A_eq, b_eq, bounds, relax_qssa, qssa_relaxation_strength, verbose=False):
+    def solve_cvxpy(cls, c, A_eq, b_eq, bounds, relax_qssa, qssa_relaxation_strength, parsimony_strength, verbose=False):
         x_names = A_eq.columns
         con_names = A_eq.index
         A_eq = A_eq.to_numpy()
@@ -279,15 +291,6 @@ class FBAHelper(BaseHelper):
         lb = np.ndarray((m,), buffer=np.array(lb))
         ub = np.ndarray((m,), buffer=np.array(ub))
 
-        has_sink = False
-        P = np.zeros((m, m))
-        for i in range(0, m):
-            rxn_name = c.index[i]
-            is_sink_rxn = rxn_name.endswith("_sink")
-            if is_sink_rxn:
-                P[i][i] = 1.0
-                has_sink = True
-
         # b_eq param
         b_eq_par = cp.Parameter(shape=(n,), value=b_eq)
 
@@ -296,55 +299,82 @@ class FBAHelper(BaseHelper):
         c.shape = (m,)
         c_par = cp.Parameter(shape=(m,), value=c)
 
+        # cbar = c.copy()
+        # cbar[c == 0.0] = 1.0
+        # cbar[c != 0.0] = 0.0
+        # cbar_par = cp.Parameter(shape=(m,), value=cbar)
+
         # bound param
         ub_par = cp.Parameter(shape=(m,), value=ub)
         lb_par = cp.Parameter(shape=(m,), value=lb)
 
+        # --------------------------------------------------------------
+        # Create problem terms with and without QSSA relaxation
+        # --------------------------------------------------------------
         if relax_qssa:
             if qssa_relaxation_strength is None:
                 qssa_relaxation_strength = 1
             qssa_cost = qssa_relaxation_strength * cp.sum_squares(A_eq @ x - b_eq_par)
-            if has_sink:
-                prob = cp.Problem(
-                    cp.Minimize((1/2)*cp.quad_form(x, P) + c_par.T@x + qssa_cost),
-                    [
-                        x >= lb_par,
-                        x <= ub_par
-                    ],
-                )
-            else:
-                # regularizer = cp.sum_squares(x)
-                prob = cp.Problem(
-                    cp.Minimize(c_par.T@x + qssa_cost),  # + 0.0*regularizer,
-                    [
-                        x >= lb_par,
-                        x <= ub_par
-                    ]
-                )
-                cls.__do_solve_cvxpy_prob(prob, verbose=verbose)
-            con = A_eq @ x.value - b_eq
+
+            obj = c_par.T@x + qssa_cost
+            constrains = [
+                x >= lb_par,
+                x <= ub_par
+            ]
         else:
-            if has_sink:
-                prob = cp.Problem(
-                    cp.Minimize((1/2)*cp.quad_form(x, P) + c_par.T@x),
-                    [
-                        A_eq @ x == b_eq_par,
-                        x >= lb_par,
-                        x <= ub_par
-                    ]
-                )
-                cls.__do_solve_cvxpy_prob(prob, verbose=verbose)
+            obj = c_par.T@x
+            constrains = [
+                A_eq @ x == b_eq_par,
+                x >= lb_par,
+                x <= ub_par
+            ]
+
+        # --------------------------------------------------------------
+        # Solve the problem
+        # --------------------------------------------------------------
+        if parsimony_strength >= 0:
+
+            # solve FBA first
+            prob = cp.Problem(cp.Minimize(obj), constrains)
+            cls.__do_solve_cvxpy_prob(prob, verbose=verbose)
+
+            # Set the optimal growth solution and apply regularization
+            ub[c != 0.0] = x.value[c != 0.0]+1e-9
+            lb[c != 0.0] = x.value[c != 0.0]-1e-9
+            ub_par = cp.Parameter(shape=(m,), value=ub)
+            lb_par = cp.Parameter(shape=(m,), value=lb)
+
+            regularizer = parsimony_strength * cp.norm1(x)
+            if relax_qssa:
+                obj = regularizer + qssa_cost
+                constrains = [
+                    x >= lb_par,
+                    x <= ub_par
+                ]
             else:
-                prob = cp.Problem(
-                    cp.Minimize(c_par.T@x),
-                    [
-                        A_eq @ x == b_eq_par,
-                        x >= lb_par,
-                        x <= ub_par
-                    ]
-                )
-                prob.solve(verbose=verbose)
-            con = prob.constraints[0].residual
+                obj = regularizer
+                constrains = [
+                    A_eq @ x == b_eq_par,
+                    x >= lb_par,
+                    x <= ub_par
+                ]
+
+            # TODO: perform dichotomie search to find the optimal parsimony_strength
+            prob = cp.Problem(cp.Minimize(obj), constrains)
+            cls.__do_solve_cvxpy_prob(prob, verbose=verbose)
+        else:
+            prob = cp.Problem(cp.Minimize(obj), constrains)
+            cls.__do_solve_cvxpy_prob(prob, verbose=verbose)
+
+        # --------------------------------------------------------------
+        # Conpute constrain S*v
+        # --------------------------------------------------------------
+        # if relax_qssa:
+        #     con = A_eq @ x.value - b_eq
+        # else:
+        #     con = prob.constraints[0].residual
+
+        con = A_eq @ x.value - b_eq
 
         res = dict(
             x=x.value,

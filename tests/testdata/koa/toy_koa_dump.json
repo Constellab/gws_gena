@@ -223,7 +223,7 @@
         {
             "id": "R1",
             "name": "R1",
-            "enzyme": {},
+            "enzymes": [],
             "rhea_id": "",
             "metabolites": {
                 "X1_c": -1.0,
@@ -239,24 +239,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 2.1264892470765321e-16,
-                        "lower_bound": 2.1264892470765321e-16,
-                        "upper_bound": 2.1264892470765321e-16
+                        "value": 5.883546662393424e-05,
+                        "lower_bound": 5.883546662393424e-05,
+                        "upper_bound": 5.883546662393424e-05
                     },
                     "toy_cell_R2": {
-                        "value": 5.000000003891433,
-                        "lower_bound": 5.000000003891433,
-                        "upper_bound": 5.000000003891433
+                        "value": 4.999769198108658,
+                        "lower_bound": 4.999769198108658,
+                        "upper_bound": 4.999769198108658
                     },
                     "toy_cell_RB": {
-                        "value": -5.9399827963476906e-08,
-                        "lower_bound": -5.9399827963476906e-08,
-                        "upper_bound": -5.9399827963476906e-08
+                        "value": 0.0,
+                        "lower_bound": 0.0,
+                        "upper_bound": 0.0
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 9.999717947063745e-10,
-                        "lower_bound": 9.999717947063745e-10,
-                        "upper_bound": 9.999717947063745e-10
+                        "value": 9.229235798104838e-10,
+                        "lower_bound": 9.229235798104838e-10,
+                        "upper_bound": 9.229235798104838e-10
                     }
                 }
             },
@@ -268,7 +268,7 @@
         {
             "id": "R2",
             "name": "R2",
-            "enzyme": {},
+            "enzymes": [],
             "rhea_id": "",
             "metabolites": {
                 "X4_c": -1.0,
@@ -283,24 +283,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.000000004263907,
-                        "lower_bound": 5.000000004263907,
-                        "upper_bound": 5.000000004263907
+                        "value": 4.9999402170251415,
+                        "lower_bound": 4.9999402170251415,
+                        "upper_bound": 4.9999402170251415
                     },
                     "toy_cell_R2": {
-                        "value": 5.253431536411879e-16,
-                        "lower_bound": 5.253431536411879e-16,
-                        "upper_bound": 5.253431536411879e-16
+                        "value": 0.0002013584283800491,
+                        "lower_bound": 0.0002013584283800491,
+                        "upper_bound": 0.0002013584283800491
                     },
                     "toy_cell_RB": {
-                        "value": 6.062166326861012e-08,
-                        "lower_bound": 6.062166326861012e-08,
-                        "upper_bound": 6.062166326861012e-08
+                        "value": 0.0,
+                        "lower_bound": 0.0,
+                        "upper_bound": 0.0
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 9.999720285302816e-10,
-                        "lower_bound": 9.999720285302816e-10,
-                        "upper_bound": 9.999720285302816e-10
+                        "value": 7.787190732792202e-10,
+                        "lower_bound": 7.787190732792202e-10,
+                        "upper_bound": 7.787190732792202e-10
                     }
                 }
             },
@@ -312,7 +312,7 @@
         {
             "id": "RB",
             "name": "RB",
-            "enzyme": {},
+            "enzymes": [],
             "rhea_id": "",
             "metabolites": {
                 "X3_c": -1.0,
@@ -328,24 +328,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.0000000042639074,
-                        "lower_bound": 5.0000000042639074,
-                        "upper_bound": 5.0000000042639074
+                        "value": 4.999999098311978,
+                        "lower_bound": 4.999999098311978,
+                        "upper_bound": 4.999999098311978
                     },
                     "toy_cell_R2": {
-                        "value": 5.000000003891435,
-                        "lower_bound": 5.000000003891435,
-                        "upper_bound": 5.000000003891435
+                        "value": 4.999970863001171,
+                        "lower_bound": 4.999970863001171,
+                        "upper_bound": 4.999970863001171
                     },
                     "toy_cell_RB": {
-                        "value": 1.2218353051332005e-09,
-                        "lower_bound": 1.2218353051332005e-09,
-                        "upper_bound": 1.2218353051332005e-09
+                        "value": 0.0,
+                        "lower_bound": 0.0,
+                        "upper_bound": 0.0
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 2.000030197032343e-09,
-                        "lower_bound": 2.000030197032343e-09,
-                        "upper_bound": 2.000030197032343e-09
+                        "value": 1.7014372327709307e-09,
+                        "lower_bound": 1.7014372327709307e-09,
+                        "upper_bound": 1.7014372327709307e-09
                     }
                 }
             },
@@ -357,7 +357,7 @@
         {
             "id": "R1_ex",
             "name": "R1_ex",
-            "enzyme": {},
+            "enzymes": [],
             "rhea_id": "",
             "metabolites": {
                 "X1_e": -1.0,
@@ -372,24 +372,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 2.130828390204217e-16,
-                        "lower_bound": 2.130828390204217e-16,
-                        "upper_bound": 2.130828390204217e-16
+                        "value": 5.887539565397728e-05,
+                        "lower_bound": 5.887539565397728e-05,
+                        "upper_bound": 5.887539565397728e-05
                     },
                     "toy_cell_R2": {
-                        "value": 5.000000003891432,
-                        "lower_bound": 5.000000003891432,
-                        "upper_bound": 5.000000003891432
+                        "value": 4.999769044830814,
+                        "lower_bound": 4.999769044830814,
+                        "upper_bound": 4.999769044830814
                     },
                     "toy_cell_RB": {
-                        "value": -5.9399827963476906e-08,
-                        "lower_bound": -5.9399827963476906e-08,
-                        "upper_bound": -5.9399827963476906e-08
+                        "value": 0.0,
+                        "lower_bound": 0.0,
+                        "upper_bound": 0.0
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 9.999717947063745e-10,
-                        "lower_bound": 9.999717947063745e-10,
-                        "upper_bound": 9.999717947063745e-10
+                        "value": 9.230112748087291e-10,
+                        "lower_bound": 9.230112748087291e-10,
+                        "upper_bound": 9.230112748087291e-10
                     }
                 }
             },
@@ -401,7 +401,7 @@
         {
             "id": "R2_ex",
             "name": "R2_ex",
-            "enzyme": {},
+            "enzymes": [],
             "rhea_id": "",
             "metabolites": {
                 "X2_c": -1.0,
@@ -416,24 +416,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 2.128677081665863e-16,
-                        "lower_bound": 2.128677081665863e-16,
-                        "upper_bound": 2.128677081665863e-16
+                        "value": 5.885542102090856e-05,
+                        "lower_bound": 5.885542102090856e-05,
+                        "upper_bound": 5.885542102090856e-05
                     },
                     "toy_cell_R2": {
-                        "value": 5.000000003891433,
-                        "lower_bound": 5.000000003891433,
-                        "upper_bound": 5.000000003891433
+                        "value": 4.999769121504071,
+                        "lower_bound": 4.999769121504071,
+                        "upper_bound": 4.999769121504071
                     },
                     "toy_cell_RB": {
-                        "value": -5.9399827963476906e-08,
-                        "lower_bound": -5.9399827963476906e-08,
-                        "upper_bound": -5.9399827963476906e-08
+                        "value": 0.0,
+                        "lower_bound": 0.0,
+                        "upper_bound": 0.0
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 9.999717947063745e-10,
-                        "lower_bound": 9.999717947063745e-10,
-                        "upper_bound": 9.999717947063745e-10
+                        "value": 9.229782896554285e-10,
+                        "lower_bound": 9.229782896554285e-10,
+                        "upper_bound": 9.229782896554285e-10
                     }
                 }
             },
@@ -445,7 +445,7 @@
         {
             "id": "R4_ex",
             "name": "R4_ex",
-            "enzyme": {},
+            "enzymes": [],
             "rhea_id": "",
             "metabolites": {
                 "X4_e": -1.0,
@@ -460,24 +460,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.000000004263907,
-                        "lower_bound": 5.000000004263907,
-                        "upper_bound": 5.000000004263907
+                        "value": 4.999940194111147,
+                        "lower_bound": 4.999940194111147,
+                        "upper_bound": 4.999940194111147
                     },
                     "toy_cell_R2": {
-                        "value": 5.256766434832223e-16,
-                        "lower_bound": 5.256766434832223e-16,
-                        "upper_bound": 5.256766434832223e-16
+                        "value": 0.00020141859396997767,
+                        "lower_bound": 0.00020141859396997767,
+                        "upper_bound": 0.00020141859396997767
                     },
                     "toy_cell_RB": {
-                        "value": 6.062166326861012e-08,
-                        "lower_bound": 6.062166326861012e-08,
-                        "upper_bound": 6.062166326861012e-08
+                        "value": 0.0,
+                        "lower_bound": 0.0,
+                        "upper_bound": 0.0
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 9.999720285302816e-10,
-                        "lower_bound": 9.999720285302816e-10,
-                        "upper_bound": 9.999720285302816e-10
+                        "value": 7.786444756103786e-10,
+                        "lower_bound": 7.786444756103786e-10,
+                        "upper_bound": 7.786444756103786e-10
                     }
                 }
             },
@@ -489,7 +489,7 @@
         {
             "id": "R5_ex",
             "name": "R5_ex",
-            "enzyme": {},
+            "enzymes": [],
             "rhea_id": "",
             "metabolites": {
                 "X5_e": -1.0,
@@ -504,24 +504,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 10.000000004172836,
-                        "lower_bound": 10.000000004172836,
-                        "upper_bound": 10.000000004172836
+                        "value": 9.99999817912212,
+                        "lower_bound": 9.99999817912212,
+                        "upper_bound": 9.99999817912212
                     },
                     "toy_cell_R2": {
-                        "value": 10.000000003820013,
-                        "lower_bound": 10.000000003820013,
-                        "upper_bound": 10.000000003820013
+                        "value": 9.999941725034171,
+                        "lower_bound": 9.999941725034171,
+                        "upper_bound": 9.999941725034171
                     },
                     "toy_cell_RB": {
-                        "value": 2.4436706102664065e-09,
-                        "lower_bound": 2.4436706102664065e-09,
-                        "upper_bound": 2.4436706102664065e-09
+                        "value": 0.0,
+                        "lower_bound": 0.0,
+                        "upper_bound": 0.0
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 4.000060394064687e-09,
-                        "lower_bound": 4.000060394064687e-09,
-                        "upper_bound": 4.000060394064687e-09
+                        "value": 3.4029416395696044e-09,
+                        "lower_bound": 3.4029416395696044e-09,
+                        "upper_bound": 3.4029416395696044e-09
                     }
                 }
             },

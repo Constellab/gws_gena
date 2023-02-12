@@ -70,7 +70,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
             params=ConfigParams()
         )
 
-        #self.assertEqual(len(net.reactions), 7)
+        # self.assertEqual(len(net.reactions), 7)
         self.assertTrue("R5_ex" not in net.reactions)
         self.assertTrue("RHEA_16169_6_3_1_2" not in net.reactions)
 

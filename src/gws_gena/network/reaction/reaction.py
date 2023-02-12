@@ -4,12 +4,11 @@
 # About us: https://gencovery.com
 
 import copy
-from typing import Dict, List, TypedDict, Union
+from typing import Dict, List, Union
 
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
-from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import BadRequestException
 
 from ..compound.compound import Compound
@@ -23,6 +22,7 @@ from ..reaction.reaction_compound import Product, Substrate
 from ..typing.enzyme_typing import EnzymeDict
 from ..typing.pathway_typing import ReactionPathwayDict
 from ..typing.reaction_typing import ReactionDict
+from .helper.enzyme_search_up_helper import EnzymeSearchUpHelper
 
 
 class Reaction:
@@ -44,8 +44,8 @@ class Reaction:
     :type upper_bound: `float`
     :property rhea_id: The corresponding Rhea if of the reaction
     :type rhea_id: `str`
-    :property enzyme: The details on the enzyme that regulates the reaction
-    :type enzyme: `dict`
+    :property enzymes: The details on the enzymes that regulates the reaction
+    :type enzymes: `list[dict]`
     """
 
     LOWER_BOUND = -1000.0
@@ -57,7 +57,8 @@ class Reaction:
     lower_bound: float = LOWER_BOUND
     upper_bound: float = UPPER_BOUND
     rhea_id: str = ""
-    enzyme: EnzymeDict = None
+    # enzyme: EnzymeDict = None  # TODO: will be deprecated
+    enzymes: List[EnzymeDict] = None
     products: Dict[str, Product] = None
     substrates: Dict[str, Substrate] = None
     data: dict = None
@@ -74,13 +75,9 @@ class Reaction:
         else:
             self.id = SlugifyHelper.slugify_id(self.name)
 
-        if self.enzyme is None:
-            self.enzyme = {}
-
-        if not self.id:
-            if self.enzyme:
-                self.id = self.enzyme.get("ec_number", "")
-                self.name = self.id
+        # enzymes
+        if self.enzymes is None:
+            self.enzymes = []
 
         if not self.id:
             raise InvalidReactionException("A valid reaction id or name is required")
@@ -132,8 +129,8 @@ class Reaction:
                 substrate.stoich += abs(float(stoich))
                 return
             else:
-                raise SubstrateDuplicateException("gena.reaction.Reaction", "add_substrate",
-                                                  f"Substrate duplicate (id= {comp.id})")
+                raise SubstrateDuplicateException(
+                    f"Substrate duplicate (rxn_id={self.rhea_id}, rxn_rhea={self.rhea_id}, comp_id= {comp.id})")
 
         # is_also_product = comp.id in self.product_stoichs
         # if is_also_product:
@@ -199,7 +196,8 @@ class Reaction:
         rxn.lower_bound = self.lower_bound
         rxn.upper_bound = self.upper_bound
         rxn.rhea_id = self.rhea_id
-        rxn.enzyme = self.enzyme
+        rxn.enzymes = self.enzymes
+
         rxn.layout = self.layout.copy()
         rxn.data = copy.deepcopy(self.data)
         rxn.substrates = {k: v.copy() for k, v, in self.substrates.items()}
@@ -299,118 +297,56 @@ class Reaction:
         :rtype: `gena.reaction.Reaction`
         """
 
-        rxns = []
         rxn_biota_helper = ReactionBiotaHelper()
 
         if biota_reaction:
-            rhea_rxn = biota_reaction
-            _added_rxns = []
-            for e in rhea_rxn.enzymes:
-                if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
-                    continue
-                _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, e))
-            return rxns
+            return [rxn_biota_helper.create_reaction_from_biota(rhea_rxn=biota_reaction)]
         elif rhea_id:
-            tax = None
             query = BiotaReaction.select().where(BiotaReaction.rhea_id == rhea_id)
             if len(query) == 0:
                 raise BadRequestException(f"No reaction found with rhea_id {rhea_id}")
-            _added_rxns = []
-            for rhea_rxn in query:
-                if len(rhea_rxn.enzymes) == 0:
-                    # TODO: To delete after
-                    # temporary fix
-                    # -----------------------------
-                    _added_rxns.append(rhea_rxn.rhea_id)
-                    rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, None))
-                    # -----------------------------
-                else:
-                    for e in rhea_rxn.enzymes:
-                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
-                            continue
-                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, e))
-            return rxns
+            else:
+                biota_reaction = query[0]
+                return [rxn_biota_helper.create_reaction_from_biota(rhea_rxn=biota_reaction)]
         elif ec_number:
-            tax = None
-            e = None
+            biota_reaction_dict = {}
             if tax_id:
-                tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == tax_id)
-                if tax is None:
-                    raise BadRequestException(f"No taxonomy found with tax_id {tax_id}")
-
-                query = BiotaEnzyme.select_and_follow_if_deprecated(
-                    ec_number=ec_number, tax_id=tax_id, fields=['id', 'ec_number'])
-
-                if len(query) == 0:
-                    if tax_search_method == 'bottom_up':
-                        found_query = []
-                        query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
-                        tab = {}
-                        for e in query:
-                            if e.ec_number not in tab:
-                                tab[e.ec_number] = []
-                            tab[e.ec_number].append(e)
-                        for t in tax.ancestors:
-                            is_found = False
-                            for _, ec in enumerate(tab):
-                                e_group = tab[ec]
-                                for e in e_group:
-                                    if t.rank == "no rank":
-                                        continue
-                                    if getattr(e, "tax_"+t.rank) == t.tax_id:
-                                        found_query.append(e)
-                                        is_found = True
-                                        break  # -> stop at this taxonomy rank
-                                if is_found:
-                                    del tab[ec]
-                                    break
-                        # add remaining enzyme
-                        for e_group in tab.values():
-                            for e in e_group:
-                                found_query.append(e)
-                                break
-                        if found_query:
-                            query = found_query
+                query = EnzymeSearchUpHelper.search(ec_number, tax_id, tax_search_method='bottom_up')
 
                 if len(query) == 0:
                     raise BadRequestException(f"No enzyme found with ec_number {ec_number} and tax_id {tax_id}")
-                _added_rxns = []
-                for e in query:
-                    for rhea_rxn in e.reactions:
-                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
-                            continue
-                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, e))
-                if not rxns:
-                    raise BadRequestException(f"No reactions found with ec_number {ec_number}.")
+
+                for biota_enzyme in query:
+                    for rhea_rxn in biota_enzyme.reactions:
+                        biota_reaction_dict[rhea_rxn.id] = rhea_rxn
             else:
                 query = BiotaEnzyme.select_and_follow_if_deprecated(
                     ec_number=ec_number, fields=['id', 'ec_number'])
                 if len(query) == 0:
                     raise BadRequestException(f"No enzyme found with ec_number {ec_number}")
-                _added_rxns = []
-                for e in query:
-                    for rhea_rxn in e.reactions:
-                        if (rhea_rxn.rhea_id + e.ec_number) in _added_rxns:
-                            continue
-                        _added_rxns.append(rhea_rxn.rhea_id + e.ec_number)
-                        rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn, e))
-                if not rxns:
-                    raise BadRequestException(f"No reactions found with ec_number {ec_number}")
-        else:
-            raise BadRequestException("Invalid arguments")
+                for biota_enzyme in query:
+                    for rhea_rxn in biota_enzyme.reactions:
+                        biota_reaction_dict[rhea_rxn.id] = rhea_rxn
 
-        return rxns
+            if len(biota_reaction_dict) == 0:
+                raise BadRequestException(f"No biota reactions found with ec_number {ec_number}")
+
+            rxns = []
+            for biota_reaction in biota_reaction_dict.values():
+                rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn=biota_reaction))
+            return rxns
+        else:
+            raise BadRequestException("Invalid parameters")
 
     # -- G --
 
     def get_pathways(self) -> ReactionPathwayDict:
-        if self.enzyme.get("pathways"):
-            return self.enzyme.get("pathways")
-
-        return ReactionPathwayDict()
+        if len(self.enzymes) == 0:
+            return ReactionPathwayDict({})
+        else:
+            if self.enzymes[0].get("pathways"):
+                return self.enzymes[0].get("pathways")
+            return ReactionPathwayDict()
 
     def get_pathways_as_flat_dict(self) -> Dict:
         pw_dict = {}
@@ -497,11 +433,11 @@ class Reaction:
 
     # -- S --
 
-    def set_enzyme(self, enzyme_dict: EnzymeDict):
-        """ Set enzyme """
-        if not isinstance(enzyme_dict, dict):
-            raise BadRequestException("The enzyme data must be a dictionary")
-        self.enzyme = enzyme_dict
+    # def set_enzyme(self, enzyme_dict: EnzymeDict):
+    #     """ Set enzyme """
+    #     if not isinstance(enzyme_dict, dict):
+    #         raise BadRequestException("The enzyme data must be a dictionary")
+    #     self.enzyme = enzyme_dict
 
     def set_data(self, data: dict):
         """ Set data """
@@ -519,35 +455,36 @@ class Reaction:
         :rtype: `str`
         """
 
-        _left = []
-        _right = []
-        _dir = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
+        left_ = []
+        right_ = []
+        dir_ = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
 
         for comp_id, substrate in self.substrates.items():
             comp = substrate.compound
             stoich = substrate.stoich
             if show_ids:
-                _id = comp.chebi_id if comp.chebi_id else comp.id
-                _left.append(f"({stoich}) {_id}")
+                id_ = comp.chebi_id if comp.chebi_id else comp.id
+                left_.append(f"({stoich}) {id_}")
             else:
-                _left.append(f"({stoich}) {comp.id}")
+                left_.append(f"({stoich}) {comp.id}")
 
         for comp_id, product in self.products.items():
             comp = product.compound
             stoich = product.stoich
             if show_ids:
-                _id = comp.chebi_id if comp.chebi_id else comp.id
-                _right.append(f"({stoich}) {_id}")
+                id_ = comp.chebi_id if comp.chebi_id else comp.id
+                right_.append(f"({stoich}) {id_}")
             else:
-                _right.append(f"({stoich}) {comp.id}")
+                right_.append(f"({stoich}) {comp.id}")
 
-        if not _left:
-            _left = ["*"]
+        if not left_:
+            left_ = ["*"]
 
-        if not _right:
-            _right = ["*"]
+        if not right_:
+            right_ = ["*"]
 
-        _str = " + ".join(_left) + \
-            _dir[self.direction].replace("E", self.enzyme.get("ec_number", "")) + " + ".join(_right)
-        # _str = _str + " " + str(self.enzyme)
-        return _str
+        ec_number = list(set([e.get("ec_number", "") for e in self.enzymes]))
+        str_ = " + ".join(left_) + \
+            dir_[self.direction].replace("E", ",".join(ec_number)) + " + ".join(right_)
+
+        return str_

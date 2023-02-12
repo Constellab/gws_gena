@@ -184,6 +184,13 @@ class Network(Resource):
 
     # -- F --
 
+    @classmethod
+    def from_biota(cls, tax_id=None):
+        net = Network()
+        net.network_data = NetworkData.from_biota(tax_id=tax_id)
+        net.name = net.network_data.name
+        return net
+
     def flatten_reaction_id(self, rxn: Reaction) -> str:
         """ Flatten the id of a reaction """
         return self.network_data.flatten_reaction_id(rxn)

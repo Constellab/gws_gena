@@ -30,8 +30,8 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         net = outputs["network"]
         # print(net.to_csv())
         self.assertEqual(len(net.reactions), 9)
-        self.assertTrue("RHEA_15133_1_4_1_2" in net.reactions)
-        self.assertTrue("RHEA_16169_6_3_1_2" in net.reactions)
+        self.assertTrue("RHEA_15133" in net.reactions)
+        self.assertTrue("RHEA_16169" in net.reactions)
 
         # file_path = os.path.join(data_dir, "reaction_adder", "toy_with_added_ec.json")
         # with open(file_path, 'w') as f:
@@ -58,7 +58,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(len(net.reactions), 8)
 
         print(net.reactions)
-        self.assertTrue("RHEA_16505_4_1_3_40" in net.reactions)
+        self.assertTrue("RHEA_16505" in net.reactions)
 
         # file_path = os.path.join(data_dir, "reaction_adder", "toy_with_added_id.json")
         # with open(file_path, 'w') as f:

@@ -11,7 +11,7 @@ import numpy as np
 from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
                       ListParam, Logger, OutputSpec, StrParam, Task,
                       TaskInputs, TaskOutputs, task_decorator)
-#from joblib import Parallel, delayed
+# from joblib import Parallel, delayed
 from pandas import DataFrame
 
 from ..fba.fba import FBA
@@ -38,10 +38,11 @@ def _do_parallel_loop(kwargs):
     solver = kwargs["solver"]
     relax_qssa = kwargs["relax_qssa"]
     qssa_relaxation_strength = kwargs["qssa_relaxation_strength"]
+    parsimony_strength = kwargs["parsimony_strength"]
 
     if (i % step) == 0:
         Logger.progress(f" flux {i+1}/{m} ...")
-        #self.progress_bar.set_value(i, message=f" flux {i+1}/{m} ...")
+        # self.progress_bar.set_value(i, message=f" flux {i+1}/{m} ...")
 
     cf = DataFrame(data=np.zeros(c.shape), index=c.index)
     if (i in indexes_of_fluxes_to_minimize) or (i in indexes_of_fluxes_to_maximize):
@@ -64,6 +65,7 @@ def _do_parallel_loop(kwargs):
                 cf, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
+                parsimony_strength=parsimony_strength,
                 verbose=False
             )
         else:
@@ -80,6 +82,7 @@ def _do_parallel_loop(kwargs):
                 cf, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
+                parsimony_strength=parsimony_strength,
                 verbose=False
             )
         else:
@@ -123,6 +126,7 @@ class FVA(Task):
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
+        parsimony_strength = 0.0  # params["parsimony_strength"]
 
         if relax_qssa and solver != "quad":
             self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
@@ -145,6 +149,7 @@ class FVA(Task):
                 c, A_eq, b_eq, bounds,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
+                parsimony_strength=parsimony_strength,
                 verbose=False
             )
         else:
@@ -173,10 +178,10 @@ class FVA(Task):
                                                                    fluxes_to_minimize,
                                                                    step, m)
         else:
-            xmin, xmax = self.__solve_with_parloop(c, A_eq, b_eq, bounds, x0,
-                                                   fluxes_to_maximize,
-                                                   fluxes_to_minimize,
-                                                   step, m, solver, relax_qssa, qssa_relaxation_strength)
+            xmin, xmax = self.__solve_with_parloop(
+                c, A_eq, b_eq, bounds, x0, fluxes_to_maximize,
+                fluxes_to_minimize, step, m, solver, relax_qssa,
+                qssa_relaxation_strength, parsimony_strength)
         res.xmin = xmin
         res.xmax = xmax
         fva_result = FVAResult(twin=twin, optimize_result=res)
@@ -205,7 +210,7 @@ class FVA(Task):
     def __solve_with_parloop(c, A_eq, b_eq, bounds, x0,
                              fluxes_to_maximize,
                              fluxes_to_minimize,
-                             step, m, solver, relax_qssa, qssa_relaxation_strength):
+                             step, m, solver, relax_qssa, qssa_relaxation_strength, parsimony_strength):
 
         max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
         min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
@@ -227,7 +232,8 @@ class FVA(Task):
                 m=m,
                 solver=solver,
                 relax_qssa=relax_qssa,
-                qssa_relaxation_strength=qssa_relaxation_strength
+                qssa_relaxation_strength=qssa_relaxation_strength,
+                parsimony_strength=parsimony_strength
             ))
         result = pool.map(_do_parallel_loop, params)
         # gather results
@@ -268,7 +274,7 @@ class FVA(Task):
         for i in range(0, m):
             if (i % step) == 0:
                 Logger.progress(f" flux {i+1}/{m} ...")
-                #self.progress_bar.set_value(i, message=f" flux {i+1}/{m} ...")
+                # self.progress_bar.set_value(i, message=f" flux {i+1}/{m} ...")
             cf = DataFrame(data=np.zeros(c.shape), index=c.index)
             if (i in max_idx) or (i in min_idx):
                 xmin[i] = x0[i]

@@ -64,7 +64,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
             fluxes = result.get_fluxes_dataframe()
             print(fluxes)
-            # print(sv)
+            print(fluxes.abs().sum())
             sv = result.get_sv_dataframe()
             th, p = result.compute_zero_flux_threshold()
             print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
@@ -77,9 +77,6 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             # file_path = os.path.join(result_dir, "sv.csv")
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(sv.to_csv())
-            # file_path = os.path.join(result_dir, "biomass_flux.csv")
-            # with open(file_path, 'w', encoding="utf-8") as fp:
-            #     fp.write(biomass_flux.to_csv())
             # table = fluxes.to_numpy()
             # table = numpy.array(table, dtype=float)
             # file_path = os.path.join(result_dir, "flux.csv")

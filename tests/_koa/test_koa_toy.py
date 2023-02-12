@@ -5,8 +5,8 @@ from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (ConfigParams, File, IExperiment, Settings, TaskRunner,
                       ViewTester)
 from gws_gena import (KOA, Context, ContextImporter, EntityIDTable,
-                      EntityIDTableImporter, KOAProto, Network,
-                      NetworkImporter, Twin)
+                      EntityIDTableImporter, KOAProto, KOAResultExtractor,
+                      Network, NetworkImporter, Twin)
 
 settings = Settings.get_instance()
 
@@ -47,10 +47,9 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         outputs = await tester.run()
         ko_result = outputs["koa_result"]
 
-        print(ko_result.get_flux_dataframe("toy_cell_R1"))
-
         # KO: toy_cell_R1
         table = ko_result.get_flux_dataframe("toy_cell_R1")
+        print(table)
         self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 5.0, delta=1e-2)
 
         # KO: toy_cell_R2
@@ -59,6 +58,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         # KO: toy_cell_RB
         table = ko_result.get_flux_dataframe("toy_cell_RB")
+        print(table)
         self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 1e-9, delta=1e-2)
 
         # KO: toy_cell_R1,toy_cell_R2
@@ -73,6 +73,24 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             data = net.dumps()
             json.dump(data, fp, indent=4)
 
-        # ko_result.view_ko_as_bar_plot(ConfigParams({
-        #     "flux_names": ["toy_cell_RB","toy_cell_R2"]
-        # }))
+        # extractor
+
+        tester = TaskRunner(
+            inputs={
+                'koa_result': ko_result,
+            },
+            params={
+                "fluxes_to_extract": ["toy_cell_RB", "toy_cell_R1"],
+            },
+            task_type=KOAResultExtractor
+        )
+        outputs = await tester.run()
+        table = outputs["table"]
+        print(table)
+
+        data = table.get_data()
+        self.assertEqual(data.shape, (8, 5))
+        self.assertEqual(data.at[0, "ko_id"], "toy_cell_R1")
+        self.assertEqual(data.at[0, "reaction_id"], "toy_cell_RB")
+        self.assertAlmostEqual(data.at[0, "value"], 4.999, delta=1e-2)
+        self.assertAlmostEqual(data.at[2, "value"], 1e-9, delta=1e-2)

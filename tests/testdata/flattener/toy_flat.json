@@ -225,7 +225,7 @@
                 {
                     "id": "toy_cell_R1",
                     "name": "R1",
-                    "enzyme": {},
+                    "enzymes": [],
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X1_c": -1.0,
@@ -247,7 +247,7 @@
                 {
                     "id": "toy_cell_R2",
                     "name": "R2",
-                    "enzyme": {},
+                    "enzymes": [],
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X4_c": -1.0,
@@ -268,7 +268,7 @@
                 {
                     "id": "toy_cell_RB",
                     "name": "RB",
-                    "enzyme": {},
+                    "enzymes": [],
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X3_c": -1.0,
@@ -290,7 +290,7 @@
                 {
                     "id": "toy_cell_R1_ex",
                     "name": "R1_ex",
-                    "enzyme": {},
+                    "enzymes": [],
                     "rhea_id": "",
                     "metabolites": {
                         "X1_e": -1.0,
@@ -311,7 +311,7 @@
                 {
                     "id": "toy_cell_R2_ex",
                     "name": "R2_ex",
-                    "enzyme": {},
+                    "enzymes": [],
                     "rhea_id": "",
                     "metabolites": {
                         "toy_cell_X2_c": -1.0,
@@ -332,7 +332,7 @@
                 {
                     "id": "toy_cell_R4_ex",
                     "name": "R4_ex",
-                    "enzyme": {},
+                    "enzymes": [],
                     "rhea_id": "",
                     "metabolites": {
                         "X4_e": -1.0,
@@ -353,7 +353,7 @@
                 {
                     "id": "toy_cell_R5_ex",
                     "name": "R5_ex",
-                    "enzyme": {},
+                    "enzymes": [],
                     "rhea_id": "",
                     "metabolites": {
                         "X5_e": -1.0,

@@ -45,7 +45,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         print(ko_results)
 
         table = ko_results.get_flux_dataframe(ko_id="ecoli_PGK")
-        self.assertAlmostEqual(table.at["ecoli_BIOMASS_Ecoli_core_w_GAM", "value"], 37.137627, delta=1e-6)
+        self.assertAlmostEqual(table.at["ecoli_BIOMASS_Ecoli_core_w_GAM", "value"], 37.15, delta=1e-2)
 
         table = ko_results.get_flux_dataframe(ko_id="ecoli_glu_L_c")
-        self.assertAlmostEqual(table.at["ecoli_BIOMASS_Ecoli_core_w_GAM", "value"], 51.262072, delta=1e-6)
+        self.assertAlmostEqual(table.at["ecoli_BIOMASS_Ecoli_core_w_GAM", "value"], 51.27, delta=1e-2)

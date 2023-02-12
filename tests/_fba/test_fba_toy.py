@@ -33,6 +33,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             proto.set_input("context", ctx)
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
+            # fba.set_param("parsimony_strength", 1)
             await experiment.run()
 
             # test results

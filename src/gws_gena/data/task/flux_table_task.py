@@ -51,14 +51,14 @@ class FluxTableImporter(TableImporter):
             default_value=FluxTable.DEFAULT_CONFIDENCE_SCORE_COLUMN, human_name="Confidence score column name",
             short_description="The name of the upper-bound column")}
 
-    async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[FluxTable]) -> FluxTable:
+    async def import_from_path(self, source: File, params: ConfigParams, target_type: Type[FluxTable]) -> FluxTable:
         """
         Import from a repository
 
         Additional parameters
 
-        :param file: The file to import
-        :type file: `File`
+        :param source: The file to import
+        :type source: `File`
         :param params: The config params
         :type params: `ConfigParams`
         :returns: the parsed csv table
@@ -66,7 +66,7 @@ class FluxTableImporter(TableImporter):
         """
 
         params["index_column"] = None
-        csv_table = await super().import_from_path(file, params, target_type)
+        csv_table = await super().import_from_path(source, params, target_type)
 
         reaction_id_column = params.get_value("reaction_id_column", FluxTable.DEFAULT_REACTION_ID_COLUMN)
         target_column_name = params.get_value("target_column_name", FluxTable.DEFAULT_TARGET_COLUMN)

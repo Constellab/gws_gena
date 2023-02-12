@@ -59,19 +59,20 @@ class TwinReducer(Task):
             rxn: Reaction
             not_found_reactions = copy.deepcopy(reversible_reactions)
             for rxn_id, rxn in net.reactions.items():
-                ec_number = rxn.enzyme.get("ec_number")
-                if rxn_id in reversible_reactions:
-                    rev[i] = 1
-                    not_found_reactions.remove(rxn_id)
-                    if ec_number in reversible_reactions:
+                for enzyme in rxn.enzymes:
+                    ec_number = enzyme.get("ec_number")
+                    if rxn_id in reversible_reactions:
+                        rev[i] = 1
+                        not_found_reactions.remove(rxn_id)
+                        if ec_number in reversible_reactions:
+                            not_found_reactions.remove(ec_number)
+                    elif ec_number in reversible_reactions:
+                        rev[i] = 1
                         not_found_reactions.remove(ec_number)
-                elif ec_number in reversible_reactions:
-                    rev[i] = 1
-                    not_found_reactions.remove(ec_number)
                 i += 1
 
             if not_found_reactions:
-                self.add_warning_message(
+                self.log_warning_message(
                     f"Reversible reactions {not_found_reactions} were not found")
 
         reduced_matrices = TwinHelper.compute_reduced_matrices(

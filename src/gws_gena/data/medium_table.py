@@ -24,12 +24,11 @@ class MediumTable(Table):
     A resource table representing a culture medium composition
 
     * The first column the a compound name (offical or user-defined name) `[required]`
-    * The next columns are:
-      * chebi_id: the list chebi ids
+    * The next column is the list chebi ids `[required]`
 
     For example:
 
-    | component           | chebi_id     |
+    | entity              | chebi_id     |
     | --------------------|--------------|
     | 2-oxoglutarate      | CEHBI:16810  |
     | glutamine           | CHEBI:18050  |

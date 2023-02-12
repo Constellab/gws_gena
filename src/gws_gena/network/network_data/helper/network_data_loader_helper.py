@@ -5,6 +5,7 @@
 
 import copy
 import re
+from typing import List
 
 from gws_biota import Compound as BiotaCompound
 from gws_biota import CompoundLayout as BiotaCompoundLayout
@@ -15,6 +16,7 @@ from ....helper.base_helper import BaseHelper
 from ...compartment.compartment import Compartment
 from ...reaction.helper.reaction_biota_helper import ReactionBiotaHelper
 from ...typing.compound_typing import CompoundDict
+from ...typing.enzyme_typing import EnzymeDict
 from ...typing.reaction_typing import ReactionDict
 
 
@@ -53,7 +55,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         self.log_info_message(f"{len(query)} compounds loaded from BIOTA.")
 
         # get all biota enzymes
-        ec_number_list = []
+        ec_numbers = []
         for rxn_data in data["reactions"]:
             if self.is_bigg_data_format:
                 skip = False
@@ -63,16 +65,25 @@ class NetworkDataLoaderHelper(BaseHelper):
                         break
                 if skip:
                     continue
-            ec_number_list.extend(rxn_data["ec_number_list"])
-        ec_number_list = list(set(ec_number_list))
-        query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_number_list))
+            ec_numbers.extend(rxn_data["ec_numbers"])
+        ec_numbers = list(set(ec_numbers))
+        query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
         biota_enzymes_dict = {}
         rxn_biota_helper = ReactionBiotaHelper()
         rxn_biota_helper.attach_task(self._task)
-        for e in query:
-            enzyme_dict = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
-                e, load_taxonomy=False, load_pathway=True)
-            biota_enzymes_dict[e.ec_number] = enzyme_dict
+
+        enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
+            query, load_taxonomy=False, load_pathway=True)
+
+        biota_enzymes_dict = {}
+        for val in enzyme_list:
+            key = val["ec_number"]
+            biota_enzymes_dict[key] = val
+
+        # for e in query:
+        #     enzyme_dict = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
+        #         e, load_taxonomy=False, load_pathway=True)
+        #     biota_enzymes_dict[e.ec_number] = enzyme_dict
 
         self.log_info_message(f"{len(query)} enzyme ortholog loaded from BIOTA.")
 
@@ -169,10 +180,10 @@ class NetworkDataLoaderHelper(BaseHelper):
                 if skip:
                     continue
 
-            enzyme_dict = {}
-            for ec in rxn_data["ec_number_list"]:
-                if ec in biota_enzymes_dict:
-                    enzyme_dict = biota_enzymes_dict[ec]
+            enzyme_list = []
+            for ec_number in rxn_data["ec_numbers"]:
+                if ec_number in biota_enzymes_dict:
+                    enzyme_list.append(biota_enzymes_dict[ec_number])
                     break
 
             rxn = Reaction(
@@ -181,7 +192,7 @@ class NetworkDataLoaderHelper(BaseHelper):
                     name=rxn_data.get("name"),
                     lower_bound=rxn_data.get("lower_bound", Reaction.lower_bound),
                     upper_bound=rxn_data.get("upper_bound", Reaction.upper_bound),
-                    enzyme=enzyme_dict,
+                    enzymes=enzyme_list,
                     direction=rxn_data.get("direction", "B"),
                     rhea_id=rxn_data.get("rhea_id", "")
                 ))
@@ -358,8 +369,13 @@ class NetworkDataLoaderHelper(BaseHelper):
 
         # prepare reactions
         for rxn_data in out_data["reactions"]:
-            if not rxn_data.get("enzyme", {}):
-                rxn_data['ec_number_list'] = []
+            if rxn_data.get("enzymes", []):
+                rxn_data['ec_numbers'] = [enzyme["ec_number"] for enzyme in rxn_data["enzymes"]]
+            elif rxn_data.get("enzyme", {}):
+                # TODO:  deprecated to delete later
+                rxn_data['ec_numbers'] = [rxn_data["enzyme"]["ec_number"]]
+            else:
+                rxn_data['ec_numbers'] = []
                 annotation = rxn_data.get("annotation")
                 if annotation is None:
                     continue
@@ -374,12 +390,9 @@ class NetworkDataLoaderHelper(BaseHelper):
 
                 if ec_number:
                     if isinstance(ec_number, list):
-                        ec_number_list = ec_number
+                        ec_numbers = ec_number
                     else:
-                        ec_number_list = [ec_number]
-                    rxn_data['ec_number_list'] = ec_number_list
-            else:
-                ec_number = rxn_data["enzyme"]["ec_number"]
-                rxn_data['ec_number_list'] = [ec_number]
+                        ec_numbers = [ec_number]
+                    rxn_data['ec_numbers'] = ec_numbers
 
         return out_data

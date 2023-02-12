@@ -23,7 +23,7 @@ class BiomassReactionTableImporter(TableImporter):
     """
     BiomassReactionTableImporter class
 
-    Allows to import a `json` file and create a `BiomassReactionTable` resource object.
+    Allows to import a `csv` or `xls` file and create a `BiomassReactionTable` resource object.
     The `BiomassReactionTable` is a stoichiometry table describing the composition of a cell (or organism) biomass.
     """
 
@@ -42,14 +42,14 @@ class BiomassReactionTableImporter(TableImporter):
             default_value=BiomassReactionTable.DEFAULT_BIOMASS_COLUMN,
             short_description="The name of the column containing the coefficients of the biomass equation")}
 
-    async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[BiomassReactionTable]) -> BiomassReactionTable:
+    async def import_from_path(self, source: File, params: ConfigParams, target_type: Type[BiomassReactionTable]) -> BiomassReactionTable:
         """
         Import from a repository
 
         Additional parameters
 
-        :param file: The file to import
-        :type file: `File`
+        :param source: The file to import
+        :type source: `File`
         :param params: The config params
         :type params: `ConfigParams`
         :returns: the parsed biomass table
@@ -57,7 +57,7 @@ class BiomassReactionTableImporter(TableImporter):
         """
 
         params["index_column"] = None
-        csv_table: BiomassReactionTable = await super().import_from_path(file, params, target_type)
+        csv_table: BiomassReactionTable = await super().import_from_path(source, params, target_type)
 
         chebi_column = params.get_value("chebi_column", BiomassReactionTable.DEFAULT_CHEBI_COLUMN)
         biomass_column = params.get_value("biomass_column", BiomassReactionTable.DEFAULT_BIOMASS_COLUMN)

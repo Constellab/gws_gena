@@ -20,41 +20,42 @@ class ReactionRemoverHelper(BaseHelper):
         # check all
         all_valid_ids = []
         for k, rxn in rxn_series.items():
-            ec_number = rxn.enzyme.get("ec_number")
-            all_valid_ids.extend([ec_number, rxn.id, rxn.rhea_id])
+            ec_number_tab = []
+            for enzyme in rxn.enzymes:
+                ec_number_tab.append(enzyme.get("ec_number"))
+            all_valid_ids.extend([*ec_number_tab, rxn.id, rxn.rhea_id])
 
-        if isinstance(reaction_table, ECTable):
-            ec_list: list = reaction_table.get_ec_numbers()
-            valid_id_list = [x for x in ec_list if x in all_valid_ids]
-            invalid_id_list = [x for x in ec_list if x not in all_valid_ids]
-
-            if valid_id_list:
-                for k, rxn in rxn_series.items():
-                    ec_number = rxn.enzyme.get("ec_number")
-                    is_in_list = (ec_number in valid_id_list)
-                    if reverse_remove:
-                        if not is_in_list:
-                            network.remove_reaction(rxn.id)
-                    elif is_in_list:
-                        network.remove_reaction(rxn.id)
-
-        elif isinstance(reaction_table, EntityIDTable):
-            id_list: list = reaction_table.get_ids()
-            valid_id_list = [x for x in id_list if x in all_valid_ids]
-            invalid_id_list = [x for x in id_list if x not in all_valid_ids]
-
-            if valid_id_list:
-                for k, rxn in rxn_series.items():
-                    is_in_list = (rxn.rhea_id in valid_id_list) or (k in valid_id_list)
-                    if reverse_remove:
-                        if not is_in_list:
-                            network.remove_reaction(rxn.id)
-                    elif is_in_list:
-                        network.remove_reaction(rxn.id)
-
-        for k in invalid_id_list:
-            if isinstance(reaction_table, ECTable):
-                message = f"The EC '{k}' is not found. Please check the EC table."
+        if isinstance(reaction_table, (EntityIDTable, ECTable)):
+            if isinstance(reaction_table, EntityIDTable):
+                id_list: list = reaction_table.get_ids()
             else:
-                message = f"The ID '{k}' is not found. Please check the ID table."
-            self.log_warning_message(message)
+                id_list: list = reaction_table.get_ec_numbers()
+
+            valid_ids_to_remove = [x for x in id_list if x in all_valid_ids]
+            invalid_ids_to_remove = [x for x in id_list if x not in all_valid_ids]
+
+            if valid_ids_to_remove:
+                for k, rxn in rxn_series.items():
+                    ec_number_tab = []
+                    for enzyme in rxn.enzymes:
+                        ec_number_tab.append(enzyme.get("ec_number"))
+
+                    rxn_ids = [*ec_number_tab, rxn.id, rxn.rhea_id]
+                    is_in_list = False
+                    for rxn_id in rxn_ids:
+                        is_in_list = rxn_id in valid_ids_to_remove
+                        if is_in_list:
+                            break
+
+                    if reverse_remove:
+                        if not is_in_list:
+                            network.remove_reaction(rxn.id)
+                    elif is_in_list:
+                        network.remove_reaction(rxn.id)
+
+            if invalid_ids_to_remove:
+                self.log_warning_message(
+                    f"The following reactions were not found. Please check ids.\n{invalid_ids_to_remove}")
+
+        else:
+            self.log_warning_message("Invalid reaction table")

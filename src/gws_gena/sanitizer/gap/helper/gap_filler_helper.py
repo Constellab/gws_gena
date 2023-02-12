@@ -46,7 +46,7 @@ class GapFillerHelper(BaseHelper):
         else:
             self.log_info_message(f"{len(dead_ends)} dead-end metabolite(s) found")
 
-        unicell = BiotaUnicellService.create_unicell(tax_id=tax_id)
+        unicell = BiotaUnicellService.create_unicell_skeleton(tax_id=tax_id)
         nodes = []
         for comp_id in dead_ends:
             comp = net.compounds[comp_id]

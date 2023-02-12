@@ -33,9 +33,10 @@ class FBA(Task):
         "biomass_optimization": StrParam(allowed_values=["", "maximize", "minimize"], default_value=None, optional=True, human_name="Biomass optimization", short_description="Biomass optimization"),
         "fluxes_to_maximize": ListParam(default_value=None, optional=True, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to maximize", short_description="The fluxes to maximize"),
         "fluxes_to_minimize": ListParam(default_value=None, optional=True, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Fluxes to minimize", short_description="The fluxes to minimize"),
-        "solver": StrParam(default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY, allowed_values=["highs-ds", "highs-ipm", "highs", "interior-point", "quad"], human_name="Solver", short_description="The optimization solver"),
+        "solver": StrParam(default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY, allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"], human_name="Solver", short_description="The optimization solver"),
         "relax_qssa": BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Relax QSSA", short_description="True to relaxing the quasi-steady state assumption (QSSA) constrain (quad solver is used). False otherwise."),
-        "qssa_relaxation_strength": FloatParam(default_value=1, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY, human_name="QSSA relaxation", short_description="Used only if QSSA is relaxed. The higher it is, the stronger is the QSSA. Hint: Set to the number of reactions to have strong QSSA contrain.")
+        "qssa_relaxation_strength": FloatParam(default_value=1, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY, human_name="QSSA relaxation strength", short_description="Used only if the QSSA is relaxed. The higher is the strength, the stronger is the QSSA. Hint: Set to the number of reactions to have strong QSSA contrain."),
+        "parsimony_strength": FloatParam(default_value=0.0, min_value=0.0, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Parsimony strength", short_description="Set True to perform parsimonious FBA (pFBA). In this case the quad solver is used. Set False otherwise")
     }
 
     async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
@@ -46,12 +47,13 @@ class FBA(Task):
         fluxes_to_minimize = params["fluxes_to_minimize"]
         relax_qssa = params["relax_qssa"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
+        parsimony_strength = params["parsimony_strength"]
 
         helper = FBAHelper()
         helper.attach_task(self)
         fba_result: FBAResult = helper.run(
             twin, solver, fluxes_to_maximize, fluxes_to_minimize, biomass_optimization=biomass_optimization,
-            relax_qssa=relax_qssa, qssa_relaxation_strength=qssa_relaxation_strength)
+            relax_qssa=relax_qssa, qssa_relaxation_strength=qssa_relaxation_strength, parsimony_strength=parsimony_strength)
 
         # @TODO : should be given by the current experiment
         simulations = [

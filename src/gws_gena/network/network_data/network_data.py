@@ -14,8 +14,9 @@ import numpy as np
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_biota import EnzymeClass
+from gws_biota import Reaction as BiotaReaction
 from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
-from gws_biota import Taxonomy as BiotaTaxo
+from gws_biota import Taxonomy as BiotaTaxonomy
 from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
                       File, JSONView, Logger, Resource, ResourceExporter,
                       RField, SerializableObjectJson, SerializableRField,
@@ -166,8 +167,8 @@ class NetworkData(SerializableObjectJson):
         # update maps
         if rxn.rhea_id:
             self._rhea_rxn_ids_map[rxn.rhea_id] = rxn.id
-        if rxn.enzyme:
-            ec_number = rxn.enzyme.get("ec_number")
+        for enzyme in rxn.enzymes:
+            ec_number = enzyme.get("ec_number")
             if ec_number:
                 self._ec_rxn_ids_map[ec_number] = rxn.id
 
@@ -332,6 +333,45 @@ class NetworkData(SerializableObjectJson):
 
     # -- F --
 
+    @classmethod
+    def from_biota(cls, tax_id=None):
+        net_data = NetworkData()
+        if tax_id:
+            tax = BiotaTaxonomy.get_or_none(BiotaTaxonomy.tax_id == tax_id)
+            if tax is None:
+                raise BadRequestException(f"No taxonomy found with taxonomy id {tax_id}")
+            net_data.name = tax.name
+            Logger.info(f"Creating network with tax_id={tax_id} ({tax.name}) ...")
+        else:
+            net_data.name = "unicell_network"
+            Logger.info("Creating network with all the reactions ...")
+            tax = None
+
+        if tax is None:
+            query = BiotaReaction.select().where(BiotaReaction.direction == "UN")
+        else:
+            query = BiotaReaction.search_by_tax_ids(tax.tax_id).where(BiotaReaction.direction == "UN")
+
+        nb_rxn = query.count()
+
+        page = 1
+        nb_items_per_page = 1000
+        count = 1
+        while True:
+            Logger.info(f" {count}/{nb_rxn} reaction loaded.")
+            current_query = query.paginate(page, nb_items_per_page)
+            if len(current_query) == 0:
+                break
+            for biota_rxn in current_query:
+                rxns = Reaction.from_biota(biota_reaction=biota_rxn)
+                net_data.add_reaction(rxns[0])
+                count += 1
+
+            page += 1
+
+        Logger.info(f"{nb_rxn} reaction loaded. Done!")
+        return net_data
+
     def flatten_reaction_id(self, rxn: Reaction) -> str:
         """ Flatten the id of a reaction """
         if not isinstance(rxn, Reaction):
@@ -374,6 +414,8 @@ class NetworkData(SerializableObjectJson):
             return SlugifyHelper.slugify_id(self.name + self.DELIMITER + compartment.id)
         else:
             return compartment.id
+
+    # -- G --
 
     def get_compound_recon_tag(self, comp_id: str, tag_name: str = None):
         """
@@ -830,18 +872,18 @@ class NetworkData(SerializableObjectJson):
         column_names = [
             "id",
             "equation_str",
-            "enzyme",
-            "ec_number",
+            "ec_numbers",
+            "enzyme_names",
+            "enzyme_classes",
             "lb",
             "ub",
-            "enzyme_class",
             "is_from_gap_filling",
             "comments",
             "substrates",
             "products",
             "mass_balance",
             "charge_balance",
-            *BiotaTaxo.get_tax_tree(),
+            *BiotaTaxonomy.get_tax_tree(),
             *bkms
         ]
         rxn_row = {}
@@ -851,8 +893,8 @@ class NetworkData(SerializableObjectJson):
         data = []
         rxn_count = 1
         for rxn in self.reactions.values():
-            enz = ""
-            ec = ""
+            enzyme_names = ""
+            ec_numbers = ""
             comment = []
             enzyme_class = ""
             is_from_gap_filling = False
@@ -861,33 +903,37 @@ class NetworkData(SerializableObjectJson):
                 pathway_cols[f] = ""
 
             tax_cols = {}
-            for f in BiotaTaxo.get_tax_tree():
+            for f in BiotaTaxonomy.get_tax_tree():
                 tax_cols[f] = ""
 
             flag = self.get_reaction_recon_tag(rxn.id, "is_from_gap_filling")
             if flag:
                 is_from_gap_filling = True
-            if rxn.enzyme:
-                enz = rxn.enzyme.get("name", "--")
-                ec = rxn.enzyme.get("ec_number", "--")
-                deprecated_enz = rxn.enzyme.get("related_deprecated_enzyme")
+
+            ec_numbers = []
+            enzyme_names = []
+            enzyme_classes = []
+            for enzyme in rxn.enzymes:
+                enzyme_names.append(enzyme.get("name", "--"))
+                ec_numbers.append(enzyme.get("ec_number", "--"))
+                deprecated_enz = enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
                     comment.append(str(deprecated_enz["ec_number"]) + " (" + str(deprecated_enz["reason"]) + ")")
-                if rxn.enzyme.get("pathways"):
+                if enzyme.get("pathways"):
                     bkms = ['brenda', 'kegg', 'metacyc']
-                    pw = rxn.enzyme.get("pathways")
+                    pw = enzyme.get("pathways")
                     if pw:
                         for db in bkms:
                             if pw.get(db):
                                 pathway_cols[db] = pw[db]["name"] + " (" + (pw[db]
                                                                             ["id"] if pw[db]["id"] else "--") + ")"
-                if rxn.enzyme.get("tax"):
-                    tax = rxn.enzyme.get("tax")
-                    for f in BiotaTaxo.get_tax_tree():
+                if enzyme.get("tax"):
+                    tax = enzyme.get("tax")
+                    for f in BiotaTaxonomy.get_tax_tree():
                         if f in tax:
                             tax_cols[f] = tax[f]["name"] + " (" + str(tax[f]["tax_id"]) + ")"
-                if rxn.enzyme.get("ec_number"):
-                    enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == rxn.enzyme.get("ec_number"))
+                if enzyme.get("ec_number"):
+                    enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == enzyme.get("ec_number"))
 
             subs = []
             for substrate in rxn.substrates.values():
@@ -908,11 +954,11 @@ class NetworkData(SerializableObjectJson):
             _rxn_row = rxn_row.copy()
             _rxn_row["id"] = rxn.id
             _rxn_row["equation_str"] = rxn.to_str()
-            _rxn_row["enzyme"] = enz
-            _rxn_row["ec_number"] = ec
+            _rxn_row["enzyme_names"] = enzyme_names
+            _rxn_row["ec_numbers"] = ec_numbers
             _rxn_row["ub"] = str(rxn.lower_bound)
             _rxn_row["lb"] = str(rxn.upper_bound)
-            _rxn_row["enzyme_class"] = enzyme_class
+            _rxn_row["enzyme_classes"] = enzyme_classes
             _rxn_row["is_from_gap_filling"] = is_from_gap_filling
             _rxn_row["comments"] = "; ".join(comment)
             _rxn_row["substrates"] = "; ".join(subs)
@@ -932,12 +978,12 @@ class NetworkData(SerializableObjectJson):
             if not ec:
                 continue
             _rxn_row = rxn_row.copy()
-            _rxn_row["ec_number"] = ec       # ec number
+            _rxn_row["ec_numbers"].append(ec)       # ec number
             _rxn_row["comments"] = error     # comment
             if is_partial_ec_number:
                 enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == ec)
                 if enzyme_class is not None:
-                    _rxn_row["enzyme_class"] = enzyme_class.get_name()
+                    _rxn_row["enzyme_classes"].append(enzyme_class.get_name())
             rxn_count += 1
             data.append(list(_rxn_row.values()))
 

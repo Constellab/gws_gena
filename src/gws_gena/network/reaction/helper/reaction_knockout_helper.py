@@ -29,31 +29,19 @@ class ReactionKnockOutHelper(BaseHelper):
         all_ids = []
         found_id = []
 
-        if isinstance(reaction_table, ECTable):
-            # ko using EC_NUMBER only
-            ec_list: list = reaction_table.get_ec_numbers()
-            for _, rxn in new_net.reactions.get_element().items():
-                ec_number_str = rxn.enzyme.get("ec_number")
-                if ko_delimiter:
-                    ec_numbers = ec_number_str.split(ko_delimiter)
-                else:
-                    ec_numbers = [ec_number_str]
-                all_ids.extend(ec_numbers)
-
-                for ec_number in ec_numbers:
-                    for ko_ec in ec_list:
-                        if ec_number == ko_ec:
-                            rxn.lower_bound = -self.FLUX_EPSILON
-                            rxn.upper_bound = self.FLUX_EPSILON
-                            found_id.append(ec_number)
-                            # print(f'{ko_ec} - {rxn.lower_bound} -  {rxn.upper_bound}')
-
-        elif isinstance(reaction_table, EntityIDTable):
+        if isinstance(reaction_table, (EntityIDTable, ECTable,)):
             # ko using RXN_ID and EC_NUMBER
-            id_list: list = reaction_table.get_ids()
+            if isinstance(reaction_table, EntityIDTable):
+                id_list: list = reaction_table.get_ids()
+            else:
+                id_list: list = reaction_table.get_ec_numbers()
+
             for rxn_id, rxn in new_net.reactions.items():
                 rhea_id = rxn.rhea_id
-                ec_number = rxn.enzyme.get("ec_number")
+                ec_number_tab = []
+                for enzyme in rxn.enzymes:
+                    ec_number_tab.append(enzyme.get("ec_number"))
+
                 for _, ko_id_str in enumerate(id_list):
                     if ko_delimiter:
                         ko_ids = ko_id_str.split(ko_delimiter)
@@ -62,7 +50,7 @@ class ReactionKnockOutHelper(BaseHelper):
                     all_ids.extend(ko_ids)
 
                     for ko_id in ko_ids:
-                        if ko_id in [rxn_id, rhea_id, ec_number]:
+                        if ko_id in [rxn_id, rhea_id, *ec_number_tab]:
                             rxn.lower_bound = -self.FLUX_EPSILON
                             rxn.upper_bound = self.FLUX_EPSILON
                             found_id.append(ko_id)
