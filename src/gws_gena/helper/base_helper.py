@@ -22,13 +22,7 @@ class BaseHelper:
             self._task.log_success_message(message)
         else:
             Logger.info(message)
-
-    def log_success_message(self, message):
-        if self._task:
-            self._task.log_success_message(message)
-        else:
-            Logger.success(message)
-
+            
     def log_warning_message(self, message):
         if self._task:
             self._task.log_warning_message(message)

@@ -16,13 +16,14 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
     async def test_large_fba(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        async def run_fba(organism, solver="highs", relax_qssa=False):
+        async def run_fba(organism, solver="highs", relax_qssa=False, translate_ids=False):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
             organism_dir = os.path.join(data_dir, organism)
             organism_result_dir = os.path.join(data_dir, 'fba', organism)
             net = NetworkImporter.call(
-                File(os.path.join(organism_dir, f"{organism}.json"))
+                File(os.path.join(organism_dir, f"{organism}.json")),
+                params={"translate_ids": translate_ids}
             )
             ctx = ContextImporter.call(File(
                 os.path.join(organism_dir, f"{organism}_context.json")
@@ -35,7 +36,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba.set_param('relax_qssa', relax_qssa)
             fba.set_param('qssa_relaxation_strength', 1)
             if organism == 'ecoli':
-                #fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+                # fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
                 fba.set_param('biomass_optimization', "maximize")
             else:
                 fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
@@ -93,8 +94,6 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             await run_fba(organism=organism, solver="quad", relax_qssa=relax)
 
-        # pcys
         for relax in [True]:
-            organism = "pcys"
-            self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-            await run_fba(organism=organism, solver="quad", relax_qssa=relax)
+            self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad + translate ids)")
+            await run_fba(organism=organism, solver="quad", relax_qssa=relax, translate_ids=True)

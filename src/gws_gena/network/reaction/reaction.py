@@ -16,7 +16,6 @@ from ..exceptions.compound_exceptions import (ProductDuplicateException,
                                               SubstrateDuplicateException)
 from ..exceptions.reaction_exceptions import InvalidReactionException
 from ..helper.numeric_helper import NumericHelper
-from ..helper.slugify_helper import SlugifyHelper
 from ..reaction.helper.reaction_biota_helper import ReactionBiotaHelper
 from ..reaction.reaction_compound import Product, Substrate
 from ..typing.enzyme_typing import EnzymeDict
@@ -57,7 +56,6 @@ class Reaction:
     lower_bound: float = LOWER_BOUND
     upper_bound: float = UPPER_BOUND
     rhea_id: str = ""
-    # enzyme: EnzymeDict = None  # TODO: will be deprecated
     enzymes: List[EnzymeDict] = None
     products: Dict[str, Product] = None
     substrates: Dict[str, Substrate] = None
@@ -70,10 +68,20 @@ class Reaction:
         for key, val in dict_.items():
             setattr(self, key, val)
 
-        if self.id:
-            self.id = SlugifyHelper.slugify_id(self.id)
-        else:
-            self.id = SlugifyHelper.slugify_id(self.name)
+        if not self.id:
+            if not self.name:
+                if self.rhea_id:
+                    self.name = self.rhea_id
+                else:
+                    raise InvalidReactionException("The reaction name or rhea_id is required")
+
+            if self.rhea_id:
+                self.id = self.rhea_id
+            else:
+                self.id = self.name
+
+        if not self.name:
+            self.name = self.id
 
         # enzymes
         if self.enzymes is None:
@@ -131,18 +139,6 @@ class Reaction:
             else:
                 raise SubstrateDuplicateException(
                     f"Substrate duplicate (rxn_id={self.rhea_id}, rxn_rhea={self.rhea_id}, comp_id= {comp.id})")
-
-        # is_also_product = comp.id in self.product_stoichs
-        # if is_also_product:
-        #     if update_if_exists:
-        #         self.product_stoichs[comp.id] -= abs(float(stoich))
-        #         if self.product_stoichs[comp.id] == 0.0:
-        #             self.remove_product(comp)
-        #         return
-        #     else:
-        #         raise SubstrateDuplicateException(
-        #             "gena.reaction.Reaction", "add_substrate",
-        #             f"Cannot add the substrate. A product with the id already exists (id= {comp.id})")
 
         if (network is not None) and (not network.compound_exists(comp)):
             network.add_compound(comp)
@@ -260,22 +256,6 @@ class Reaction:
 
     # -- F --
 
-    # @ classmethod
-    # def flatten_id(cls, rxn_id: str, net_name: str) -> str:
-    #     """
-    #     Flattens a reaction id
-
-    #     :param id: The id
-    #     :type id: `str`
-    #     :param net_name: The name of the network
-    #     :type net_name: `str`
-    #     :return: The flattened id
-    #     :rtype: `str`
-    #     """
-
-    #     delim = cls._FLATTENING_DELIMITER
-    #     return SlugifyHelper.slugify_id(net_name + delim + rxn_id)
-
     @ classmethod
     def from_biota(cls, *, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None,
                    tax_search_method='bottom_up') -> List['Reaction']:
@@ -311,7 +291,7 @@ class Reaction:
         elif ec_number:
             biota_reaction_dict = {}
             if tax_id:
-                query = EnzymeSearchUpHelper.search(ec_number, tax_id, tax_search_method='bottom_up')
+                query = EnzymeSearchUpHelper.search(ec_number, tax_id, tax_search_method=tax_search_method)
 
                 if len(query) == 0:
                     raise BadRequestException(f"No enzyme found with ec_number {ec_number} and tax_id {tax_id}")
@@ -432,12 +412,6 @@ class Reaction:
         return BiotaReaction.get_or_none(BiotaReaction.rhea_id == self.rhea_id)
 
     # -- S --
-
-    # def set_enzyme(self, enzyme_dict: EnzymeDict):
-    #     """ Set enzyme """
-    #     if not isinstance(enzyme_dict, dict):
-    #         raise BadRequestException("The enzyme data must be a dictionary")
-    #     self.enzyme = enzyme_dict
 
     def set_data(self, data: dict):
         """ Set data """

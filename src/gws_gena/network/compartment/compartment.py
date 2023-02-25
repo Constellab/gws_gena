@@ -9,7 +9,7 @@ from typing import Dict
 from gws_biota import Compartment as BiotaCompartment
 from gws_biota import \
     CompartmentNotFoundException as BiotaCompartmentNotFoundException
-from gws_core import BadRequestException, SerializableRField
+from gws_core import BadRequestException
 
 from ..exceptions.compartment_exceptions import InvalidCompartmentException
 from ..helper.slugify_helper import SlugifyHelper
@@ -92,7 +92,7 @@ class Compartment:
         return cls.from_biota(go_id=go_id, bigg_id=bigg_id) is not None
 
     @classmethod
-    def from_biota(cls, *, go_id: str = None, bigg_id: str = None):
+    def from_biota(cls, *, go_id: str = None, bigg_id: str = None, default_other: bool = False):
         """
         Loads from biota using its `go_id` or `bigg_id`
         The `go_id` is tested in priority if provied
@@ -146,6 +146,11 @@ class Compartment:
     def create_sink_compartment(cls):
         """ Create extracellular space compartment """
         return cls.from_biota(go_id=cls.SINK_GO_ID)
+
+    @ classmethod
+    def create_other_compartment(cls):
+        """ Create unknown/other compartment """
+        return cls.from_biota(go_id=cls.OTHER_GO_ID)
 
     def is_extracellular(self) -> bool:
         """

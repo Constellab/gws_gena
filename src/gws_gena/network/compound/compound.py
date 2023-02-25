@@ -9,15 +9,14 @@ from typing import List
 
 from gws_biota import Cofactor as BiotaCofactor
 from gws_biota import Compound as BiotaCompound
-from gws_biota import CompoundClusterDict as BiotaCompoundClusterDict
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_biota import Residue as BiotaResidue
 from gws_core import BadRequestException
 
 from ..compartment.compartment import Compartment
-from ..exceptions.compound_exceptions import CompoundNotFoundException
-from ..helper.slugify_helper import SlugifyHelper
+from ..exceptions.compound_exceptions import (CompoundNotFoundException,
+                                              InvalidCompoundIdException)
 from ..typing.compound_typing import CompoundDict
 
 
@@ -90,22 +89,17 @@ class Compound:
         if not isinstance(self.inchikey, str):
             raise BadRequestException("The inchikey must be a string")
 
-        if self.id:
-            self.id = SlugifyHelper.slugify_id(self.id)
-        else:
+        if not self.id:
             if not self.name:
                 if self.chebi_id:
-                    c = BiotaCompound.get_or_none(BiotaCompound.chebi_id == self.chebi_id)
-                    if c is not None:
-                        self.name = c.get_name()
-                    else:
-                        self.name = self.chebi_id
+                    self.name = self.chebi_id
                 else:
-                    raise CompoundNotFoundException("The chebi_id is not valid")
+                    raise InvalidCompoundIdException("The compound name or chebi_id is required")
 
-            self.id = SlugifyHelper.slugify_id(
-                self.name + self.DELIMITER + self.compartment.name
-            )
+            if self.chebi_id:
+                self.id = self.chebi_id + self.DELIMITER + self.compartment.name
+            else:
+                self.id = self.name + self.DELIMITER + self.compartment.name
 
         if not self.name:
             self.name = self.id

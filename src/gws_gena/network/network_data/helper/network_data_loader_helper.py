@@ -39,58 +39,58 @@ class NetworkDataLoaderHelper(BaseHelper):
                 annotation_dict[k].append(v)
         return annotation_dict
 
-    def _loads_all_biota_elements_from_dump(self, data: 'NetworkDict'):
+    # def _loads_all_biota_elements_from_dump(self, data: 'NetworkDict'):
 
-        # get all biota compounds
-        chebi_id_list = []
-        ckey = "compounds" if "compounds" in data else "metabolites"
-        for comp_data in data[ckey]:
-            chebi_id_list.append(comp_data["chebi_id"])
-        chebi_id_list = list(set(chebi_id_list))
-        query = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_id_list))
-        # query = BiotaCompound.search_by_chebi_ids(chebi_id_list)
-        biota_comps = {}
-        for c in query:
-            biota_comps[c.chebi_id] = c
-        self.log_info_message(f"{len(query)} compounds loaded from BIOTA.")
+    #     # get all biota compounds
+    #     chebi_id_list = []
+    #     ckey = "compounds" if "compounds" in data else "metabolites"
+    #     for comp_data in data[ckey]:
+    #         chebi_id_list.append(comp_data["chebi_id"])
+    #     chebi_id_list = list(set(chebi_id_list))
+    #     query = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_id_list))
+    #     # query = BiotaCompound.search_by_chebi_ids(chebi_id_list)
+    #     biota_comps = {}
+    #     for c in query:
+    #         biota_comps[c.chebi_id] = c
+    #     self.log_info_message(f"{len(query)} compounds loaded from biota db")
 
-        # get all biota enzymes
-        ec_numbers = []
-        for rxn_data in data["reactions"]:
-            if self.is_bigg_data_format:
-                skip = False
-                for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
-                    if rxn_data["id"].startswith(pref):
-                        skip = True
-                        break
-                if skip:
-                    continue
-            ec_numbers.extend(rxn_data["ec_numbers"])
-        ec_numbers = list(set(ec_numbers))
-        query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
-        biota_enzymes_dict = {}
-        rxn_biota_helper = ReactionBiotaHelper()
-        rxn_biota_helper.attach_task(self._task)
+    #     # get all biota enzymes
+    #     ec_numbers = []
+    #     for rxn_data in data["reactions"]:
+    #         if self.is_bigg_data_format:
+    #             skip = False
+    #             for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
+    #                 if rxn_data["id"].startswith(pref):
+    #                     skip = True
+    #                     break
+    #             if skip:
+    #                 continue
+    #         ec_numbers.extend(rxn_data["ec_numbers"])
+    #     ec_numbers = list(set(ec_numbers))
+    #     query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
+    #     biota_enzymes_dict = {}
+    #     rxn_biota_helper = ReactionBiotaHelper()
+    #     rxn_biota_helper.attach_task(self._task)
 
-        enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
-            query, load_taxonomy=False, load_pathway=True)
+    #     enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
+    #         query, load_taxonomy=False, load_pathway=True)
 
-        biota_enzymes_dict = {}
-        for val in enzyme_list:
-            key = val["ec_number"]
-            biota_enzymes_dict[key] = val
+    #     biota_enzymes_dict = {}
+    #     for val in enzyme_list:
+    #         key = val["ec_number"]
+    #         biota_enzymes_dict[key] = val
 
-        # for e in query:
-        #     enzyme_dict = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
-        #         e, load_taxonomy=False, load_pathway=True)
-        #     biota_enzymes_dict[e.ec_number] = enzyme_dict
+    #     # for e in query:
+    #     #     enzyme_dict = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
+    #     #         e, load_taxonomy=False, load_pathway=True)
+    #     #     biota_enzymes_dict[e.ec_number] = enzyme_dict
 
-        self.log_info_message(f"{len(query)} enzyme ortholog loaded from BIOTA.")
+    #     self.log_info_message(f"{len(query)} enzyme ortholog loaded from biota db")
 
-        return biota_comps, biota_enzymes_dict
+    #     return biota_comps, biota_enzymes_dict
 
     def _create_compounds_from_dump(
-            self, net, data: 'NetworkDict', biota_comps, skip_orphans):
+            self, net, data: 'NetworkDict', *, mapping_dict, skip_orphans, translate_ids):
         from ...compound.compound import Compound
 
         added_comps = {}
@@ -107,30 +107,29 @@ class NetworkDataLoaderHelper(BaseHelper):
                 perc = int(100 * count/total_number_of_compounds)
                 self.log_info_message(f"... {perc}%")
 
-            chebi_id = comp_data.get("chebi_id", "")
-
-            # loads biota info
-            if chebi_id:
-                biota_comp = biota_comps.get(chebi_id)
+            # loads biota info if it exists
+            comp_id = comp_data["id"]
+            if "compounds" in mapping_dict:
+                biota_comp = mapping_dict["compounds"].get(comp_id)
                 if biota_comp is not None:
                     for k in comp_data:
                         if hasattr(biota_comp, k):
                             if k != "id":
                                 comp_data[k] = getattr(biota_comp, k)
 
-                    # retreive valid chebi_id and kegg_id information
-                    comp_data["inchikey"] = biota_comp.inchikey
-                    comp_data["kegg_id"] = biota_comp.kegg_id
-
             # create compartment
             compart_id = comp_data["compartment"]
             compartment = Compartment(data["compartments"][compart_id])
 
+            if translate_ids:
+                used_comp_id = None
+            else:
+                used_comp_id = comp_id
+
             # create compound
-            comp_id = comp_data["id"]
             comp = Compound(
                 CompoundDict(
-                    id=comp_id,
+                    id=used_comp_id,
                     name=comp_data.get("name", ""),
                     compartment=compartment,
                     charge=comp_data.get("charge", ""),
@@ -139,7 +138,7 @@ class NetworkDataLoaderHelper(BaseHelper):
                     formula=comp_data.get("formula", ""),
                     inchi=comp_data.get("inchi", ""),
                     inchikey=comp_data.get("inchikey", ""),
-                    chebi_id=comp_data.get("chebi_id", chebi_id),
+                    chebi_id=comp_data.get("chebi_id", ""),
                     kegg_id=comp_data.get("kegg_id", ""),
                     layout=comp_data.get("layout")
                 ))
@@ -147,12 +146,15 @@ class NetworkDataLoaderHelper(BaseHelper):
             if not skip_orphans:
                 # add all compounds by default
                 net.add_compound(comp)
+
+            if comp_id in added_comps:
+                raise BadRequestException(f"Id duplicate {comp_id}")
             added_comps[comp_id] = comp
 
         return net, added_comps
 
     def _creates_reactions_from_dump(
-            self, net, data: 'NetworkDict', *, added_comps, biota_enzymes_dict):
+            self, net, data: 'NetworkDict', *, added_comps, mapping_dict, translate_ids):
 
         from ...reaction.reaction import Reaction
 
@@ -171,24 +173,26 @@ class NetworkDataLoaderHelper(BaseHelper):
                 perc = int(100 * count/total_number_of_reactions)
                 self.log_info_message(f"... {perc}%")
 
-            if self.is_bigg_data_format:
-                skip = False
-                for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
-                    if rxn_data["id"].startswith(pref):
-                        skip = True
-                        break
-                if skip:
-                    continue
-
             enzyme_list = []
-            for ec_number in rxn_data["ec_numbers"]:
-                if ec_number in biota_enzymes_dict:
-                    enzyme_list.append(biota_enzymes_dict[ec_number])
-                    break
+            # for ec_number in rxn_data["ec_numbers"]:
+            #     if ec_number in biota_enzymes_dict:
+            #         enzyme_list.append(biota_enzymes_dict[ec_number])
+            #         break
+
+            # loads biota info if it exists
+            if "reactions" in mapping_dict:
+                biota_rxn = mapping_dict["reactions"].get(rxn_data["id"])
+                if biota_rxn is not None:
+                    rxn_data["rhea_id"] = biota_rxn.rhea_id
+
+            if translate_ids:
+                used_rxn_id = None
+            else:
+                used_rxn_id = rxn_data["id"]
 
             rxn = Reaction(
                 ReactionDict(
-                    id=rxn_data["id"],
+                    id=used_rxn_id,
                     name=rxn_data.get("name"),
                     lower_bound=rxn_data.get("lower_bound", Reaction.lower_bound),
                     upper_bound=rxn_data.get("upper_bound", Reaction.upper_bound),
@@ -213,7 +217,10 @@ class NetworkDataLoaderHelper(BaseHelper):
                 elif stoich > 0:
                     rxn.add_product(comp, stoich, net)
 
-            net.add_reaction(rxn)
+            if net.reaction_exists(rxn):
+                self.log_warning_message(f"The reaction {rxn.rhea_id} is duplicated. It is only added once.")
+            else:
+                net.add_reaction(rxn)
 
         return net
 
@@ -225,12 +232,16 @@ class NetworkDataLoaderHelper(BaseHelper):
         return net
 
     def loads(self, data: 'NetworkDict', *,
-              biomass_reaction_id: str = None, skip_orphans: bool = False) -> 'NetworkData':
+              biomass_reaction_id: str = None,
+              skip_orphans: bool = False,
+              translate_ids: bool = False,
+              replace_unknown_compartments: bool = False) -> 'NetworkData':
         """ Load JSON data and create a Network  """
+        from ....mapper.bigg_mapper import BiggMapper
         from ...compound.compound import Compound
         from ...network import NetworkData
 
-        data = self._prepare_data(data)
+        data = self._prepare_data(data, replace_unknown_compartments)
         net = NetworkData()
 
         net.name = data.get("name", NetworkData.DEFAULT_NAME)
@@ -242,19 +253,20 @@ class NetworkDataLoaderHelper(BaseHelper):
         if not data.get("reactions"):
             raise BadRequestException("Invalid network dump. Reactions not found")
 
+        mapping_dict = {}
+        if translate_ids:
+            mapping_dict = BiggMapper.create_mapping_dict(data)
+
         self.log_info_message("Loading simulations ...")
         net = self._loads_simulations_from_dump(net, data)
-
-        # loads biota info:
-        self.log_info_message("Validating data against BIOTA database ...")
-        biota_comps, biota_enzymes_dict = self._loads_all_biota_elements_from_dump(data)
 
         self.log_info_message("Creating compounds ...")
         net, added_comps = self._create_compounds_from_dump(
             net,
             data,
-            biota_comps,
-            skip_orphans
+            mapping_dict=mapping_dict,
+            skip_orphans=skip_orphans,
+            translate_ids=translate_ids
         )
 
         self.log_info_message("Creating reactions ...")
@@ -262,13 +274,14 @@ class NetworkDataLoaderHelper(BaseHelper):
             net,
             data,
             added_comps=added_comps,
-            biota_enzymes_dict=biota_enzymes_dict
+            mapping_dict=mapping_dict,
+            translate_ids=translate_ids
         )
 
         # check if the biomass compartment exists
         if net.get_biomass_compound() is None:
             self.log_warning_message(
-                "No explicit biomass compound found.\nTry inferring the biomass reaction and adding an explicit dummy biomass compound")
+                "No explicit biomass entity found. Trying to infer and add an explicit biomass entity ...")
             if biomass_reaction_id:
                 self.log_warning_message(f'Looking for user biomass reaction "{biomass_reaction_id}" ...')
                 if biomass_reaction_id in net.reactions.get_elements():
@@ -299,11 +312,12 @@ class NetworkDataLoaderHelper(BaseHelper):
 
         return net
 
-    def _prepare_data(self, data):
+    def _prepare_data(self, data, replace_unknown_compartments):
         """ Clean data """
         out_data = copy.deepcopy(data)
-        out_data["compartments"] = {}
+        out_data = self._remove_ignored_reactions(out_data)
 
+        out_data["compartments"] = {}
         # prepare compartment
 
         if isinstance(data["compartments"], dict):
@@ -311,7 +325,14 @@ class NetworkDataLoaderHelper(BaseHelper):
             for bigg_id in data["compartments"].keys():
                 compart = Compartment.from_biota(bigg_id=bigg_id)
                 if compart is None:
-                    raise BadRequestException(f"The compartment bigg_id '{bigg_id}' is not known")
+                    if replace_unknown_compartments:
+                        self.log_warning_message(
+                            f"The compartment '{bigg_id}' is not known. It is replaced by {compart.bigg_id}.")
+                        compart = Compartment.create_other_compartment()
+                        bigg_id = compart.bigg_id
+                    else:
+                        raise BadRequestException(f"The compartment '{bigg_id}' is not known")
+
                 out_data["compartments"][bigg_id] = {
                     "id": bigg_id,
                     "go_id": compart.go_id,
@@ -396,3 +417,23 @@ class NetworkDataLoaderHelper(BaseHelper):
                     rxn_data['ec_numbers'] = ec_numbers
 
         return out_data
+
+    def _remove_ignored_reactions(self, data):
+        list_to_keep = []
+        for i, rxn_data in enumerate(data["reactions"]):
+            to_keep = True
+            for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
+                if rxn_data["id"].startswith(pref):
+                    to_keep = False
+                    break
+            if to_keep:
+                list_to_keep.append(i)
+
+        nb_ignored_rxns = len(data['reactions']) - len(list_to_keep)
+        if nb_ignored_rxns > 0:
+            self.log_info_message(
+                f"{nb_ignored_rxns} reactions with prefixes {self.BIGG_REACTION_PREFIX_TO_IGNORE} were ignored")
+            rxn_data = [data["reactions"][i] for i in list_to_keep]
+            data["reactions"] = rxn_data
+
+        return data

@@ -89,7 +89,6 @@ class NetworkData(SerializableObjectJson):
         return cls.loads(
             data,
             biomass_reaction_id=None,
-            skip_orphans=False
         )
 
     # =========================== CLASS LOGIC ===========================
@@ -743,8 +742,13 @@ class NetworkData(SerializableObjectJson):
     # -- L --
 
     @ classmethod
-    def loads(cls, data: NetworkDict, *,
-              biomass_reaction_id: str = None, skip_orphans: bool = False, task: Task = None) -> 'NetworkData':
+    def loads(
+            cls, data: NetworkDict, *,
+            biomass_reaction_id: str = None,
+            skip_orphans: bool = False,
+            translate_ids: bool = False,
+            replace_unknown_compartments: bool = False,
+            task: Task = None) -> 'NetworkData':
         """ Load JSON data and create a Network  """
 
         if not data.get("compartments"):
@@ -760,7 +764,9 @@ class NetworkData(SerializableObjectJson):
         return helper.loads(
             data,
             biomass_reaction_id=biomass_reaction_id,
-            skip_orphans=skip_orphans
+            skip_orphans=skip_orphans,
+            translate_ids=translate_ids,
+            replace_unknown_compartments=replace_unknown_compartments
         )
 
     # -- N --

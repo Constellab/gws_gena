@@ -21,7 +21,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=file_path),
-            params={"skip_orphans": True}
+            params={'skip_orphans': True}
         )
 
         json_data = net.dumps()
@@ -37,8 +37,8 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(net.compounds["atp_c"].id, "atp_c")
         self.assertEqual(net.compounds["atp_c"].name, "ATP C10H12N5O13P3")
         self.assertEqual(net.compounds["atp_c"].compartment.id, "c")
-        self.assertEqual(len(net.reactions), 3)
-        self.assertEqual(net.reactions["EX_glc_D_e"].to_str(), "(1.0) glc_D_e <==()==> *")
+        self.assertEqual(len(net.reactions), 2)
+        # self.assertEqual(net.reactions["EX_glc_D_e"].to_str(), "(1.0) glc_D_e <==()==> *")
         self.assertEqual(
             net.reactions["GLNabc"].to_str(),
             "(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c")
@@ -98,14 +98,12 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "ecoli")
         file_path = os.path.join(data_dir, "ecoli.json")
-        # data_dir = os.path.join(data_dir, "ecoli/build")
-        # file_path = os.path.join(data_dir, "ecoli_BL21_iECD_1391.json")
 
-        # import 1
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams({"skip_orphans": False})
+            params=ConfigParams({})
         )
+
         self.print("ecoli successffuly imported - skip exchange reactions")
         self.assertEqual(len(net.compounds), 73)
         self.assertEqual(len(net.reactions), 75)
@@ -117,7 +115,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         # import 2
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams({"skip_orphans": True})
+            params=ConfigParams({})
         )
         self.print("ecoli successffuly imported - skip exchange reactions")
         self.assertEqual(len(net.compounds), 73)

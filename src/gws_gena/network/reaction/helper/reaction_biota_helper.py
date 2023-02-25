@@ -26,17 +26,17 @@ class ReactionBiotaHelper(BaseHelper):
     """ ReactionBiotaHelper """
 
     def create_oligomer_if_required_and_add_to_reaction(
-            self, comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
+            self, biota_comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
             compartment_go_id=None, alt_litteral_comppound_name=None, oligomerization=None):
         """ Merge a list of compounds (oligomerisation) """
 
         from ...compound.compound import Compound
 
         if compartment_go_id is None:
-            compartment_go_id = comps[0].compartment.go_id
+            compartment_go_id = biota_comps[0].compartment.go_id
 
         names = []
-        for comp in comps:
+        for comp in biota_comps:
             names.append(comp.name)
 
         if oligomerization is not None:
@@ -64,13 +64,13 @@ class ReactionBiotaHelper(BaseHelper):
                         compartment=c.compartment
                     ))
 
-        c.chebi_id = ",".join([comp_.chebi_id or "" for comp_ in comps])
-        c.kegg_id = ",".join([comp_.kegg_id or "" for comp_ in comps])
-        c.charge = str(sum([float(comp_.charge or 0.0) for comp_ in comps]))
-        c.formula = ",".join([comp_.formula or "" for comp_ in comps])
-        c.mass = str(sum([float(comp_.mass or 0.0) for comp_ in comps]))
-        c.monoisotopic_mass = str(sum([float(comp_.monoisotopic_mass or 0.0) for comp_ in comps]))
-        c.layout = comps[0].layout
+        c.chebi_id = ",".join([comp_.chebi_id or "" for comp_ in biota_comps])
+        c.kegg_id = ",".join([comp_.kegg_id or "" for comp_ in biota_comps])
+        c.charge = str(sum([float(comp_.charge or 0.0) for comp_ in biota_comps]))
+        c.formula = ",".join([comp_.formula or "" for comp_ in biota_comps])
+        c.mass = str(sum([float(comp_.mass or 0.0) for comp_ in biota_comps]))
+        c.monoisotopic_mass = str(sum([float(comp_.monoisotopic_mass or 0.0) for comp_ in biota_comps]))
+        c.layout = biota_comps[0].layout
 
         if is_product:
             rxn.add_product(c, stoich, update_if_exists=True)
@@ -134,7 +134,8 @@ class ReactionBiotaHelper(BaseHelper):
 
         from ...reaction.reaction import Reaction
 
-        enzyme_list: List[EnzymeDict] = self.create_reaction_enzyme_dict_from_biota(rhea_rxn.enzymes)
+        enzyme_list: List[EnzymeDict] = self.create_reaction_enzyme_dict_from_biota(
+            rhea_rxn.enzymes, load_taxonomy=False)
 
         rxn: Reaction = Reaction(
             ReactionDict(

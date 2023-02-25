@@ -6,6 +6,7 @@
 from gws_core import (ConfigParams, InputSpec, OutputSpec, Task, TaskInputs,
                       TaskOutputs, task_decorator)
 
+from ..helper.network_merger import NetworkMergerHelper
 from ..network import Network
 
 
@@ -26,11 +27,10 @@ class NetworkMerger(Task):
     config_specs = {}
 
     async def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        net_1 = inputs['network_1']
-        net_2 = inputs['network_2']
-        for rxn in net_2.reactions.values():
-            if not net_1.reaction_exists(rxn):
-                net_1.add_reaction(rxn)
-            else:
-                self.log_info_message(f"Reaction {rxn.id} is ignored. It already exists.")
-        return {'network': net_1}
+        net1 = inputs['network_1']
+        net2 = inputs['network_2']
+
+        merger_helper = NetworkMergerHelper()
+        merger_helper.attach_task(self)
+        merger_helper.merge(destination_network=net1, source_network=net2, inplace=True)
+        return {'network': net1}
