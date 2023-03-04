@@ -64,6 +64,8 @@ from .sanitizer.isolate.helper.isolate_finder_helper import IsolateFinderHelper
 from .sanitizer.isolate.isolate_finder import IsolateFinder
 from .sanitizer.isolate.isolate_finder_result import IsolateFinderResult
 from .sanitizer.orphan.orphan_remover import OrphanRemover
+# transporter
+from .transporter.transporter_adder import TransporterAdder
 # twin
 from .twin.flat_twin import FlatTwin
 from .twin.helper.twin_helper import TwinHelper

@@ -83,7 +83,6 @@ class Twin(ResourceSet):
 
             for measure in ctx.measures.values():
                 for variable in measure.variables:
-                    print(variable)
                     if variable.reference_type == Variable.REACTION_REFERENCE_TYPE:
                         if not variable.reference_id in reaction_ids:
                             raise BadRequestException(

@@ -7,10 +7,9 @@ import json
 import os
 from typing import Type
 
-from gws_core import (BadRequestException, BoolParam, ConfigParams,
-                      ConfigSpecs, File, FileHelper, ResourceExporter,
-                      ResourceImporter, StrParam, exporter_decorator,
-                      importer_decorator)
+from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
+                      FileHelper, ResourceExporter, StrParam,
+                      exporter_decorator)
 from pandas import DataFrame
 
 from ..network import Network
@@ -49,7 +48,7 @@ class NetworkExporter(ResourceExporter):
                 if file_format == "json":
                     data = resource.dumps()
                     json.dump(data, fp)
-              
+
                 elif file_format in ["csv", "txt", "tsv"]:
                     fp.write(resource.to_csv())
                 else:

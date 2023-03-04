@@ -8,8 +8,8 @@ import os
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      FileHelper, JSONDict, ResourceExporter, ResourceImporter,
-                      StrParam, exporter_decorator, importer_decorator)
+                      FileHelper, ResourceExporter, ResourceImporter, StrParam,
+                      exporter_decorator, importer_decorator)
 
 from .context import Context
 

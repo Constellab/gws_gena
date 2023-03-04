@@ -3,21 +3,11 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_biota import Compound as BiotaCompound
-from gws_biota import Enzyme as BiotaEnzyme
-from gws_biota import Reaction as BiotaReaction
-from gws_biota import Taxonomy as BiotaTaxo
-from gws_biota import Unicell as BiotaUnicell
-from gws_biota.unicell.unicell_service import \
-    UnicellService as BiotaUnicellService
-from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
-                      Logger, OutputSpec, StrParam, Task, TaskInputs,
+from gws_core import (ConfigParams, InputSpec,
+                      OutputSpec, StrParam, Task, TaskInputs,
                       TaskOutputs, task_decorator)
 
-from ...network.compound.compound import Compound
-from ...network.graph.graph import Graph
 from ...network.network import Network
-from ...network.reaction.reaction import Reaction
 from .helper.gap_filler_helper import GapFillerHelper
 
 

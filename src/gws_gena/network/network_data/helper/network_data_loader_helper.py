@@ -39,56 +39,6 @@ class NetworkDataLoaderHelper(BaseHelper):
                 annotation_dict[k].append(v)
         return annotation_dict
 
-    # def _loads_all_biota_elements_from_dump(self, data: 'NetworkDict'):
-
-    #     # get all biota compounds
-    #     chebi_id_list = []
-    #     ckey = "compounds" if "compounds" in data else "metabolites"
-    #     for comp_data in data[ckey]:
-    #         chebi_id_list.append(comp_data["chebi_id"])
-    #     chebi_id_list = list(set(chebi_id_list))
-    #     query = BiotaCompound.select().where(BiotaCompound.chebi_id.in_(chebi_id_list))
-    #     # query = BiotaCompound.search_by_chebi_ids(chebi_id_list)
-    #     biota_comps = {}
-    #     for c in query:
-    #         biota_comps[c.chebi_id] = c
-    #     self.log_info_message(f"{len(query)} compounds loaded from biota db")
-
-    #     # get all biota enzymes
-    #     ec_numbers = []
-    #     for rxn_data in data["reactions"]:
-    #         if self.is_bigg_data_format:
-    #             skip = False
-    #             for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
-    #                 if rxn_data["id"].startswith(pref):
-    #                     skip = True
-    #                     break
-    #             if skip:
-    #                 continue
-    #         ec_numbers.extend(rxn_data["ec_numbers"])
-    #     ec_numbers = list(set(ec_numbers))
-    #     query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
-    #     biota_enzymes_dict = {}
-    #     rxn_biota_helper = ReactionBiotaHelper()
-    #     rxn_biota_helper.attach_task(self._task)
-
-    #     enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
-    #         query, load_taxonomy=False, load_pathway=True)
-
-    #     biota_enzymes_dict = {}
-    #     for val in enzyme_list:
-    #         key = val["ec_number"]
-    #         biota_enzymes_dict[key] = val
-
-    #     # for e in query:
-    #     #     enzyme_dict = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
-    #     #         e, load_taxonomy=False, load_pathway=True)
-    #     #     biota_enzymes_dict[e.ec_number] = enzyme_dict
-
-    #     self.log_info_message(f"{len(query)} enzyme ortholog loaded from biota db")
-
-    #     return biota_comps, biota_enzymes_dict
-
     def _create_compounds_from_dump(
             self, net, data: 'NetworkDict', *, mapping_dict, skip_orphans, translate_ids):
         from ...compound.compound import Compound
@@ -153,6 +103,36 @@ class NetworkDataLoaderHelper(BaseHelper):
 
         return net, added_comps
 
+    def _load_all_enzymes(self, data):
+        # get all biota enzymes
+        ec_numbers = []
+        for rxn_data in data["reactions"]:
+            if self.is_bigg_data_format:
+                skip = False
+                for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
+                    if rxn_data["id"].startswith(pref):
+                        skip = True
+                        break
+                if skip:
+                    continue
+            ec_numbers.extend(rxn_data["ec_numbers"])
+        ec_numbers = list(set(ec_numbers))
+
+        query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
+        biota_enzymes_dict = {}
+        rxn_biota_helper = ReactionBiotaHelper()
+        rxn_biota_helper.attach_task(self._task)
+
+        enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
+            query, load_taxonomy=False, load_pathway=True)
+
+        biota_enzymes_dict = {}
+        for val in enzyme_list:
+            key = val["ec_number"]
+            biota_enzymes_dict[key] = val
+
+        return biota_enzymes_dict
+
     def _creates_reactions_from_dump(
             self, net, data: 'NetworkDict', *, added_comps, mapping_dict, translate_ids):
 
@@ -167,6 +147,9 @@ class NetworkDataLoaderHelper(BaseHelper):
         rxn_biota_helper = ReactionBiotaHelper()
         rxn_biota_helper.attach_task(self._task)
 
+        # load all enzymes if possible
+        biota_enzymes_dict = self._load_all_enzymes(data)
+
         for rxn_data in data["reactions"]:
             count += 1
             if not count % rxn_print_interval:
@@ -174,10 +157,10 @@ class NetworkDataLoaderHelper(BaseHelper):
                 self.log_info_message(f"... {perc}%")
 
             enzyme_list = []
-            # for ec_number in rxn_data["ec_numbers"]:
-            #     if ec_number in biota_enzymes_dict:
-            #         enzyme_list.append(biota_enzymes_dict[ec_number])
-            #         break
+            for ec_number in rxn_data["ec_numbers"]:
+                if ec_number in biota_enzymes_dict:
+                    enzyme_list.append(biota_enzymes_dict[ec_number])
+                    break
 
             # loads biota info if it exists
             if "reactions" in mapping_dict:

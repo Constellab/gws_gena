@@ -421,7 +421,7 @@ class Reaction:
 
     # -- T --
 
-    def to_str(self, show_ids=False) -> str:
+    def to_str(self, show_names=False) -> str:
         """
         Returns a string representation of the reaction
 
@@ -436,18 +436,16 @@ class Reaction:
         for comp_id, substrate in self.substrates.items():
             comp = substrate.compound
             stoich = substrate.stoich
-            if show_ids:
-                id_ = comp.chebi_id if comp.chebi_id else comp.id
-                left_.append(f"({stoich}) {id_}")
+            if show_names:
+                left_.append(f"({stoich}) {comp.name}")
             else:
                 left_.append(f"({stoich}) {comp.id}")
 
         for comp_id, product in self.products.items():
             comp = product.compound
             stoich = product.stoich
-            if show_ids:
-                id_ = comp.chebi_id if comp.chebi_id else comp.id
-                right_.append(f"({stoich}) {id_}")
+            if show_names:
+                right_.append(f"({stoich}) {comp.name}")
             else:
                 right_.append(f"({stoich}) {comp.id}")
 

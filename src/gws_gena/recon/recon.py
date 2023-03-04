@@ -3,9 +3,6 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_biota import Enzyme as BiotaEnzyme
-from gws_biota import Reaction as BiotaReaction
-from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
                       StringHelper, StrParam, Task, TaskInputs, TaskOutputs,
                       task_decorator)
@@ -14,7 +11,6 @@ from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
 from ..data.medium_table import MediumTable
 from ..network.network import Network
-from ..network.reaction.reaction import Reaction
 from .helper.recon_helper import ReconHelper
 
 
@@ -27,7 +23,7 @@ class DraftRecon(Task):
     """
 
     input_specs = {
-        'ec_table': InputSpec(ECTable, is_optional=True),
+        'ec_table': InputSpec(ECTable, human_name="Table of EC numbers", is_optional=True),
         'biomass_table': InputSpec(BiomassReactionTable, is_optional=True),
         'medium_table': InputSpec(MediumTable, is_optional=True)
     }

@@ -6,7 +6,7 @@
             "name": "Measure_1",
             "variables": [
                 {
-                    "reference_id": "EX_glc_D_e",
+                    "reference_id": "glc_D_transport",
                     "reference_type": "reaction",
                     "coefficient": 1.0
                 }
@@ -21,7 +21,7 @@
             "name": "Measure_2",
             "variables": [
                 {
-                    "reference_id": "EX_glc_D_e",
+                    "reference_id": "glc_D_transport",
                     "reference_type": "reaction",
                     "coefficient": 1.0
                 },

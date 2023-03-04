@@ -51,28 +51,29 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         problem = TwinHelper.create_fba_problem(flat_twin)
 
         print(problem["S"])
-        expected_S = DataFrame({
-            'small_cell_EX_glc_D_e': [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            'small_cell_GLNabc': [0.0, 1.0, -1.0, -1.0, 1.0, 0.0],
-            'small_cell_biomass': [-1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+        expected_s = DataFrame({
+            'small_cell_glc_D_transport': [-1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            'small_cell_GLNabc': [0.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0],
+            'small_cell_biomass': [0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
         }, index=[
             "glc_D_e",
+            "small_cell_glc_D_c",
+            "small_cell_adp_c",
+            "small_cell_atp_c",
             "small_cell_gln_L_c",
             "gln_L_e",
-            "small_cell_atp_c",
-            "small_cell_adp_c",
             "small_cell_biomass_b"
         ]
         )
         S = problem["S"]
         print(S.index)
-        expected_S = expected_S.loc[S.index, :]
-        expected_S = expected_S.loc[:, S.columns]
-        self.assertTrue(S.equals(expected_S))
+        expected_s = expected_s.loc[S.index, :]
+        expected_s = expected_s.loc[:, S.columns]
+        self.assertTrue(S.equals(expected_s))
 
         print(problem["C"])
-        expected_C = DataFrame({
-            'small_cell_EX_glc_D_e': [1.0, 1.0],
+        expected_c = DataFrame({
+            'small_cell_glc_D_transport': [1.0, 1.0],
             'small_cell_GLNabc': [0.0, 2.0],
             'small_cell_biomass': [0.0, 0.0],
         }, index=[
@@ -80,10 +81,10 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             "Measure_2"
         ]
         )
-        self.assertTrue(problem["C"].equals(expected_C))
+        self.assertTrue(problem["C"].equals(expected_c))
 
         print(problem["b"])
-        expected_B = DataFrame({
+        expected_b = DataFrame({
             'target': [30.0, 0.75],
             'lb': [25.0, 0.5],
             'ub': [35.0, 1.0],
@@ -93,7 +94,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             "Measure_2"
         ]
         )
-        self.assertTrue(problem["b"].equals(expected_B))
+        self.assertTrue(problem["b"].equals(expected_b))
 
     def test_toy_twin(self):
         return

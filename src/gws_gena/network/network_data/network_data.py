@@ -4,24 +4,15 @@
 # About us: https://gencovery.com
 
 import copy
-import json
-import os
-import re
-import uuid
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from typing import Dict, List, Optional
 
 import numpy as np
-from gws_biota import CompoundLayout as BiotaCompoundLayout
-from gws_biota import CompoundLayoutDict as BiotaCompoundLayoutDict
 from gws_biota import EnzymeClass
 from gws_biota import Reaction as BiotaReaction
-from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
 from gws_biota import Taxonomy as BiotaTaxonomy
-from gws_core import (BadRequestException, BoolParam, ConfigParams, DictRField,
-                      File, JSONView, Logger, Resource, ResourceExporter,
-                      RField, SerializableObjectJson, SerializableRField,
-                      StrRField, Table, TableView, Task, UUIDRField,
-                      resource_decorator, view)
+from gws_core import (BadRequestException, Logger, RField,
+                      SerializableObjectJson, StrRField, Table, TableView,
+                      Task, view)
 from pandas import DataFrame
 
 from ..compartment.compartment import Compartment

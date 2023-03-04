@@ -9,6 +9,13 @@
             "compartment":"e"
         },
         {
+            "id": "glc_D_c",
+            "name": "D-Glucose",
+            "level": "major",
+            "position": {"x": null, "y": null},
+            "compartment":"c"
+        },
+        {
             "id": "gln_L_c",
             "name": "L-Glutamine",
             "level": "major",
@@ -49,10 +56,11 @@
     ],
     "reactions": [
         {
-            "id": "EX_glc_D_e",
+            "id": "glc_D_transport",
             "name": "D-Glucose exchange",
             "metabolites": {
-                "glc_D_e": -1.0
+                "glc_D_e": -1.0,
+                "glc_D_c": 1.0
             },
             "lower_bound": -10.0,
             "upper_bound": 1000.0
@@ -84,7 +92,7 @@
             "id": "biomass",
             "name": "Biomass",
             "metabolites": {
-                "glc_D_e": {
+                "glc_D_c": {
                     "stoich": -1.0,
                     "points": null
                 },

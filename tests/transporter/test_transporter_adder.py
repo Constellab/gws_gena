@@ -1,0 +1,48 @@
+
+import os
+
+from gws_biota import BaseTestCaseUsingFullBiotaDB
+from gws_core import File, Settings, TaskRunner
+from gws_gena import (MediumTableImporter, Network, NetworkImporter,
+                      TransporterAdder)
+
+settings = Settings.get_instance()
+
+
+class TestTransporterAdder(BaseTestCaseUsingFullBiotaDB):
+
+    async def test_transporter_adder(self):
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = os.path.join(data_dir, "recon")
+
+        medium_table = MediumTableImporter.call(
+            File(path=os.path.join(data_dir, "recon_medium.csv")),
+            {
+                "entity_column": "Name of the metabolite",
+                "chebi_column": "Chebi ID"
+            })
+
+        net: Network = NetworkImporter.call(
+            File(path=os.path.join(data_dir, "recon_net.json")),
+            params={'skip_orphans': True}
+        )
+
+        print(len(net.compounds))
+        self.assertFalse("my_compound2" in net.compounds)
+        self.assertFalse("Pyruvate" in net.compounds)
+
+        tester = TaskRunner(
+            inputs={
+                'network': net,
+                'medium_table': medium_table
+            },
+            params={},
+            task_type=TransporterAdder
+        )
+        outputs = await tester.run()
+        net = outputs["network"]
+
+        print(len(net.compounds))
+        print(net.compounds.keys())
+        self.assertTrue("my_compound2_extracellular space" in net.compounds)
+        self.assertTrue("CHEBI:15361_extracellular space" in net.compounds)

@@ -1,12 +1,10 @@
-import json
 import os
+import json
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, Experiment, File, IExperiment, Settings,
-                      TaskRunner)
-from gws_gena import (BiomassReactionTableImporter, Context, DraftRecon,
-                      ECTableImporter, GapFiller, MediumTableImporter,
-                      NetworkMerger, ReconProto)
+from gws_core import File, IExperiment, Settings
+from gws_gena import (BiomassReactionTableImporter, ECTableImporter,
+                      MediumTableImporter, ReconProto)
 
 settings = Settings.get_instance()
 
@@ -14,7 +12,6 @@ settings = Settings.get_instance()
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
     async def test_recon_proto(self):
-        self.print("Test ReconProto")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
 

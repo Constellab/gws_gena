@@ -39,18 +39,22 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertRaises(Exception, rxn1.add_product, comp4, 2)
         self.assertEqual(
             rxn1.to_str(),
-            "(1.0) ATP_cytosol + (1.0) Creatine_cytosol <==(MyEnzyme)==> (1.0) ADP_nucleus + (1.0) Phosphocreatine_nucleus")
+            "(1.0) CHEBI:17234_cytosol + (1.0) CHEBI:17236_cytosol <==(MyEnzyme)==> (1.0) CHEBI:17235_nucleus + (1.0) CHEBI:17237_nucleus")
+
+        self.assertEqual(
+            rxn1.to_str(show_names=True),
+            "(1.0) ATP + (1.0) Creatine <==(MyEnzyme)==> (1.0) ADP + (1.0) Phosphocreatine")
 
         rxn1.direction = "R"
         self.assertEqual(
             rxn1.to_str(),
-            "(1.0) ATP_cytosol + (1.0) Creatine_cytosol ==(MyEnzyme)==> (1.0) ADP_nucleus + (1.0) Phosphocreatine_nucleus")
+            "(1.0) CHEBI:17234_cytosol + (1.0) CHEBI:17236_cytosol ==(MyEnzyme)==> (1.0) CHEBI:17235_nucleus + (1.0) CHEBI:17237_nucleus")
         print(rxn1.to_str())
 
         rxn1.direction = "L"
         self.assertEqual(
             rxn1.to_str(),
-            "(1.0) ATP_cytosol + (1.0) Creatine_cytosol <==(MyEnzyme)== (1.0) ADP_nucleus + (1.0) Phosphocreatine_nucleus")
+            "(1.0) CHEBI:17234_cytosol + (1.0) CHEBI:17236_cytosol <==(MyEnzyme)== (1.0) CHEBI:17235_nucleus + (1.0) CHEBI:17237_nucleus")
         print(rxn1.to_str())
 
         print("--->")

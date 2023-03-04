@@ -3,10 +3,10 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import Dict, List
+from typing import List
 
-from gws_core import (BadRequestException, Resource, SerializableRField,
-                      StringHelper, StrRField, resource_decorator)
+from gws_core import (ConfigParams, JSONView, Resource, SerializableRField,
+                      resource_decorator, view)
 
 from .context_data.context_data import ContextData
 from .measure import Measure
@@ -23,7 +23,7 @@ class Context(Resource):
     DEFAULT_NAME = "context"
     FLATTENING_DELIMITER = ":"
 
-    context_data: Dict = SerializableRField(ContextData)
+    context_data: ContextData = SerializableRField(ContextData)
 
     def __init__(self):
         super().__init__()
@@ -86,3 +86,10 @@ class Context(Resource):
     def measures(self):
         """ Get the liste of measures """
         return self.context_data.measures
+
+    # -- V --
+
+    @view(view_type=JSONView, human_name="Show context", short_description="Show content as JSON", default_view=True)
+    def view_content_as_json(self, params: ConfigParams) -> JSONView:
+        data = self.context_data.dumps()
+        return JSONView(data)

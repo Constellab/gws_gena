@@ -3,12 +3,11 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import Any, Dict, List, Union
+from typing import List, Union
 
 import pandas as pd
-from gws_core import (BadRequestException, ListRField, Resource,
-                      ResourceRField, ResourceSet, SerializableObjectJson,
-                      SerializableRField, Table, TechnicalInfo,
+from gws_core import (BadRequestException, ListRField, ResourceRField,
+                      ResourceSet, SerializableRField, Table, TechnicalInfo,
                       resource_decorator)
 from pandas import DataFrame
 from scipy import stats

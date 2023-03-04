@@ -11,7 +11,7 @@ from gws_gena import (Context, ContextImporter, FBAProto, Network,
 settings = Settings.get_instance()
 
 
-class TestFBA(BaseTestCaseUsingFullBiotaDB):
+class TestPFBA(BaseTestCaseUsingFullBiotaDB):
 
     async def test_pfba_ecoli(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")

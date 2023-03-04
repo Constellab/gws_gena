@@ -3,17 +3,11 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import copy
-from typing import List
-
-import networkx as nx
-import pandas as pd
 from gws_biota.unicell.unicell_service import \
     UnicellService as BiotaUnicellService
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
 from ....helper.base_helper import BaseHelper
-from ....network.graph.graph import Graph
 from ....network.network import Network
 from ....network.reaction.reaction import Reaction
 from ..helper.gap_finder_helper import GapFinderHelper
@@ -52,11 +46,12 @@ class GapFillerHelper(BaseHelper):
             comp = net.compounds[comp_id]
             if comp.is_cofactor():
                 continue
-            if comp.chebi_id not in unicell.get_compound_id_list():
-                self.log_warning_message(
-                    f"Compound {comp.chebi_id} is not found in the unicell. It is skipped!")
-                continue
-            nodes.append(comp.chebi_id)
+            # if comp.chebi_id not in unicell.get_compound_id_list():
+            #     self.log_warning_message(
+            #         f"Compound {comp.chebi_id} is not found in the unicell. It is skipped!")
+            #     continue
+            if comp.chebi_id in unicell.get_compound_id_list():
+                nodes.append(comp.chebi_id)
         unicell_subgraph = unicell.neigbors_subgraph(nodes, radius=1)
 
         # only select edge able to fill gaps

@@ -3,9 +3,8 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import List
 
-from gws_core import BadRequestException, StrRField, Table, resource_decorator
+from gws_core import StrRField, Table, resource_decorator
 
 # ####################################################################
 #
