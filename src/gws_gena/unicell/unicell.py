@@ -6,21 +6,22 @@
 import os
 import pickle
 
-import pandas
 from gws_core import Settings
 from pandas import DataFrame
 
 from ..network.network import Network
-
-settings = Settings.get_instance()
 
 
 class Unicell:
 
     @classmethod
     def create_network(cls, tax_id: str = None, refresh: bool = False) -> Network:
+        settings = Settings.get_instance()
         data_dir = os.path.join(settings.get_brick_data_dir(brick_name="gws_gena"), "unicell")
-        file_path = os.path.join(data_dir, "network.pkl")
+        if tax_id:
+            file_path = os.path.join(data_dir, f"network_{tax_id}.pkl")
+        else:
+            file_path = os.path.join(data_dir, "network_all.pkl")
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
 
