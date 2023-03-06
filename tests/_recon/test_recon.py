@@ -75,4 +75,4 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         # gapfill_net = proto.get_output("gap_filler_network")
         # file_name = "gapfill"
-        # await assert_results(gapfill_net, file_name)
+        # assert_results(gapfill_net, file_name)

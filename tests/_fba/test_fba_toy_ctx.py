@@ -27,7 +27,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
                 inputs={"network": net, "flux_table": flux_data},
                 task_type=ContextBuilder
             )
-            output = await tester.run()
+            output = tester.run()
             ctx = output["context"]
 
             # run fba
@@ -38,7 +38,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
             fba.set_param('fluxes_to_maximize', ["toy_cell_RB"])
-            await experiment.run()
+            experiment.run()
 
             # test results
             result = proto.get_output("fba_result")
