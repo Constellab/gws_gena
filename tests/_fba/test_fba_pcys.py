@@ -3,20 +3,18 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, ExperimentService, File, GTest,
-                      IExperiment, Settings, ViewTester)
-from gws_gena import (Context, ContextImporter, FBAProto, Network,
-                      NetworkImporter, Twin)
+from gws_core import File, IExperiment, Settings
+from gws_gena import ContextImporter, FBAProto, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_large_fba(self):
+    def test_large_fba(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        async def run_fba(organism, solver="highs", relax_qssa=False):
+        def run_fba(organism, solver="highs", relax_qssa=False):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
             organism_dir = os.path.join(data_dir, organism)
@@ -35,12 +33,12 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba.set_param('relax_qssa', relax_qssa)
             fba.set_param('qssa_relaxation_strength', 1)
             if organism == 'ecoli':
-                #fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+                # fba.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
                 fba.set_param('biomass_optimization', "maximize")
             else:
                 fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
-            await experiment.run()
+            experiment.run()
 
             relax_dir = ""
             if solver == "quad":
@@ -89,4 +87,4 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         for relax in [True]:
             organism = "pcys"
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-            await run_fba(organism=organism, solver="quad", relax_qssa=relax)
+            run_fba(organism=organism, solver="quad", relax_qssa=relax)

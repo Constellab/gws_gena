@@ -26,7 +26,7 @@ class NetworkMerger(Task):
                                           short_description="The merged network"), }
     config_specs = {}
 
-    async def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net1 = inputs['network_1']
         net2 = inputs['network_2']
 

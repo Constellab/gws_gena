@@ -43,7 +43,7 @@ class KOA(Task):
             default_value=",", human_name="Multiple KO delimiter",
             short_description="The delimiter used to separate IDs or EC numbers when multiple KO are performed")}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         ko_table: ECTable = inputs["ko_table"]
         twin: FlatTwin = inputs["twin"].flatten()
         solver = params["solver"]

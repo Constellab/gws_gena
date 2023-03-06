@@ -3,20 +3,18 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, ExperimentService, File, GTest,
-                      IExperiment, Settings, ViewTester)
-from gws_gena import (Context, ContextImporter, FBAProto, Network,
-                      NetworkImporter, Twin)
+from gws_core import File, IExperiment, Settings
+from gws_gena import ContextImporter, FBAProto, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_large_fba(self):
+    def test_large_fba(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        async def run_fba(organism, solver="highs", relax_qssa=False, translate_ids=False):
+        def run_fba(organism, solver="highs", relax_qssa=False, translate_ids=False):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
             organism_dir = os.path.join(data_dir, organism)
@@ -41,7 +39,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             else:
                 fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
-            await experiment.run()
+            experiment.run()
 
             relax_dir = ""
             if solver == "quad":
@@ -88,12 +86,12 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
         organism = "ecoli"
         self.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
-        await run_fba(organism=organism, solver="highs")
+        run_fba(organism=organism, solver="highs")
 
         for relax in [False, True]:
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-            await run_fba(organism=organism, solver="quad", relax_qssa=relax)
+            run_fba(organism=organism, solver="quad", relax_qssa=relax)
 
         for relax in [True]:
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad + translate ids)")
-            await run_fba(organism=organism, solver="quad", relax_qssa=relax, translate_ids=True)
+            run_fba(organism=organism, solver="quad", relax_qssa=relax, translate_ids=True)

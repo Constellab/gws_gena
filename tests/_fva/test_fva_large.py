@@ -1,23 +1,19 @@
-import json
 import os
 
-import numpy
-import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ExperimentService, File, GTest, IExperiment, Settings
-from gws_gena import (Context, ContextImporter, FVAProto, Network,
-                      NetworkImporter, Twin)
+from gws_core import File, GTest, IExperiment, Settings
+from gws_gena import ContextImporter, FVAProto, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_large_fba(self):
+    def test_large_fba(self):
         self.print("Test FBAProto: Medium or large metwork (typically Ecoli)")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        async def run_fva(organism, solver="highs", relax_qssa=False):
+        def run_fva(organism, solver="highs", relax_qssa=False):
             experiment = IExperiment(FVAProto)
             proto = experiment.get_protocol()
             organism_dir = os.path.join(data_dir, organism)
@@ -39,7 +35,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             else:
                 fva.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
-            await experiment.run()
+            experiment.run()
 
             relax_dir = ""
             if solver == "quad":
@@ -83,12 +79,12 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
         # ecoli
         organism = "ecoli"
         GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
-        await run_fva(organism=organism, solver="highs")
+        run_fva(organism=organism, solver="highs")
         for relax in [True]:
             GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-            await run_fva(organism=organism, solver="quad", relax_qssa=relax)
+            run_fva(organism=organism, solver="quad", relax_qssa=relax)
 
         # pcys
         organism = "pcys"
         GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-        await run_fva(organism=organism, solver="quad", relax_qssa=True)
+        run_fva(organism=organism, solver="quad", relax_qssa=True)

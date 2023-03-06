@@ -2,18 +2,16 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, File, IExperiment, Settings, TaskRunner,
-                      ViewTester)
-from gws_gena import (KOA, Context, ContextImporter, EntityIDTable,
-                      EntityIDTableImporter, KOAProto, KOAResultExtractor,
-                      Network, NetworkImporter, Twin)
+from gws_core import File, Settings, TaskRunner
+from gws_gena import (KOA, ContextImporter, EntityIDTableImporter,
+                      KOAResultExtractor, NetworkImporter, Twin)
 
 settings = Settings.get_instance()
 
 
 class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_toy_koa(self):
+    def test_toy_koa(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko.json")),
@@ -44,7 +42,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             task_type=KOA
         )
 
-        outputs = await tester.run()
+        outputs = tester.run()
         ko_result = outputs["koa_result"]
 
         # KO: toy_cell_R1
@@ -84,7 +82,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             },
             task_type=KOAResultExtractor
         )
-        outputs = await tester.run()
+        outputs = tester.run()
         table = outputs["table"]
         print(table)
 

@@ -1,17 +1,15 @@
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskRunner
-from gws_gena import (Compound, Context, GapFinderHelper, Network,
-                      NetworkImporter, Reaction, Twin)
+from gws_core import ConfigParams, File, Settings
+from gws_gena import GapFinderHelper, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_gap_finder_ecoli(self):
+    def test_gap_finder_ecoli(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         organism_dir = os.path.join(data_dir, "ecoli")
         file_path = os.path.join(organism_dir, f"ecoli.json")
@@ -26,7 +24,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         self.assertEquals(len(dead), 0)
         self.assertEquals(len(orphans), 0)
 
-    async def test_gap_finder_ecoli_without_AKGDH(self):
+    def test_gap_finder_ecoli_without_AKGDH(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         organism_dir = os.path.join(data_dir, "ecoli")
         file_path = os.path.join(organism_dir, "./gaps/ecoli_without_AKGDH.json")

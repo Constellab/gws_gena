@@ -42,7 +42,7 @@ class MediumTableImporter(TableImporter):
             short_description="The name of the column containing the list of chebi ids")
     }
 
-    async def import_from_path(self, source: File, params: ConfigParams, target_type: Type[MediumTable]) -> MediumTable:
+    def import_from_path(self, source: File, params: ConfigParams, target_type: Type[MediumTable]) -> MediumTable:
         """
         Import from a repository
 
@@ -57,7 +57,7 @@ class MediumTableImporter(TableImporter):
         """
 
         params["index_column"] = None
-        csv_table = await super().import_from_path(source, params, target_type)
+        csv_table = super().import_from_path(source, params, target_type)
 
         entity_column = params.get_value("entity_column", MediumTable.DEFAULT_ENTITY_COLUMN)
         chebi_column = params.get_value("chebi_column", MediumTable.DEFAULT_CHEBI_COLUMN)

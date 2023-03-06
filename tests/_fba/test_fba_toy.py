@@ -1,25 +1,22 @@
-import json
 import os
 
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, ExperimentService, File, GTest,
-                      IExperiment, Settings, ViewTester)
-from gws_gena import (Context, ContextBuilder, ContextImporter, FBAProto,
-                      FluxTableImporter, Network, NetworkImporter, Twin)
+from gws_core import File, IExperiment, Settings
+from gws_gena import ContextImporter, FBAProto, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_toy_fba(self):
+    def test_toy_fba(self):
         testdata_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(testdata_dir, "toy")
         organism_result_dir = os.path.join(testdata_dir, 'fba', "toy")
 
-        async def run_fba(context, solver="highs", relax_qssa=False):
+        def run_fba(context, solver="highs", relax_qssa=False):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
             net = NetworkImporter.call(File(
@@ -34,7 +31,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
             # fba.set_param("parsimony_strength", 1)
-            await experiment.run()
+            experiment.run()
 
             # test results
             result = proto.get_output("fba_result")
@@ -84,9 +81,9 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         # highs
         for context in [True]:
             self.print(f"Test FBAProto: Small network (toy + context={context} + linprog)")
-            await run_fba(context=context, solver="highs")
+            run_fba(context=context, solver="highs")
 
         # quad
         for relax in [False, True]:
             self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
-            await run_fba(context=True, solver="quad", relax_qssa=relax)
+            run_fba(context=True, solver="quad", relax_qssa=relax)

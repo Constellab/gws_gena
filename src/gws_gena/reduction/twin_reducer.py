@@ -42,7 +42,7 @@ class TwinReducer(Task):
             default_value=None, optional=True, human_name="List of reversible reaction",
             short_description="The the list of reversible reactions (EC numbers, Reaction IDs). By default all the reactions are considered irrevesible."), }
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
         if isinstance(twin, FlatTwin):
             flat_twin: FlatTwin = twin

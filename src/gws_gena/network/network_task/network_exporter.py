@@ -28,7 +28,7 @@ class NetworkExporter(ResourceExporter):
             default_value=DEFAULT_FILE_FORMAT,
             short_description="File format")}
 
-    async def export_to_path(self, resource: Network, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
+    def export_to_path(self, resource: Network, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
         """
         Export the network to a repository
 

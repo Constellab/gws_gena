@@ -8,7 +8,7 @@ from gws_gena import ECTableImporter
 
 class TestECTableImporter(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_importer(self):
+    def test_importer(self):
         settings = Settings.get_instance()
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
@@ -18,7 +18,7 @@ class TestECTableImporter(BaseTestCaseUsingFullBiotaDB):
             inputs={"source": File(path=os.path.join(data_dir, "./data/ECnumber.csv"))},
             task_type=ECTableImporter
         )
-        outputs = await tester.run()
+        outputs = tester.run()
         ds = outputs['target']
 
         self.assertEqual(ds.get_data().iloc[0, 0], "4.1.1.28")

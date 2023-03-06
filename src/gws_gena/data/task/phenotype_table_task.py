@@ -55,7 +55,7 @@ class PhenotypeTableImporter(TableImporter):
             default_value=PhenotypeTable.DEFAULT_CONFIDENCE_SCORE_COLUMN, human_name="Confidence score column name",
             short_description="The name of the upper-bound column")}
 
-    async def import_from_path(self, source: File, params: ConfigParams, target_type: Type[PhenotypeTable]) -> PhenotypeTable:
+    def import_from_path(self, source: File, params: ConfigParams, target_type: Type[PhenotypeTable]) -> PhenotypeTable:
         """
         Import from a repository
 
@@ -70,7 +70,7 @@ class PhenotypeTableImporter(TableImporter):
         """
 
         params["index_column"] = None
-        csv_table = await super().import_from_path(source, params, target_type)
+        csv_table = super().import_from_path(source, params, target_type)
 
         entity_column = params.get_value("entity_column", PhenotypeTable.DEFAULT_ENTITY_COLUMN)
         chebi_id_column = params.get_value("chebi_id_column", PhenotypeTable.DEFAULT_CHEBI_ID_COLUMN)

@@ -11,7 +11,7 @@ settings = Settings.get_instance()
 
 class TestTransporterAdder(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_transporter_adder(self):
+    def test_transporter_adder(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
 
@@ -39,7 +39,7 @@ class TestTransporterAdder(BaseTestCaseUsingFullBiotaDB):
             params={},
             task_type=TransporterAdder
         )
-        outputs = await tester.run()
+        outputs = tester.run()
         net = outputs["network"]
 
         print(len(net.compounds))

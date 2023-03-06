@@ -28,7 +28,7 @@ class MergerProtocol(Protocol):
 
 class TestMerge(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_merger(self):
+    def test_merger(self):
         self.print("Test Merger")
 
         experiment = IExperiment(MergerProtocol)
@@ -44,7 +44,7 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         result_dir = os.path.join(data_dir, "network_merger")
 
-        await experiment.run()
+        experiment.run()
         net_merged = merger.get_output("network")
 
         net1 = NetworkImporter.call(file1, ConfigParams())

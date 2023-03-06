@@ -1,14 +1,10 @@
 
-import json
 import os
-import unittest
 
-import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner
-from gws_gena import (Context, ContextImporter, FlatTwin, Network,
-                      NetworkImporter, Twin, TwinReducer)
+from gws_gena import ContextImporter, NetworkImporter, Twin, TwinReducer
 from pandas import DataFrame
 
 settings = Settings.get_instance()
@@ -16,7 +12,7 @@ settings = Settings.get_instance()
 
 class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_twin_reducer(self):
+    def test_twin_reducer(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "bastin")
 
@@ -38,7 +34,7 @@ class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):
             inputs={"twin": twin},
             task_type=TwinReducer
         )
-        outputs = await tester.run()
+        outputs = tester.run()
 
         efm = outputs["efm_table"]
         K = outputs["reduction_table"]

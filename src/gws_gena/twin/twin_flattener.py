@@ -17,7 +17,7 @@ class TwinFlattener(Task):
 
     Flatten a digital twin of cell metabolism
     """
-    
+
     input_specs = {
         'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to flatten"),
     }
@@ -26,6 +26,6 @@ class TwinFlattener(Task):
 
     config_specs = {}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
         return {"flat_twin": twin.flatten()}

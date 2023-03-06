@@ -1,25 +1,23 @@
-import json
 import os
 
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ExperimentService, File, GTest, IExperiment, Settings
-from gws_gena import (Context, ContextImporter, FVAProto, Network,
-                      NetworkImporter, Twin)
+from gws_core import File, GTest, IExperiment, Settings
+from gws_gena import ContextImporter, FVAProto, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_toy_fva(self):
+    def test_toy_fva(self):
         self.print("Test FVAProto: Small metwork")
         testdata_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(testdata_dir, "toy")
         organism_result_dir = os.path.join(testdata_dir, 'fva', "toy")
 
-        async def run_fva(solver="highs", relax_qssa=False):
+        def run_fva(solver="highs", relax_qssa=False):
             experiment = IExperiment(FVAProto)
             proto = experiment.get_protocol()
 
@@ -42,7 +40,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             fva.set_param("solver", solver)
             fva.set_param("relax_qssa", relax_qssa)
 
-            await experiment.run()
+            experiment.run()
 
             relax_dir = ""
             if solver == "quad":
@@ -86,8 +84,8 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             #     json.dump(data, fp, indent=4)
 
         GTest.print("Test FVAProto: Small network (toy + linprog)")
-        await run_fva(solver="highs")
+        run_fva(solver="highs")
 
         for relax_qssa in [True, False]:
             GTest.print(f"Test FVAProto: Small network (toy + quad + relax={relax_qssa})")
-            await run_fva(solver="quad", relax_qssa=False)
+            run_fva(solver="quad", relax_qssa=False)

@@ -30,7 +30,7 @@ class ReactionRemover(Task):
             default_value=False, visibility="protected",
             short_description="Set True to remove the reactions not given in the input list. By default, ")}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]
         reaction_table = inputs["reaction_table"]
         reverse_remove = params["reverse_remove"]

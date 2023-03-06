@@ -3,7 +3,7 @@
     "author"        : "Gencovery",
     "author_email"  : "admin@gencovery.com",
     "description"   : "Genome-based regulatory Network Analytics (GENA)",
-    "version"       : "0.4.9",
+    "version"       : "0.5.0-beta.1",
     "variables":{
         "gws_gena:testdata_dir" : "${CURRENT_DIR}/tests/testdata",
         "gws_gena:zonodo_url" : "https://storage.gra.cloud.ovh.net/v1/AUTH_a0286631d7b24afba3f3cdebed2992aa/opendata/zenodo/1.0.0/compounds.sqlite",
@@ -28,10 +28,10 @@
             {
                 "source": "https://$GWS_GIT_LOGIN:$GWS_GIT_PWD@gitlab.com/gencovery/core",
                 "packages":[
-                    {"name": "gws_core", "version": "0.4.6", "is_brick": true},
-                    {"name": "gws_biota", "version": "0.4.9", "is_brick": true},
-                    {"name": "gws_ode", "version": "0.3.1", "is_brick": true},
-                    {"name": "gws_stats", "version": "0.3.3", "is_brick": true}
+                    {"name": "gws_core", "version": "0.5.0-beta.1", "is_brick": true},
+                    {"name": "gws_biota", "version": "0.5.0-beta.1", "is_brick": true},
+                    {"name": "gws_ode", "version": "0.5.0-beta.1", "is_brick": true},
+                    {"name": "gws_stats", "version": "0.5.0-beta.1", "is_brick": true}
                 ]
             },
             {

@@ -33,7 +33,7 @@ class EntityIDTableImporter(TableImporter):
         'id_type': StrParam(default_value="", allowed_values=["", "chebi", "rhea"], short_description="The expected ID type"),
     }
 
-    async def import_from_path(self, source: File, params: ConfigParams, target_type: Type[EntityIDTable]) -> EntityIDTable:
+    def import_from_path(self, source: File, params: ConfigParams, target_type: Type[EntityIDTable]) -> EntityIDTable:
         """
         Import from a repository
 
@@ -46,7 +46,7 @@ class EntityIDTableImporter(TableImporter):
         """
 
         params["index_column"] = None
-        csv_table = await super().import_from_path(source, params, target_type)
+        csv_table = super().import_from_path(source, params, target_type)
         id_column = params.get_value("id_column", EntityIDTable.DEFAULT_ID_COLUMN)
 
         if not csv_table.column_exists(id_column):

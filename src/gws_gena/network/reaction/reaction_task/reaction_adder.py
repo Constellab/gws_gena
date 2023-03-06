@@ -37,7 +37,7 @@ class ReactionAdder(Task):
             short_description="If 'bottom_up', the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found. If 'none', the algorithm will only search at the given taxonomy level given by `tax_id`")
     }
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]
         tax_id = params['tax_id']
         tax_search_method = params['tax_search_method']

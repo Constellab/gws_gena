@@ -1,21 +1,16 @@
 
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_biota import Compound as BiotaCompound
-from gws_core import (ConfigParams, Experiment, ExperimentService, File, GTest,
-                      Settings, TaskRunner)
-from gws_gena import (Compound, Context, ContextBuilder, ContextImporter,
-                      FluxTable, FluxTableImporter, Network, NetworkImporter,
-                      Reaction, Twin)
+from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_gena import ContextBuilder, FluxTableImporter, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestContext(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_context_builder(self):
+    def test_context_builder(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "toy")
 
@@ -33,7 +28,7 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
             task_type=ContextBuilder
         )
 
-        outputs = await tester.run()
+        outputs = tester.run()
 
         # test results
         ctx = outputs["context"]

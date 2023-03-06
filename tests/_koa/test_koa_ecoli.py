@@ -1,18 +1,16 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, File, IExperiment, Settings, TaskRunner,
-                      ViewTester)
-from gws_gena import (KOA, Context, ContextImporter, EntityIDTable,
-                      EntityIDTableImporter, KOAProto, Network,
-                      NetworkImporter, Twin)
+from gws_core import File, IExperiment, Settings
+from gws_gena import (ContextImporter, EntityIDTableImporter, KOAProto,
+                      NetworkImporter)
 
 settings = Settings.get_instance()
 
 
 class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_ecoli_koa(self):
+    def test_ecoli_koa(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
         experiment = IExperiment(KOAProto)
@@ -39,7 +37,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         koa.set_param("fluxes_to_maximize", ["ecoli_BIOMASS_Ecoli_core_w_GAM"])
         koa.set_param("solver", "quad")
         koa.set_param("relax_qssa", True)
-        await experiment.run()
+        experiment.run()
         ko_results = proto.get_output("koa_result")
 
         print(ko_results)

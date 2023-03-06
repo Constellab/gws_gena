@@ -3,9 +3,8 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, InputSpec,
-                      OutputSpec, StrParam, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+from gws_core import (ConfigParams, InputSpec, OutputSpec, StrParam, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 
 from ...network.network import Network
 from .helper.gap_filler_helper import GapFillerHelper
@@ -35,7 +34,7 @@ class GapFiller(Task):
             short_description="The taxonomy id used to fill gaps")
     }
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
         tax_id = params["tax_id"]
 

@@ -39,7 +39,7 @@ class FBA(Task):
         "parsimony_strength": FloatParam(default_value=0.0, min_value=0.0, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Parsimony strength", short_description="Set True to perform parsimonious FBA (pFBA). In this case the quad solver is used. Set False otherwise")
     }
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
         solver = params["solver"]
         biomass_optimization = params["biomass_optimization"]
@@ -53,7 +53,8 @@ class FBA(Task):
         helper.attach_task(self)
         fba_result: FBAResult = helper.run(
             twin, solver, fluxes_to_maximize, fluxes_to_minimize, biomass_optimization=biomass_optimization,
-            relax_qssa=relax_qssa, qssa_relaxation_strength=qssa_relaxation_strength, parsimony_strength=parsimony_strength)
+            relax_qssa=relax_qssa, qssa_relaxation_strength=qssa_relaxation_strength,
+            parsimony_strength=parsimony_strength)
 
         # @TODO : should be given by the current experiment
         simulations = [

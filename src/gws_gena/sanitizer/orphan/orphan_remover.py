@@ -22,7 +22,7 @@ class OrphanRemover(Task):
     input_specs = {'network': InputSpec(Network)}
     output_specs = {'network': InputSpec(Network)}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs.get("network")
         helper = GapFinderHelper()
         helper.attach_task(self)

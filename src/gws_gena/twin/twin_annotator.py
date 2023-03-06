@@ -28,7 +28,7 @@ class TwinAnnotator(Task):
     input_specs = {'fba_result': InputSpec(FBAResult, human_name="FBA result", short_description="The FBA result")}
     output_specs = {'twin': OutputSpec(Twin, human_name="Digital twin", short_description="The annotated digital twin")}
 
-    async def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         fba_result = inputs["fba_result"]
         twin = fba_result.get_twin().copy()
         helper = TwinAnnotatorHelper()

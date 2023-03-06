@@ -118,7 +118,7 @@ class FVA(Task):
     }
     __CVXPY_MAX_ITER = 100000
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         self.log_info_message(message="Creating problem ...")
         twin = inputs["twin"]
         solver = params["solver"]

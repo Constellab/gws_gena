@@ -34,7 +34,7 @@ class ECTableImporter(TableImporter):
             default_value=ECTable.DEFAULT_EC_COLUMN,
             short_description="The name of the column containing the EC numbers"), }
 
-    async def import_from_path(self, source: File, params: ConfigParams, target_type: Type[ECTable]) -> ECTable:
+    def import_from_path(self, source: File, params: ConfigParams, target_type: Type[ECTable]) -> ECTable:
         """
         Import from a repository
 
@@ -47,7 +47,7 @@ class ECTableImporter(TableImporter):
         """
 
         params["index_column"] = None
-        csv_table: ECTable = await super().import_from_path(source, params, target_type)
+        csv_table: ECTable = super().import_from_path(source, params, target_type)
         ec_column = params.get_value("ec_column", ECTable.DEFAULT_EC_COLUMN)
 
         if not csv_table.column_exists(ec_column):

@@ -3,22 +3,21 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, ExperimentService, File, GTest,
-                      IExperiment, Settings, TaskRunner, ViewTester)
-from gws_gena import (Context, ContextBuilder, ContextImporter, FBAProto,
-                      FluxTableImporter, Network, NetworkImporter, Twin)
+from gws_core import ConfigParams, File, IExperiment, Settings, TaskRunner
+from gws_gena import (ContextBuilder, FBAProto, FluxTableImporter,
+                      NetworkImporter)
 
 settings = Settings.get_instance()
 
 
 class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_toy_fba_with_context_builder(self):
+    def test_toy_fba_with_context_builder(self):
         testdata_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(testdata_dir, "toy")
         organism_result_dir = os.path.join(testdata_dir, 'fba', "toy_ctx")
 
-        async def run_fba(ctx_name, solver="highs", relax_qssa=False):
+        def run_fba(ctx_name, solver="highs", relax_qssa=False):
             file_path = os.path.join(data_dir, "ctx_data", f"{ctx_name}.csv")
             flux_data = FluxTableImporter.call(File(path=file_path), params=ConfigParams({"delimiter": ","}))
             net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params=ConfigParams())
@@ -82,6 +81,6 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         relax = True
         self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
 
-        for i in range(1,6):
+        for i in range(1, 6):
             ctx_name = f"toy_ctx_data_{i}"
-            await run_fba(ctx_name=ctx_name, solver="quad", relax_qssa=relax)
+            run_fba(ctx_name=ctx_name, solver="quad", relax_qssa=relax)

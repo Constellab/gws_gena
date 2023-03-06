@@ -43,7 +43,7 @@ class TwinBuilder(Task):
                 return {"result": False, "message": "No context given"}
         return {"result": True, "message": None}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
         twin = Twin()
         twin.add_network(net)

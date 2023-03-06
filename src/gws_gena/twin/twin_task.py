@@ -33,7 +33,7 @@ class TwinImporter(ResourceImporter):
         'file_format': StrParam(allowed_values=["json"], default_value="json", short_description="File format")
     }
 
-    async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Twin]) -> Twin:
+    def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Twin]) -> Twin:
         """
         Import a twin from a repository
 
@@ -85,7 +85,7 @@ class TwinExporter(ResourceExporter):
             allowed_values=["json"], default_value="json",
             short_description="File format.")}
 
-    async def export_to_path(self, resource: Twin, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
+    def export_to_path(self, resource: Twin, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
         """
         Export to a give repository
 

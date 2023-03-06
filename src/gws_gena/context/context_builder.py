@@ -36,7 +36,7 @@ class ContextBuilder(Task):
     output_specs = {'context': OutputSpec(Context)}
     config_specs = {}
 
-    async def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         ctx = Context()
         flux: FluxTable = inputs["flux_table"]
         net: Network = inputs["network"]
@@ -85,6 +85,6 @@ class ContextBuilder(Task):
                 ctx.add_measure(measure)
             else:
                 self.log_warning_message(f"No reference reaction found with id {ref_id}")
-                #raise BadRequestException(f"No reference reaction found with id {ref_id}")
+                # raise BadRequestException(f"No reference reaction found with id {ref_id}")
 
         return {"context": ctx}

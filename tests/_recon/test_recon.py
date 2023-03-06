@@ -1,5 +1,4 @@
 import os
-import json
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
@@ -11,7 +10,7 @@ settings = Settings.get_instance()
 
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_recon_proto(self):
+    def test_recon_proto(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
 
@@ -54,7 +53,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         # gap_filler.set_param('biomass_and_medium_gaps_only', True)
         # gap_filler.set_param('add_sink_reactions', True)
 
-        async def assert_results(net, file_name):
+        def assert_results(net, file_name):
             # file_path = os.path.join(data_dir, file_name+"_net.csv")
             # with open(file_path, 'w', encoding="utf-8") as f:
             #     f.write(net.to_csv())
@@ -67,12 +66,12 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
                 self.assertEqual(net.to_csv(), f.read())
 
         # run experiment
-        await experiment.run()
+        experiment.run()
 
         # test results
         recon_net = proto.get_output("draft_recon_network")
         file_name = "recon"
-        await assert_results(recon_net, file_name)
+        assert_results(recon_net, file_name)
 
         # gapfill_net = proto.get_output("gap_filler_network")
         # file_name = "gapfill"

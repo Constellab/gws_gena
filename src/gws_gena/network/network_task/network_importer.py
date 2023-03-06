@@ -37,7 +37,7 @@ class NetworkImporter(ResourceImporter):
             short_description="Set True to skip orphan compounds"),
     }
 
-    async def import_from_path(self, source: File, params: ConfigParams, target_type: Type[Network]) -> Network:
+    def import_from_path(self, source: File, params: ConfigParams, target_type: Type[Network]) -> Network:
         """
         Import a network from a repository
 

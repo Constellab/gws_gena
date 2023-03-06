@@ -30,7 +30,7 @@ class IsolateFinder(Task):
     output_specs = {'result': OutputSpec(IsolateFinderResult)}
     config_specs = {}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]
         helper = IsolateFinderHelper()
         helper.attach_task(self)

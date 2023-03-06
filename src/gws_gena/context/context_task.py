@@ -34,7 +34,7 @@ class ContextImporter(ResourceImporter):
         'file_format': StrParam(allowed_values=["json"], default_value="json", short_description="File format")
     }
 
-    async def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Context]) -> Context:
+    def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Context]) -> Context:
         """
         Import from a repository
 
@@ -74,7 +74,7 @@ class ContextExporter(ResourceExporter):
             allowed_values=["json"], default_value="json",
             short_description="File format.")}
 
-    async def export_to_path(self, resource: Context, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
+    def export_to_path(self, resource: Context, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
         """
         Export to a give repository
 

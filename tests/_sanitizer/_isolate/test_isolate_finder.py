@@ -1,21 +1,16 @@
 
-import json
 import os
-import unittest
 
-import numpy
-import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner
-from gws_gena import IsolateFinder, Network, NetworkImporter
-from pandas import DataFrame
+from gws_gena import IsolateFinder, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestIsolateFinder(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_isolate_finder_ecoli(self):
+    def test_isolate_finder_ecoli(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "ecoli")
 
@@ -29,13 +24,13 @@ class TestIsolateFinder(BaseTestCaseUsingFullBiotaDB):
             inputs={"network": net},
             task_type=IsolateFinder
         )
-        outputs = await tester.run()
+        outputs = tester.run()
         result = outputs["result"]
 
         self.assertEqual(result.get_reaction_table().nb_rows, 0)
         self.assertEqual(result.get_compound_table().nb_rows, 0)
 
-    async def test_isolate_finder_pcys(self):
+    def test_isolate_finder_pcys(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "pcys")
 
@@ -49,7 +44,7 @@ class TestIsolateFinder(BaseTestCaseUsingFullBiotaDB):
             inputs={"network": net},
             task_type=IsolateFinder
         )
-        outputs = await tester.run()
+        outputs = tester.run()
         result = outputs["result"]
 
         self.assertEqual(result.get_reaction_table().nb_rows, 105)

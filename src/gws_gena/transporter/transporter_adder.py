@@ -24,7 +24,7 @@ class TransporterAdder(Task):
     output_specs = {'network': OutputSpec(Network)}
     config_specs = {}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         helper = ReconHelper()
         helper.attach_task(self)
 

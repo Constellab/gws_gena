@@ -31,7 +31,7 @@ class KOAResultExtractor(Task):
             default_value=[], human_name="Fluxes to extract",
             short_description="The list of fluxes to extract")}
 
-    async def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+    def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         koa_result = inputs["koa_result"]
         fluxes_to_extract: List = params.get_value("fluxes_to_extract")
 

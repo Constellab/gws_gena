@@ -1,11 +1,9 @@
 
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner
-from gws_gena import (ECTable, ECTableImporter, EntityIDTable,
-                      EntityIDTableImporter, Network, NetworkImporter,
+from gws_gena import (ECTableImporter, EntityIDTableImporter, NetworkImporter,
                       ReactionAdder)
 
 settings = Settings.get_instance()
@@ -13,7 +11,7 @@ settings = Settings.get_instance()
 
 class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_reaction_ec_adder(self):
+    def test_reaction_ec_adder(self):
         self.print("Test reaction EC adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
@@ -26,7 +24,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
             inputs={"network": net, "reaction_table": table},
             task_type=ReactionAdder
         )
-        outputs = await tester.run()
+        outputs = tester.run()
         net = outputs["network"]
         # print(net.to_csv())
         self.assertEqual(len(net.reactions), 9)
@@ -37,7 +35,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         # with open(file_path, 'w') as f:
         #     json.dump(net.dumps(), f)
 
-    async def test_reaction_id_adder(self):
+    def test_reaction_id_adder(self):
         self.print("Test reaction ID adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
@@ -52,7 +50,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
             inputs={"network": net, "reaction_table": table},
             task_type=ReactionAdder
         )
-        outputs = await tester.run()
+        outputs = tester.run()
         net = outputs["network"]
 
         self.assertEqual(len(net.reactions), 8)
