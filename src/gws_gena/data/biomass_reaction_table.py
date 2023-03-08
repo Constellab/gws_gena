@@ -55,10 +55,10 @@ class BiomassReactionTable(Table):
     # -- F --
 
     def get_chebi_ids(self) -> list:
-        return self.get_column_as_list(self.chebi_column)
+        return self.get_column_data(self.chebi_column)
 
     def get_entities(self) -> list:
-        return self.get_column_as_list(self.entity_column)
+        return self.get_column_data(self.entity_column)
 
     # -- I --
 

@@ -60,21 +60,21 @@ class PhenotypeTable(Table):
     # -- G --
 
     def get_entity_names(self) -> list:
-        return self.get_column_as_list(self.entity_column_name)
+        return self.get_column_data(self.entity_column_name)
 
     def get_chebi_ids(self) -> list:
-        return self.get_column_as_list(self.chebi_id_column_name)
+        return self.get_column_data(self.chebi_id_column_name)
 
     def get_targets(self) -> list:
-        return self.get_column_as_list(self.target_column_name)
+        return self.get_column_data(self.target_column_name)
 
     def get_upper_bounds(self) -> list:
-        return self.get_column_as_list(self.upper_bound_column_name)
+        return self.get_column_data(self.upper_bound_column_name)
 
     def get_lower_bounds(self) -> list:
-        return self.get_column_as_list(self.lower_bound_column_name)
+        return self.get_column_data(self.lower_bound_column_name)
 
     def get_confidence_scores(self) -> list:
-        return self.get_column_as_list(self.confidence_score_column)
+        return self.get_column_data(self.confidence_score_column)
 
     # -- C --

@@ -88,7 +88,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         data = table.get_data()
         self.assertEqual(data.shape, (8, 5))
-        self.assertEqual(data.at[0, "ko_id"], "toy_cell_R1")
-        self.assertEqual(data.at[0, "reaction_id"], "toy_cell_RB")
-        self.assertAlmostEqual(data.at[0, "value"], 4.999, delta=1e-2)
-        self.assertAlmostEqual(data.at[2, "value"], 1e-9, delta=1e-2)
+        self.assertEqual(data.at["0", "ko_id"], "toy_cell_R1")
+        self.assertEqual(data.at["0", "reaction_id"], "toy_cell_RB")
+        self.assertAlmostEqual(data.at["0", "value"], 4.999, delta=1e-2)
+        self.assertAlmostEqual(data.at["2", "value"], 1e-9, delta=1e-2)

@@ -38,7 +38,7 @@ class ECTable(Table):
     # -- G --
 
     def get_ec_numbers(self) -> list:
-        return self.get_column_as_list(self.ec_column)
+        return self.get_column_data(self.ec_column)
 
     # -- I --
 
