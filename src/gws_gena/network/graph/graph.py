@@ -83,7 +83,7 @@ class BaseGraph:
 
                 if not comp_id_1:
                     if not is_warning_shown:
-                        Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                        Logger.debug("Reactions without rhea_id or compounds without chebi_id are ignored")
                         is_warning_shown = True
                     continue
 
@@ -98,7 +98,7 @@ class BaseGraph:
 
                     if not comp_id_2:
                         if not is_warning_shown:
-                            Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                            Logger.debug("Reactions without rhea_id or compounds without chebi_id are ignored")
                             is_warning_shown = True
                         continue
 
@@ -143,7 +143,7 @@ class BipartiteGraph(BaseGraph):
 
                 if not comp_id_1:
                     if not is_warning_shown:
-                        Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                        Logger.debug("Reactions without rhea_id or compounds without chebi_id are ignored")
                         is_warning_shown = True
                     continue
 
@@ -161,7 +161,7 @@ class BipartiteGraph(BaseGraph):
 
                 if not comp_id_2:
                     if not is_warning_shown:
-                        Logger.warning("Reactions without rhea_id or compounds without chebi_id are ignored")
+                        Logger.debug("Reactions without rhea_id or compounds without chebi_id are ignored")
                         is_warning_shown = True
                     continue
 
