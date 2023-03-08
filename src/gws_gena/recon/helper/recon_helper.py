@@ -66,7 +66,7 @@ class ReconHelper(BaseHelper):
                     try:
                         net.add_reaction(rxn)
                     except BadRequestException as err:
-                        Logger.warning(f"An non-blocking error occured: {err}")
+                        Logger.debug(f"An non-blocking error occured: {err}")
                         net.update_reaction_recon_tag(enzyme.ec_number, {
                             "ec_number": enzyme.ec_number,
                             "error": str(err)
@@ -115,13 +115,13 @@ class ReconHelper(BaseHelper):
                         try:
                             net.add_reaction(rxn)
                         except BadRequestException as err:
-                            Logger.warning(f"An non-blocking error occured: {err}")
+                            Logger.debug(f"An non-blocking error occured: {err}")
                             net.update_reaction_recon_tag(ec, {
                                 "ec_number": ec,
                                 "error": str(err)
                             })
                 except BadRequestException as err:
-                    Logger.warning(f"An non-blocking error occured: {err}")
+                    Logger.debug(f"An non-blocking error occured: {err}")
                     net.update_reaction_recon_tag(ec, {
                         "ec_number": ec,
                         "error": str(err)
