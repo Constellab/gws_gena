@@ -3,12 +3,6 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import re
-
-from gws_biota import Compound as BiotaCompound
-from gws_biota import EnzymeOrtholog as BiotaEnzymeOrtholog
-from gws_core import BadRequestException, Task
-
 from ....helper.base_helper import BaseHelper
 from ...typing.network_typing import NetworkDict
 
@@ -52,7 +46,6 @@ class NetworkDataDumperHelper(BaseHelper):
                 "formula": _met.formula,
                 "inchi": _met.inchi,
                 "type": _met.get_type(),
-                # "is_cofactor": _met.is_cofactor(),
                 "level": _met.get_level(),
                 "compartment": _met.compartment.id,
                 "chebi_id": _met.chebi_id,
@@ -75,7 +68,6 @@ class NetworkDataDumperHelper(BaseHelper):
             rxn_data.append({
                 "id": _rxn.id,
                 "name": _rxn.name,
-                # "enzyme": _rxn.enzyme,  # TODO: will be deprecated
                 "enzymes": _rxn.enzymes,
                 "rhea_id": _rxn.rhea_id,
                 "metabolites": _rxn_met,

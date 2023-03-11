@@ -205,34 +205,29 @@ class Reaction:
         charge = 0.0
         mass = 0.0
 
+        def _compute_blance(val, stoich, comp_val):
+            if isinstance(val, float):
+                if isinstance(comp_val, float):
+                    val += stoich * comp_val
+                else:
+                    val = None
+            else:
+                val = None
+            return val
+
         for substrate in self.substrates.values():
             comp = substrate.compound
             stoich = substrate.stoich
-            if isinstance(charge, float) and isinstance(comp.charge, float):
-                charge += stoich * comp.charge
-            else:
-                charge = None
-            if isinstance(mass, float) and isinstance(comp.mass, float):
-                mass += stoich * comp.mass
-            else:
-                mass = None
+            charge = _compute_blance(charge, stoich, comp.charge)
+            mass = _compute_blance(mass, stoich, comp.mass)
 
         for product in self.products.values():
             comp = product.compound
             stoich = product.stoich
-            if isinstance(charge, float) and isinstance(comp.charge, float):
-                charge -= stoich * comp.charge
-            else:
-                charge = None
-            if isinstance(mass, float) and isinstance(comp.mass, float):
-                mass -= stoich * comp.mass
-            else:
-                mass = None
+            charge = _compute_blance(charge, -stoich, comp.charge)
+            mass = _compute_blance(mass, -stoich, comp.mass)
 
-        return {
-            "mass": mass,
-            "charge": charge
-        }
+        return {"mass": mass, "charge": charge}
 
     @ classmethod
     def create_sink_reaction(cls, related_compound: Compound, network: Union['Network', 'NetworkData'],

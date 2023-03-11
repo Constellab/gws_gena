@@ -1,3 +1,4 @@
+import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB

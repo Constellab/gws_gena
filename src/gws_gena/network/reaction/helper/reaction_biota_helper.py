@@ -66,10 +66,10 @@ class ReactionBiotaHelper(BaseHelper):
 
         c.chebi_id = ",".join([comp_.chebi_id or "" for comp_ in biota_comps])
         c.kegg_id = ",".join([comp_.kegg_id or "" for comp_ in biota_comps])
-        c.charge = str(sum([float(comp_.charge or 0.0) for comp_ in biota_comps]))
+        c.charge = sum(float(comp_.charge or 0.0) for comp_ in biota_comps)
         c.formula = ",".join([comp_.formula or "" for comp_ in biota_comps])
-        c.mass = str(sum([float(comp_.mass or 0.0) for comp_ in biota_comps]))
-        c.monoisotopic_mass = str(sum([float(comp_.monoisotopic_mass or 0.0) for comp_ in biota_comps]))
+        c.mass = sum(float(comp_.mass or 0.0) for comp_ in biota_comps)
+        c.monoisotopic_mass = sum(float(comp_.monoisotopic_mass or 0.0) for comp_ in biota_comps)
         c.layout = biota_comps[0].layout
 
         if is_product:

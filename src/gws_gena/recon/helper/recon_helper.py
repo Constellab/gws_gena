@@ -7,8 +7,7 @@ import math
 
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import (BadRequestException, ConfigParams, Logger,
-                      MessageDispatcher, Task, TaskInputs)
+from gws_core import BadRequestException, Logger
 
 from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.ec_table import ECTable
