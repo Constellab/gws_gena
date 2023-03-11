@@ -3,10 +3,6 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import copy
-
-from ...network.compound.compound import Compound
-from ...network.reaction.reaction import Reaction
 from ..flat_twin import FlatTwin, Twin
 
 # ####################################################################

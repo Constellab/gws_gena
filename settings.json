@@ -3,7 +3,7 @@
     "author"        : "Gencovery",
     "author_email"  : "admin@gencovery.com",
     "description"   : "Genome-based regulatory Network Analytics (GENA)",
-    "version"       : "0.4.9",
+    "version"       : "0.4.10",
     "variables":{
         "gws_gena:testdata_dir" : "${CURRENT_DIR}/tests/testdata",
         "gws_gena:zonodo_url" : "https://storage.gra.cloud.ovh.net/v1/AUTH_a0286631d7b24afba3f3cdebed2992aa/opendata/zenodo/1.0.0/compounds.sqlite",

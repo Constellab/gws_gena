@@ -26,9 +26,9 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(len(net.compounds), 73)
         self.assertEqual(len(net.reactions), 74)
 
-        with open(os.path.join(data_dir, './build/', 'ecoli_dump_with_conv.json'), 'w', encoding="utf-8") as fp:
-            data = net.dumps()
-            json.dump(data, fp, indent=4)
+        # with open(os.path.join(data_dir, './build/', 'ecoli_dump_with_conv.json'), 'w', encoding="utf-8") as fp:
+        #     data = net.dumps()
+        #     json.dump(data, fp, indent=4)
 
         # import 2
         net = NetworkImporter.call(
