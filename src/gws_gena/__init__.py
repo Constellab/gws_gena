@@ -47,10 +47,13 @@ from .network.reaction.reaction_task.reaction_adder import ReactionAdder
 from .network.reaction.reaction_task.reaction_remover import ReactionRemover
 from .network.view.network_view import NetworkView
 # proto
+from .proto.deprecated.recon_proto_deprecated_000 import ReconProto000
 from .proto.fba_proto import FBAProto
 from .proto.fva_proto import FVAProto
 from .proto.koa_proto import KOAProto
 from .proto.recon_proto import ReconProto
+# recon
+from .recon.deprecated.recon_deprecated_000 import DraftRecon000
 from .recon.helper.recon_helper import ReconHelper
 from .recon.recon import DraftRecon
 # reduction

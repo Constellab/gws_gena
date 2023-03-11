@@ -3,7 +3,8 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
-from gws_gena import BiomassReactionTableImporter, ECTableImporter, ReconProto
+from gws_gena import (BiomassReactionTableImporter, ECTableImporter,
+                      MediumTableImporter, ReconProto000)
 
 
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
@@ -27,11 +28,19 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
                 "biomass_column": "Biomass"
         })
 
-        experiment = IExperiment(ReconProto)
+        medium_table = MediumTableImporter.call(File(
+            path=os.path.join(data_dir, "recon_medium.csv")),
+            {
+                "entity_column": "Name of the metabolite",
+                "chebi_column": "Chebi ID"
+        })
+
+        experiment = IExperiment(ReconProto000)
         proto = experiment.get_protocol()
 
         proto.set_input("ec_table", ec_table)
         proto.set_input("biomass_table", biomass_table)
+        proto.set_input("medium_table", medium_table)
 
         recon = proto.get_process("recon")
         # recon.set_param('tax_id', "4753")  # pcystis
@@ -49,21 +58,15 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         # test results
         recon_net = proto.get_output("draft_recon_network")
-
-        # TESTS
-
         file_name = "recon"
-        file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.csv")
-        with open(file_path, 'w', encoding="utf-8") as f:
-            f.write(recon_net.to_csv())
-        file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.json")
-        with open(file_path, 'w', encoding="utf-8") as f:
-            json.dump(recon_net.dumps(), f)
 
-        file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.csv")
+        # file_path = os.path.join(data_dir, "recon_deprecated_000", file_name+"_net.csv")
+        # with open(file_path, 'w', encoding="utf-8") as f:
+        #     f.write(recon_net.to_csv())
+        # file_path = os.path.join(data_dir, "recon_deprecated_000", file_name+"_net.json")
+        # with open(file_path, 'w', encoding="utf-8") as f:
+        #     json.dump(recon_net.dumps(), f)
+
+        file_path = os.path.join(data_dir, "recon_deprecated_000", file_name+"_net.csv")
         with open(file_path, 'r', encoding="utf-8") as f:
             self.assertEqual(recon_net.to_csv(), f.read())
-
-        # gapfill_net = proto.get_output("gap_filler_network")
-        # file_name = "gapfill"
-        # assert_results(gapfill_net, file_name)

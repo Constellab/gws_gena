@@ -77,6 +77,20 @@ class Compound:
         for key, val in dict_.items():
             setattr(self, key, val)
 
+        if isinstance(self.mass, str):
+            self.mass = float(self.mass)
+        if isinstance(self.charge, str):
+            self.charge = float(self.charge)
+        if isinstance(self.monoisotopic_mass, str):
+            self.monoisotopic_mass = float(self.monoisotopic_mass)
+
+        if not isinstance(self.mass, float):
+            self.mass = None
+        if not isinstance(self.charge, float):
+            self.charge = None
+        if not isinstance(self.monoisotopic_mass, float):
+            self.monoisotopic_mass = None
+
         if self.chebi_id is None:
             self.chebi_id = ""
         if self.inchikey is None:

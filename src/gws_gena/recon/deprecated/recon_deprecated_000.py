@@ -7,14 +7,16 @@ from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
                       StringHelper, StrParam, Task, TaskInputs, TaskOutputs,
                       task_decorator)
 
-from ..data.biomass_reaction_table import BiomassReactionTable
-from ..data.ec_table import ECTable
-from ..network.network import Network
-from .helper.recon_helper import ReconHelper
+from ...data.biomass_reaction_table import BiomassReactionTable
+from ...data.ec_table import ECTable
+from ...data.medium_table import MediumTable
+from ...network.network import Network
+from ..helper.recon_helper import ReconHelper
 
 
-@task_decorator("DraftRecon001", human_name="Draft recon", short_description="Draft network reconstruction")
-class DraftRecon(Task):
+@task_decorator("DraftRecon", human_name="Draft recon", short_description="Draft network reconstruction",
+                deprecated_since="0.5.0", deprecated_message="Please reconsider to user the laters version of DraftRecon")
+class DraftRecon000(Task):
     """
     DraftRecon task.
 
@@ -22,8 +24,9 @@ class DraftRecon(Task):
     """
 
     input_specs = {
-        'ec_table': InputSpec(ECTable, human_name="Table of ec numbers", is_optional=True),
+        'ec_table': InputSpec(ECTable, human_name="Table of EC numbers", is_optional=True),
         'biomass_table': InputSpec(BiomassReactionTable, is_optional=True),
+        'medium_table': InputSpec(MediumTable, is_optional=True)
     }
     output_specs = {'network': OutputSpec(Network)}
     config_specs = {
@@ -44,6 +47,10 @@ class DraftRecon(Task):
         if 'biomass_table' in inputs:
             biomass_table = inputs['biomass_table']
             helper.add_biomass_equation_to_network(net, biomass_table)
+
+        if 'medium_table' in inputs:
+            medium_table = inputs['medium_table']
+            helper.add_medium_to_network(net, medium_table)
 
         return {"network": net}
 
@@ -69,4 +76,4 @@ class DraftRecon(Task):
                 tax_search_method=tax_search_method
             )
         else:
-            raise BadRequestException("A list of ec_numbers or a taxonomy_id is required")
+            raise BadRequestException("A list of EC numbers or a taxonomy ID is required")
