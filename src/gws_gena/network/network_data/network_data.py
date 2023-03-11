@@ -867,7 +867,8 @@ class NetworkData(SerializableObjectJson):
         bkms = ['brenda', 'kegg', 'metacyc']
         column_names = [
             "id",
-            "equation_str",
+            "equation",
+            "equation_with_names",
             "ec_numbers",
             "enzyme_names",
             "enzyme_classes",
@@ -947,9 +948,11 @@ class NetworkData(SerializableObjectJson):
                 prods = ["*"]
 
             balance = rxn.compute_mass_and_charge_balance()
+
             _rxn_row = rxn_row.copy()
             _rxn_row["id"] = rxn.id
-            _rxn_row["equation_str"] = rxn.to_str()
+            _rxn_row["equation"] = rxn.to_str()
+            _rxn_row["equation_with_names"] = rxn.to_str(show_names=True)
             _rxn_row["enzyme_names"] = enzyme_names
             _rxn_row["ec_numbers"] = ec_numbers
             _rxn_row["ub"] = str(rxn.lower_bound)

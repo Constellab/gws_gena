@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
