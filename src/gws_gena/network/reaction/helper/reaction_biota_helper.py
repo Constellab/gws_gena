@@ -168,7 +168,14 @@ class ReactionBiotaHelper(BaseHelper):
 
             biota_comps = []
             for id_ in chebi_ids:
-                biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
+                comp_tab = BiotaCompound.search_by_chebi_ids([id_])
+                biota_comps.append(comp_tab[0])
+                # try:
+                #     comp_tab = BiotaCompound.search_by_chebi_ids([id_])
+                #     biota_comps.append(comp_tab[0])
+                # except Exception as err:
+                #     print(rhea_rxn.rhea_id)
+                #     raise Exception(f"{err}")
 
             litteral_comp_name = substrate_definition[count]
             if litteral_comp_name.endswith("(out)"):
@@ -201,7 +208,15 @@ class ReactionBiotaHelper(BaseHelper):
 
             biota_comps = []
             for id_ in chebi_ids:
-                biota_comps.append(BiotaCompound.get(BiotaCompound.chebi_id == id_))
+                comp_tab = BiotaCompound.search_by_chebi_ids([id_])
+                biota_comps.append(comp_tab[0])
+                # try:
+                #     comp_tab = BiotaCompound.search_by_chebi_ids([id_])
+                #     biota_comps.append(comp_tab[0])
+                # except Exception as err:
+                #     # search for alternative chebi_id
+                #     print(rhea_rxn.rhea_id)
+                #     raise Exception(f"{err}")
 
             litteral_comp_name = product_definition[count]
             if litteral_comp_name.endswith("(out)"):

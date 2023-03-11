@@ -10,9 +10,8 @@ import numpy as np
 from gws_biota import EnzymeClass
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxonomy
-from gws_core import (BadRequestException, Logger, RField,
-                      SerializableObjectJson, StrRField, Table, TableView,
-                      Task, view)
+from gws_core import (BadRequestException, Logger, SerializableObjectJson,
+                      Table, Task)
 from pandas import DataFrame
 
 from ..compartment.compartment import Compartment
@@ -348,7 +347,7 @@ class NetworkData(SerializableObjectJson):
         nb_items_per_page = 1000
         count = 1
         while True:
-            Logger.info(f" {count}/{nb_rxn} reaction loaded.")
+            Logger.info(f" {count}/{nb_rxn} reactions loaded.")
             current_query = query.paginate(page, nb_items_per_page)
             if len(current_query) == 0:
                 break
@@ -369,7 +368,7 @@ class NetworkData(SerializableObjectJson):
         if not self.reaction_exists(rxn):
             raise BadRequestException(f"The reaction {rxn.id} does not exist in the network")
 
-        return SlugifyHelper.slugify_id(self.name + self.DELIMITER + rxn.id)
+        return self.name + self.DELIMITER + rxn.id
 
     def flatten_compound_id(self, comp: Compound) -> str:
         """ Flatten the id of a compound """
@@ -379,7 +378,7 @@ class NetworkData(SerializableObjectJson):
             raise BadRequestException(f"The reaction {comp.id} does not exist in the network")
 
         if not comp.compartment.is_extracellular():
-            return SlugifyHelper.slugify_id(self.name + self.DELIMITER + comp.id)
+            return self.name + self.DELIMITER + comp.id
         else:
             return comp.id
 

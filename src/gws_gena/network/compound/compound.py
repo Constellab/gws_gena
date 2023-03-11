@@ -222,8 +222,9 @@ class Compound:
 
         if biota_compound is None and chebi_id:
             if isinstance(chebi_id, (float, int)):
-                chebi_id = "CHEBI:"+str(chebi_id)
-            biota_compound = BiotaCompound.get_or_none(BiotaCompound.chebi_id == chebi_id)
+                chebi_id = f"CHEBI:{chebi_id}"
+            query = BiotaCompound.search_by_chebi_ids([chebi_id])
+            biota_compound = query[0] if len(query) > 0 else None
         if biota_compound is None and inchikey:
             biota_compound = BiotaCompound.get_or_none(BiotaCompound.inchikey == inchikey)
         if biota_compound is None and kegg_id:
@@ -305,7 +306,9 @@ class Compound:
         """
 
         if self.chebi_id:
-            return BiotaCompound.get_or_none(BiotaCompound.chebi_id == self.chebi_id)
+            query = BiotaCompound.search_by_chebi_ids([self.chebi_id])
+            return query[0] if len(query) > 0 else None
+            # return BiotaCompound.get_or_none(BiotaCompound.chebi_id == self.chebi_id)
         elif self.kegg_id:
             return BiotaCompound.get_or_none(BiotaCompound.kegg_id == self.kegg_id)
         return None
@@ -319,7 +322,9 @@ class Compound:
         """
 
         if self.chebi_id:
-            comp = BiotaCompound.get_or_none(BiotaCompound.chebi_id == self.chebi_id)
+            query = BiotaCompound.search_by_chebi_ids([self.chebi_id])
+            return query[0] if len(query) > 0 else None
+            # comp = BiotaCompound.get_or_none(BiotaCompound.chebi_id == self.chebi_id)
         elif self.kegg_id:
             comp = BiotaCompound.get_or_none(BiotaCompound.kegg_id == self.kegg_id)
         if comp is not None:
