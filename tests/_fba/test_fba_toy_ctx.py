@@ -61,12 +61,12 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             if not os.path.exists(result_dir):
                 os.makedirs(result_dir)
             # write test results in files
-            file_path = os.path.join(result_dir, "sv.csv")
-            with open(file_path, 'w', encoding="utf-8") as fp:
-                fp.write(sv.to_csv())
-            file_path = os.path.join(result_dir, "flux.csv")
-            with open(file_path, 'w', encoding="utf-8") as fp:
-                fp.write(fluxes.to_csv())
+            # file_path = os.path.join(result_dir, "sv.csv")
+            # with open(file_path, 'w', encoding="utf-8") as fp:
+            #     fp.write(sv.to_csv())
+            # file_path = os.path.join(result_dir, "flux.csv")
+            # with open(file_path, 'w', encoding="utf-8") as fp:
+            #     fp.write(fluxes.to_csv())
 
             print(fluxes)
             table = fluxes.to_numpy()

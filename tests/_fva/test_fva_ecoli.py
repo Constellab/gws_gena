@@ -53,10 +53,10 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             print(biomass_flux)
             print("----------------------------------------------")
 
-            result_dir = os.path.join(organism_result_dir, solver, relax_dir)
-            file_path = os.path.join(result_dir, "biomass_flux.csv")
-            with open(file_path, 'w', encoding="utf-8") as fp:
-                fp.write(biomass_flux.to_csv())
+            # result_dir = os.path.join(organism_result_dir, solver, relax_dir)
+            # file_path = os.path.join(result_dir, "biomass_flux.csv")
+            # with open(file_path, 'w', encoding="utf-8") as fp:
+            #     fp.write(biomass_flux.to_csv())
 
             # fluxes = result.get_fluxes_dataframe()
             # print(fluxes)
