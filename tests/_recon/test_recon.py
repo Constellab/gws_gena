@@ -66,6 +66,22 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             with open(file_path, 'r', encoding="utf-8") as f:
                 self.assertEqual(net.to_csv(), f.read())
 
+            # print(len(net.reactions))
+            # print(len(net.compounds))
+            self.assertEqual(len(net.reactions), 44)
+            self.assertEqual(len(net.compounds), 112)
+
+            comp_ids = net.get_compound_ids()
+            self.assertTrue("Biomass_biomass" in comp_ids)
+            self.assertTrue("CHEBI:16526_cytosol" in comp_ids)
+            self.assertTrue("2-oxoglutarate_cytosol" in comp_ids)  # unrecognized chebi_id comming from medium file
+
+            rxn_ids = net.get_reaction_ids()
+            self.assertTrue("RHEA:16585" in rxn_ids)
+            self.assertTrue("RHEA:15481" in rxn_ids)
+            self.assertTrue("cholesterol_ex" in rxn_ids)  # added using medium file
+            self.assertTrue("L-glutamate(1-)_ex" in rxn_ids)
+
         # run experiment
         await experiment.run()
 

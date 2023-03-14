@@ -1,11 +1,9 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, File, IExperiment, Settings, TaskRunner,
-                      ViewTester)
-from gws_gena import (KOA, Context, ContextImporter, EntityIDTable,
-                      EntityIDTableImporter, KOAProto, Network,
-                      NetworkImporter, Twin)
+from gws_core import File, IExperiment, Settings
+from gws_gena import (ContextImporter, EntityIDTableImporter, KOAProto,
+                      NetworkImporter)
 
 settings = Settings.get_instance()
 
@@ -22,6 +20,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             File(os.path.join(data_dir, "ecoli", "ecoli.json")),
             {}
         )
+
         ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "ecoli", "ecoli_context.json")),
             {}
@@ -39,12 +38,16 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         koa.set_param("fluxes_to_maximize", ["ecoli_BIOMASS_Ecoli_core_w_GAM"])
         koa.set_param("solver", "quad")
         koa.set_param("relax_qssa", True)
+        koa.set_param('qssa_relaxation_strength', 1)
         await experiment.run()
         ko_results = proto.get_output("koa_result")
 
         print(ko_results)
 
         table = ko_results.get_flux_dataframe(ko_id="ecoli_PGK")
+
+        print(table)
+
         self.assertAlmostEqual(table.at["ecoli_BIOMASS_Ecoli_core_w_GAM", "value"], 37.15, delta=1e-2)
 
         table = ko_results.get_flux_dataframe(ko_id="ecoli_glu_L_c")

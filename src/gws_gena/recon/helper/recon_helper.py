@@ -191,7 +191,7 @@ class ReconHelper(BaseHelper):
             if col_name == chebi_col_name or col_name == entity_column:
                 continue
             rxn = Reaction(ReactionDict(id=col_name, direction="R", lower_bound=0.0))
-            coefs = biomass_table.get_column_as_list(col_name)
+            coefs = biomass_table.get_column_data(col_name)
             error_message = "The reaction is empty"
             for i, coef in enumerate(coefs):
                 if isinstance(coef, str):

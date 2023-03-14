@@ -369,12 +369,12 @@ class FBAHelper(BaseHelper):
         # --------------------------------------------------------------
         # Conpute constrain S*v
         # --------------------------------------------------------------
-        # if relax_qssa:
-        #     con = A_eq @ x.value - b_eq
-        # else:
-        #     con = prob.constraints[0].residual
+        if relax_qssa:
+            con = A_eq @ x.value - b_eq
+        else:
+            con = prob.constraints[0].residual
 
-        con = A_eq @ x.value - b_eq
+        #con = A_eq @ x.value - b_eq
 
         res = dict(
             x=x.value,

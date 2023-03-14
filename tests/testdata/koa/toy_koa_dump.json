@@ -4,9 +4,9 @@
         {
             "id": "X1_c",
             "name": "X1",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -23,9 +23,9 @@
         {
             "id": "X2_c",
             "name": "X2",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -42,9 +42,9 @@
         {
             "id": "X3_c",
             "name": "X3",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -70,9 +70,9 @@
         {
             "id": "X4_c",
             "name": "X4",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -89,9 +89,9 @@
         {
             "id": "X5_c",
             "name": "X5",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -117,9 +117,9 @@
         {
             "id": "X1_e",
             "name": "X1_e",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -136,9 +136,9 @@
         {
             "id": "X2_e",
             "name": "X2_e",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -155,9 +155,9 @@
         {
             "id": "X4_e",
             "name": "X4_e",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -174,9 +174,9 @@
         {
             "id": "X5_e",
             "name": "X5_e",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -193,9 +193,9 @@
         {
             "id": "XB_b",
             "name": "XB_b",
-            "charge": "",
-            "mass": "",
-            "monoisotopic_mass": "",
+            "charge": null,
+            "mass": null,
+            "monoisotopic_mass": null,
             "formula": "",
             "inchi": "",
             "type": "default",
@@ -239,9 +239,9 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": -0.0001523372063828057,
-                        "lower_bound": -0.0001523372063828057,
-                        "upper_bound": -0.0001523372063828057
+                        "value": 5.883546662393424e-05,
+                        "lower_bound": 5.883546662393424e-05,
+                        "upper_bound": 5.883546662393424e-05
                     },
                     "toy_cell_R2": {
                         "value": 4.999769198108658,
@@ -283,9 +283,9 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.000182607740448,
-                        "lower_bound": 5.000182607740448,
-                        "upper_bound": 5.000182607740448
+                        "value": 4.9999402170251415,
+                        "lower_bound": 4.9999402170251415,
+                        "upper_bound": 4.9999402170251415
                     },
                     "toy_cell_R2": {
                         "value": 0.0002013584283800491,
@@ -328,9 +328,9 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.000030150591622,
-                        "lower_bound": 5.000030150591622,
-                        "upper_bound": 5.000030150591622
+                        "value": 4.999999098311978,
+                        "lower_bound": 4.999999098311978,
+                        "upper_bound": 4.999999098311978
                     },
                     "toy_cell_R2": {
                         "value": 4.999970863001171,
@@ -372,9 +372,9 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": -0.00015244178993036609,
-                        "lower_bound": -0.00015244178993036609,
-                        "upper_bound": -0.00015244178993036609
+                        "value": 5.887539565397728e-05,
+                        "lower_bound": 5.887539565397728e-05,
+                        "upper_bound": 5.887539565397728e-05
                     },
                     "toy_cell_R2": {
                         "value": 4.999769044830814,
@@ -416,9 +416,9 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": -0.00015238947125881898,
-                        "lower_bound": -0.00015238947125881898,
-                        "upper_bound": -0.00015238947125881898
+                        "value": 5.885542102090856e-05,
+                        "lower_bound": 5.885542102090856e-05,
+                        "upper_bound": 5.885542102090856e-05
                     },
                     "toy_cell_R2": {
                         "value": 4.999769121504071,
@@ -460,9 +460,9 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.00018266772196,
-                        "lower_bound": 5.00018266772196,
-                        "upper_bound": 5.00018266772196
+                        "value": 4.999940194111147,
+                        "lower_bound": 4.999940194111147,
+                        "upper_bound": 4.999940194111147
                     },
                     "toy_cell_R2": {
                         "value": 0.00020141859396997767,
@@ -504,9 +504,9 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 10.00006023499309,
-                        "lower_bound": 10.00006023499309,
-                        "upper_bound": 10.00006023499309
+                        "value": 9.99999817912212,
+                        "lower_bound": 9.99999817912212,
+                        "upper_bound": 9.99999817912212
                     },
                     "toy_cell_R2": {
                         "value": 9.999941725034171,

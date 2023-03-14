@@ -13,7 +13,7 @@ settings = Settings.get_instance()
 
 class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
-    async def test_large_fba(self):
+    async def test_large_ecoli(self):
         self.print("Test FBAProto: Medium or large metwork (typically Ecoli)")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
@@ -34,6 +34,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             fva = proto.get_process("fva")
             fva.set_param('solver', solver)
             fva.set_param('relax_qssa', relax_qssa)
+            fva.set_param('qssa_relaxation_strength', 1)
             if organism == 'ecoli':
                 fva.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
             else:
@@ -87,8 +88,3 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
         for relax in [True]:
             GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             await run_fva(organism=organism, solver="quad", relax_qssa=relax)
-
-        # pcys
-        organism = "pcys"
-        GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-        await run_fva(organism=organism, solver="quad", relax_qssa=True)

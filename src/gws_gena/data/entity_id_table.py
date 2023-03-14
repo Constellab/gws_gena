@@ -38,7 +38,7 @@ class EntityIDTable(Table):
     # -- G --
 
     def get_ids(self) -> list:
-        return self.get_column_as_list(self.id_column,)
+        return self.get_column_data(self.id_column,)
 
     # -- I --
 

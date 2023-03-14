@@ -68,16 +68,16 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         for _id in net2.reactions:
             self.assertTrue(_id in net_merged.reactions)
 
-        file_name = "merger"
-        file_path = os.path.join(result_dir, file_name+"_net.csv")
-        with open(file_path, 'w', encoding="utf-8") as f:
-            f.write(net_merged.to_csv())
+        # file_name = "merger"
+        # file_path = os.path.join(result_dir, file_name+"_net.csv")
+        # with open(file_path, 'w', encoding="utf-8") as f:
+        #     f.write(net_merged.to_csv())
 
-        file_path = os.path.join(result_dir, file_name+"_net.json")
-        with open(file_path, 'w', encoding="utf-8") as f:
-            json.dump(net_merged.dumps(), f)
+        # file_path = os.path.join(result_dir, file_name+"_net.json")
+        # with open(file_path, 'w', encoding="utf-8") as f:
+        #     json.dump(net_merged.dumps(), f)
 
-        file_path = os.path.join(result_dir, file_name+"_stats.csv")
-        with open(file_path, 'w', encoding="utf-8") as f:
-            table = net_merged.get_compound_stats_as_table()
-            f.write(table.to_csv())
+        # file_path = os.path.join(result_dir, file_name+"_stats.csv")
+        # with open(file_path, 'w', encoding="utf-8") as f:
+        #     table = net_merged.get_compound_stats_as_table()
+        #     f.write(table.to_csv())

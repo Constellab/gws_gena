@@ -2,11 +2,9 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, File, IExperiment, Settings, TaskRunner,
-                      ViewTester)
-from gws_gena import (KOA, Context, ContextImporter, EntityIDTable,
-                      EntityIDTableImporter, KOAProto, KOAResultExtractor,
-                      Network, NetworkImporter, Twin)
+from gws_core import File, Settings, TaskRunner
+from gws_gena import (KOA, ContextImporter, EntityIDTableImporter,
+                      KOAResultExtractor, NetworkImporter, Twin)
 
 settings = Settings.get_instance()
 
