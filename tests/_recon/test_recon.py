@@ -67,3 +67,16 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         # gapfill_net = proto.get_output("gap_filler_network")
         # file_name = "gapfill"
         # assert_results(gapfill_net, file_name)
+
+        # print(len(recon_net.reactions))
+        # print(len(recon_net.compounds))
+        self.assertEqual(len(recon_net.reactions), 36)
+        self.assertEqual(len(recon_net.compounds), 99)
+
+        comp_ids = recon_net.get_compound_ids()
+        self.assertTrue("Biomass_biomass" in comp_ids)
+        self.assertTrue("CHEBI:16526_cytosol" in comp_ids)
+
+        rxn_ids = recon_net.get_reaction_ids()
+        self.assertTrue("RHEA:16585" in rxn_ids)
+        self.assertTrue("RHEA:15481" in rxn_ids)

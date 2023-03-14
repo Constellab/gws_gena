@@ -27,7 +27,7 @@ class ReactionBiotaHelper(BaseHelper):
 
     def create_oligomer_if_required_and_add_to_reaction(
             self, biota_comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
-            compartment_go_id=None, alt_litteral_comppound_name=None, oligomerization=None):
+            compartment_go_id=None, alt_litteral_compound_name=None, oligomerization=None):
         """ Merge a list of compounds (oligomerisation) """
 
         from ...compound.compound import Compound
@@ -35,9 +35,8 @@ class ReactionBiotaHelper(BaseHelper):
         if compartment_go_id is None:
             compartment_go_id = biota_comps[0].compartment.go_id
 
-        names = []
-        for comp in biota_comps:
-            names.append(comp.name)
+        names = [comp.name for comp in biota_comps]
+        chebi_ids = [comp.chebi_id for comp in biota_comps]
 
         if oligomerization is not None:
             names.append(oligomerization)
@@ -45,7 +44,8 @@ class ReactionBiotaHelper(BaseHelper):
         is_substrate = not is_product
         c = Compound(
             CompoundDict(
-                name=",".join(names),
+                chebi_id="_".join(chebi_ids),
+                name="_".join(names),
                 compartment=Compartment.from_biota(go_id=compartment_go_id)
             ))
 
@@ -53,13 +53,15 @@ class ReactionBiotaHelper(BaseHelper):
             comp_id_exists_in_products = (c.id in rxn.products)
             if comp_id_exists_in_products:
                 # try to use the litteral name to uniquify the compound id
-                if alt_litteral_comppound_name:
+                if alt_litteral_compound_name:
                     c = Compound(CompoundDict(
-                        name=alt_litteral_comppound_name,
+                        chebi_id="_".join(chebi_ids) + "_" + alt_litteral_compound_name,
+                        name=alt_litteral_compound_name,
                         compartment=c.compartment
                     ))
                 else:
                     c = Compound(CompoundDict(
+                        chebi_id="_".join(chebi_ids) + "_alt",
                         name=c.name + "_alt",
                         compartment=c.compartment
                     ))
@@ -191,7 +193,7 @@ class ReactionBiotaHelper(BaseHelper):
                 rxn,
                 is_product=True,
                 compartment_go_id=compartment_go_id,
-                alt_litteral_comppound_name=None,
+                alt_litteral_compound_name=None,
                 oligomerization=oligo
             )
             count += 1
@@ -232,7 +234,7 @@ class ReactionBiotaHelper(BaseHelper):
                 rxn=rxn,
                 is_product=False,
                 compartment_go_id=compartment_go_id,
-                alt_litteral_comppound_name=litteral_comp_name,
+                alt_litteral_compound_name=litteral_comp_name,
                 oligomerization=oligo
             )
             count += 1

@@ -1,15 +1,19 @@
+import json
 import os
 
+import numpy
+import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, GTest, IExperiment, Settings
-from gws_gena import ContextImporter, FVAProto, NetworkImporter
+from gws_core import ExperimentService, File, GTest, IExperiment, Settings
+from gws_gena import (Context, ContextImporter, FVAProto, Network,
+                      NetworkImporter, Twin)
 
 settings = Settings.get_instance()
 
 
 class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
-    def test_large_fba(self):
+    def test_large_pcys(self):
         self.print("Test FBAProto: Medium or large metwork (typically Ecoli)")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
@@ -30,6 +34,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             fva = proto.get_process("fva")
             fva.set_param('solver', solver)
             fva.set_param('relax_qssa', relax_qssa)
+            fva.set_param('qssa_relaxation_strength', 1)
             if organism == 'ecoli':
                 fva.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
             else:
@@ -75,14 +80,6 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             # expected_table = expected_table.to_numpy()
             # expected_table = numpy.array(expected_table, dtype=float)
             # self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-1).all())
-
-        # ecoli
-        organism = "ecoli"
-        GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
-        run_fva(organism=organism, solver="highs")
-        for relax in [True]:
-            GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
-            run_fva(organism=organism, solver="quad", relax_qssa=relax)
 
         # pcys
         organism = "pcys"

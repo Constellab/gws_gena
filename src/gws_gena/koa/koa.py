@@ -52,6 +52,7 @@ class KOA(Task):
         fluxes_to_minimize = params["fluxes_to_minimize"]
         relax_qssa = params["relax_qssa"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
+        parsimony_strength = params["parsimony_strength"]
         ko_delimiter = params.get_value("ko_delimiter", ",")
 
         # is_monitored_fluxes_expanded = False
@@ -79,7 +80,8 @@ class KOA(Task):
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
                 biomass_optimization=biomass_optimization,
                 relax_qssa=relax_qssa,
-                qssa_relaxation_strength=qssa_relaxation_strength)
+                qssa_relaxation_strength=qssa_relaxation_strength,
+                parsimony_strength=parsimony_strength)
 
             current_fluxes = current_result.get_fluxes_dataframe()
 

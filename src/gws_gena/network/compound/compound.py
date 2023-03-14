@@ -78,11 +78,11 @@ class Compound:
             setattr(self, key, val)
 
         if isinstance(self.mass, str):
-            self.mass = float(self.mass)
+            self.mass = float(self.mass) if len(self.mass) else None
         if isinstance(self.charge, str):
-            self.charge = float(self.charge)
+            self.charge = float(self.charge) if len(self.charge) else None
         if isinstance(self.monoisotopic_mass, str):
-            self.monoisotopic_mass = float(self.monoisotopic_mass)
+            self.monoisotopic_mass = float(self.monoisotopic_mass) if len(self.monoisotopic_mass) else None
 
         if not isinstance(self.mass, float):
             self.mass = None
