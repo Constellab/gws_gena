@@ -883,12 +883,11 @@ class NetworkData(SerializableObjectJson):
             *BiotaTaxonomy.get_tax_tree(),
             *bkms
         ]
-        rxn_row = {}
-        for k in column_names:
-            rxn_row[k] = ""
 
-        data = []
-        rxn_count = 1
+        data = {}
+        for k in column_names:
+            data[k] = []
+
         for rxn in self.reactions.values():
             enzyme_names = ""
             ec_numbers = ""
@@ -948,25 +947,26 @@ class NetworkData(SerializableObjectJson):
                 prods = ["*"]
 
             balance = rxn.compute_mass_and_charge_balance()
+            data["id"].append(rxn.id)
+            data["equation"].append(rxn.to_str())
+            data["equation_with_names"].append(rxn.to_str(show_names=True))
+            data["enzyme_names"].append(enzyme_names)
+            data["ec_numbers"].append(ec_numbers)
+            data["ub"].append(str(rxn.lower_bound))
+            data["lb"].append(str(rxn.upper_bound))
+            data["enzyme_classes"].append(enzyme_classes)
+            data["is_from_gap_filling"].append(is_from_gap_filling)
+            data["comments"].append("; ".join(comment))
+            data["substrates"].append("; ".join(subs))
+            data["products"].append("; ".join(prods))
+            data["mass_balance"].append(balance["mass"])
+            data["charge_balance"].append(balance["charge"])
 
-            _rxn_row = rxn_row.copy()
-            _rxn_row["id"] = rxn.id
-            _rxn_row["equation"] = rxn.to_str()
-            _rxn_row["equation_with_names"] = rxn.to_str(show_names=True)
-            _rxn_row["enzyme_names"] = enzyme_names
-            _rxn_row["ec_numbers"] = ec_numbers
-            _rxn_row["ub"] = str(rxn.lower_bound)
-            _rxn_row["lb"] = str(rxn.upper_bound)
-            _rxn_row["enzyme_classes"] = enzyme_classes
-            _rxn_row["is_from_gap_filling"] = is_from_gap_filling
-            _rxn_row["comments"] = "; ".join(comment)
-            _rxn_row["substrates"] = "; ".join(subs)
-            _rxn_row["products"] = "; ".join(prods)
-            _rxn_row["mass_balance"] = balance["mass"]
-            _rxn_row["charge_balance"] = balance["charge"]
-            _rxn_row = {**_rxn_row, **tax_cols, **pathway_cols}
-            rxn_count += 1
-            data.append(list(_rxn_row.values()))
+            for k, v in tax_cols.items():
+                data[k].append(v)
+
+            for k, v in pathway_cols.items():
+                data[k].append(v)
 
         # add the errored ec numbers
         for k in self.recon_tags:
@@ -976,19 +976,18 @@ class NetworkData(SerializableObjectJson):
             error = t.get("error")
             if not ec:
                 continue
-            _rxn_row = rxn_row.copy()
-            _rxn_row["ec_numbers"].append(ec)       # ec number
-            _rxn_row["comments"] = error     # comment
+            data["ec_numbers"].append(ec)       # ec number
+            data["comments"].append(error)     # comment
+            data["enzyme_classes"].append("")     # comment
             if is_partial_ec_number:
                 enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == ec)
                 if enzyme_class is not None:
-                    _rxn_row["enzyme_classes"].append(enzyme_class.get_name())
-            rxn_count += 1
-            data.append(list(_rxn_row.values()))
+                    data["enzyme_classes"][-1] = enzyme_class.get_name()
 
         # export
         data = DataFrame(data, columns=column_names)
         data = data.sort_values(by=['id'])
+
         return data
 
     # -- U --

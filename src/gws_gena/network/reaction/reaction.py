@@ -202,18 +202,20 @@ class Reaction:
 
     def compute_mass_and_charge_balance(self) -> dict:
         """ Compute the mass and charge balance of a reaction """
-        charge = 0.0
-        mass = 0.0
-
         def _compute_blance(val, stoich, comp_val):
             if isinstance(val, float):
-                if isinstance(comp_val, float):
+                if isinstance(comp_val, str) and len(comp_val) != 0:
+                    val += stoich * float(comp_val)
+                elif isinstance(comp_val, float):
                     val += stoich * comp_val
                 else:
                     val = None
             else:
                 val = None
             return val
+
+        charge = 0.0
+        mass = 0.0
 
         for substrate in self.substrates.values():
             comp = substrate.compound
