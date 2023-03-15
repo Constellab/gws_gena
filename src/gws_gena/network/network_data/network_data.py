@@ -741,13 +741,6 @@ class NetworkData(SerializableObjectJson):
             task: Task = None) -> 'NetworkData':
         """ Load JSON data and create a Network  """
 
-        if not data.get("compartments"):
-            raise BadRequestException("Invalid network dump. Compartments not found")
-        if not data.get("metabolites"):
-            raise BadRequestException("Invalid network dump. Metabolites not found")
-        if not data.get("reactions"):
-            raise BadRequestException("Invalid network dump. Reactions not found")
-
         helper = NetworkDataLoaderHelper()
         if task:
             helper.attach_task(task)

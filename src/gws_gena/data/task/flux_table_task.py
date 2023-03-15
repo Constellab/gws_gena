@@ -18,7 +18,7 @@ from ..flux_table import FluxTable
 
 
 @importer_decorator("FluxTableImporter", human_name="Flux table importer",
-                    short_description="Metabolic flux table importer importer", target_type=FluxTable,
+                    short_description="Metabolic flux table importer", target_type=FluxTable,
                     supported_extensions=Table.ALLOWED_FILE_FORMATS)
 class FluxTableImporter(TableImporter):
     """

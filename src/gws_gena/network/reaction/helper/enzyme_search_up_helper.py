@@ -52,7 +52,7 @@ class EnzymeSearchUpHelper(BaseHelper):
                 for e in e_group:
                     if t.rank == "no rank":
                         continue
-                    if getattr(e, "tax_"+t.rank) == t.tax_id:
+                    if getattr(e, "tax_"+t.rank, None) == t.tax_id:
                         found_query.append(e)
                         is_found = True
                         break  # -> stop at this taxonomy rank

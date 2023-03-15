@@ -39,7 +39,7 @@ class ReconHelper(BaseHelper):
             raise BadRequestException(f"No taxonomy found with tax_id {tax_id}") from err
 
         enzymes = BiotaEnzyme.select(BiotaEnzyme.ec_number.distinct()).where(
-            getattr(BiotaEnzyme, "tax_"+tax.rank) == tax.tax_id,
+            getattr(BiotaEnzyme, "tax_"+tax.rank, None) == tax.tax_id,
         )
 
         net = Network()

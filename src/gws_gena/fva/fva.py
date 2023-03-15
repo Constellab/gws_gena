@@ -30,6 +30,7 @@ def _do_parallel_loop(kwargs):
     A_eq = kwargs["A_eq"]
     b_eq = kwargs["b_eq"]
     bounds = kwargs["bounds"]
+    c_out = kwargs["c_out"]
     x0 = kwargs["x0"]
     indexes_of_fluxes_to_minimize = kwargs["indexes_of_fluxes_to_minimize"]
     indexes_of_fluxes_to_maximize = kwargs["indexes_of_fluxes_to_maximize"]
@@ -62,7 +63,7 @@ def _do_parallel_loop(kwargs):
         cf.iloc[i, 0] = 1.0
         if solver == "quad":
             res_fva, _ = FBAHelper.solve_cvxpy(
-                cf, A_eq, b_eq, bounds,
+                cf, A_eq, b_eq, bounds, c_out,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
                 parsimony_strength=parsimony_strength,
@@ -70,7 +71,7 @@ def _do_parallel_loop(kwargs):
             )
         else:
             res_fva: FBAOptimizeResult = FBAHelper.solve_scipy(
-                cf, A_eq, b_eq, bounds,
+                cf, A_eq, b_eq, bounds, c_out,
                 solver=solver
             )
         xmin = res_fva.x[i]
@@ -79,7 +80,7 @@ def _do_parallel_loop(kwargs):
         cf.iloc[i, 0] = -1.0
         if solver == "quad":
             res_fva, _ = FBAHelper.solve_cvxpy(
-                cf, A_eq, b_eq, bounds,
+                cf, A_eq, b_eq, bounds, c_out,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
                 parsimony_strength=parsimony_strength,
@@ -87,7 +88,7 @@ def _do_parallel_loop(kwargs):
             )
         else:
             res_fva: FBAOptimizeResult = FBAHelper.solve_scipy(
-                cf, A_eq, b_eq, bounds,
+                cf, A_eq, b_eq, bounds, c_out,
                 solver=solver
             )
         xmax = res_fva.x[i]
@@ -137,7 +138,7 @@ class FVA(Task):
         else:
             flat_twin: FlatTwin = twin.flatten()
 
-        c, A_eq, b_eq, bounds = FBAHelper.build_problem(
+        c, A_eq, b_eq, bounds, c_out = FBAHelper.build_problem(
             flat_twin,
             fluxes_to_maximize=fluxes_to_maximize,
             fluxes_to_minimize=fluxes_to_minimize
@@ -146,7 +147,7 @@ class FVA(Task):
         self.log_info_message(message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
             res, warm_solver = FBAHelper.solve_cvxpy(
-                c, A_eq, b_eq, bounds,
+                c, A_eq, b_eq, bounds, c_out,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
                 parsimony_strength=parsimony_strength,
@@ -154,7 +155,7 @@ class FVA(Task):
             )
         else:
             res: FBAOptimizeResult = FBAHelper.solve_scipy(
-                c, A_eq, b_eq, bounds,
+                c, A_eq, b_eq, bounds, c_out,
                 solver=solver
             )
         self.log_info_message(message=res.message)
@@ -179,7 +180,7 @@ class FVA(Task):
                                                                    step, m)
         else:
             xmin, xmax = self.__solve_with_parloop(
-                c, A_eq, b_eq, bounds, x0, fluxes_to_maximize,
+                c, A_eq, b_eq, bounds, c_out, x0, fluxes_to_maximize,
                 fluxes_to_minimize, step, m, solver, relax_qssa,
                 qssa_relaxation_strength, parsimony_strength)
         res.xmin = xmin
@@ -207,7 +208,7 @@ class FVA(Task):
         }
 
     @staticmethod
-    def __solve_with_parloop(c, A_eq, b_eq, bounds, x0,
+    def __solve_with_parloop(c, A_eq, b_eq, bounds, c_out, x0,
                              fluxes_to_maximize,
                              fluxes_to_minimize,
                              step, m, solver, relax_qssa, qssa_relaxation_strength, parsimony_strength):
@@ -225,6 +226,7 @@ class FVA(Task):
                 A_eq=A_eq,
                 b_eq=b_eq,
                 bounds=bounds,
+                c_out=c_out,
                 x0=x0,
                 indexes_of_fluxes_to_minimize=min_idx,
                 indexes_of_fluxes_to_maximize=max_idx,

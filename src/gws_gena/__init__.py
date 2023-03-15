@@ -2,6 +2,7 @@
 # context
 from .context.context import Context
 from .context.context_builder import ContextBuilder
+from .context.helper.context_builder_helper import ContextBuilderHelper
 from .context.context_task import ContextExporter, ContextImporter
 # table
 from .data.biomass_reaction_table import BiomassReactionTable
@@ -17,6 +18,7 @@ from .data.task.medium_table_task import MediumTableImporter
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult
+from .fba.fba_helper.fba_helper import FBAHelper
 # fva
 from .fva.fva import FVA
 from .fva.fva_result import FVAResult

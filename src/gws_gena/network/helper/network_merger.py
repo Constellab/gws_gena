@@ -22,7 +22,7 @@ class NetworkMergerHelper(BaseHelper):
         for rxn in source_network.reactions.values():
             if not destination_network.reaction_exists(rxn):
                 destination_network.add_reaction(rxn)
-            else:
-                self.log_info_message(f"Reaction {rxn.id} is ignored. It already exists.")
+            # else:
+            #     self.log_info_message(f"Reaction {rxn.id} is ignored. It already exists.")
 
         return destination_network

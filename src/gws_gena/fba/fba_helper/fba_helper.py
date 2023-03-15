@@ -89,7 +89,7 @@ class FBAHelper(BaseHelper):
         else:
             flat_twin: FlatTwin = twin.flatten()
 
-        c, A_eq, b_eq, bounds = cls.build_problem(
+        c, A_eq, b_eq, bounds, c_out = cls.build_problem(
             flat_twin,
             biomass_optimization=biomass_optimization,
             fluxes_to_maximize=fluxes_to_maximize,
@@ -105,14 +105,14 @@ class FBAHelper(BaseHelper):
         self.update_progress_value(2, message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
             res, _ = cls.solve_cvxpy(
-                c, A_eq, b_eq, bounds,
+                c, A_eq, b_eq, bounds, c_out,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
                 parsimony_strength=parsimony_strength
             )
         else:
             res: FBAOptimizeResult = cls.solve_scipy(
-                c, A_eq, b_eq, bounds,
+                c, A_eq, b_eq, bounds, c_out,
                 solver=solver
             )
         self.update_progress_value(90, message=res.message)
@@ -195,6 +195,11 @@ class FBAHelper(BaseHelper):
         b_eq = pd.concat([b_zero_1, b_zero_2, out_flux_target], axis=0)  # vert_concat
         b_eq.index = A_eq.index
 
+        c_out_zero = DataFrame(data=np.zeros((A_eq_left.shape[1], 1,)))
+        c_out_one = DataFrame(data=np.ones((A_eq_right.shape[1], 1,)))
+        c_out = pd.concat([c_out_zero, c_out_one],axis=0)
+        c_out.index = A_eq.columns
+
         # lb and ub
         lb = pd.concat([int_flux_lb, out_flux_lb], axis=0)  # vert_concat
         lb.index = A_eq.columns
@@ -215,7 +220,7 @@ class FBAHelper(BaseHelper):
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_maximize, direction="max")
         A_eq, b_eq = cls.__upgrade_Aeq_beq_with_output_coefficient_score(A_eq, b_eq, beq_confidence_score)
 
-        return c, A_eq, b_eq, bounds
+        return c, A_eq, b_eq, bounds, c_out
 
     # -- C --
 
@@ -274,7 +279,7 @@ class FBAHelper(BaseHelper):
                 ___do_solve_cvxpy_prob_i(1, prob, has_switched=True, verbose=verbose)
 
     @classmethod
-    def solve_cvxpy(cls, c, A_eq, b_eq, bounds, relax_qssa, qssa_relaxation_strength, parsimony_strength, verbose=False):
+    def solve_cvxpy(cls, c, A_eq, b_eq, bounds, c_out, relax_qssa, qssa_relaxation_strength, parsimony_strength, verbose=False):
         x_names = A_eq.columns
         con_names = A_eq.index
         A_eq = A_eq.to_numpy()
@@ -332,7 +337,8 @@ class FBAHelper(BaseHelper):
         # --------------------------------------------------------------
         # Solve the problem
         # --------------------------------------------------------------
-        if parsimony_strength >= 0:
+
+        if parsimony_strength > 0.0:
 
             # solve FBA first
             prob = cp.Problem(cp.Minimize(obj), constrains)
@@ -341,6 +347,14 @@ class FBAHelper(BaseHelper):
             # Set the optimal growth solution and apply regularization
             ub[c != 0.0] = x.value[c != 0.0]+1e-9
             lb[c != 0.0] = x.value[c != 0.0]-1e-9
+
+            # Set the values of the observation data equal to the estimated values
+            c_out = c_out.to_numpy()
+            c_out.shape = (m,)
+
+            ub[c_out != 0.0] = x.value[c_out != 0.0]+1e-9
+            lb[c_out != 0.0] = x.value[c_out != 0.0]-1e-9
+
             ub_par = cp.Parameter(shape=(m,), value=ub)
             lb_par = cp.Parameter(shape=(m,), value=lb)
 
@@ -429,7 +443,7 @@ class FBAHelper(BaseHelper):
         return x.value
 
     @classmethod
-    def solve_scipy(cls, c, A_eq, b_eq, bounds, *, solver="interior-point", verbose=False) -> FBAOptimizeResult:
+    def solve_scipy(cls, c, A_eq, b_eq, bounds, c_out, *, solver="interior-point", verbose=False) -> FBAOptimizeResult:
         x_names = A_eq.columns
         con_names = A_eq.index
         has_sink = False

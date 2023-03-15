@@ -47,11 +47,11 @@ class FBA(Task):
         StrParam(
             default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY,
             allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"],
-            human_name="Solver", short_description="The optimization solver"),
+            human_name="Solver", short_description="The optimization solver. It is recommended to use `quad`. Other solvers are in `beta` versions."),
         "relax_qssa":
         BoolParam(
             default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Relax QSSA",
-            short_description="True to relaxing the quasi-steady state assumption (QSSA) constrain (quad solver is used). False otherwise."),
+            short_description="True to relaxing the quasi-steady state assumption (QSSA) constrain (`quad` solver is used). False otherwise."),
         "qssa_relaxation_strength":
         FloatParam(
             default_value=0.0, min_value=0.0, visibility=StrParam.PROTECTED_VISIBILITY,
