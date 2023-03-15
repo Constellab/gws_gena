@@ -20,13 +20,15 @@ class GapFillerHelper(BaseHelper):
         """ Find all gaps """
 
         rhea_ids = self.find_gap_filling_rhea_ids(net, tax_id=tax_id, weight=weight)
-        self.log_info_message(f"{len(rhea_ids)} reaction(s) added")
+        count = 0
         for rhea_id in rhea_ids:
             rxns = Reaction.from_biota(rhea_id=rhea_id)
             if not net.reaction_exists(rxns[0]):
+                count += 1
                 net.add_reaction(rxns[0])
                 net.update_reaction_recon_tag(rxns[0].id, {"is_from_gap_fill": True})
 
+        self.log_info_message(f"{count} reaction(s) added")
         return net
 
     def find_gap_filling_rhea_ids(self, net: Network, tax_id: str = None, weight: str = None, partial: bool = True):

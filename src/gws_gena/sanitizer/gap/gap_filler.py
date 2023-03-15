@@ -10,7 +10,7 @@ from ...network.network import Network
 from .helper.gap_filler_helper import GapFillerHelper
 
 
-@task_decorator("GapFiller", human_name="Fast gap filler", short_description="Fills gaps in a networks")
+@task_decorator("GapFiller", human_name="Gap filler", short_description="Fills gaps in networks")
 class GapFiller(Task):
     """
     GapFiller class.
@@ -31,7 +31,7 @@ class GapFiller(Task):
         'tax_id':
         StrParam(
             default_value=None, human_name="Taxonomy ID",
-            short_description="The taxonomy id used to fill gaps")
+            short_description="The taxonomy id used to fill gaps (Warning: Not active)")
     }
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
@@ -40,6 +40,7 @@ class GapFiller(Task):
 
         helper = GapFillerHelper()
         helper.attach_task(self)
-        net = helper.fill_gaps(net, tax_id=tax_id)
+        # net = helper.fill_gaps(net, tax_id=tax_id)
+        net = helper.fill_gaps(net)
 
         return {'network': net}

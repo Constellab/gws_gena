@@ -38,8 +38,8 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         recon.set_param('tax_id', "263815")  # pcystis murina
 
         gap_filler = proto.get_process("gap_filler")
-        gap_filler.set_param('tax_id', "4753")      # pcystis
-        # gap_filler.set_param('tax_id', "4751")    # fungi
+        #gap_filler.set_param('tax_id', "4753")      # pcystis
+        gap_filler.set_param('tax_id', "4751")    # fungi
         # gap_filler.set_param('tax_id', "2759")    # eukaryota
         # gap_filler.set_param('biomass_and_medium_gaps_only', True)
         # gap_filler.set_param('add_sink_reactions', True)
@@ -52,14 +52,15 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         # TESTS
 
-        file_name = "recon"
-        file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.csv")
-        with open(file_path, 'w', encoding="utf-8") as f:
-            f.write(recon_net.to_csv())
-        file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.json")
-        with open(file_path, 'w', encoding="utf-8") as f:
-            json.dump(recon_net.dumps(), f)
+        # file_name = "recon"
+        # file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.csv")
+        # with open(file_path, 'w', encoding="utf-8") as f:
+        #     f.write(recon_net.to_csv())
+        # file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.json")
+        # with open(file_path, 'w', encoding="utf-8") as f:
+        #     json.dump(recon_net.dumps(), f)
 
+        file_name = "recon"
         file_path = os.path.join(data_dir, "recon_latest", file_name+"_net.csv")
         with open(file_path, 'r', encoding="utf-8") as f:
             self.assertEqual(recon_net.to_csv(), f.read())
