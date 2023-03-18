@@ -948,8 +948,8 @@ class NetworkData(SerializableObjectJson):
             _rxn_row["equation_with_names"] = rxn.to_str(show_names=True)
             _rxn_row["enzyme_names"] = enzyme_names
             _rxn_row["ec_numbers"] = ec_numbers
-            _rxn_row["ub"] = str(rxn.lower_bound)
-            _rxn_row["lb"] = str(rxn.upper_bound)
+            _rxn_row["lb"] = str(rxn.lower_bound)
+            _rxn_row["ub"] = str(rxn.upper_bound)
             _rxn_row["enzyme_classes"] = enzyme_classes
             _rxn_row["is_from_gap_filling"] = is_from_gap_filling
             _rxn_row["comments"] = "; ".join(comment)
