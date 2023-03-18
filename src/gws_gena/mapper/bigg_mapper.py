@@ -14,6 +14,20 @@ from ..unicell.unicell import Unicell
 class BiggMapper:
 
     @classmethod
+    def _convert_bigg_annotation_list_to_dict(cls, annotation):
+        if isinstance(annotation, list):
+            annotation_dict = {}
+            for annotation_val in annotation:
+                k = annotation_val[0]
+                v = annotation_val[1]
+                if k not in annotation_dict:
+                    annotation_dict[k] = []
+                if "http" in v:
+                    v = v.split("/")[-1]
+                annotation_dict[k].append(v)
+        return annotation_dict
+
+    @classmethod
     def create_mapping_dict(cls, data):
         unicell = Unicell.create_network()
         unicell_comps = {comp.chebi_id: comp for comp in unicell.compounds.values()}
@@ -40,6 +54,9 @@ class BiggMapper:
             # it is maybe a bigg data format
             annotation = comp_data.get("annotation")
             if annotation is not None:
+                if isinstance(annotation, list):
+                    annotation = cls._convert_bigg_annotation_list_to_dict(annotation)
+
                 chebi_ids = annotation.get("chebi", []) or annotation.get("CHEBI", [])
                 if isinstance(chebi_ids, str):
                     chebi_ids = [chebi_ids]
@@ -56,6 +73,9 @@ class BiggMapper:
         for rxn_data in data["reactions"]:
             annotation = rxn_data.get("annotation")
             if annotation is not None:
+                if isinstance(annotation, list):
+                    annotation = cls._convert_bigg_annotation_list_to_dict(annotation)
+
                 rhea_ids = annotation.get("rhea", [])
                 if isinstance(rhea_ids, str):
                     rhea_ids = [rhea_ids]

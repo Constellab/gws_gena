@@ -3,10 +3,11 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
+import json
 import os
 import pickle
 
-from gws_core import Settings
+from gws_core import Logger, Settings
 from pandas import DataFrame
 
 from ..network.network import Network
@@ -35,6 +36,18 @@ class Unicell:
             net = Network.from_biota(tax_id=tax_id)
             with open(file_path, 'wb') as fp:
                 pickle.dump(net, fp)
+        return net
+
+    @classmethod
+    def create_bigg_network(cls, refresh: bool = False):
+        # Experimental method
+        Logger.warning("Take care, `create_bigg_network` is an experimental method")
+        path = "/lab/user/notebooks/recon/universal_model.json"
+        with open(path, 'r', encoding="utf-8") as fp:
+            data = json.load(fp)
+
+        net = Network.loads(data, translate_ids=False)
+
         return net
 
     @classmethod

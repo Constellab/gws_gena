@@ -69,7 +69,15 @@ class NetworkDataLoaderHelper(BaseHelper):
 
             # create compartment
             compart_id = comp_data["compartment"]
-            compartment = Compartment(data["compartments"][compart_id])
+            if compart_id == "":
+                # for some bigg models
+                # try to infer compartment from compound id
+                compart_id = comp_id.split("_")[-1]
+                compartment = Compartment.from_biota(bigg_id=compart_id)
+                if compartment is None:
+                    raise BadRequestException(f"Cannot create compartment '{compart_id}'")
+            else:
+                compartment = Compartment(data["compartments"][compart_id])
 
             if translate_ids:
                 used_comp_id = None
@@ -95,11 +103,15 @@ class NetworkDataLoaderHelper(BaseHelper):
 
             if not skip_orphans:
                 # add all compounds by default
-                net.add_compound(comp)
+                try:
+                    net.add_compound(comp)
+                except Exception as err:
+                    raise BadRequestException(f"Cannot compound add {comp_data['id']}. Error: {err}")
 
-            if comp_id in added_comps:
-                raise BadRequestException(f"Id duplicate {comp_id}")
-            added_comps[comp_id] = comp
+            if comp_id not in added_comps:
+                added_comps[comp_id] = comp
+            else:
+                raise BadRequestException(f"Compound id duplicate {comp_id}")
 
         return net, added_comps
 
