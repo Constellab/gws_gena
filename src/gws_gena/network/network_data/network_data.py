@@ -889,8 +889,6 @@ class NetworkData(SerializableObjectJson):
             data[k] = []
 
         for rxn in self.reactions.values():
-            enzyme_names = ""
-            ec_numbers = ""
             comment = []
             enzyme_class = ""
             is_from_gap_filling = False
@@ -996,7 +994,7 @@ class NetworkData(SerializableObjectJson):
         """ Update a reaction recon tag """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self.recon_tags["reactions"]:
+        if tag_id not in self.recon_tags["reactions"]:
             self.recon_tags["reactions"][tag_id] = {}
         self.recon_tags["reactions"][tag_id].update(tag)
 
@@ -1004,6 +1002,6 @@ class NetworkData(SerializableObjectJson):
         """ Update a compound recon tag """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self.recon_tags["compounds"]:
+        if tag_id not in self.recon_tags["compounds"]:
             self.recon_tags["compounds"][tag_id] = {}
         self.recon_tags["compounds"][tag_id].update(tag)

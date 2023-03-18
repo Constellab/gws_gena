@@ -160,7 +160,6 @@ class NetworkDataLoaderHelper(BaseHelper):
             for ec_number in rxn_data["ec_numbers"]:
                 if ec_number in biota_enzymes_dict:
                     enzyme_list.append(biota_enzymes_dict[ec_number])
-                    break
 
             # loads biota info if it exists
             if "reactions" in mapping_dict:
