@@ -213,6 +213,10 @@ class NetworkDataLoaderHelper(BaseHelper):
                 net.add_simulation(vals)
         return net
 
+    def _loads_recon_tags_from_dump(self, net, data: 'NetworkReconTagDict'):
+        net.set_recon_tags(data.get("recon_tags", {}))
+        return net
+
     def loads(self, data: 'NetworkDict', *,
               biomass_reaction_id: str = None,
               skip_orphans: bool = False,
@@ -241,6 +245,7 @@ class NetworkDataLoaderHelper(BaseHelper):
 
         self.log_info_message("Loading simulations ...")
         net = self._loads_simulations_from_dump(net, data)
+        net = self._loads_recon_tags_from_dump(net, data)
 
         self.log_info_message("Creating compounds ...")
         net, added_comps = self._create_compounds_from_dump(

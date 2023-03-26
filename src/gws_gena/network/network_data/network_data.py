@@ -42,7 +42,7 @@ class NetworkData(SerializableObjectJson):
     reactions: Dict[str, Reaction] = None
     compartments: Dict[str, Compartment] = None
     simulations: Dict[str, SimulationDict] = None
-    recon_tags: Dict[str, NetworkReconTagDict] = None
+    recon_tags: NetworkReconTagDict = None
 
     # created by the class
     _compartment_chebi_ids: Dict[str, str] = None
@@ -832,6 +832,9 @@ class NetworkData(SerializableObjectJson):
     # -- R --
 
     # -- S --
+
+    def set_recon_tags(self, recon_tags: NetworkReconTagDict) -> dict:
+        self.recon_tags = recon_tags
 
     # -- T --
 
