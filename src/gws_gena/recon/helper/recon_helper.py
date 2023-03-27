@@ -94,6 +94,9 @@ class ReconHelper(BaseHelper):
         self.update_progress_value(perc, message=f"enzyme {counter} ...")
 
         for ec in ec_list:
+            tag = {
+                "ec_number": ec,
+            }
             if (counter % nb_interval) == 0:
                 perc = 100*(counter/total_enzymes)
                 self.update_progress_value(perc, message=f"enzyme {counter} ...")
@@ -102,11 +105,11 @@ class ReconHelper(BaseHelper):
             ec = str(ec).strip()
             is_incomplete_ec = (not ec) or ("-" in ec)
             if is_incomplete_ec:
-                net.update_reaction_recon_tag(ec, {
-                    "ec_number": ec,
+                tag.update({
                     "is_partial_ec_number": True,
                     "error": "Partial ec number"
                 })
+                net.update_reaction_recon_tag(ec, tag)
             else:
                 try:
                     rxns = Reaction.from_biota(ec_number=ec, tax_id=tax_id, tax_search_method=tax_search_method)
@@ -115,17 +118,16 @@ class ReconHelper(BaseHelper):
                             net.add_reaction(rxn)
                         except BadRequestException as err:
                             Logger.debug(f"An non-blocking error occured: {err}")
-                            net.update_reaction_recon_tag(ec, {
-                                "ec_number": ec,
+                            tag.update({
                                 "error": str(err)
                             })
+                            net.update_reaction_recon_tag(ec, tag)
                 except BadRequestException as err:
                     Logger.debug(f"An non-blocking error occured: {err}")
-                    net.update_reaction_recon_tag(ec, {
-                        "ec_number": ec,
+                    tag.update({
                         "error": str(err)
                     })
-
+                    net.update_reaction_recon_tag("error_" + ec, tag)
         return net
 
     def add_medium_to_network(self, net: Network, medium_table: MediumTable):

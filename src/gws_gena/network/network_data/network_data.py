@@ -875,14 +875,16 @@ class NetworkData(SerializableObjectJson):
             "ec_numbers",
             "enzyme_names",
             "enzyme_classes",
+            "enzyme_history",
             "lb",
             "ub",
-            "is_from_gap_filling",
-            "comments",
             "substrates",
             "products",
             "mass_balance",
             "charge_balance",
+            "recon_is_from_gap_filling",
+            "recon_ec_number",
+            "recon_comments",
             *BiotaTaxonomy.get_tax_tree(),
             *bkms
         ]
@@ -892,7 +894,7 @@ class NetworkData(SerializableObjectJson):
             data[k] = []
 
         for rxn in self.reactions.values():
-            comment = []
+            enzyme_history = []
             enzyme_class = ""
             is_from_gap_filling = False
             pathway_cols = {}
@@ -911,11 +913,11 @@ class NetworkData(SerializableObjectJson):
             enzyme_names = []
             enzyme_classes = []
             for enzyme in rxn.enzymes:
-                enzyme_names.append(enzyme.get("name", "--"))
-                ec_numbers.append(enzyme.get("ec_number", "--"))
+                enzyme_names.append(enzyme.get("name", ""))
+                ec_numbers.append(enzyme.get("ec_number", ""))
                 deprecated_enz = enzyme.get("related_deprecated_enzyme")
                 if deprecated_enz:
-                    comment.append(str(deprecated_enz["ec_number"]) + " (" + str(deprecated_enz["reason"]) + ")")
+                    enzyme_history.append(str(deprecated_enz["ec_number"]) + " (" + str(deprecated_enz["reason"]) + ")")
                 if enzyme.get("pathways"):
                     bkms = ['brenda', 'kegg', 'metacyc']
                     pw = enzyme.get("pathways")
@@ -951,13 +953,13 @@ class NetworkData(SerializableObjectJson):
             data["id"].append(rxn.id)
             data["equation"].append(rxn.to_str())
             data["equation_with_names"].append(rxn.to_str(show_names=True))
-            data["enzyme_names"].append(enzyme_names)
             data["ec_numbers"].append(ec_numbers)
+            data["enzyme_names"].append(enzyme_names)
+            data["enzyme_classes"].append(enzyme_classes)
+            data["enzyme_history"].append("; ".join(enzyme_history))
             data["ub"].append(str(rxn.lower_bound))
             data["lb"].append(str(rxn.upper_bound))
-            data["enzyme_classes"].append(enzyme_classes)
-            data["is_from_gap_filling"].append(is_from_gap_filling)
-            data["comments"].append("; ".join(comment))
+            data["recon_is_from_gap_filling"].append(is_from_gap_filling)
             data["substrates"].append("; ".join(subs))
             data["products"].append("; ".join(prods))
             data["mass_balance"].append(balance["mass"])
@@ -969,23 +971,54 @@ class NetworkData(SerializableObjectJson):
             for k, v in pathway_cols.items():
                 data[k].append(v)
 
-        # add the errored ec numbers
-        for k in self.recon_tags:
-            t = self.recon_tags[k]
-            ec = t.get("ec_number")
-            is_partial_ec_number = t.get("is_partial_ec_number")
-            error = t.get("error")
-            if not ec:
-                continue
-            data["ec_numbers"].append(ec)       # ec number
-            data["comments"].append(error)     # comment
-            data["enzyme_classes"].append("")     # comment
-            if is_partial_ec_number:
-                enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == ec)
-                if enzyme_class is not None:
-                    data["enzyme_classes"][-1] = enzyme_class.get_name()
+            data["recon_ec_number"].append("")
+            data["recon_comments"].append("")
 
-        # export
+            # recon_ec_number = []
+            # recon_comments = []
+            # enzyme_classes = []
+            # for ec in ec_numbers:
+            #     tag = self.get_reaction_recon_tag(ec)
+            #     error = tag.get("error", "")
+            #     recon_ec_number.append(ec)
+            #     recon_comments.append(error)
+
+            #     is_partial_ec_number = tag.get("is_partial_ec_number")
+            #     if is_partial_ec_number:
+            #         enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == ec)
+            #         if enzyme_class is not None:
+            #             enzyme_classes.append(enzyme_class.get_name())
+
+            # data["recon_ec_number"].append(";".join(recon_ec_number))
+            # data["recon_comments"].append(";".join(recon_comments))
+            # if len(enzyme_classes) > 0:
+            #     data["enzyme_classes"][-1] = ";".join(enzyme_classes)
+
+        #! PATCH
+        for k, tag in self.recon_tags["reactions"].items():
+            if k.startswith("error_"):
+                for col in column_names:
+                    data[col].append("")
+
+                ec = tag.get("ec_number", "")
+                recon_ec_number = []
+                recon_comments = []
+                enzyme_classes = []
+
+                error = tag.get("error", "")
+                recon_ec_number.append(str(ec))
+                recon_comments.append(error)
+                is_partial_ec_number = tag.get("is_partial_ec_number")
+                if is_partial_ec_number:
+                    enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == ec)
+                    if enzyme_class is not None:
+                        enzyme_classes.append(enzyme_class.get_name())
+
+                data["recon_ec_number"][-1] = ";".join(recon_ec_number)
+                data["recon_comments"][-1] = ";".join(recon_comments)
+                if len(enzyme_classes) > 0:
+                    data["enzyme_classes"][-1] = ";".join(enzyme_classes)
+
         data = DataFrame(data, columns=column_names)
         data = data.sort_values(by=['id'])
 

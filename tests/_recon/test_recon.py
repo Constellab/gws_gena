@@ -65,6 +65,10 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
             # with open(file_path, 'r', encoding="utf-8") as f:
             #     self.assertEqual(net.to_csv(), f.read())
 
+            # file_path = os.path.join(data_dir, file_name+"_net.xlsx")
+            # df = net.to_dataframe()
+            # df.to_excel(file_path)
+
             # print(len(net.reactions))
             # print(len(net.compounds))
             self.assertEqual(len(net.reactions), 44)
