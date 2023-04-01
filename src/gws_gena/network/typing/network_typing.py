@@ -11,7 +11,8 @@ from .reaction_typing import ReactionDict
 
 NetworkReconTagDict = TypedDict("NetworkReconTagDict", {
     "reactions": dict,
-    "compounds": dict
+    "compounds": dict,
+    "ec_numbers": dict
 })
 
 NetworkDict = TypedDict("NetworkDict", {

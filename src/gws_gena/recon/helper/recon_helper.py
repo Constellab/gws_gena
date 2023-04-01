@@ -58,25 +58,30 @@ class ReconHelper(BaseHelper):
                 self.update_progress_value(perc, message=f"enzyme {counter} ...")
             counter += 1
 
+            ec_number = enzyme.ec_number
+            ec_tag = {
+                "ec_number": ec_number,
+                "reactions": [],
+                "errors": [],
+                "is_partial_ec_number": None
+            }
+
             try:
-                rxns = Reaction.from_biota(ec_number=enzyme.ec_number,
+                rxns = Reaction.from_biota(ec_number=ec_number,
                                            tax_id=tax_id, tax_search_method=tax_search_method)
                 for rxn in rxns:
                     try:
                         net.add_reaction(rxn)
                     except BadRequestException as err:
                         Logger.debug(f"An non-blocking error occured: {err}")
-                        net.update_reaction_recon_tag(enzyme.ec_number, {
-                            "ec_number": enzyme.ec_number,
-                            "error": str(err)
-                        })
+                        ec_tag["errors"].append(str(err))
             except BadRequestException as _:
                 pass
                 # net.update_reaction_recon_tag(enzyme.ec_number, {
                 #     "ec_number": enzyme.ec_number,
                 #     "error": str(err)
                 # })
-
+            net.update_reaction_recon_tag(ec_number, ec_tag)
         return net
 
     def create_network_with_ec_table(
@@ -94,40 +99,52 @@ class ReconHelper(BaseHelper):
         self.update_progress_value(perc, message=f"enzyme {counter} ...")
 
         for ec in ec_list:
-            tag = {
+            ec = str(ec).strip()
+
+            ec_tag = {
                 "ec_number": ec,
+                "reactions": [],
+                "errors": [],
+                "is_partial_ec_number": None
             }
             if (counter % nb_interval) == 0:
                 perc = 100*(counter/total_enzymes)
                 self.update_progress_value(perc, message=f"enzyme {counter} ...")
             counter += 1
 
-            ec = str(ec).strip()
             is_incomplete_ec = (not ec) or ("-" in ec)
             if is_incomplete_ec:
-                tag.update({
-                    "is_partial_ec_number": True,
-                    "error": "Partial ec number"
-                })
-                net.update_reaction_recon_tag(ec, tag)
+                ec_tag["is_partial_ec_number"] = True
+                ec_tag["errors"].append("Partial ec number")
             else:
                 try:
                     rxns = Reaction.from_biota(ec_number=ec, tax_id=tax_id, tax_search_method=tax_search_method)
                     for rxn in rxns:
+                        ec_tag["reactions"].append(rxn.id)
+
+                        rnx_tag = {
+                            "id": rxn.id,
+                            "original_ec": ec,
+                            "errors": []
+                        }
                         try:
+                            # check that is it not a transferred
+                            # for i, enz in enumerate(rxn.enzymes):
+                            #     if ec != enz["ec_number"]:
+                            #         rxn.enzymes[i]["related_deprecated_enzyme"] = ec
+                            #         rnx_tag["errors"].append(f"related_deprecated_enzyme: {ec}")
                             net.add_reaction(rxn)
                         except BadRequestException as err:
                             Logger.debug(f"An non-blocking error occured: {err}")
-                            tag.update({
-                                "error": str(err)
-                            })
-                            net.update_reaction_recon_tag(ec, tag)
+                            ec_tag["errors"].append(str(err))
+                            rnx_tag["errors"].append(str(err))
+
+                        net.update_reaction_recon_tag(rxn.id, rnx_tag)
                 except BadRequestException as err:
                     Logger.debug(f"An non-blocking error occured: {err}")
-                    tag.update({
-                        "error": str(err)
-                    })
-                    net.update_reaction_recon_tag("error_" + ec, tag)
+                    ec_tag["errors"].append(str(err))
+
+            net.update_ec_recon_tag(ec, ec_tag)
         return net
 
     def add_medium_to_network(self, net: Network, medium_table: MediumTable):
@@ -157,7 +174,7 @@ class ReconHelper(BaseHelper):
             except Exception as err:
                 raise BadRequestException(f"Cannot create culture medium reactions. Exception: {err}") from err
 
-    @staticmethod
+    @ staticmethod
     def _retrieve_or_create_comp(net, chebi_id, name, compartment):
         if not isinstance(chebi_id, str):
             chebi_id = str(chebi_id)

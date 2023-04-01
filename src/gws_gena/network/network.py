@@ -494,6 +494,11 @@ class Network(Resource):
 
     # -- U --
 
+    def update_ec_recon_tag(self, tag_id, tag_data: dict):
+        """ Set a ec recon tag """
+
+        self.network_data.update_ec_recon_tag(tag_id, tag_data)
+
     def update_reaction_recon_tag(self, tag_id, tag_data: dict):
         """ Set a reaction recon tag """
 

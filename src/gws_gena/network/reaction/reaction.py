@@ -309,7 +309,9 @@ class Reaction:
                 raise BadRequestException(f"No biota reactions found with ec_number {ec_number}")
 
             rxns = []
+            built_rxns = []
             for biota_reaction in biota_reaction_dict.values():
+                built_rxns.append(biota_reaction.id)
                 rxns.append(rxn_biota_helper.create_reaction_from_biota(rhea_rxn=biota_reaction))
             return rxns
         else:
