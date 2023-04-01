@@ -57,7 +57,7 @@ class NetworkData(SerializableObjectJson):
             self.reactions = {}
             self.compartments = {}
             self.simulations = {}
-            self.recon_tags = NetworkReconTagDict(reactions={}, compounds={})
+            self.recon_tags = NetworkReconTagDict(reactions={}, compounds={}, ec_numbers={})
 
             self._compartment_chebi_ids = {}
             self._ec_rxn_ids_map = {}
@@ -439,9 +439,9 @@ class NetworkData(SerializableObjectJson):
     def get_reaction_ids(self) -> List[str]:
         return list(self.reactions.keys())
 
-    def get_reaction_recon_tag(self, rxn_id: str, tag_name: str = None):
+    def get_ec_recon_tag(self, ec_number: str, tag_name: str = None):
         """
-        Get a reaction tag value a compound id and a tag name.
+        Get a ec_tag value from a ec_number and a tag_name.
 
         :param rxn_id: The reaction id
         :type rxn_id: `str`
@@ -452,9 +452,46 @@ class NetworkData(SerializableObjectJson):
         """
 
         if tag_name:
-            return self.recon_tags.get(rxn_id, {}).get(tag_name)
+            return self.get_ec_recon_tags().get(ec_number, {}).get(tag_name)
         else:
-            return self.recon_tags.get(rxn_id, {})
+            return self.get_ec_recon_tags().get(ec_number, {})
+
+    def get_ec_recon_tags(self) -> dict:
+        """
+        Get all the ec recon_tags
+
+        :return: The recon_tags
+        :rtype: `dict`
+        """
+
+        return self.recon_tags["ec_numbers"]
+
+    def get_reaction_recon_tag(self, rxn_id: str, tag_name: str = None):
+        """
+        Get a reaction tag value from a reaction_id and a tag_name.
+
+        :param rxn_id: The reaction id
+        :type rxn_id: `str`
+        :param tag_name: The tag name
+        :type tag_name: `str`
+        :return: The recon_tag
+        :rtype: `dict`
+        """
+
+        if tag_name:
+            return self.get_reaction_recon_tags().get(rxn_id, {}).get(tag_name)
+        else:
+            return self.get_reaction_recon_tags().get(rxn_id, {})
+
+    def get_reaction_recon_tags(self) -> dict:
+        """
+        Get all the reactions recon_tags
+
+        :return: The recon_tags
+        :rtype: `dict`
+        """
+
+        return self.recon_tags["reactions"]
 
     def get_compound_by_id(self, comp_id: str) -> Compound:
         """
@@ -826,6 +863,9 @@ class NetworkData(SerializableObjectJson):
 
     # -- S --
 
+    def set_recon_tags(self, recon_tags: NetworkReconTagDict) -> dict:
+        self.recon_tags = recon_tags
+
     # -- T --
 
     def to_str(self) -> str:
@@ -865,30 +905,35 @@ class NetworkData(SerializableObjectJson):
             "ec_numbers",
             "enzyme_names",
             "enzyme_classes",
+            "enzyme_history",
             "lb",
             "ub",
-            "is_from_gap_filling",
-            "comments",
             "substrates",
             "products",
             "mass_balance",
             "charge_balance",
+            "recon_is_from_gap_filling",
+            "recon_ec_number",
+            "recon_comments",
             *BiotaTaxonomy.get_tax_tree(),
             *bkms
         ]
-        rxn_row = {}
-        for k in column_names:
-            rxn_row[k] = ""
 
-        data = []
-        rxn_count = 1
+        table = {}
         for rxn in self.reactions.values():
-            enzyme_names = ""
-            ec_numbers = ""
-            comment = []
-            enzyme_class = ""
-            is_from_gap_filling = False
+            data = {}
+            for k in column_names:
+                data[k] = []
+
+            ec_numbers = []
+            enzyme_names = []
+            enzyme_history = []
+            enzyme_classes = []
             pathway_cols = {}
+            recon_ec_number = []
+            recon_comments = []
+            recon_is_from_gap_filling = False
+
             for f in bkms:
                 pathway_cols[f] = ""
 
@@ -898,17 +943,22 @@ class NetworkData(SerializableObjectJson):
 
             flag = self.get_reaction_recon_tag(rxn.id, "is_from_gap_filling")
             if flag:
-                is_from_gap_filling = True
+                recon_is_from_gap_filling = True
 
-            ec_numbers = []
-            enzyme_names = []
-            enzyme_classes = []
             for enzyme in rxn.enzymes:
-                enzyme_names.append(enzyme.get("name", "--"))
-                ec_numbers.append(enzyme.get("ec_number", "--"))
-                deprecated_enz = enzyme.get("related_deprecated_enzyme")
+                ec_number = enzyme.get("ec_number", "")
+                enzyme_names.append(enzyme.get("name", ""))
+                ec_numbers.append(ec_number)
+
+                ec_tag = self.get_ec_recon_tag(ec_number)
+                if ec_tag:
+                    recon_ec_number.append(ec_tag["ec_number"])
+                    recon_comments.append(str(";".join(ec_tag["errors"])))
+
+                deprecated_enz = enzyme.get("related_deprecated_enzyme", "")
                 if deprecated_enz:
-                    comment.append(str(deprecated_enz["ec_number"]) + " (" + str(deprecated_enz["reason"]) + ")")
+                    enzyme_history.append(str(deprecated_enz))
+                    # enzyme_history.append(str(deprecated_enz["ec_number"]) + " (" + str(deprecated_enz["reason"]) + ")")
                 if enzyme.get("pathways"):
                     bkms = ['brenda', 'kegg', 'metacyc']
                     pw = enzyme.get("pathways")
@@ -922,8 +972,10 @@ class NetworkData(SerializableObjectJson):
                     for f in BiotaTaxonomy.get_tax_tree():
                         if f in tax:
                             tax_cols[f] = tax[f]["name"] + " (" + str(tax[f]["tax_id"]) + ")"
-                if enzyme.get("ec_number"):
+                if ec_number:
                     enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == enzyme.get("ec_number"))
+                    if enzyme_class:
+                        enzyme_classes.append(enzyme_class.ec_number)
 
             subs = []
             for substrate in rxn.substrates.values():
@@ -941,63 +993,91 @@ class NetworkData(SerializableObjectJson):
                 prods = ["*"]
 
             balance = rxn.compute_mass_and_charge_balance()
+            data["id"] = rxn.id
+            data["equation"] = rxn.to_str()
+            data["equation_with_names"] = rxn.to_str(show_names=True)
+            data["ec_numbers"] = ec_numbers
+            data["enzyme_names"] = enzyme_names
+            data["enzyme_classes"] = enzyme_classes
+            data["enzyme_history"] = enzyme_history
+            data["ub"] = str(rxn.lower_bound)
+            data["lb"] = str(rxn.upper_bound)
 
-            _rxn_row = rxn_row.copy()
-            _rxn_row["id"] = rxn.id
-            _rxn_row["equation"] = rxn.to_str()
-            _rxn_row["equation_with_names"] = rxn.to_str(show_names=True)
-            _rxn_row["enzyme_names"] = enzyme_names
-            _rxn_row["ec_numbers"] = ec_numbers
-            _rxn_row["lb"] = str(rxn.lower_bound)
-            _rxn_row["ub"] = str(rxn.upper_bound)
-            _rxn_row["enzyme_classes"] = enzyme_classes
-            _rxn_row["is_from_gap_filling"] = is_from_gap_filling
-            _rxn_row["comments"] = "; ".join(comment)
-            _rxn_row["substrates"] = "; ".join(subs)
-            _rxn_row["products"] = "; ".join(prods)
-            _rxn_row["mass_balance"] = balance["mass"]
-            _rxn_row["charge_balance"] = balance["charge"]
-            _rxn_row = {**_rxn_row, **tax_cols, **pathway_cols}
-            rxn_count += 1
-            data.append(list(_rxn_row.values()))
+            data["substrates"] = subs
+            data["products"] = prods
+            data["mass_balance"] = balance["mass"]
+            data["charge_balance"] = balance["charge"]
 
-        # add the errored ec numbers
-        for k in self.recon_tags:
-            t = self.recon_tags[k]
-            ec = t.get("ec_number")
-            is_partial_ec_number = t.get("is_partial_ec_number")
-            error = t.get("error")
-            if not ec:
-                continue
-            _rxn_row = rxn_row.copy()
-            _rxn_row["ec_numbers"].append(ec)       # ec number
-            _rxn_row["comments"] = error     # comment
-            if is_partial_ec_number:
-                enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == ec)
-                if enzyme_class is not None:
-                    _rxn_row["enzyme_classes"].append(enzyme_class.get_name())
-            rxn_count += 1
-            data.append(list(_rxn_row.values()))
+            data["recon_ec_number"] = recon_ec_number
+            data["recon_comments"] = recon_comments
+            data["recon_is_from_gap_filling"] = "yes" if recon_is_from_gap_filling else "no"
 
-        # export
-        data = DataFrame(data, columns=column_names)
+            for k, v in tax_cols.items():
+                data[k] = v
+
+            for k, v in pathway_cols.items():
+                data[k] = v
+
+            table[rxn.id] = data
+
+        # #! PATCH
+        # for k, tag in self.recon_tags["reactions"].items():
+        #     if k.startswith("error_"):
+        #         for col in column_names:
+        #             data[col].append("")
+
+        #         ec = tag.get("ec_number", "")
+        #         recon_ec_number = []
+        #         recon_comments = []
+        #         enzyme_classes = []
+
+        #         error = tag.get("error", "")
+        #         recon_ec_number.append(str(ec))
+        #         recon_comments.append(error)
+        #         is_partial_ec_number = tag.get("is_partial_ec_number")
+        #         if is_partial_ec_number:
+        #             enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == ec)
+        #             if enzyme_class is not None:
+        #                 enzyme_classes.append(enzyme_class.get_name())
+
+        #         data["recon_ec_number"][-1] = ";".join(recon_ec_number)
+        #         data["recon_comments"][-1] = ";".join(recon_comments)
+        #         if len(enzyme_classes) > 0:
+        #             data["enzyme_classes"][-1] = ";".join(enzyme_classes)
+
+        data = DataFrame.from_records(list(table.values()))
         data = data.sort_values(by=['id'])
+
         return data
 
     # -- U --
 
-    def update_reaction_recon_tag(self, tag_id, tag: dict):
-        """ Update a reaction recon tag """
+    def update_ec_recon_tag(self, tag_id, tag: dict):
+        """
+        Update a ec recon tag
+        """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self.recon_tags["reactions"]:
+        if tag_id not in self.recon_tags["ec_numbers"]:
+            self.recon_tags["ec_numbers"][tag_id] = {}
+        self.recon_tags["ec_numbers"][tag_id].update(tag)
+
+    def update_reaction_recon_tag(self, tag_id, tag: dict):
+        """
+        Update a reaction recon tag
+        """
+        if not isinstance(tag, dict):
+            raise BadRequestException("The tag must be a dictionary")
+        if tag_id not in self.recon_tags["reactions"]:
             self.recon_tags["reactions"][tag_id] = {}
         self.recon_tags["reactions"][tag_id].update(tag)
 
     def update_compound_recon_tag(self, tag_id, tag: dict):
-        """ Update a compound recon tag """
+        """
+        Update a compound recon tag
+        """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
-        if not tag_id in self.recon_tags["compounds"]:
+        if tag_id not in self.recon_tags["compounds"]:
             self.recon_tags["compounds"][tag_id] = {}
         self.recon_tags["compounds"][tag_id].update(tag)

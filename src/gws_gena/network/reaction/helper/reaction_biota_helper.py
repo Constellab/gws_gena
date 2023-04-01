@@ -102,25 +102,24 @@ class ReactionBiotaHelper(BaseHelper):
                     "related_deprecated_enzyme": {}
                 })
 
-                if isinstance(enzyme, BiotaEnzyme):
-                    if load_taxonomy:
-                        tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == enzyme.tax_id)
-                        if tax:
-                            enzyme_dict["tax"][tax.rank] = {
-                                "tax_id": tax.tax_id,
-                                "name": tax.get_name()
-                            }
-                            for t in tax.ancestors:
-                                enzyme_dict["tax"][t.rank] = {
-                                    "tax_id": t.tax_id,
-                                    "name": t.get_name()
-                                }
-
-                    if enzyme.related_deprecated_enzyme:
-                        enzyme_dict["related_deprecated_enzyme"] = {
-                            "ec_number": enzyme.related_deprecated_enzyme.ec_number,
-                            "reason": enzyme.related_deprecated_enzyme.data["reason"],
+                if load_taxonomy:
+                    tax = BiotaTaxo.get_or_none(BiotaTaxo.tax_id == enzyme.tax_id)
+                    if tax:
+                        enzyme_dict["tax"][tax.rank] = {
+                            "tax_id": tax.tax_id,
+                            "name": tax.get_name()
                         }
+                        for t in tax.ancestors:
+                            enzyme_dict["tax"][t.rank] = {
+                                "tax_id": t.tax_id,
+                                "name": t.get_name()
+                            }
+
+                if enzyme.related_deprecated_enzyme:
+                    enzyme_dict["related_deprecated_enzyme"] = {
+                        "ec_number": enzyme.related_deprecated_enzyme.ec_number,
+                        "reason": enzyme.related_deprecated_enzyme.data["reason"],
+                    }
 
                 if load_pathway:
                     pwy = enzyme.pathway
