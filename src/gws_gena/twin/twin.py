@@ -49,6 +49,7 @@ class Twin(ResourceSet):
         if self.resource_exists(network.name):
             raise BadRequestException(f"Network name '{network.name}'' duplicated")
         self.add_resource(network)
+
         if related_context:
             if not isinstance(related_context, Context):
                 raise BadRequestException("The related context must be an instance of Context")
@@ -213,7 +214,7 @@ class Twin(ResourceSet):
             net = Network.loads(val)
             nets[net.name] = net
             twin.add_network(net)
-
+        
         for val in data.get("contexts", []):
             ctx = Context.loads(val)
             current_ctx_name = ctx.name

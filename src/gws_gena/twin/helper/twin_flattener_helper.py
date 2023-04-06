@@ -92,7 +92,7 @@ class TwinFalltenerHelper:
                         _var["reference_id"] = related_network.flatten_reaction_id(rxn)
 
                 all_measure_data.extend(ctx_data["measures"])
-
+    
         data = {
             "name": twin.name,
             # "description": twin.description,

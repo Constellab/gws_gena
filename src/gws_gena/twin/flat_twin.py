@@ -56,9 +56,13 @@ class FlatTwin(Twin):
         twin: Twin = cls()
 
         net = Network.loads(data["networks"][0])
+        if len(data["contexts"]) == 0:
+            raise BadRequestException("No context defined. Cannot flattened")
+
         if len(data["contexts"]):
             ctx = Context.loads(data["contexts"][0])
             twin.add_network(net, related_context=ctx)
+
         twin.name = data["name"]
         # twin.description = data["description"]
         twin._reaction_mapping = data["reaction_mapping"]

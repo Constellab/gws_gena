@@ -50,4 +50,6 @@ class TwinBuilder(Task):
         if params["use_context"]:
             ctx = inputs["context"]
             twin.add_context(ctx, related_network=net)
+        else:
+            twin.add_context(Context(), related_network=net)
         return {"twin": twin}
