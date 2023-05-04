@@ -36,17 +36,11 @@ class TwinBuilder(Task):
 
     config_specs = {}
 
-    def check_before_run(self, params: ConfigParams, inputs: TaskInputs) -> CheckBeforeTaskResult:
-        if params["use_context"]:
-            if not inputs.get("context"):
-                return {"result": False, "message": "No context given"}
-        return {"result": True, "message": None}
-
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]
         twin = Twin()
         twin.add_network(net)
-        if inputs.get("use_context") is not None:
+        if inputs.get("context") is not None:
             ctx = inputs["context"]
             twin.add_context(ctx, related_network=net)
         else:
