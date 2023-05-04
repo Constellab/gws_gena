@@ -14,7 +14,7 @@ from ..twin.twin_builder import TwinBuilder
 class KOAProto(Protocol):
 
     def configure_protocol(self) -> None:
-        twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder').set_param("use_context", True)
+        twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder')
         koa: ProcessSpec = self.add_process(KOA, 'koa')
 
         self.add_connectors([

@@ -15,7 +15,7 @@ class FVAProto(Protocol):
     def configure_protocol(self) -> None:
         # fva
         fva: ProcessSpec = self.add_process(FVA, 'fva')
-        twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder').set_param("use_context", True)
+        twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder')
 
         self.add_connectors([
             (twin_builder >> "twin", fva << "twin"),
