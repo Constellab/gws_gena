@@ -1,0 +1,11 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+cobra = "==0.26.3"
+scipy = "==1.10.0"
+
+[requires]
+python_version = "3.8"

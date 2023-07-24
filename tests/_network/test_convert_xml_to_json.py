@@ -40,6 +40,7 @@ class TestConvertXmlToJson(BaseTestCase):
 
         #create the TaskRunner
         runner_mat = TaskRunner(task_type=ConvertXmlToJson, inputs={'input_file': mat_model})
+        test = runner_mat.add_log_observer()
 
         #execute the TaskRunner
         outputs_mat = runner_mat.run()
