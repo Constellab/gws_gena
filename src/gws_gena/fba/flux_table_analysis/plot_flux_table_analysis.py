@@ -12,6 +12,18 @@ import plotly.graph_objects as go
                 "This task takes two fluxes tables and a file containing a column with the modified reactions in input."
                 "Gives a plot and a table in output.")
 class PlotFluxTableAnalysis(Task):
+    """
+    Flux Table Analysis class
+
+    This task permits to plot a graph to analyse two fluxes tables from FBA.
+    Based on the log2(Fold change) of these fluxes, tag the fluxes according to whether they are more or less expressed in condition 2 than in condition 1.
+    The threshold value entered in the parameters helps to discriminate the different groups.
+    
+    This task takes two fluxes tables and a file containing at least a column with the modified reactions in input.
+
+    Gives a scatter plot with coloured points and a table in output.
+    """
+
     input_specs = {'flux_table_condition1':  InputSpec(Table),
                     'flux_table_condition2':  InputSpec(Table),
                     'file_modified_reactions':  InputSpec(File)}
@@ -46,7 +58,7 @@ class PlotFluxTableAnalysis(Task):
         flux_condition1 = flux_table_condition1.get_data()
         flux_condition1.reset_index(level=0, inplace=True)
         flux_condition1.columns = ["reaction","value","lower_bound","upper_bound"]
-        
+
         flux_condition2 = flux_table_condition2.get_data()
         flux_condition2.reset_index(level=0, inplace=True)
         flux_condition2.columns = ["reaction","value","lower_bound","upper_bound"]
