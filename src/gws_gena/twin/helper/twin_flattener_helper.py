@@ -80,18 +80,26 @@ class TwinFalltenerHelper:
                 current_rxn_data["metabolites"] = current_rxn_stoichs
                 all_rxn_data.append(current_rxn_data)
 
-        all_measure_data = []
+        all_reaction_data = []
+        all_compound_data = []
         for ctx in twin.contexts.values():
             related_network = twin.get_related_network(ctx)
             if related_network:
                 ctx_data = ctx.dumps()
-                for _meas in ctx_data["measures"]:
+                for _meas in ctx_data["reaction_data"]:
                     for _var in _meas["variables"]:
                         rxn_id = _var["reference_id"]
                         rxn = related_network.reactions[rxn_id]
                         _var["reference_id"] = related_network.flatten_reaction_id(rxn)
 
-                all_measure_data.extend(ctx_data["measures"])
+                for _meas in ctx_data["compound_data"]:
+                    for _var in _meas["variables"]:
+                        cmp_id = _var["reference_id"]
+                        cmp = related_network.compounds[cmp_id]
+                        _var["reference_id"] = related_network.flatten_compound_id(cmp)
+
+                all_reaction_data.extend(ctx_data["reaction_data"])
+                all_compound_data.extend(ctx_data["compound_data"])
 
         data = {
             "name": twin.name,
@@ -102,7 +110,8 @@ class TwinFalltenerHelper:
                 "compartments": all_compart_data,
             }],
             "contexts": [{
-                "measures": all_measure_data
+                "reaction_data": all_reaction_data,
+                "compound_data": all_compound_data
             }],
             "reaction_mapping": _rxn_mapping,
             "reverse_reaction_mapping": _rev_rxn_mapping

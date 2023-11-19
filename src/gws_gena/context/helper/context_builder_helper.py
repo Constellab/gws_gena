@@ -74,7 +74,6 @@ class ContextBuilderHelper(BaseHelper):
                             VariableDict(
                                 coefficient=1.0,
                                 reference_id=ref_id,
-                                reference_type=Variable.REACTION_REFERENCE_TYPE
                             )]
                     ))
                 ctx.add_measure(measure)

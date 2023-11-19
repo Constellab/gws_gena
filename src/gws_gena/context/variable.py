@@ -17,19 +17,12 @@ class Variable:
 
     coefficient: float = None
     reference_id: str = None
-    reference_type: str = None
-
-    REACTION_REFERENCE_TYPE = "reaction"
-    REFERENCE_TYPES = [REACTION_REFERENCE_TYPE]
 
     def __init__(self, dict_: VariableDict):
         if dict_ is None:
             dict_ = {}
         for key, val in dict_.items():
             setattr(self, key, val)
-
-        if self.reference_type not in self.REFERENCE_TYPES:
-            raise BadRequestException(f"Invalid reference type. The reference type must in {self.REFERENCE_TYPES}")
 
     def copy(self):
         """ Deep copy to variable """
@@ -39,7 +32,6 @@ class Variable:
         """ Dumps the variable """
         data = VariableDict(
             reference_id=self.reference_id,
-            reference_type=self.reference_type,
             coefficient=self.coefficient
         )
         return data

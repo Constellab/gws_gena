@@ -45,7 +45,6 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
                     "variables": [
                         {
                             "reference_id": "R1_ex",
-                            "reference_type": "reaction",
                             "coefficient": 1.0
                         }
                     ],

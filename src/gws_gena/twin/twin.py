@@ -80,16 +80,20 @@ class Twin(ResourceSet):
 
             # ckeck that the context is consistent with the related network
             reaction_ids = related_network.get_reaction_ids()
+            compound_ids = related_network.get_compound_ids()
 
-            for measure in ctx.measures.values():
+            for measure in ctx.reaction_data.values():
                 for variable in measure.variables:
-                    if variable.reference_type == Variable.REACTION_REFERENCE_TYPE:
-                        if not variable.reference_id in reaction_ids:
-                            raise BadRequestException(
-                                f"The reaction '{variable.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
-                    else:
+                    if not variable.reference_id in reaction_ids:
                         raise BadRequestException(
-                            f"Invalid reference type '{variable.reference_type}' for the context measure '{measure.id}'")
+                            f"The reaction '{variable.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
+
+            for measure in ctx.compound_data.values():
+                for variable in measure.variables:
+                    if not variable.reference_id in compound_ids:
+                        raise BadRequestException(
+                            f"The compound '{variable.reference_id}' of the context measure '{measure.id}' is not found in the list of compounds")
+
             self.network_contexts[related_network.name] = ctx.name
 
     # -- B --
@@ -198,7 +202,8 @@ class Twin(ResourceSet):
         for ctx in self.contexts.values():
             json_["contexts"].append({
                 "Name": ctx.name,
-                "Number of measurements": len(ctx.measures)
+                "Number of reaction data": len(ctx.reaction_data),
+                "Number of compound data": len(ctx.compound_data)
             })
         return json_
 
