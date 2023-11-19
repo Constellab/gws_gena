@@ -1,7 +1,9 @@
-from gws_core import (ConfigParams, InputSpec, OutputSpec, File,
-                      Task, TaskInputs, TaskOutputs, task_decorator, BadRequestException)
+import os
 
-from cobra.io import save_json_model, read_sbml_model, load_matlab_model
+from gws_core import (ConfigParams, InputSpec, OutputSpec, File,
+                      Task, TaskInputs, TaskOutputs, task_decorator)
+
+from .cobra_env import CobraEnvHelper
 
 
 @task_decorator("ConvertXmlToJson", human_name="XML/Matlab to JSON",
@@ -11,18 +13,19 @@ class ConvertXmlToJson(Task):
     output_specs = {'output_json_file': OutputSpec(File)}
     config_specs = {}
 
+    script_convert = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        "_convert_xml_to_json.py")
+
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         input_file: File = inputs['input_file']
         file_path = input_file.path
 
-        if file_path.endswith('.xml'):
-            model = read_sbml_model(input_file)
-        elif file_path.endswith('.mat'):
-            model = load_matlab_model(file_path)
-        else:
-            raise BadRequestException("Your file need to have a extension '.xml' or '.mat'")
+        shell_proxy = CobraEnvHelper.create_proxy(self.message_dispatcher)
 
-        save_json_model(model, "model.json")
-        json_file = File("model.json")
+        output_path = os.path.join(shell_proxy.working_dir, "model.json")
+        shell_proxy.run(f"python3 {self.script_convert} {file_path} {output_path}", shell_mode = True)
+
+        json_file = File(output_path)
 
         return {'output_json_file': json_file}
