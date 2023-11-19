@@ -37,6 +37,14 @@ class Context(Resource):
         """ Add a measure """
         self.context_data.add_measure(measure)
 
+    def add_reaction_data(self, measure: Measure):
+        """ Add a reaction data """
+        self.context_data.add_reaction_data(measure)
+
+    def add_compound_data(self, measure: Measure):
+        """ Add a compound data """
+        self.context_data.add_compound_data(measure)
+
     # -- C --
 
     def copy(self) -> 'Context':
@@ -62,6 +70,14 @@ class Context(Resource):
         """ Get the ids of the meassures """
         return self.context_data.get_measure_ids()
 
+    def get_reaction_ids(self) -> List[str]:
+        """ Get the ids of the reaction_data """
+        return self.context_data.get_reaction_ids()
+
+    def get_compound_ids(self) -> List[str]:
+        """ Get the ids of the compound_data """
+        return self.context_data.get_compound_ids()
+
     # -- F --
 
     @classmethod
@@ -86,6 +102,16 @@ class Context(Resource):
     def measures(self):
         """ Get the liste of measures """
         return self.context_data.measures
+
+    @property
+    def reaction_data(self):
+        """ Get the list of reaction data """
+        return self.context_data.reaction_data
+
+    @property
+    def compound_data(self):
+        """ Get the list of compound data """
+        return self.context_data.compound_data
 
     # -- V --
 

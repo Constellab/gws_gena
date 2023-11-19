@@ -1,0 +1,8 @@
+,target,lb,ub,confidence_score
+glc_D_e,0.0,-1000.0,1000.0,1.0
+small_cell_glc_D_c,0.0,-1000.0,1000.0,1.0
+small_cell_adp_c,0.0,-1000.0,1000.0,1.0
+small_cell_atp_c,0.0,-1000.0,1000.0,1.0
+small_cell_gln_L_c,0.0,-1000.0,1000.0,1.0
+gln_L_e,0.0,-1000.0,1000.0,1.0
+small_cell_biomass_b,0.0,-1000.0,1000.0,1.0

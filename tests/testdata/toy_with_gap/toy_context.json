@@ -7,7 +7,6 @@
             "variables": [
                 {
                     "reference_id": "R1_ex",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],
@@ -22,7 +21,6 @@
             "variables": [
                 {
                     "reference_id": "R5_ex",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],

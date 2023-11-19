@@ -7,7 +7,6 @@
             "variables": [
                 {
                     "reference_id": "v1",
-                    "reference_type": "reaction",
                     "coefficient": -1.0
                 }
             ],
@@ -22,7 +21,6 @@
             "variables": [
                 {
                     "reference_id": "v16",
-                    "reference_type": "reaction",
                     "coefficient": -1.0
                 }
             ],
@@ -37,7 +35,6 @@
             "variables": [
                 {
                     "reference_id": "v6",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],
@@ -52,12 +49,10 @@
             "variables": [
                 {
                     "reference_id": "v15",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 },
                 {
                     "reference_id": "v16",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],
@@ -72,7 +67,6 @@
             "variables": [
                 {
                     "reference_id": "v7",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],
@@ -87,27 +81,22 @@
             "variables": [
                 {
                     "reference_id": "v3",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 },
                 {
                     "reference_id": "v8",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 },
                 {
                     "reference_id": "v13",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 },
                 {
                     "reference_id": "v11",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 },
                 {
                     "reference_id": "v10",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],

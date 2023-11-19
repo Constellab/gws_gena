@@ -413,7 +413,6 @@
                     "variables": [
                         {
                             "reference_id": "toy_cell_R1_ex",
-                            "reference_type": "reaction",
                             "coefficient": 1.0
                         }
                     ]
@@ -428,7 +427,6 @@
                     "variables": [
                         {
                             "reference_id": "toy_cell_R5_ex",
-                            "reference_type": "reaction",
                             "coefficient": 1.0
                         }
                     ]

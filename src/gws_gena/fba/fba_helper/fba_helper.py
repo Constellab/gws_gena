@@ -50,7 +50,7 @@ class FBAHelper(BaseHelper):
 
     Then, the problem is reshaped as follows:
 
-             [ S_{int} |  0      ]           [  0  ]
+             [ S_{int} |  0      ]           [  r  ]
              [ --------|------   ]           [ --- ]
     A_{eq} = [   C     | -Id_{C} ], b_{eq} = [  0  ]
              [---------|------   ]           [-----]
@@ -197,7 +197,7 @@ class FBAHelper(BaseHelper):
 
         c_out_zero = DataFrame(data=np.zeros((A_eq_left.shape[1], 1,)))
         c_out_one = DataFrame(data=np.ones((A_eq_right.shape[1], 1,)))
-        c_out = pd.concat([c_out_zero, c_out_one],axis=0)
+        c_out = pd.concat([c_out_zero, c_out_one], axis=0)
         c_out.index = A_eq.columns
 
         # lb and ub
@@ -388,7 +388,7 @@ class FBAHelper(BaseHelper):
         else:
             con = prob.constraints[0].residual
 
-        #con = A_eq @ x.value - b_eq
+        # con = A_eq @ x.value - b_eq
 
         res = dict(
             x=x.value,
