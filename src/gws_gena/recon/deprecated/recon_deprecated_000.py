@@ -44,11 +44,11 @@ class DraftRecon000(Task):
         helper = ReconHelper()
         helper.attach_task(self)
 
-        if 'biomass_table' in inputs:
+        if inputs.get('biomass_table'):
             biomass_table = inputs['biomass_table']
             helper.add_biomass_equation_to_network(net, biomass_table)
 
-        if 'medium_table' in inputs:
+        if inputs.get('medium_table'):
             medium_table = inputs['medium_table']
             helper.add_medium_to_network(net, medium_table)
 
@@ -62,7 +62,7 @@ class DraftRecon000(Task):
         tax_search_method = params['tax_search_method']
         if not tax_search_method:
             tax_search_method = None
-        if 'ec_table' in inputs:
+        if inputs.get('ec_table'):
             return helper.create_network_with_ec_table(
                 unique_name=unique_name,
                 ec_table=inputs['ec_table'],
