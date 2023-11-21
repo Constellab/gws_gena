@@ -11,11 +11,11 @@
     "bricks": [
       {
         "name": "gws_core",
-        "version": "0.5.0"
+        "version": "0.5.14"
       },
       {
         "name": "gws_biota",
-        "version": "0.5.0"
+        "version": "0.5.2"
       },
       {
         "name": "gws_sim",
