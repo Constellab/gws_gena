@@ -6,8 +6,9 @@
 from typing import List
 
 import pandas
-from gws_core import (ConfigParams, InputSpec, ListParam, OutputSpec, Table,
-                      Task, TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (ConfigParams, InputSpec, InputSpecs, ListParam,
+                      OutputSpec, OutputSpecs, Table, Task, TaskInputs,
+                      TaskOutputs, task_decorator)
 
 from .koa_result import KOAResult
 
@@ -19,12 +20,12 @@ class KOAResultExtractor(Task):
     KOA result extractor.
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'koa_result': InputSpec(KOAResult, human_name="KOA result tables", short_description="The KOA result tables")
-    }
-    output_specs = {
+    })
+    output_specs = OutputSpecs({
         'table': OutputSpec(Table, human_name="Extracted table", short_description="The extracted table")
-    }
+    })
     config_specs = {
         'fluxes_to_extract':
         ListParam(

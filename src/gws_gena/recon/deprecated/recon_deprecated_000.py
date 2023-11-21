@@ -3,9 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
-                      StringHelper, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
+                      OutputSpec, OutputSpecs, StringHelper, StrParam, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 
 from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.ec_table import ECTable
@@ -23,12 +23,12 @@ class DraftRecon000(Task):
     This task performs a draft reconstruction of a metabolic network using a list of EC numbers or taxonomy IDs.
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'ec_table': InputSpec(ECTable, human_name="Table of EC numbers", is_optional=True),
         'biomass_table': InputSpec(BiomassReactionTable, is_optional=True),
         'medium_table': InputSpec(MediumTable, is_optional=True)
-    }
-    output_specs = {'network': OutputSpec(Network)}
+    })
+    output_specs = OutputSpecs({'network': OutputSpec(Network)})
     config_specs = {
         'unique_name': StrParam(
             default_value=StringHelper.generate_random_chars(4), human_name="Network name", short_description="The unique name of the network. Required to uniquely identify taxa in microbial communities"),

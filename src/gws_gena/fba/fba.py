@@ -4,8 +4,8 @@
 # About us: https://gencovery.com
 
 from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
-                      ListParam, OutputSpec, StrParam, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+                      InputSpecs, ListParam, OutputSpec, OutputSpecs, StrParam,
+                      Task, TaskInputs, TaskOutputs, task_decorator)
 
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
@@ -24,11 +24,12 @@ class FBA(Task):
     (e.g. animal cell, bacteria, fungus, etc.).
     """
 
-    input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
-    output_specs = {
+    input_specs = InputSpecs({'twin': InputSpec(Twin, human_name="Digital twin",
+                             short_description="The digital twin to analyze")})
+    output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
         'fba_result': OutputSpec(FBAResult, human_name="FBA result tables", short_description="The FBA result tables")
-    }
+    })
     config_specs = {
         "biomass_optimization":
         StrParam(

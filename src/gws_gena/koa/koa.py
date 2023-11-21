@@ -3,11 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import pandas
-from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
-                      ListParam, Logger, OutputSpec, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
-from pandas import DataFrame
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ..data.ec_table import ECTable
 from ..data.entity_id_table import EntityIDTable
@@ -28,14 +26,14 @@ class KOA(Task):
     KOA class.
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze"),
         'ko_table': InputSpec([EntityIDTable, ECTable], human_name="KO table", short_description="The table of KO hypotheses"),
-    }
-    output_specs = {
+    })
+    output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
         'koa_result': OutputSpec(KOAResult, human_name="KOA result tables", short_description="The KOA result tables")
-    }
+    })
     config_specs = {
         **FBA.config_specs,
         'ko_delimiter':

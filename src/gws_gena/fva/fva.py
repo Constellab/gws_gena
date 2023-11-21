@@ -8,9 +8,9 @@ from copy import deepcopy
 
 import cvxpy as cp
 import numpy as np
-from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
-                      ListParam, Logger, OutputSpec, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
+                      Logger, OutputSpec, OutputSpecs, Task, TaskInputs,
+                      TaskOutputs, task_decorator)
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -109,11 +109,12 @@ class FVA(Task):
     https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
     """
 
-    input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
-    output_specs = {
+    input_specs = InputSpecs({'twin': InputSpec(Twin, human_name="Digital twin",
+                             short_description="The digital twin to analyze")})
+    output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
         'fva_result': OutputSpec(FVAResult, human_name="FVA result table", short_description="The FVA result tables")
-    }
+    })
     config_specs = {
         **FBA.config_specs
     }

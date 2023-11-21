@@ -3,8 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, InputSpec, OutputSpec, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ....data.ec_table import ECTable
 from ....data.entity_id_table import EntityIDTable
@@ -20,14 +21,15 @@ class ReactionAdder(Task):
     Add a list of reactions to an existing network
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'network': InputSpec(Network, human_name="Network", short_description="Network to complete"),
         'reaction_table': InputSpec(
             (ECTable, EntityIDTable), human_name="Table of EC numbers or IDs", short_description="The table of reactions to add"),
-    }
-    output_specs = {
+    })
+    output_specs = OutputSpecs({
         'network': OutputSpec(Network, human_name="Network", short_description="The network after completion"),
-    }
+    })
+
     config_specs = {
         'tax_id': StrParam(
             default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id"),

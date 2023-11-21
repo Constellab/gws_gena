@@ -3,8 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, InputSpec, OutputSpec, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ..helper.network_merger import NetworkMergerHelper
 from ..network import Network
@@ -18,12 +19,12 @@ class NetworkMerger(Task):
     This process merge two networks
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'network_1': InputSpec(Network, human_name="Network 1", short_description="The first network"),
         'network_2': InputSpec(Network, human_name="Network 2", short_description="The second network"),
-    }
-    output_specs = {'network': OutputSpec(Network, human_name="Merged network",
-                                          short_description="The merged network"), }
+    })
+    output_specs = OutputSpecs({'network': OutputSpec(Network, human_name="Merged network",
+                                                      short_description="The merged network")})
     config_specs = {}
 
     def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

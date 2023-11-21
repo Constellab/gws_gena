@@ -5,10 +5,11 @@
 
 import math
 
-from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
-                      Task, TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (BadRequestException, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs)
 
 from ...data.flux_table import FluxTable
+from ...helper.base_helper import BaseHelper
 from ...network.network import Network
 from ...network.reaction.reaction import Reaction
 from ..context import Context
@@ -16,7 +17,7 @@ from ..measure import Measure
 from ..typing.measure_typing import MeasureDict
 from ..typing.variable_typing import VariableDict
 from ..variable import Variable
-from ...helper.base_helper import BaseHelper
+
 
 class ContextBuilderHelper(BaseHelper):
     """
@@ -30,8 +31,8 @@ class ContextBuilderHelper(BaseHelper):
     - The `Network` is a metabolic network
     """
 
-    input_specs = {'network': InputSpec(Network), 'flux_table': InputSpec(FluxTable)}
-    output_specs = {'context': OutputSpec(Context)}
+    input_specs = InputSpecs({'network': InputSpec(Network), 'flux_table': InputSpec(FluxTable)})
+    output_specs = OutputSpecs({'context': OutputSpec(Context)})
     config_specs = {}
 
     def build(self, net, flux_table) -> Context:

@@ -3,8 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, InputSpec, OutputSpec, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ...network.network import Network
 from .helper.gap_filler_helper import GapFillerHelper
@@ -19,13 +20,13 @@ class GapFiller(Task):
     A gap is detected if a steady compound is a dead-end compound.
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'network': InputSpec(Network, human_name="Network", short_description="The network to gap-fill")
-    }
+    })
 
-    output_specs = {
+    output_specs = OutputSpecs({
         'network': OutputSpec(Network, human_name="Network", short_description="The gap-filled network")
-    }
+    })
 
     config_specs = {
         'tax_id':
