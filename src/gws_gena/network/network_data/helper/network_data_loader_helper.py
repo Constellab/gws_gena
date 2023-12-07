@@ -10,7 +10,7 @@ from typing import List
 from gws_biota import Compound as BiotaCompound
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import EnzymeOrtholog as BiotaEnzymeOrtholog
-from gws_core import BadRequestException
+from gws_core import BadRequestException, Logger
 
 from ....helper.base_helper import BaseHelper
 from ...compartment.compartment import Compartment
@@ -129,6 +129,8 @@ class NetworkDataLoaderHelper(BaseHelper):
                     continue
             ec_numbers.extend(rxn_data["ec_numbers"])
         ec_numbers = list(set(ec_numbers))
+
+        Logger.info("QUERRRRRRRRRRRRYYYYYYYYYYYYYYYYYYY")
 
         query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
         biota_enzymes_dict = {}

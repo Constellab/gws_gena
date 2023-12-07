@@ -3,12 +3,14 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-
+from typing import List
 from gws_core import BadRequestException, Table, Task
+from gws_gena.network.typing.simulation_typing import SimulationDict
 
 from ...helper.base_helper import BaseHelper
 from ..flat_twin import FlatTwin
 from ..twin import Twin
+from gws_gena.fba.fba_result import FBAResult
 
 # ####################################################################
 #
@@ -19,7 +21,7 @@ from ..twin import Twin
 
 class TwinAnnotatorHelper(BaseHelper):
 
-    def annotate_from_fba_result(self, twin: Twin, fba_result: 'FBAResult'):
+    def annotate_from_fba_results(self, twin: Twin, fba_results: List[FBAResult]):
         """
         Annotate a twin using from FBAResult
         """
@@ -31,31 +33,68 @@ class TwinAnnotatorHelper(BaseHelper):
         flux_rev_mapping = flat_twin.reverse_reaction_mapping
         annotated_twin = Twin()
 
-        simulations = fba_result.get_simulations()
-        if len(simulations) != 1:
-            raise BadRequestException(f"A single simulation is required. {len(simulations)} simulations(s) exist.")
-
         for net in twin.networks.values():
             ctx_name = twin.network_contexts[net.name]
             ctx = twin.contexts[ctx_name]
-            fluxes = fba_result.get_fluxes_dataframe()
 
-            for cond in simulations:
-                cond_id = cond["id"]
+            i = 0
+            for fba_result in fba_results:
+                fluxes = fba_result.get_fluxes_dataframe()
 
                 for rnx_id in net.reactions:
                     rxn = net.reactions[rnx_id]
                     net_name = net.name
                     flat_rxn_id = flux_rev_mapping[net_name][rnx_id]
-                    flux_estimates = {}  # rxn.get_data_slot("simulations", {}) => only one simlation is expected
-                    flux_estimates[cond_id] = {
+
+                    flux_estimates = rxn.get_data_slot("simulations", {})
+                    flux_estimates[i] = {
                         "value": fluxes.at[flat_rxn_id, "value"],
                         "lower_bound": fluxes.at[flat_rxn_id, "lower_bound"],
                         "upper_bound": fluxes.at[flat_rxn_id, "upper_bound"],
                     }
                     rxn.add_data_slot("simulations", flux_estimates)
 
-            net.add_simulation(simulations[0])
+                i += 1
+
+            # net.add_simulation(simulation)
+            annotated_twin.add_network(net, related_context=ctx)
+
+        return annotated_twin
+
+    def annotate_from_fba_result(self, twin: Twin, simulation: SimulationDict, fba_result: 'FBAResult'):
+        """
+        Annotate a twin using from FBAResult
+        """
+
+        if isinstance(twin, FlatTwin):
+            raise BadRequestException("Cannot annotate a FlatTwin. A non-flat Twin is required")
+
+        flat_twin: FlatTwin = twin.flatten()
+        flux_rev_mapping = flat_twin.reverse_reaction_mapping
+        annotated_twin = Twin()
+
+        for net in twin.networks.values():
+            ctx_name = twin.network_contexts[net.name]
+            ctx = twin.contexts[ctx_name]
+            fluxes = fba_result.get_fluxes_dataframe()
+
+            # cond_id = cond["id"]
+
+            for rnx_id in net.reactions:
+                rxn = net.reactions[rnx_id]
+                net_name = net.name
+                flat_rxn_id = flux_rev_mapping[net_name][rnx_id]
+
+                flux_estimates = rxn.get_data_slot("simulations", {})
+                # flux_estimates = {}  # rxn.get_data_slot("simulations", {}) => only one simlation is expected
+                flux_estimates[simulation["id"]] = {
+                    "value": fluxes.at[flat_rxn_id, "value"],
+                    "lower_bound": fluxes.at[flat_rxn_id, "lower_bound"],
+                    "upper_bound": fluxes.at[flat_rxn_id, "upper_bound"],
+                }
+                rxn.add_data_slot("simulations", flux_estimates)
+
+            net.add_simulation(simulation)
             annotated_twin.add_network(net, related_context=ctx)
 
         return annotated_twin

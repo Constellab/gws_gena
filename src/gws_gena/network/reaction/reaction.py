@@ -342,6 +342,8 @@ class Reaction:
         """ Set data """
         return self.data.get(slot, default)
 
+    
+
     # -- I --
 
     def is_biomass_reaction(self):

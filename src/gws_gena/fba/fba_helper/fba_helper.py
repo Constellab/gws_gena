@@ -116,7 +116,7 @@ class FBAHelper(BaseHelper):
                 solver=solver
             )
         self.update_progress_value(90, message=res.message)
-        result = FBAResult(twin=twin, optimize_result=res)
+        result = FBAResult.from_optimized_result(res)
         return result
 
     @classmethod
@@ -197,7 +197,7 @@ class FBAHelper(BaseHelper):
 
         c_out_zero = DataFrame(data=np.zeros((A_eq_left.shape[1], 1,)))
         c_out_one = DataFrame(data=np.ones((A_eq_right.shape[1], 1,)))
-        c_out = pd.concat([c_out_zero, c_out_one],axis=0)
+        c_out = pd.concat([c_out_zero, c_out_one], axis=0)
         c_out.index = A_eq.columns
 
         # lb and ub
@@ -388,7 +388,7 @@ class FBAHelper(BaseHelper):
         else:
             con = prob.constraints[0].residual
 
-        #con = A_eq @ x.value - b_eq
+        # con = A_eq @ x.value - b_eq
 
         res = dict(
             x=x.value,

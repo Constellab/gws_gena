@@ -188,16 +188,6 @@ class FVA(Task):
         res.xmax = xmax
         fva_result = FVAResult(twin=twin, optimize_result=res)
 
-        # @TODO : should be given by the current experiment
-        simulations = [
-            {
-                "id": "fva_sim",
-                "name": "fva simulation",
-                "description": "Metabolic flux variability analysis"
-            }
-        ]
-        fva_result.set_simulations(simulations)
-
         # annotate twin
         helper = TwinAnnotatorHelper()
         helper.attach_task(self)
