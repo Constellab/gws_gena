@@ -130,8 +130,6 @@ class NetworkDataLoaderHelper(BaseHelper):
             ec_numbers.extend(rxn_data["ec_numbers"])
         ec_numbers = list(set(ec_numbers))
 
-        Logger.info("QUERRRRRRRRRRRRYYYYYYYYYYYYYYYYYYY")
-
         query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
         biota_enzymes_dict = {}
         rxn_biota_helper = ReactionBiotaHelper()
