@@ -16,8 +16,8 @@ from .measure import Measure
 class Context(Resource):
     """
     Context class
-
-    A network `Context` is a resource object used to contextualize metabolic `Network` and create digital twin of cell metaolbism.
+    
+    A network `Context` is a resource object used to contextualize metabolic `Network` and create digital twin of cell metabolism.
     """
 
     DEFAULT_NAME = "context"

@@ -75,7 +75,7 @@ class FBA(Task):
             short_description="Set True to perform parsimonious FBA (pFBA). In this case the quad solver is used. Set False otherwise"),
         "number_of_simulations":
         IntParam(
-            default_value=1, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY,
+            min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Number of simulations",
             short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context.")
         #,
@@ -88,12 +88,14 @@ class FBA(Task):
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
-        number_of_simulations = params["number_of_simulations"]
-
         # retrieve the context of the twin
         context = next(iter(twin.contexts.values()))
         # retrieve the network of the twin
         network = next(iter(twin.networks.values()))
+
+        number_of_simulations = params["number_of_simulations"]
+        #If number_of_simulations is not provided, keep all the simulations
+        number_of_simulations = next((len(measure.target) for _, measure in context.measures.items()), None)
 
         # check the length of the values
         for name_measure, measure in context.measures.items():
@@ -143,10 +145,16 @@ class FBA(Task):
         #     Logger.log_exception_stack_trace(e)
         #     raise e
 
-        for i in range(0, number_of_simulations):  # run through the number of simulations
-            new_twin = self.build_twin(twin, i)
-            fba_results.append(self.call_fba((i, new_twin, params)))
-            self.update_progress_value(((i+1) / number_of_simulations) * 100, message="Running FBA for all simulations")
+        #If number of simulations is not None, there is a context with simulations
+        if (number_of_simulations) :
+            for i in range(0, number_of_simulations):  # run through the number of simulations
+                new_twin = self.build_twin(twin, i)
+                fba_results.append(self.call_fba((i, new_twin, params)))
+                self.update_progress_value(((i+1) / number_of_simulations) * 100, message="Running FBA for all simulations")
+        else : #if number of simulations is None, there is no context provided, so we run only one FBA
+            new_twin = self.build_twin(twin, 0)
+            fba_results.append(self.call_fba((0, new_twin, params)))
+            self.update_progress_value(100, message="Running FBA")
 
         self.log_info_message('Annotating the twin')
         annotator_helper = TwinAnnotatorHelper()

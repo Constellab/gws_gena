@@ -35,6 +35,8 @@ class ContextBuilderHelper(BaseHelper):
     output_specs = {'context': OutputSpec(Context)}
     config_specs = {}
 
+
+
     def build(self, net, flux_table) -> Context:
         ctx = Context()
         targets = flux_table.get_targets()
@@ -42,13 +44,42 @@ class ContextBuilderHelper(BaseHelper):
         lbounds = flux_table.get_lower_bounds()
         scores = flux_table.get_confidence_scores()
 
-        ### TO DO : TESTER SI TOUTES LES SIMULATIONS ONT LA MÊME LONGUEUR sinon mettre message d'erreur + même type
+        def are_all_lists_equal_length(list_of_lists):
+            # Check if all lists have the same length
+            return all(len(lst) == len(list_of_lists[0]) for lst in list_of_lists)
+        def are_all_values_float_or_int(list_of_lists):
+            # Check if all values are float or int
+            if isinstance(list_of_lists[0], (float, int)):
+                # If it's a single list, check each value in that list
+                return all(isinstance(value, (float, int)) for value in list_of_lists)
+            else:
+                # If it's a list of lists, check each value in all lists
+                return all(isinstance(value, (float, int)) for lst in list_of_lists for value in lst)
+
         if isinstance(targets[0], str): #if there is multiple simulations
             for i in range (0,len(targets)):
                 targets[i] = ast.literal_eval(targets[i])
                 ubounds[i] = ast.literal_eval(ubounds[i])
                 lbounds[i] = ast.literal_eval(lbounds[i])
                 scores[i] = ast.literal_eval(scores[i])
+            #test if we have the same number of simulations
+            if not are_all_lists_equal_length(targets):
+                raise BadRequestException("All simulations for target value must have the same length.")
+            if not are_all_lists_equal_length(ubounds):
+                raise BadRequestException("All simulations for ubounds value must have the same length.")
+            if not are_all_lists_equal_length(lbounds):
+                raise BadRequestException("All simulations for lbounds value must have the same length.")
+            if not are_all_lists_equal_length(scores):
+                raise BadRequestException("All simulations for scores value must have the same length.")
+            #test if all values of simulations are int or float
+            if not are_all_values_float_or_int(targets):
+                raise BadRequestException("All values for target value must be a int or float.")
+            if not are_all_values_float_or_int(ubounds):
+                raise BadRequestException("All values for ubounds value must be a int or float.")
+            if not are_all_values_float_or_int(lbounds):
+                raise BadRequestException("All values for lbounds value must be a int or float.")
+            if not are_all_values_float_or_int(scores):
+                raise BadRequestException("All values for scores value must be a int or float.")
 
             for i, ref_id in enumerate(flux_table.get_reaction_ids()):
                 if ref_id in net.reactions:
@@ -92,7 +123,16 @@ class ContextBuilderHelper(BaseHelper):
                 else:
                     raise Exception(f"No reference reaction found with id {ref_id}")
 
-        elif (isinstance(targets[0], float)) : #if there is only one simulation
+        elif (isinstance(targets[0], (float, int))) : #if there is only one simulation
+            #test if all values are int or float
+            if not are_all_values_float_or_int(targets):
+                raise BadRequestException("All values for target value must be a int or float.")
+            if not are_all_values_float_or_int(ubounds):
+                raise BadRequestException("All values for ubounds value must be a int or float.")
+            if not are_all_values_float_or_int(lbounds):
+                raise BadRequestException("All values for lbounds value must be a int or float.")
+            if not are_all_values_float_or_int(scores):
+                raise BadRequestException("All values for scores value must be a int or float.")
             for i, ref_id in enumerate(flux_table.get_reaction_ids()):
                 if ref_id in net.reactions:
                     if ubounds[i] < lbounds[i]:
@@ -135,6 +175,6 @@ class ContextBuilderHelper(BaseHelper):
                     raise Exception(f"No reference reaction found with id {ref_id}")
 
         else:
-            raise Exception(f"The target values are not of the correct type. We expected float or string.")
+            raise Exception(f"The target values are not of the correct type. We expected float, int or string. Strings store lists of simulations")
 
         return ctx

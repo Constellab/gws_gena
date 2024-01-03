@@ -11,10 +11,10 @@
                     "coefficient": 1.0
                 }
             ],
-            "lower_bound": 0.0,
-            "upper_bound": 1000.0,
-            "target": 1.0,
-            "confidence_score": 1.0
+            "lower_bound": [0.0],
+            "upper_bound": [1000.0],
+            "target": [1.0],
+            "confidence_score": [1.0]
         }
     ]
 }
