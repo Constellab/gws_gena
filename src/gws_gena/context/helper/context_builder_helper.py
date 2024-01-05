@@ -92,18 +92,19 @@ class ContextBuilderHelper(BaseHelper):
                             raise BadRequestException(f"Flux {ref_id} for the simulation {j}: the target must be smaller than upper bound")
 
                     lbound = lbounds[i]
-                    lbound = Reaction.LOWER_BOUND if not lbound else lbound
+                    lbound = [Reaction.LOWER_BOUND if math.isnan(x) else x for x in lbound]
 
                     ubound = ubounds[i]
-                    ubound = Reaction.UPPER_BOUND if not ubound else ubound
+                    ubound = [Reaction.UPPER_BOUND if math.isnan(x) else x for x in ubound]
 
                     score = scores[i]
-                    score = 1.0 if not score else score
+                    score = [1.0 if math.isnan(x) else x for x in score]
 
                     target = targets[i]
-                    if not target:
-                        target = 0.0
-                        score = 0.0  # set the output confidence score to zero if it is NaN
+                    for i in range(len(target)):
+                        if math.isnan(target[i]):
+                            target[i] = 0.0
+                            score[i] = 0.0  # set the output confidence score to zero if it is NaN
 
                     measure = Measure(
                         MeasureDict(
@@ -142,19 +143,19 @@ class ContextBuilderHelper(BaseHelper):
                     if targets[i] > ubounds[i]:
                         raise BadRequestException(f"Flux {ref_id}: the target must be smaller than upper bound")
 
-                    lbound = [lbounds[i]]
-                    lbound = Reaction.LOWER_BOUND if not lbound else lbound
+                    lbound = Reaction.LOWER_BOUND if math.isnan(lbounds[i]) else lbounds[i]
+                    lbound = [lbound]
 
-                    ubound = [ubounds[i]]
-                    ubound = Reaction.UPPER_BOUND if not ubound else ubound
+                    ubound = Reaction.UPPER_BOUND if math.isnan(ubounds[i]) else ubounds[i]
+                    ubound = [ubound]
 
-                    score = [scores[i]]
-                    score = 1.0 if not score else score
+                    score = 1.0 if math.isnan(scores[i]) else scores[i]
+                    score = [score]
 
+                    if math.isnan(targets[i]):
+                        targets[i] = 0.0
+                        score = [0.0]  # set the output confidence score to zero if it is NaN
                     target = [targets[i]]
-                    if not target:
-                        target = 0.0
-                        score = 0.0  # set the output confidence score to zero if it is NaN
 
                     measure = Measure(
                         MeasureDict(
