@@ -186,12 +186,13 @@ class FVA(Task):
                 qssa_relaxation_strength, parsimony_strength)
         res.xmin = xmin
         res.xmax = xmax
-        fva_result = FVAResult(twin=twin, optimize_result=res)
-
+        fva_result = FVAResult()
+        fva_result = fva_result.from_optimized_result(res)
+        fva_result = FVAResult(fva_result.get_fluxes_dataframe(), fva_result.get_sv_dataframe())
         # annotate twin
         helper = TwinAnnotatorHelper()
         helper.attach_task(self)
-        twin = helper.annotate_from_fva_result(twin, fva_result)
+        twin = helper.annotate_from_fva_results(twin, [fva_result])
 
         return {
             "fva_result": fva_result,

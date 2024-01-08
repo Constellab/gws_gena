@@ -77,7 +77,7 @@ class FBA(Task):
         IntParam(
             min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Number of simulations",
-            short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context.")
+            short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations.")
         #,
         #"number_of_processes":
         #IntParam(

@@ -48,15 +48,15 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            biomass_flux = result.get_biomass_flux_dataframe()
-            print("---------------- BIOMASS FLUX ----------------")
-            print(biomass_flux)
-            print("----------------------------------------------")
+            #biomass_flux = result.get_biomass_flux_dataframe()
+            #print("---------------- BIOMASS FLUX ----------------")
+            #print(biomass_flux)
+            #print("----------------------------------------------")
 
             result_dir = os.path.join(organism_result_dir, solver, relax_dir)
             file_path = os.path.join(result_dir, "biomass_flux.csv")
-            with open(file_path, 'w', encoding="utf-8") as fp:
-                fp.write(biomass_flux.to_csv())
+            #with open(file_path, 'w', encoding="utf-8") as fp:
+            #    fp.write(biomass_flux.to_csv())
 
             # fluxes = result.get_fluxes_dataframe()
             # print(fluxes)

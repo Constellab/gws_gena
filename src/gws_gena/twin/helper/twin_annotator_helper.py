@@ -61,6 +61,13 @@ class TwinAnnotatorHelper(BaseHelper):
 
         return annotated_twin
 
+    def annotate_from_fva_results(self, twin: Twin, fva_result: 'FVAResult'):
+        """
+        Annotate a twin using from FVAResult
+        """
+
+        return self.annotate_from_fba_results(twin, fva_result)
+
     def annotate_from_fba_result(self, twin: Twin, simulation: SimulationDict, fba_result: 'FBAResult'):
         """
         Annotate a twin using from FBAResult
@@ -99,7 +106,7 @@ class TwinAnnotatorHelper(BaseHelper):
 
         return annotated_twin
 
-    def annotate_from_fva_result(self, twin: Twin, fva_result: 'FVAResult'):
+    def annotate_from_fva_result(self, twin: Twin,simulation: SimulationDict, fva_result: 'FVAResult'):
         """
         Annotate a twin using from FVAResult
         """
