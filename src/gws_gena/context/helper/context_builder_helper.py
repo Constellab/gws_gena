@@ -179,3 +179,31 @@ class ContextBuilderHelper(BaseHelper):
             raise Exception(f"The target values are not of the correct type. We expected float, int or string. Strings store lists of simulations")
 
         return ctx
+
+    #Method to build a sub context of a big context.
+    #Useful for example if we have multiples measures for one reaction (case of multi simulations; see FBA)
+    def build_sub_context(self, base_context: Context, index: int) -> Context:
+        ctx = Context()
+        for name_measure, measure in base_context.measures.items():  # run through the number of context measures
+            value_target = measure.target[index]
+            value_upper = measure.upper_bound[index]
+            value_lower = measure.lower_bound[index]
+            value_confidence_score = measure.confidence_score[index]
+            # Create a new measure
+            measure = Measure(
+                MeasureDict(
+                    id=name_measure,
+                    target=value_target,
+                    upper_bound=value_upper,
+                    lower_bound=value_lower,
+                    confidence_score=value_confidence_score,
+                    variables=[
+                        VariableDict(
+                            coefficient=1.0,
+                            reference_id=measure.variables[0].reference_id,
+                            reference_type=Variable.REACTION_REFERENCE_TYPE
+                        )]
+                ))
+            ctx.add_measure(measure)
+
+        return ctx

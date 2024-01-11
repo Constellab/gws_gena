@@ -10,12 +10,14 @@ from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec, Logger,
 
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
+from ..twin.helper.twin_helper import TwinHelper
 from .fba_helper.fba_helper import FBAHelper
 from .fba_result import FBAResult
 
 from ..context.variable import Variable
 from ..context.context import Context
 from ..context.measure import Measure
+from ..context.helper.context_builder_helper import ContextBuilderHelper
 from ..context.typing.measure_typing import MeasureDict
 from ..context.typing.variable_typing import VariableDict
 from ..twin.twin_builder import TwinBuilder
@@ -148,11 +150,11 @@ class FBA(Task):
         #If number of simulations is not None, there is a context with simulations
         if (number_of_simulations) :
             for i in range(0, number_of_simulations):  # run through the number of simulations
-                new_twin = self.build_twin(twin, i)
+                new_twin = TwinHelper.build_twin_from_sub_context(self,twin, i)
                 fba_results.append(self.call_fba((i, new_twin, params)))
                 self.update_progress_value(((i+1) / number_of_simulations) * 100, message="Running FBA for all simulations")
         else : #if number of simulations is None, there is no context provided, so we run only one FBA
-            new_twin = self.build_twin(twin, 0)
+            new_twin = TwinHelper.build_twin_from_sub_context(self,twin, 0)
             fba_results.append(self.call_fba((0, new_twin, params)))
             self.update_progress_value(100, message="Running FBA")
 
@@ -179,44 +181,6 @@ class FBA(Task):
             "fba_result": merged_fba_result,
             "twin": result_twin
         }
-
-    def build_twin(self, base_twin: Twin, index: int) -> Twin:
-        new_twin = Twin()
-
-        network = next(iter(base_twin.networks.values()))
-        new_twin.add_network(network)
-
-        base_context = next(iter(base_twin.contexts.values()))
-        new_context = self.build_context(base_context, index)
-        new_twin.add_context(new_context, related_network=network)
-
-        return new_twin
-
-    def build_context(self, base_context: Context, index: int) -> Context:
-        ctx = Context()
-        for name_measure, measure in base_context.measures.items():  # run through the number of context measures
-            value_target = measure.target[index]
-            value_upper = measure.upper_bound[index]
-            value_lower = measure.lower_bound[index]
-            value_confidence_score = measure.confidence_score[index]
-            # Create a new measure
-            measure = Measure(
-                MeasureDict(
-                    id=name_measure,
-                    target=value_target,
-                    upper_bound=value_upper,
-                    lower_bound=value_lower,
-                    confidence_score=value_confidence_score,
-                    variables=[
-                        VariableDict(
-                            coefficient=1.0,
-                            reference_id=measure.variables[0].reference_id,
-                            reference_type=Variable.REACTION_REFERENCE_TYPE
-                        )]
-                ))
-            ctx.add_measure(measure)
-
-        return ctx
 
     def call_fba(self, data: Tuple[int, Twin, ConfigParams]) -> FBAResult:
         j, twin, params = data
