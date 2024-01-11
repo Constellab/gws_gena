@@ -210,7 +210,7 @@ class FBA(Task):
                     variables=[
                         VariableDict(
                             coefficient=1.0,
-                            reference_id=name_measure.split('measure_')[-1],
+                            reference_id=measure.variables[0].reference_id,
                             reference_type=Variable.REACTION_REFERENCE_TYPE
                         )]
                 ))
