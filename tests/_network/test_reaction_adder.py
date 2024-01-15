@@ -14,10 +14,10 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
     def test_reaction_ec_adder(self):
         self.print("Test reaction EC adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
+        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={})
         table = ECTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "ec_table.csv")),
-            params=ConfigParams())
+            params={})
 
         tester = TaskRunner(
             params={"tax_id": "2759"},
@@ -38,12 +38,12 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
     def test_reaction_id_adder(self):
         self.print("Test reaction ID adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params=ConfigParams())
+        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={})
         self.assertEqual(len(net.reactions), 7)
 
         table = EntityIDTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "rhea_id_table.csv")),
-            params=ConfigParams({'id_column': 'rhea_id'}))
+            params={'id_column': 'rhea_id'})
 
         tester = TaskRunner(
             params={},

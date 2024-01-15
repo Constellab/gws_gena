@@ -1,6 +1,6 @@
 {
     "context": {
-        "measures": {
+        "reaction_data": {
             "col_names": [
                 "target",
                 "lower_bound",

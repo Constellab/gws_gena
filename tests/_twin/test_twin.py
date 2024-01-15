@@ -5,7 +5,7 @@ import os
 import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, GTest, Settings
+from gws_core import File, GTest, Settings
 from gws_gena import (Context, ContextImporter, FlatTwin, Network,
                       NetworkImporter, Twin, TwinHelper)
 from pandas import DataFrame
@@ -31,7 +31,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             file_path = os.path.join(data_dir, f"{context_name}.json")
             ctx = ContextImporter.call(
                 File(path=file_path),
-                params=ConfigParams()
+                params={}
             )
 
             twin = Twin()
@@ -75,6 +75,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
             # Test r
             # print(problem["r"])
+            # problem["r"].to_csv(os.path.join(path, "r.csv"))
             expected_r = pd.read_csv(os.path.join(path, "r.csv"), index_col=0)
             self.assertTrue(problem["r"].equals(expected_r))
 
@@ -89,11 +90,11 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "toy.json")),
-            ConfigParams()
+            {}
         )
         ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "toy_context.json")),
-            ConfigParams()
+            {}
         )
         twin = Twin()
         twin.add_network(net)

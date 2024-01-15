@@ -163,7 +163,7 @@ class TwinHelper:
         flat_net = next(iter(flat_twin.networks.values()))
         flat_ctx = next(iter(flat_twin.contexts.values()))
         rxn_ids = list(flat_net.reactions.keys())
-        met_ids = list(flat_net.compounds.keys())
+        # met_ids = list(flat_net.compounds.keys())
 
         rxn_data_ids = [measure.id for measure in flat_ctx.reaction_data.values()]
 
@@ -181,10 +181,12 @@ class TwinHelper:
         b.loc[:, "ub"] = Reaction.UPPER_BOUND
         b.loc[:, "confidence_score"] = 1.0
 
+        S_int = cls.create_steady_stoichiometric_matrix(flat_twin)
+        internal_met_ids = list(S_int.index)
         r = DataFrame(
-            index=met_ids,
+            index=internal_met_ids,
             columns=["target", "lb", "ub", "confidence_score"],
-            data=np.zeros((len(met_ids), 4))
+            data=np.zeros((len(internal_met_ids), 4))
         )
         r.loc[:, "lb"] = Reaction.LOWER_BOUND
         r.loc[:, "ub"] = Reaction.UPPER_BOUND

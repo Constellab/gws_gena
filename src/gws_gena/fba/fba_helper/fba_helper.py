@@ -147,6 +147,7 @@ class FBAHelper(BaseHelper):
         obsv_matrix = TwinHelper.create_observation_matrices(flat_twin)
         C = obsv_matrix["C"]
         b = obsv_matrix["b"]
+        r = obsv_matrix["r"]
 
         S_int = TwinHelper.create_steady_stoichiometric_matrix(flat_twin)
         Y_names = C.index
@@ -188,11 +189,17 @@ class FBAHelper(BaseHelper):
         A_eq = pd.concat([A_eq_left, A_eq_right], axis=1)  # horz_concat
 
         # b_eq
-        b_zero_1 = DataFrame(data=np.zeros((S_int.shape[0], 1,)))
-        b_zero_2 = DataFrame(data=np.zeros((C.shape[0], 1,)))
-        b_zero_1.columns = out_flux_target.columns
-        b_zero_2.columns = out_flux_target.columns
-        b_eq = pd.concat([b_zero_1, b_zero_2, out_flux_target], axis=0)  # vert_concat
+        # b_zero_1 = DataFrame(data=np.zeros((S_int.shape[0], 1,)))
+        # b_zero_2 = DataFrame(data=np.zeros((C.shape[0], 1,)))
+        # b_zero_1.columns = out_flux_target.columns
+        # b_zero_2.columns = out_flux_target.columns
+        # b_eq = pd.concat([b_zero_1, b_zero_2, out_flux_target], axis=0)  # vert_concat
+
+        b_zero = DataFrame(data=np.zeros((C.shape[0], 1,)))
+        b_r = r[["target"]]
+        b_zero.columns = out_flux_target.columns
+        b_r.columns = out_flux_target.columns
+        b_eq = pd.concat([b_r, b_zero, out_flux_target], axis=0)  # vert_concat
         b_eq.index = A_eq.index
 
         c_out_zero = DataFrame(data=np.zeros((A_eq_left.shape[1], 1,)))

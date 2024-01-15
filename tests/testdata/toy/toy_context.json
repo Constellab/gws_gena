@@ -1,7 +1,7 @@
 {
     "id": "measure_R1_ex",
     "name": "toy_context", 
-    "measures": [
+    "reaction_data": [
         {
             "id": "M1",
             "name": "M1",

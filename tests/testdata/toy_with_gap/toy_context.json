@@ -1,6 +1,6 @@
 {
     "pathway_id": "toy", 
-    "measures": [
+    "reaction_data": [
         {
             "id": "M1",
             "name": "M1",

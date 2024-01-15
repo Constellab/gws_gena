@@ -1,6 +1,6 @@
 {
     "pathway_id": "pcys", 
-    "measures": [
+    "reaction_data": [
         {
             "id": "Biomass",
             "name": "Biomass",

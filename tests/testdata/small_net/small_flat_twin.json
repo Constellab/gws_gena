@@ -225,7 +225,7 @@
     ],
     "contexts": [
         {
-            "measures": [
+            "reaction_data": [
                 {
                     "id": "Measure_1",
                     "name": "Measure_1",

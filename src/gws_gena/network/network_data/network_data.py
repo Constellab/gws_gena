@@ -431,7 +431,7 @@ class NetworkData(SerializableObjectJson):
         :rtype: `dict`
         """
 
-        return self.recon_tags["compounds"]
+        return self.recon_tags.get("compounds", {})
 
     def get_compound_ids(self) -> List[str]:
         return list(self.compounds.keys())
@@ -464,7 +464,7 @@ class NetworkData(SerializableObjectJson):
         :rtype: `dict`
         """
 
-        return self.recon_tags["ec_numbers"]
+        return self.recon_tags.get("ec_numbers", {})
 
     def get_reaction_recon_tag(self, rxn_id: str, tag_name: str = None):
         """
@@ -491,7 +491,7 @@ class NetworkData(SerializableObjectJson):
         :rtype: `dict`
         """
 
-        return self.recon_tags["reactions"]
+        return self.recon_tags.get("reactions", {})
 
     def get_compound_by_id(self, comp_id: str) -> Compound:
         """
@@ -1058,6 +1058,8 @@ class NetworkData(SerializableObjectJson):
         """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
+        if "ec_numbers" not in self.recon_tags:
+            self.recon_tags["ec_numbers"] = {}
         if tag_id not in self.recon_tags["ec_numbers"]:
             self.recon_tags["ec_numbers"][tag_id] = {}
         self.recon_tags["ec_numbers"][tag_id].update(tag)
@@ -1066,8 +1068,11 @@ class NetworkData(SerializableObjectJson):
         """
         Update a reaction recon tag
         """
+
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
+        if "reactions" not in self.recon_tags:
+            self.recon_tags["reactions"] = {}
         if tag_id not in self.recon_tags["reactions"]:
             self.recon_tags["reactions"][tag_id] = {}
         self.recon_tags["reactions"][tag_id].update(tag)
@@ -1078,6 +1083,8 @@ class NetworkData(SerializableObjectJson):
         """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
+        if "compounds" not in self.recon_tags:
+            self.recon_tags["compounds"] = {}
         if tag_id not in self.recon_tags["compounds"]:
             self.recon_tags["compounds"][tag_id] = {}
         self.recon_tags["compounds"][tag_id].update(tag)

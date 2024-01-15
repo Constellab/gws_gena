@@ -7,5 +7,5 @@ from typing import TypedDict
 
 ContextDict = TypedDict("ContextDict", {
     "name": str,
-    "measures": list,
+    "reaction_data": list,
 })

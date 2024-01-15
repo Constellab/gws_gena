@@ -47,9 +47,9 @@ class TestTransporterAdder(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue("my_compound2_extracellular space" in net.compounds)
         self.assertTrue("CHEBI:15361_extracellular space" in net.compounds)
 
-        # file_path = os.path.join(data_dir, "extended_recon_net.csv")
-        # with open(file_path, 'w', encoding="utf-8") as f:
-        #     f.write(net.to_csv())
+        file_path = os.path.join(data_dir, "extended_recon_net.csv")
+        with open(file_path, 'w', encoding="utf-8") as f:
+            f.write(net.to_csv())
 
         file_path = os.path.join(data_dir, "extended_recon_net.csv")
         with open(file_path, 'r', encoding="utf-8") as f:

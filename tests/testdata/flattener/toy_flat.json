@@ -402,7 +402,7 @@
     ],
     "contexts": [
         {
-            "measures": [
+            "reaction_data": [
                 {
                     "id": "M1",
                     "name": "M1",
@@ -431,7 +431,8 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "compound_data": []
         }
     ],
     "reaction_mapping": {

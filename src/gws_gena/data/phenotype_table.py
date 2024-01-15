@@ -26,30 +26,31 @@ class PhenotypeTable(Table):
 
     * The first column is the list of `entity ids`. They uniquely identify each reaction of a network.
     * The next columns are:
-      * target: the value of the flux measured experimentally (e.g. `mol/gDW/h`) `[required]`
-      * upper_bound: the upper bound of the flux (e.g. `mol/gDW/h`) `[required]`
-      * lower_bound: the lower bound of the flux (e.g. `mol/gDW/h`) `[required]`
+      * target: the value of the flux measured experimentally (e.g. `mol/L/h`) `[required]`
+      * upper_bound: the upper bound of the flux (e.g. `mol/L/h`) `[required]`
+      * lower_bound: the lower bound of the flux (e.g. `mol/L/h`) `[required]`
       * confidence_score: the confidence score of the flux `[required]`
+      * ... : other optional columns
 
     For example:
 
-    | entity              | chebi_id     | target    | lower_bound  | lower_bound  | confidence_score   |
-    | --------------------|--------------|-----------|--------------|--------------|--------------------|
-    | biomass             | biomass      |           | 0            | 1000         | 1.0                |
-    | 2-oxoglutarate      | CEHBI:16810  |           | 0            | 1000         | 1.0                |
-    | glutamine           | CHEBI:18050  | 1.23      | 0            | 2.0          | 1.0                |
+    | id                  | target    | lower_bound  | lower_bound  | confidence_score   | chebi_id     |
+    | --------------------|-----------|--------------|--------------|--------------------|--------------|
+    | biomass             |           | 0            | 1000         | 1.0                | biomass      |
+    | 2-oxoglutarate      |           | 0            | 1000         | 1.0                | CEHBI:16810  |
+    | glutamine           | 1.23      | 0            | 2.0          | 1.0                | CHEBI:18050  |
 
     """
 
-    DEFAULT_ENTITY_COLUMN = "entity"
-    DEFAULT_CHEBI_ID_COLUMN = "chebi_id"
+    DEFAULT_ENTITY_ID_COLUMN = "id"
+    # DEFAULT_CHEBI_ID_COLUMN = "chebi_id"
     DEFAULT_TARGET_COLUMN = "target"
     DEFAULT_UPPER_BOUND_COLUMN = "upper_bound"
     DEFAULT_LOWER_BOUND_COLUMN = "lower_bound"
     DEFAULT_CONFIDENCE_SCORE_COLUMN = "confidence_score"
 
-    entity_column_name: str = StrRField(default_value=DEFAULT_ENTITY_COLUMN)
-    chebi_id_column_name: str = StrRField(default_value=DEFAULT_CHEBI_ID_COLUMN)
+    entity_id_column_name: str = StrRField(default_value=DEFAULT_ENTITY_ID_COLUMN)
+    # chebi_id_column_name: str = StrRField(default_value=DEFAULT_CHEBI_ID_COLUMN)
     target_column_name: str = StrRField(default_value=DEFAULT_TARGET_COLUMN)
     lower_bound_column_name: str = StrRField(default_value=DEFAULT_LOWER_BOUND_COLUMN)
     upper_bound_column_name: str = StrRField(default_value=DEFAULT_UPPER_BOUND_COLUMN)
@@ -59,11 +60,11 @@ class PhenotypeTable(Table):
 
     # -- G --
 
-    def get_entity_names(self) -> list:
-        return self.get_column_data(self.entity_column_name)
+    def get_entity_ids(self) -> list:
+        return self.get_column_data(self.entity_id_column_name)
 
-    def get_chebi_ids(self) -> list:
-        return self.get_column_data(self.chebi_id_column_name)
+    # def get_chebi_ids(self) -> list:
+    #     return self.get_column_data(self.chebi_id_column_name)
 
     def get_targets(self) -> list:
         return self.get_column_data(self.target_column_name)

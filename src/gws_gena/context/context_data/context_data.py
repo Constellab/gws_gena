@@ -148,15 +148,15 @@ class ContextData(SerializableObjectJson):
             # Deprecated.
             # Used for retro-compatiility
             # ToDo: To remove later
-            for measure_dict in data["measures"]:
+            for measure_dict in data.get("measures", {}):
                 measure = Measure(measure_dict)
                 ctx.add_measure(measure)
         else:
-            for measure_dict in data["reaction_data"]:
+            for measure_dict in data.get("reaction_data", {}):
                 measure = Measure(measure_dict)
                 ctx.add_reaction_data(measure)
 
-            for measure_dict in data["compound_data"]:
+            for measure_dict in data.get("compound_data", {}):
                 measure = Measure(measure_dict)
                 ctx.add_compound_data(measure)
 
