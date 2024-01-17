@@ -38,10 +38,10 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
                 {
                     "id": "rxn_R1_ex",
                     "name": "",
-                    "lower_bound": 0.0,
-                    "upper_bound": 40.0,
-                    "target": 30.0,
-                    "confidence_score": 1.0,
+                    "lower_bound": [0.0],
+                    "upper_bound": [40.0],
+                    "target": [30.0],
+                    "confidence_score": [1.0],
                     "variables": [
                         {
                             "reference_id": "R1_ex",

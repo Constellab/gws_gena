@@ -17,7 +17,7 @@ class Context(Resource):
     """
     Context class
 
-    A network `Context` is a resource object used to contextualize metabolic `Network` and create digital twin of cell metaolbism.
+    A network `Context` is a resource object used to contextualize metabolic `Network` and create digital twin of cell metabolism.
     """
 
     DEFAULT_NAME = "context"
@@ -32,10 +32,6 @@ class Context(Resource):
             self.context_data = ContextData()
 
     # -- A --
-
-    def add_measure(self, measure: Measure):
-        """ Add a measure """
-        self.context_data.add_measure(measure)
 
     def add_reaction_data(self, measure: Measure):
         """ Add a reaction data """
@@ -66,10 +62,6 @@ class Context(Resource):
 
     # -- G --
 
-    def get_measure_ids(self) -> List[str]:
-        """ Get the ids of the meassures """
-        return self.context_data.get_measure_ids()
-
     def get_reaction_ids(self) -> List[str]:
         """ Get the ids of the reaction_data """
         return self.context_data.get_reaction_ids()
@@ -99,11 +91,6 @@ class Context(Resource):
     # -- M --
 
     @property
-    def measures(self):
-        """ Get the liste of measures """
-        return self.context_data.measures
-
-    @property
     def reaction_data(self):
         """ Get the list of reaction data """
         return self.context_data.reaction_data
@@ -117,5 +104,6 @@ class Context(Resource):
 
     @view(view_type=JSONView, human_name="Show context", short_description="Show content as JSON", default_view=True)
     def view_content_as_json(self, params: ConfigParams) -> JSONView:
-        data = self.context_data.dumps()
-        return JSONView(data)
+        context_data = self.context_data
+        data = context_data.dumps()
+        return JSONView(data['measures'][0:100])  # View modified to show only the 100 first values

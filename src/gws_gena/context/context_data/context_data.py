@@ -51,23 +51,6 @@ class ContextData(SerializableObjectJson):
 
     # -- A --
 
-    @property
-    def measures(self):
-        """
-        Alias of reaction_data (for retro-compatibility)
-        """
-        return self.reaction_data
-
-    def add_measure(self, measure: Measure):
-        """
-        Add a measure
-        Alias of add_reaction_data (for retro-compatibility)
-        """
-        self.add_reaction_data(measure)
-        # if measure.id in self.measures:
-        #     raise BadRequestException("Measure duplicate")
-        # self.measures[measure.id] = measure
-
     def add_reaction_data(self, measure: Measure):
         """ Add a reaction data """
         if measure.id in self.reaction_data:
@@ -114,13 +97,6 @@ class ContextData(SerializableObjectJson):
 
     # -- G --
 
-    def get_measure_ids(self) -> List[str]:
-        """
-        Get the ids of the measures
-        Alias of get_reaction_data_ids
-        """
-        return self.get_reaction_data_ids()
-
     def get_reaction_data_ids(self) -> List[str]:
         """ Get the ids of the measures """
         return list(self.reaction_data.keys())
@@ -150,7 +126,7 @@ class ContextData(SerializableObjectJson):
             # ToDo: To remove later
             for measure_dict in data.get("measures", {}):
                 measure = Measure(measure_dict)
-                ctx.add_measure(measure)
+                ctx.add_reaction_data(measure)
         else:
             for measure_dict in data.get("reaction_data", {}):
                 measure = Measure(measure_dict)

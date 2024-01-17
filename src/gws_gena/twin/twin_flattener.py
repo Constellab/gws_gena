@@ -3,8 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, InputSpec, OutputSpec, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from .flat_twin import FlatTwin
 from .twin import Twin
@@ -18,11 +19,11 @@ class TwinFlattener(Task):
     Flatten a digital twin of cell metabolism
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to flatten"),
-    }
-    output_specs = {'flat_twin': OutputSpec(
-        FlatTwin, human_name="Flat digital twin", short_description="The flat digital twin"), }
+    })
+    output_specs = OutputSpecs({'flat_twin': OutputSpec(
+        FlatTwin, human_name="Flat digital twin", short_description="The flat digital twin")})
 
     config_specs = {}
 

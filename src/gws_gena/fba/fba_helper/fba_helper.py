@@ -116,7 +116,7 @@ class FBAHelper(BaseHelper):
                 solver=solver
             )
         self.update_progress_value(90, message=res.message)
-        result = FBAResult(twin=twin, optimize_result=res)
+        result = FBAResult.from_optimized_result(res)
         return result
 
     @classmethod

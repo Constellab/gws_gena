@@ -27,8 +27,8 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         print(ctx.dumps())
 
         self.assertEqual(data["reaction_data"][1], ctx.dumps()["reaction_data"][1])
-        self.assertEqual(data["reaction_data"][0].get("confidence_score"), 1.0)
-        self.assertEqual(ctx.dumps()["reaction_data"][0].get("confidence_score"), 1.0)
+        self.assertEqual(data["reaction_data"][0].get("confidence_score"), [1.0])
+        self.assertEqual(ctx.dumps()["reaction_data"][0].get("confidence_score"), [1.0])
 
         ctx2 = ctx.copy()
         self.assertEqual(ctx2.dumps(), ctx.dumps())

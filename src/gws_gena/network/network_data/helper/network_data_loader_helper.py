@@ -10,7 +10,7 @@ from typing import List
 from gws_biota import Compound as BiotaCompound
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import EnzymeOrtholog as BiotaEnzymeOrtholog
-from gws_core import BadRequestException
+from gws_core import BadRequestException, Logger
 
 from ....helper.base_helper import BaseHelper
 from ...compartment.compartment import Compartment

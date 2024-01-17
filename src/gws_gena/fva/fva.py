@@ -8,9 +8,9 @@ from copy import deepcopy
 
 import cvxpy as cp
 import numpy as np
-from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
-                      ListParam, Logger, OutputSpec, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
+                      Logger, OutputSpec, OutputSpecs, Task, TaskInputs,
+                      TaskOutputs, task_decorator)
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -22,6 +22,7 @@ from ..twin.flat_twin import FlatTwin
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
 from .fva_result import FVAResult
+from ..twin.helper.twin_helper import TwinHelper
 
 
 def _do_parallel_loop(kwargs):
@@ -109,11 +110,12 @@ class FVA(Task):
     https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
     """
 
-    input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
-    output_specs = {
+    input_specs = InputSpecs({'twin': InputSpec(Twin, human_name="Digital twin",
+                             short_description="The digital twin to analyze")})
+    output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
         'fva_result': OutputSpec(FVAResult, human_name="FVA result table", short_description="The FVA result tables")
-    }
+    })
     config_specs = {
         **FBA.config_specs
     }
@@ -132,6 +134,10 @@ class FVA(Task):
         if relax_qssa and solver != "quad":
             self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
+
+        # we run only one FBA
+        self.log_info_message("Run a single FVA using the first context value")
+        twin = TwinHelper.build_twin_from_sub_context(self, twin, 0)
 
         if isinstance(twin, FlatTwin):
             flat_twin = twin
@@ -185,22 +191,13 @@ class FVA(Task):
                 qssa_relaxation_strength, parsimony_strength)
         res.xmin = xmin
         res.xmax = xmax
-        fva_result = FVAResult(twin=twin, optimize_result=res)
-
-        # @TODO : should be given by the current experiment
-        simulations = [
-            {
-                "id": "fva_sim",
-                "name": "fva simulation",
-                "description": "Metabolic flux variability analysis"
-            }
-        ]
-        fva_result.set_simulations(simulations)
-
+        fva_result = FVAResult()
+        fva_result = fva_result.from_optimized_result(res)
+        fva_result = FVAResult(fva_result.get_fluxes_dataframe(), fva_result.get_sv_dataframe())
         # annotate twin
         helper = TwinAnnotatorHelper()
         helper.attach_task(self)
-        twin = helper.annotate_from_fva_result(twin, fva_result)
+        twin = helper.annotate_from_fva_results(twin, [fva_result])
 
         return {
             "fva_result": fva_result,

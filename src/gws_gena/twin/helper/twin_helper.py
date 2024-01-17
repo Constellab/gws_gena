@@ -15,6 +15,8 @@ from scipy.linalg import null_space
 from ...context.variable import Variable
 from ..flat_twin import FlatTwin
 from ...network.reaction.reaction import Reaction
+from ..twin import Twin
+from ...context.helper.context_builder_helper import ContextBuilderHelper
 
 # ####################################################################
 #
@@ -306,3 +308,17 @@ class TwinHelper:
     #     K = K.loc[:, K.any(axis=0)]
 
     #     return ReducedMatrices(K=K, EFM=EFM)
+
+    # Method to build a twin from a sub context.
+    # Useful for example if we have multiples measures for one reaction (case of multi simulations; see FBA)
+    def build_twin_from_sub_context(self, base_twin: Twin, index: int) -> Twin:
+        new_twin = Twin()
+
+        network = next(iter(base_twin.networks.values()))
+        new_twin.add_network(network)
+
+        base_context = next(iter(base_twin.contexts.values()))
+        new_context = ContextBuilderHelper.build_sub_context(self, base_context, index)
+        new_twin.add_context(new_context, related_network=network)
+
+        return new_twin

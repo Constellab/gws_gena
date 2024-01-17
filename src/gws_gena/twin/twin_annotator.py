@@ -3,8 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, InputSpec, OutputSpec, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ..fba.fba_result import FBAResult
 from .helper.twin_annotator_helper import TwinAnnotatorHelper
@@ -25,8 +26,10 @@ class TwinAnnotator(Task):
     Annotate a digital twin of cell metabolism with estimated metabolic fluxes
     """
 
-    input_specs = {'fba_result': InputSpec(FBAResult, human_name="FBA result", short_description="The FBA result")}
-    output_specs = {'twin': OutputSpec(Twin, human_name="Digital twin", short_description="The annotated digital twin")}
+    input_specs = InputSpecs({'fba_result': InputSpec(
+        FBAResult, human_name="FBA result", short_description="The FBA result")})
+    output_specs = OutputSpecs({'twin': OutputSpec(Twin, human_name="Digital twin",
+                               short_description="The annotated digital twin")})
 
     def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         fba_result = inputs["fba_result"]

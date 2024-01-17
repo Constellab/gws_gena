@@ -3,8 +3,8 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (ConfigParams, InputSpec, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpecs, Task,
+                      TaskInputs, TaskOutputs, task_decorator)
 
 from ...network.network import Network
 from ..gap.helper.gap_finder_helper import GapFinderHelper
@@ -19,8 +19,8 @@ class OrphanRemover(Task):
     Clean a network by removing all orphan compounds
     """
 
-    input_specs = {'network': InputSpec(Network)}
-    output_specs = {'network': InputSpec(Network)}
+    input_specs = InputSpecs({'network': InputSpec(Network)})
+    output_specs = OutputSpecs({'network': InputSpec(Network)})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs.get("network")

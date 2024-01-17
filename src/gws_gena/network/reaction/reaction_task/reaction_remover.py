@@ -3,8 +3,9 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (BoolParam, ConfigParams, InputSpec, OutputSpec, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs,
+                      OutputSpec, OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 from ....data.ec_table import ECTable
 from ....data.entity_id_table import EntityIDTable
@@ -16,14 +17,14 @@ from ..helper.reaction_remover_helper import ReactionRemoverHelper
                 short_description="Remove a list of reactions from a network")
 class ReactionRemover(Task):
 
-    input_specs = {
+    input_specs = InputSpecs({
         'network': InputSpec(Network, human_name="Network", short_description="Network to trim"),
         'reaction_table': InputSpec(
             (ECTable, EntityIDTable), human_name="Table of EC numbers or IDs", short_description="The table of reactions to remove"),
-    }
-    output_specs = {
+    })
+    output_specs = OutputSpecs({
         'network': OutputSpec(Network, human_name="Network", short_description="The network after trimming")
-    }
+    })
     config_specs = {
         "reverse_remove":
         BoolParam(

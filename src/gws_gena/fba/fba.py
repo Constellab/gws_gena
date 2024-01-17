@@ -2,15 +2,27 @@
 # This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
-
-from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
-                      ListParam, OutputSpec, StrParam, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+import multiprocessing
+from typing import Tuple
+from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec, Logger,
+                      InputSpecs, ListParam, OutputSpec, OutputSpecs, StrParam, TableConcatHelper,
+                      Task, TaskInputs, TaskOutputs, task_decorator, Table, IntParam)
 
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
+from ..twin.helper.twin_helper import TwinHelper
 from .fba_helper.fba_helper import FBAHelper
 from .fba_result import FBAResult
+
+from ..context.variable import Variable
+from ..context.context import Context
+from ..context.measure import Measure
+from ..context.helper.context_builder_helper import ContextBuilderHelper
+from ..context.typing.measure_typing import MeasureDict
+from ..context.typing.variable_typing import VariableDict
+from ..twin.twin_builder import TwinBuilder
+
+from gws_gena.network.network import Network
 
 
 @task_decorator("FBA", human_name="FBA", short_description="Flux balance analysis")
@@ -24,11 +36,12 @@ class FBA(Task):
     (e.g. animal cell, bacteria, fungus, etc.).
     """
 
-    input_specs = {'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze")}
-    output_specs = {
+    input_specs = InputSpecs({'twin': InputSpec(Twin, human_name="Digital twin",
+                             short_description="The digital twin to analyze")})
+    output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
         'fba_result': OutputSpec(FBAResult, human_name="FBA result tables", short_description="The FBA result tables")
-    }
+    })
     config_specs = {
         "biomass_optimization":
         StrParam(
@@ -61,43 +74,128 @@ class FBA(Task):
         FloatParam(
             default_value=0.0, min_value=0.0, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Parsimony strength",
-            short_description="Set True to perform parsimonious FBA (pFBA). In this case the quad solver is used. Set False otherwise")}
+            short_description="Set True to perform parsimonious FBA (pFBA). In this case the quad solver is used. Set False otherwise"),
+        "number_of_simulations":
+        IntParam(
+            min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
+            human_name="Number of simulations",
+            short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations.")
+        #,
+        #"number_of_processes":
+        #IntParam(
+        #    default_value=2, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY,
+        #    human_name="Number of processes",
+        #    short_description="Set the number of processes to use to parallelise the execution of FBA.")
+        }
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
-        solver = params["solver"]
-        biomass_optimization = params["biomass_optimization"]
-        fluxes_to_maximize = params["fluxes_to_maximize"]
-        fluxes_to_minimize = params["fluxes_to_minimize"]
-        relax_qssa = params["relax_qssa"]
-        qssa_relaxation_strength = params["qssa_relaxation_strength"]
-        parsimony_strength = params["parsimony_strength"]
+        # retrieve the context of the twin
+        context = next(iter(twin.contexts.values()))
+        # retrieve the network of the twin
+        network = next(iter(twin.networks.values()))
 
-        helper = FBAHelper()
-        helper.attach_task(self)
-        fba_result: FBAResult = helper.run(
-            twin, solver, fluxes_to_maximize, fluxes_to_minimize, biomass_optimization=biomass_optimization,
-            relax_qssa=relax_qssa, qssa_relaxation_strength=qssa_relaxation_strength,
-            parsimony_strength=parsimony_strength)
+        number_of_simulations = params["number_of_simulations"]
+        #If number_of_simulations is not provided, keep all the simulations
+        number_of_simulations = next((len(measure.target) for _, measure in context.reaction_data.items()), None)
 
-        # @TODO : should be given by the current experiment
-        simulations = [
-            {
-                "id": "fba_sim",
-                "name": "fba simulation",
-                "description": "Metabolic flux simulation"
-            }
-        ]
-        fba_result.set_simulations(simulations)
+        # check the length of the values
+        for name_measure, measure in context.reaction_data.items():
+            if (len(measure.target) < number_of_simulations):
+                raise Exception(
+                    "The number of target values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.target)) +
+                    " values of targets while the number of simulations is set to " + str(number_of_simulations))
+            if (len(measure.upper_bound) < number_of_simulations):
+                raise Exception(
+                    "The number of upper bound values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.upper_bound)) +
+                    " values of upper bound while the number of simulations is set to " +
+                    str(number_of_simulations))
+            if (len(measure.lower_bound) < number_of_simulations):
+                raise Exception(
+                    "The number of lower bound values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.lower_bound)) +
+                    " values of lower_bound while the number of simulations is set to " +
+                    str(number_of_simulations))
+            if (len(measure.confidence_score) < number_of_simulations):
+                raise Exception(
+                    "The number of confidence score values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.confidence_score)) +
+                    " values of confidence score while the number of simulations is set to " +
+                    str(number_of_simulations))
 
-        # annotate twin
-        helper = TwinAnnotatorHelper()
-        helper.attach_task(self)
-        twin = helper.annotate_from_fba_result(twin, fba_result)
+        fba_results: List[FBAResult] = []
+
+        # indexed_data_list = []
+        # for i in range(0, number_of_simulations):  # run through the number of simulations
+        #     new_twin = self.build_twin(twin, i)
+        #     indexed_data_list.append((i, new_twin, params))
+
+        # i = 0
+        # try:
+        #     with multiprocessing.Pool(processes=params["number_of_processes"]) as pool:
+        #         # chunksize to 1 because each FBA takes time so we can assign a sub process to only 1 FBA
+        #         for result in pool.imap_unordered(self.call_fba, indexed_data_list, chunksize=1):
+
+        #             if result is not None:
+        #                 fba_results.append(result)
+        #                 self.update_progress_value((i + 1) / number_of_simulations * 100,
+        #                                            'Running FBA for all simulations')
+        #                 i += 1
+        # except Exception as e:
+        #     Logger.log_exception_stack_trace(e)
+        #     raise e
+
+        #If number of simulations is not None, there is a context with simulations
+        if (number_of_simulations) :
+            for i in range(0, number_of_simulations):  # run through the number of simulations
+                new_twin = TwinHelper.build_twin_from_sub_context(self,twin, i)
+                fba_results.append(self.call_fba((i, new_twin, params)))
+                self.update_progress_value(((i+1) / number_of_simulations) * 100, message="Running FBA for all simulations")
+        else : #if number of simulations is None, there is no context provided, so we run only one FBA
+            new_twin = TwinHelper.build_twin_from_sub_context(self,twin, 0)
+            fba_results.append(self.call_fba((0, new_twin, params)))
+            self.update_progress_value(100, message="Running FBA")
+
+        self.log_info_message('Annotating the twin')
+        annotator_helper = TwinAnnotatorHelper()
+        annotator_helper.attach_task(self)
+        result_twin = annotator_helper.annotate_from_fba_results(twin, fba_results)
+        self.log_info_message('Merging all fba results')
+        # merge all fba results
+        self.log_info_message('Creating lists')
+        flux_tables: List[Table] = []
+        sv_tables: List[Table] = []
+        for fba_result in fba_results:
+            flux_tables.append(fba_result.get_flux_table())
+            sv_tables.append(fba_result.get_sv_table())
+        self.log_info_message('Concat flux table')
+        merged_flux_table: Table = TableConcatHelper.concat_table_rows(flux_tables)
+        self.log_info_message('Concat sv table')
+        merged_sv_table: Table = TableConcatHelper.concat_table_rows(sv_tables)
+        self.log_info_message('Create FBAResult')
+        merged_fba_result = FBAResult(merged_flux_table.get_data(), merged_sv_table.get_data())
 
         return {
-            "fba_result": fba_result,
-            "twin": twin
+            "fba_result": merged_fba_result,
+            "twin": result_twin
         }
 
-    # -- B --
+    def call_fba(self, data: Tuple[int, Twin, ConfigParams]) -> FBAResult:
+        j, twin, params = data
+
+        # Run the FBA for this twin
+        fba_helper = FBAHelper()
+        #fba_helper.attach_task(self)
+        fba_result = fba_helper.run(
+            twin, solver=params["solver"],
+            fluxes_to_maximize=params["fluxes_to_maximize"],
+            fluxes_to_minimize=params["fluxes_to_minimize"],
+            biomass_optimization=params["biomass_optimization"],
+            relax_qssa=params["relax_qssa"],
+            qssa_relaxation_strength=params["qssa_relaxation_strength"],
+            parsimony_strength=params["parsimony_strength"])
+
+
+        return fba_result

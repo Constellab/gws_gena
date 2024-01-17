@@ -3,15 +3,10 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-import networkx as nx
-from gws_core import (BadRequestException, BoolParam, ConfigParams, InputSpec,
-                      OutputSpec, ResourceSet, StrParam, Table, Task,
-                      TaskInputs, TaskOutputs, TechnicalInfo,
-                      resource_decorator, task_decorator)
-from pandas import DataFrame
+from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
-from ...data.entity_id_table import EntityIDTable
-from ...network.graph.graph import Graph
 from ...network.network import Network
 from .helper.isolate_finder_helper import IsolateFinderHelper
 from .isolate_finder_result import IsolateFinderResult
@@ -26,8 +21,8 @@ class IsolateFinder(Task):
     Finds wether genes/reactions are isolates, i.e. topologically non-connected to the cell growth
     """
 
-    input_specs = {'network': InputSpec(Network)}
-    output_specs = {'result': OutputSpec(IsolateFinderResult)}
+    input_specs = InputSpecs({'network': InputSpec(Network)})
+    output_specs = OutputSpecs({'result': OutputSpec(IsolateFinderResult)})
     config_specs = {}
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:

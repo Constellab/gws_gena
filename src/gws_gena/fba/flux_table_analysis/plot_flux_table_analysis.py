@@ -1,10 +1,12 @@
 import re
-from gws_core import (ConfigParams, InputSpec, OutputSpec, File, Task, TaskInputs, TaskOutputs,
-                      task_decorator, StrParam, FloatParam, PlotlyResource, Table, BoolParam)
-import pandas as pd
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from gws_core import (BoolParam, ConfigParams, File, FloatParam, InputSpec,
+                      InputSpecs, OutputSpec, OutputSpecs, PlotlyResource,
+                      StrParam, Table, Task, TaskInputs, TaskOutputs,
+                      task_decorator)
 
 
 @task_decorator("PlotFluxTableAnalysis", human_name="Flux Table Analysis",
@@ -24,12 +26,12 @@ class PlotFluxTableAnalysis(Task):
     Gives a scatter plot with coloured points and a table in output.
     """
 
-    input_specs = {'flux_table_condition1':  InputSpec(Table),
-                   'flux_table_condition2':  InputSpec(Table),
-                   'file_modified_reactions':  InputSpec(File)}
+    input_specs = InputSpecs({'flux_table_condition1':  InputSpec(Table),
+                              'flux_table_condition2':  InputSpec(Table),
+                              'file_modified_reactions':  InputSpec(File)})
 
-    output_specs = {'plot': OutputSpec(PlotlyResource),
-                    'table_changes': OutputSpec(Table)}
+    output_specs = OutputSpecs({'plot': OutputSpec(PlotlyResource),
+                                'table_changes': OutputSpec(Table)})
 
     config_specs = {'name_condition1': StrParam(short_description="Name of the condition 1"),
                     'name_condition2': StrParam(short_description="Name of the condition 2"),

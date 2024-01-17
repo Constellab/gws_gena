@@ -30,10 +30,10 @@ class Measure:
 
     id: str = None
     name: str = None
-    lower_bound: float = None
-    upper_bound: float = None
-    target: float = None
-    confidence_score: float = None
+    lower_bound: list = None
+    upper_bound: list = None
+    target: list = None
+    confidence_score: list = None
     variables: List[Variable] = None
 
     FLATTENING_DELIMITER = ":"
