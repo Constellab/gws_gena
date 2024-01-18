@@ -5,6 +5,8 @@
 
 from gws_core.config.config_params import ConfigParams
 
+from typing import Any, Dict, List
+
 from gws_core.impl.openai.open_ai_helper import OpenAiHelper
 from gws_core.impl.openai.smart_task_base import SmartTaskBase
 from gws_core.impl.file.file import File
@@ -42,27 +44,31 @@ The data of the model is not transferered to OpenAI, only the provided text.
         'target': OutputSpec(File, human_name='Model Modified', short_description='Model modified.')
     })
 
-    def get_context(self, params: ConfigParams, inputs: TaskInputs) -> str:
+    def build_main_context(self, params: ConfigParams, task_inputs: TaskInputs,code_inputs: Dict[str, Any]) -> str:
         # prepare the input
 
-        context = "You are a developer assistant tasked to generate code in python to modify a genome-scale metabolic model."
-        context += "The genome-scale metabolic model is stored as a JSON file using the Cobra package."
-        context += "\nThe model is already loaded by cobra and it is stored in the variable named 'source'."
-        context += "The generated cobra model must be assigned to a variable named 'target'."
-        context += f"\n{OpenAiHelper.get_code_context([GwsGenaPackages.COBRA])}"
+        return f"""{self.VAR_PY_INTRO}
+                The code purpose is to modify a genome-scale metabolic model, stored as a JSON file, using the Cobra package.
+                {self.VAR_INPUTS}
+                {self.VAR_OUTPUTS}
+                {self.VAR_CODE_RULES}"""
 
-        return context
-
-    def build_openai_code_inputs(self, params: ConfigParams, inputs: TaskInputs) -> dict:
-        # prepare the input
-        model: File = inputs["source"]
+    def build_code_inputs(self, params: ConfigParams, task_inputs: TaskInputs) -> dict:
+        # get the model
+        model: File = task_inputs["source"]
 
         # Load the model from JSON file
         model_cobra = cobra.io.load_json_model(model.path)
 
         return {"source": model_cobra}
 
-    def build_task_outputs(self, params: ConfigParams, inputs: TaskInputs,
+    def get_code_expected_output_types(self) -> Dict[str, Any]:
+        return {"target": cobra.core.model.Model}
+
+    def get_available_package_names(self) -> List[str]:
+        return [GwsGenaPackages.COBRA]
+
+    def build_task_outputs(self, params: ConfigParams, task_inputs: TaskInputs,
                            code_outputs: dict, generated_code: str) -> dict:
         target = code_outputs.get("target", None)
 

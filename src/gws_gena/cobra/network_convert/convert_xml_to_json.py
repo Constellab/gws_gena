@@ -4,7 +4,7 @@ from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
                       task_decorator)
 
-from .cobra_env import CobraEnvHelper
+from ..cobra_env import CobraEnvHelper
 
 
 @task_decorator("ConvertXmlToJson", human_name="XML/Matlab to JSON",
