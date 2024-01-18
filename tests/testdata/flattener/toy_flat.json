@@ -402,18 +402,25 @@
     ],
     "contexts": [
         {
-            "measures": [
+            "reaction_data": [
                 {
                     "id": "M1",
                     "name": "M1",
-                    "lower_bound": 25.0,
-                    "upper_bound": 35.0,
-                    "target": 30.0,
-                    "confidence_score": 1.0,
+                    "lower_bound": [
+                        25.0
+                    ],
+                    "upper_bound": [
+                        35.0
+                    ],
+                    "target": [
+                        30.0
+                    ],
+                    "confidence_score": [
+                        1.0
+                    ],
                     "variables": [
                         {
                             "reference_id": "toy_cell_R1_ex",
-                            "reference_type": "reaction",
                             "coefficient": 1.0
                         }
                     ]
@@ -421,19 +428,27 @@
                 {
                     "id": "M2",
                     "name": "M2",
-                    "lower_bound": 0.5,
-                    "upper_bound": 1.0,
-                    "target": 0.75,
-                    "confidence_score": 1.0,
+                    "lower_bound": [
+                        0.5
+                    ],
+                    "upper_bound": [
+                        1.0
+                    ],
+                    "target": [
+                        0.75
+                    ],
+                    "confidence_score": [
+                        1.0
+                    ],
                     "variables": [
                         {
                             "reference_id": "toy_cell_R5_ex",
-                            "reference_type": "reaction",
                             "coefficient": 1.0
                         }
                     ]
                 }
-            ]
+            ],
+            "compound_data": []
         }
     ],
     "reaction_mapping": {

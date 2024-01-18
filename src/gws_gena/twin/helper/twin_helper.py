@@ -14,6 +14,7 @@ from scipy.linalg import null_space
 
 from ...context.variable import Variable
 from ..flat_twin import FlatTwin
+from ...network.reaction.reaction import Reaction
 from ..twin import Twin
 from ...context.helper.context_builder_helper import ContextBuilderHelper
 
@@ -27,12 +28,14 @@ FBAProblem = TypedDict("FBAProblem", {
     "S": DataFrame,
     "C": DataFrame,
     "b": DataFrame,
+    "r": DataFrame,
     "C_rel": DataFrame
 })
 
 ObsvMatrices = TypedDict("ObsvMatrices", {
-    "C": DataFrame,
-    "b": DataFrame
+    "C": DataFrame,  # stoichiometric matrix of measured fluxes
+    "b": DataFrame,  # vector of measured flux values
+    "r": DataFrame   # stoichiometric matrix of metabolic pool variations
 })
 
 ReducedMatrices = TypedDict("ReducedMatrices", {
@@ -43,7 +46,7 @@ ReducedMatrices = TypedDict("ReducedMatrices", {
 
 class TwinHelper:
 
-    @classmethod
+    @ classmethod
     def create_fba_problem(cls, flat_twin: FlatTwin) -> FBAProblem:
         """
         Creates a FBA problem using a biomdel object
@@ -60,12 +63,13 @@ class TwinHelper:
         S = cls.create_stoichiometric_matrix(flat_twin)
         obsv_matrix = cls.create_observation_matrices(flat_twin)
         C = obsv_matrix["C"]
+        r = obsv_matrix["r"]
         b = obsv_matrix["b"]
         C_rel = S.to_numpy() @ C.to_numpy().T  # b_ref.T = S * C.T
         C_rel = DataFrame(data=C_rel.T, index=C.index, columns=S.index)
-        return FBAProblem(S=S, C=C, b=b, C_rel=C_rel)
+        return FBAProblem(S=S, C=C, b=b, r=r, C_rel=C_rel)
 
-    @classmethod
+    @ classmethod
     def create_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
         """
         Creates the full stoichiometric matrix using a twin object
@@ -81,7 +85,7 @@ class TwinHelper:
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_stoichiometric_matrix()
 
-    @classmethod
+    @ classmethod
     def create_steady_stoichiometric_matrix(cls, flat_twin: FlatTwin, ignore_cofactors=False) -> DataFrame:
         """
         Creates the steady stoichiometric matrix using a twin object
@@ -97,7 +101,7 @@ class TwinHelper:
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_steady_stoichiometric_matrix(ignore_cofactors=ignore_cofactors)
 
-    @classmethod
+    @ classmethod
     def create_non_steady_stoichiometric_matrix(cls, flat_twin: FlatTwin) -> DataFrame:
         """
         Creates the non_steady stoichiometric matrix using a twin object
@@ -113,7 +117,7 @@ class TwinHelper:
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_non_steady_stoichiometric_matrix()
 
-    @classmethod
+    @ classmethod
     def create_input_stoichiometric_matrix(cls, flat_twin: FlatTwin, ignore_cofactors=False) -> DataFrame:
         """
         Creates the input-substrate stoichiometric matrix using a twin object
@@ -129,7 +133,7 @@ class TwinHelper:
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_input_stoichiometric_matrix(ignore_cofactors=ignore_cofactors)
 
-    @classmethod
+    @ classmethod
     def create_output_stoichiometric_matrix(cls, flat_twin: FlatTwin, ignore_cofactors=False) -> DataFrame:
         """
         Creates the output-product stoichiometric matrix using a twin object
@@ -145,7 +149,7 @@ class TwinHelper:
         flat_net = next(iter(flat_twin.networks.values()))
         return flat_net.create_output_stoichiometric_matrix(ignore_cofactors=ignore_cofactors)
 
-    @classmethod
+    @ classmethod
     def create_observation_matrices(cls, flat_twin: FlatTwin) -> ObsvMatrices:
         """
         Creates the observation matrices (i.e. such as C * y = b, where b is measurement vector)
@@ -161,43 +165,69 @@ class TwinHelper:
         flat_net = next(iter(flat_twin.networks.values()))
         flat_ctx = next(iter(flat_twin.contexts.values()))
         rxn_ids = list(flat_net.reactions.keys())
-        measure_ids = flat_ctx.get_measure_ids()
+        # met_ids = list(flat_net.compounds.keys())
+
+        rxn_data_ids = [measure.id for measure in flat_ctx.reaction_data.values()]
+
         C = DataFrame(
-            index=measure_ids,
+            index=rxn_data_ids,
             columns=rxn_ids,
-            data=np.zeros((len(measure_ids), len(rxn_ids)))
+            data=np.zeros((len(rxn_data_ids), len(rxn_ids)))
         )
         b = DataFrame(
-            index=measure_ids,
+            index=rxn_data_ids,
             columns=["target", "lb", "ub", "confidence_score"],
-            data=np.zeros((len(measure_ids), 4))
+            data=np.zeros((len(rxn_data_ids), 4))
         )
-        for measure in flat_ctx.measures.values():
+        b.loc[:, "lb"] = Reaction.LOWER_BOUND
+        b.loc[:, "ub"] = Reaction.UPPER_BOUND
+        b.loc[:, "confidence_score"] = 1.0
+
+        S_int = cls.create_steady_stoichiometric_matrix(flat_twin)
+        internal_met_ids = list(S_int.index)
+        r = DataFrame(
+            index=internal_met_ids,
+            columns=["target", "lb", "ub", "confidence_score"],
+            data=np.zeros((len(internal_met_ids), 4))
+        )
+        r.loc[:, "lb"] = Reaction.LOWER_BOUND
+        r.loc[:, "ub"] = Reaction.UPPER_BOUND
+        r.loc[:, "confidence_score"] = 1.0
+
+        for measure in flat_ctx.reaction_data.values():
             meas_id = measure.id
-            b.loc[meas_id, :] = [
-                measure.target,
-                measure.lower_bound,
-                measure.upper_bound,
-                measure.confidence_score
-            ]
             for variable in measure.variables:
                 ref_id = variable.reference_id
-                ref_type = variable.reference_type
                 coef = variable.coefficient
-                if ref_type == Variable.REACTION_REFERENCE_TYPE:
-                    rxn_id = ref_id
-                    C.at[meas_id, rxn_id] = coef
-                else:
-                    raise BadRequestException("Variables of type Metabolite are not supported in Context objects")
-        return ObsvMatrices(C=C, b=b)
+                b.loc[meas_id, :] = [
+                    measure.target,
+                    measure.lower_bound,
+                    measure.upper_bound,
+                    measure.confidence_score
+                ]
+                rxn_id = ref_id
+                C.at[meas_id, rxn_id] = coef
 
-    @classmethod
+        for measure in flat_ctx.compound_data.values():
+            for variable in measure.variables:
+                ref_id = variable.reference_id
+                coef = variable.coefficient
+                met_id = ref_id
+                r.loc[met_id, :] = [
+                    measure.target,
+                    measure.lower_bound,
+                    measure.upper_bound,
+                    measure.confidence_score
+                ]
+        return ObsvMatrices(C=C, b=b, r=r)
+
+    @ classmethod
     def compute_nullspace(cls, N: DataFrame) -> DataFrame:
         """ Compute the null space of th stoichimetric matrix """
         ns = null_space(N.to_numpy())
         return DataFrame(index=N.columns, data=ns)
 
-    @classmethod
+    @ classmethod
     def compute_elementary_flux_modes(
             cls, flat_twin: FlatTwin, reversibilities=None, ignore_cofactors=False) -> DataFrame:
         """ Compute elementary flux modes """
@@ -214,7 +244,7 @@ class TwinHelper:
 
         return cls._compute_elementary_flux_modes_from_matrix(N, reversibilities=reversibilities)
 
-    @classmethod
+    @ classmethod
     def _compute_elementary_flux_modes_from_matrix(cls, N: DataFrame, reversibilities: List[int] = None) -> DataFrame:
         if reversibilities is None:
             reversibilities = [0] * N.shape[1]
@@ -227,7 +257,7 @@ class TwinHelper:
         column_names = [f"e{i}" for i in range(1, efms.shape[1]+1)]
         return DataFrame(index=N.columns, columns=column_names, data=efms)
 
-    @classmethod
+    @ classmethod
     def compute_reduced_matrices(cls, flat_twin: FlatTwin, use_context: bool = True, reversibilities=None,
                                  ignore_cofactors=False) -> ReducedMatrices:
         """ Compute the reduced matrices """
@@ -279,8 +309,8 @@ class TwinHelper:
 
     #     return ReducedMatrices(K=K, EFM=EFM)
 
-    #Method to build a twin from a sub context.
-    #Useful for example if we have multiples measures for one reaction (case of multi simulations; see FBA)
+    # Method to build a twin from a sub context.
+    # Useful for example if we have multiples measures for one reaction (case of multi simulations; see FBA)
     def build_twin_from_sub_context(self, base_twin: Twin, index: int) -> Twin:
         new_twin = Twin()
 
@@ -288,7 +318,7 @@ class TwinHelper:
         new_twin.add_network(network)
 
         base_context = next(iter(base_twin.contexts.values()))
-        new_context = ContextBuilderHelper.build_sub_context(self,base_context, index)
+        new_context = ContextBuilderHelper.build_sub_context(self, base_context, index)
         new_twin.add_context(new_context, related_network=network)
 
         return new_twin

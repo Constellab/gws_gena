@@ -15,7 +15,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "./ecoli/gaps/ecoli_without_SUCOAS.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            ConfigParams({})
+            {}
         )
 
         # params = {"tax_id":  "562"}  # ecoli

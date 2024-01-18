@@ -3,7 +3,7 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings
+from gws_core import File, Settings
 from gws_gena import Context, ContextImporter, Network, NetworkImporter, Twin
 
 settings = Settings.get_instance()
@@ -27,7 +27,7 @@ class TestTwinFlattener(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy_context.json")
         ctx = ContextImporter.call(
             File(path=file_path),
-            params=ConfigParams()
+            params={}
         )
 
         twin = Twin()

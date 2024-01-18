@@ -92,7 +92,6 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             run_fba(organism=organism, solver="quad", relax_qssa=relax)
 
-        # this test is commented because translate_ids does not work
-        #for relax in [True]:
-        #    self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad + translate ids)")
-        #    run_fba(organism=organism, solver="quad", relax_qssa=relax, translate_ids=True)
+        # for relax in [True]:
+        #     self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad + translate ids)")
+        #     run_fba(organism=organism, solver="quad", relax_qssa=relax, translate_ids=True)

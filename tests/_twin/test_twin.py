@@ -5,7 +5,7 @@ import os
 import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, GTest, Settings
+from gws_core import File, GTest, Settings
 from gws_gena import (Context, ContextImporter, FlatTwin, Network,
                       NetworkImporter, Twin, TwinHelper)
 from pandas import DataFrame
@@ -26,75 +26,61 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
             File(path=file_path),
             params={"skip_orphans": True}
         )
-        file_path = os.path.join(data_dir, "small_context.json")
-        ctx = ContextImporter.call(
-            File(path=file_path),
-            params=ConfigParams()
-        )
 
-        twin = Twin()
-        twin.add_network(net)
-        twin.add_context(ctx, related_network=net)
+        def do_test(context_name):
+            file_path = os.path.join(data_dir, f"{context_name}.json")
+            ctx = ContextImporter.call(
+                File(path=file_path),
+                params={}
+            )
 
-        self.assertRaises(Exception, twin.add_network, net)
-        self.assertEqual(twin.dumps_flat(), twin.dumps_flat())
+            twin = Twin()
+            twin.add_network(net)
+            twin.add_context(ctx, related_network=net)
 
-        # twin2 = FlatTwin.loads(twin.dumps_flat())
-        # print(twin2.dumps_flat())
-        # self.assertEqual(twin2.dumps_flat(), twin.dumps_flat())
+            self.assertRaises(Exception, twin.add_network, net)
+            self.assertEqual(twin.dumps_flat(), twin.dumps_flat())
 
-        # file_path = os.path.join(data_dir, "small_flat_twin.json")
-        # with open(file_path, "w", encoding="utf-8") as f:
-        #     json.dump(twin.dumps_flat(), f)
+            # twin2 = FlatTwin.loads(twin.dumps_flat())
+            # print(twin2.dumps_flat())
+            # self.assertEqual(twin2.dumps_flat(), twin.dumps_flat())
 
-        flat_twin = twin.flatten()
-        problem = TwinHelper.create_fba_problem(flat_twin)
+            # file_path = os.path.join(data_dir, "small_flat_twin.json")
+            # with open(file_path, "w", encoding="utf-8") as f:
+            #     json.dump(twin.dumps_flat(), f)
 
-        print(problem["S"])
-        expected_s = DataFrame({
-            'small_cell_glc_D_transport': [-1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            'small_cell_GLNabc': [0.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0],
-            'small_cell_biomass': [0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
-        }, index=[
-            "glc_D_e",
-            "small_cell_glc_D_c",
-            "small_cell_adp_c",
-            "small_cell_atp_c",
-            "small_cell_gln_L_c",
-            "gln_L_e",
-            "small_cell_biomass_b"
-        ]
-        )
-        S = problem["S"]
-        print(S.index)
-        expected_s = expected_s.loc[S.index, :]
-        expected_s = expected_s.loc[:, S.columns]
-        self.assertTrue(S.equals(expected_s))
+            flat_twin = twin.flatten()
+            problem = TwinHelper.create_fba_problem(flat_twin)
 
-        print(problem["C"])
-        expected_c = DataFrame({
-            'small_cell_glc_D_transport': [1.0, 1.0],
-            'small_cell_GLNabc': [0.0, 2.0],
-            'small_cell_biomass': [0.0, 0.0],
-        }, index=[
-            "Measure_1",
-            "Measure_2"
-        ]
-        )
-        self.assertTrue(problem["C"].equals(expected_c))
+            # Test S
+            # print(problem["S"])
+            path = os.path.join(data_dir, "problem", context_name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            expected_s = pd.read_csv(os.path.join(path, "S.csv"), index_col=0)
+            S = problem["S"]
+            expected_s = expected_s.loc[S.index, :]
+            expected_s = expected_s.loc[:, S.columns]
+            self.assertTrue(S.equals(expected_s))
 
-        print(problem["b"])
-        expected_b = DataFrame({
-            'target': [30.0, 0.75],
-            'lb': [25.0, 0.5],
-            'ub': [35.0, 1.0],
-            'confidence_score': [1.0, 1.0],
-        }, index=[
-            "Measure_1",
-            "Measure_2"
-        ]
-        )
-        self.assertTrue(problem["b"].equals(expected_b))
+            # Test C
+            # print(problem["C"])
+            expected_c = pd.read_csv(os.path.join(path, "C.csv"), index_col=0)
+            self.assertTrue(problem["C"].equals(expected_c))
+
+            # Test b
+            # print(problem["b"])
+            expected_b = pd.read_csv(os.path.join(path, "b.csv"), index_col=0)
+            self.assertTrue(problem["b"].equals(expected_b))
+
+            # Test r
+            # print(problem["r"])
+            # problem["r"].to_csv(os.path.join(path, "r.csv"))
+            expected_r = pd.read_csv(os.path.join(path, "r.csv"), index_col=0)
+            self.assertTrue(problem["r"].equals(expected_r))
+
+        do_test("small_context")
+        do_test("small_context_with_metpool")
 
     def test_toy_twin(self):
         return
@@ -104,11 +90,11 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "toy.json")),
-            ConfigParams()
+            {}
         )
         ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "toy_context.json")),
-            ConfigParams()
+            {}
         )
         twin = Twin()
         twin.add_network(net)

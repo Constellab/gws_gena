@@ -3,27 +3,11 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, Experiment, File, IExperiment, ProcessSpec,
-                      Protocol, Settings, protocol_decorator)
+from gws_core import (ConfigParams, Experiment, File,
+                      Settings, TaskRunner)
 from gws_gena import Context, Network, NetworkImporter, NetworkMerger, Twin
 
 settings = Settings.get_instance()
-
-
-@protocol_decorator("MergerProtocol")
-class MergerProtocol(Protocol):
-    def configure_protocol(self) -> None:
-        loader_1: ProcessSpec = self.add_process(NetworkImporter, 'loader_1')
-        loader_2: ProcessSpec = self.add_process(NetworkImporter, 'loader_2')
-        merger: ProcessSpec = self.add_process(NetworkMerger, 'merger')
-
-        self.add_connectors([
-            (loader_1 >> "target", merger << "network_1"),
-            (loader_2 >> "target", merger << "network_2")
-        ])
-
-        self.add_interface('file1', loader_1, 'source')
-        self.add_interface('file2', loader_2, 'source')
 
 
 class TestMerge(BaseTestCaseUsingFullBiotaDB):
@@ -31,26 +15,23 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
     def test_merger(self):
         self.print("Test Merger")
 
-        experiment = IExperiment(MergerProtocol)
-        proto = experiment.get_protocol()
-        merger = proto.get_process("merger")
-
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         file1 = File(path=os.path.join(data_dir, "network_merger", "net1.json"))
         file2 = File(path=os.path.join(data_dir, "network_merger", "net2.json"))
-        proto.set_input('file1', file1)
-        proto.set_input('file2', file2)
 
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
-        result_dir = os.path.join(data_dir, "network_merger")
-
-        experiment.run()
-        net_merged = merger.get_output("network")
-
-        net1 = NetworkImporter.call(file1, ConfigParams())
-        net2 = NetworkImporter.call(file2, ConfigParams())
+        net1 = NetworkImporter.call(file1, {})
+        net2 = NetworkImporter.call(file2, {})
         n1 = len(net1.reactions)
         n2 = len(net2.reactions)
+
+        tester = TaskRunner(
+            params={},
+            inputs={"network_1": net1, "network_2": net2},
+            task_type=NetworkMerger
+        )
+        outputs = tester.run()
+        net_merged = outputs["network"]
+
         n_total = len(net_merged.reactions)
         self.assertEqual(n_total, n1+n2)
 

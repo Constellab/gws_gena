@@ -1,13 +1,12 @@
 {
     "id": "Bastinn and Provost, 2004", 
-    "measures": [
+    "reaction_data": [
         {
             "id": "Glucose_ex",
             "name": "Glucose ex",
             "variables": [
                 {
                     "reference_id": "v1",
-                    "reference_type": "reaction",
                     "coefficient": -1.0
                 }
             ],
@@ -22,7 +21,6 @@
             "variables": [
                 {
                     "reference_id": "v16",
-                    "reference_type": "reaction",
                     "coefficient": -1.0
                 }
             ],
@@ -37,7 +35,6 @@
             "variables": [
                 {
                     "reference_id": "v6",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],
@@ -52,12 +49,10 @@
             "variables": [
                 {
                     "reference_id": "v15",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 },
                 {
                     "reference_id": "v16",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],
@@ -72,7 +67,6 @@
             "variables": [
                 {
                     "reference_id": "v7",
-                    "reference_type": "reaction",
                     "coefficient": 1.0
                 }
             ],

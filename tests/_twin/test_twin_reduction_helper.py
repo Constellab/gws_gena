@@ -6,7 +6,7 @@ import unittest
 import numpy
 import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, GTest, Settings
+from gws_core import File, GTest, Settings
 from gws_gena import (Context, ContextImporter, FlatTwin, Network,
                       NetworkImporter, Twin, TwinHelper)
 from pandas import DataFrame
@@ -23,11 +23,11 @@ class TestTwinReductionHelper(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "bastin_network.json")),
-            ConfigParams()
+            {}
         )
         ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "bastin_context_reduce.json")),
-            ConfigParams()
+            {}
         )
 
         twin = Twin()

@@ -97,10 +97,10 @@ class FBA(Task):
 
         number_of_simulations = params["number_of_simulations"]
         #If number_of_simulations is not provided, keep all the simulations
-        number_of_simulations = next((len(measure.target) for _, measure in context.measures.items()), None)
+        number_of_simulations = next((len(measure.target) for _, measure in context.reaction_data.items()), None)
 
         # check the length of the values
-        for name_measure, measure in context.measures.items():
+        for name_measure, measure in context.reaction_data.items():
             if (len(measure.target) < number_of_simulations):
                 raise Exception(
                     "The number of target values must be at least equal to the number of simulations. For " +

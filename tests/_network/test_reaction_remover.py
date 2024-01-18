@@ -18,10 +18,10 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
             File(
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
-            params=ConfigParams())
+            params={})
         table = ECTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "ec_table.csv")),
-            params=ConfigParams())
+            params={})
 
         tester = TaskRunner(
             params={},
@@ -33,7 +33,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
 
         original_net = NetworkImporter.call(
             File(path=os.path.join(data_dir,  "reaction_remover", "toy_with_added_reactions.json")),
-            params=ConfigParams()
+            params={}
         )
 
         self.assertEqual(len(net.reactions), 7)
@@ -49,10 +49,10 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
             File(
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
-            params=ConfigParams())
+            params={})
         table = EntityIDTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "id_table.csv")),
-            params=ConfigParams({'id_column': 'ids'}))
+            params={'id_column': 'ids'})
 
         tester = TaskRunner(
             params={},
@@ -65,7 +65,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
 
         original_net = NetworkImporter.call(
             File(path=os.path.join(data_dir,  "reaction_remover", "toy_with_added_reactions.json")),
-            params=ConfigParams()
+            params={}
         )
 
         # self.assertEqual(len(net.reactions), 7)

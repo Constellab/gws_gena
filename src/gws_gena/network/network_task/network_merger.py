@@ -33,5 +33,5 @@ class NetworkMerger(Task):
 
         merger_helper = NetworkMergerHelper()
         merger_helper.attach_task(self)
-        merger_helper.merge(destination_network=net1, source_network=net2, inplace=True)
-        return {'network': net1}
+        net = merger_helper.merge(destination_network=net1, source_network=net2)
+        return {'network': net}

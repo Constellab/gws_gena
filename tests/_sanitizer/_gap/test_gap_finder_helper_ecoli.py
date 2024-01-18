@@ -15,7 +15,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(organism_dir, f"ecoli.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            ConfigParams()
+            {}
         )
 
         helper = GapFinderHelper()
@@ -30,7 +30,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(organism_dir, "./gaps/ecoli_without_AKGDH.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            ConfigParams()
+            {}
         )
 
         helper = GapFinderHelper()

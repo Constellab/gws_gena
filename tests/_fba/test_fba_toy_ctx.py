@@ -3,7 +3,7 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, IExperiment, Settings, TaskRunner
+from gws_core import File, IExperiment, Settings, TaskRunner
 from gws_gena import (ContextBuilder, FBAProto, FluxTableImporter,
                       NetworkImporter)
 
@@ -19,8 +19,8 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
         def run_fba(ctx_name, solver="highs", relax_qssa=False):
             file_path = os.path.join(data_dir, "ctx_data", f"{ctx_name}.csv")
-            flux_data = FluxTableImporter.call(File(path=file_path), params=ConfigParams({"delimiter": ","}))
-            net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params=ConfigParams())
+            flux_data = FluxTableImporter.call(File(path=file_path), params={"delimiter": ","})
+            net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params={})
 
             # build context
             tester = TaskRunner(

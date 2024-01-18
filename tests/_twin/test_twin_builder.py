@@ -2,7 +2,7 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_core import File, Settings, TaskRunner
 from gws_gena import ContextImporter, NetworkImporter, Twin, TwinBuilder
 
 settings = Settings.get_instance()
@@ -18,12 +18,12 @@ class TestTwinBuilder(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "small_net.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams()
+            params={}
         )
         file_path = os.path.join(data_dir, "small_context.json")
         ctx = ContextImporter.call(
             File(path=file_path),
-            params=ConfigParams()
+            params={}
         )
 
         twin = Twin()

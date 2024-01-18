@@ -22,6 +22,7 @@ from ..twin.flat_twin import FlatTwin
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
 from .fva_result import FVAResult
+from ..twin.helper.twin_helper import TwinHelper
 
 
 def _do_parallel_loop(kwargs):
@@ -133,6 +134,10 @@ class FVA(Task):
         if relax_qssa and solver != "quad":
             self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
+
+        # we run only one FBA
+        self.log_info_message("Run a single FVA using the first context value")
+        twin = TwinHelper.build_twin_from_sub_context(self, twin, 0)
 
         if isinstance(twin, FlatTwin):
             flat_twin = twin

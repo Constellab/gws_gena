@@ -16,11 +16,11 @@ class TestIsolateFinder(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "ecoli.json")),
-            ConfigParams()
+            {}
         )
 
         tester = TaskRunner(
-            params=ConfigParams({}),
+            params={},
             inputs={"network": net},
             task_type=IsolateFinder
         )
@@ -36,11 +36,11 @@ class TestIsolateFinder(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "pcys.json")),
-            ConfigParams()
+            {}
         )
 
         tester = TaskRunner(
-            params=ConfigParams({}),
+            params={},
             inputs={"network": net},
             task_type=IsolateFinder
         )

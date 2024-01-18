@@ -225,7 +225,7 @@
     ],
     "contexts": [
         {
-            "measures": [
+            "reaction_data": [
                 {
                     "id": "Measure_1",
                     "name": "Measure_1",
@@ -236,7 +236,6 @@
                     "variables": [
                         {
                             "reference_id": "small_cell_EX_glc_D_e",
-                            "reference_type": "reaction",
                             "coefficient": 1.0
                         }
                     ]
@@ -251,12 +250,10 @@
                     "variables": [
                         {
                             "reference_id": "small_cell_EX_glc_D_e",
-                            "reference_type": "reaction",
                             "coefficient": 1.0
                         },
                         {
                             "reference_id": "small_cell_GLNabc",
-                            "reference_type": "reaction",
                             "coefficient": 2.0
                         }
                     ]

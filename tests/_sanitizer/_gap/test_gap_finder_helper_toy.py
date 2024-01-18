@@ -22,7 +22,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams()
+            params={}
         )
 
         helper = GapFinderHelper()
@@ -41,7 +41,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy_network.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams()
+            params={}
         )
 
         helper = GapFinderHelper()
@@ -59,7 +59,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy_with_orphan.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params=ConfigParams()
+            params={}
         )
 
         helper = GapFinderHelper()

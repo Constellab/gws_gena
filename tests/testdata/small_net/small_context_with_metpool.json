@@ -1,5 +1,5 @@
 {
-    "pathway_id": "toy", 
+    "pathway_id": "toy",
     "reaction_data": [
         {
             "id": "Measure_1",
@@ -26,6 +26,22 @@
                 {
                     "reference_id": "GLNabc",
                     "coefficient": 2.0
+                }
+            ],
+            "lower_bound": 0.5,
+            "upper_bound": 1.0,
+            "target": 0.75,
+            "confidence_score": 1.0
+        }
+    ],
+    "compound_data": [
+        {
+            "id": "Measure_3",
+            "name": "Measure_3",
+            "variables": [
+                {
+                    "reference_id": "gln_L_c",
+                    "coefficient": 1.0
                 }
             ],
             "lower_bound": 0.5,

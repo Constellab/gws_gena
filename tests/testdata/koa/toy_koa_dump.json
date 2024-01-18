@@ -561,8 +561,5 @@
             "description": "Simulation after knockout of reaction(s): ['toy_cell_R1']"
         }
     ],
-    "recon_tags": {
-        "reactions": {},
-        "compounds": {}
-    }
+    "recon_tags": {}
 }

@@ -1,5 +1,4 @@
 import re
-
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -32,7 +31,7 @@ class PlotFluxTableAnalysis(Task):
                               'file_modified_reactions':  InputSpec(File)})
 
     output_specs = OutputSpecs({'plot': OutputSpec(PlotlyResource),
-                                'table_changement': OutputSpec(Table)})
+                                'table_changes': OutputSpec(Table)})
 
     config_specs = {'name_condition1': StrParam(short_description="Name of the condition 1"),
                     'name_condition2': StrParam(short_description="Name of the condition 2"),
@@ -73,15 +72,20 @@ class PlotFluxTableAnalysis(Task):
         flux_condition2['reaction'] = flux_condition2['reaction'].str.replace(re.escape(pattern), '')
 
         # We create the dataframe
-        columns_changements = ("Tag", "Reaction", "flux_" + name_condition1, "flux_" + name_condition2)
-        table_changements = pd.DataFrame(columns=columns_changements)
+        columns_changes = ("Tag", "Reaction", "flux_" + name_condition1, "flux_" + name_condition2)
+        table_changes = pd.DataFrame(columns=columns_changes)
 
-        for i in range(0, len(flux_condition1["value"])-1):
+        # for i in range (0, len(flux_condition1["value"])-1):
+        for i in range(0, len(flux_condition1["value"])):
             flux_condition1_value = flux_condition1["value"][i]
             flux_condition2_value = flux_condition2["value"][i]
             reaction_id = flux_condition1["reaction"][i]
             # We compute the fold change
-            fold_change = np.log2(flux_condition2_value/flux_condition1_value)
+            lin_fc = flux_condition2_value/flux_condition1_value
+            if lin_fc > 0:
+                fold_change = np.log2(lin_fc)
+            else:
+                fold_change = np.NAN
 
             # We tag each reaction depending the fluxes values
             if reaction_id in list_reactions_modified[column_reaction_id].values:
@@ -114,15 +118,11 @@ class PlotFluxTableAnalysis(Task):
 
             row = pd.DataFrame(
                 [[tag, reaction_id, flux_condition1_value, flux_condition2_value]],
-                columns=columns_changements)
-            table_changements = pd.concat([table_changements, row])
-
-        # Write the output file in the target folder
-        result_path = "table_changements.csv"
-        table_changements.to_csv(result_path, index=False)
+                columns=columns_changes)
+            table_changes = pd.concat([table_changes, row])
 
         # PLOT
-        source = Table(table_changements).get_data()
+        source = Table(table_changes).get_data()
         # Scatter plot
         target = px.scatter(source, x="flux_" + name_condition1, y="flux_" + name_condition2,
                             color='Tag', log_x=log_x, log_y=log_y)
@@ -144,7 +144,7 @@ class PlotFluxTableAnalysis(Task):
 
         # Create annotation for each Tag count
         annotations = []
-        for i, (tag, count) in enumerate(tag_counts.iteritems()):
+        for i, (tag, count) in enumerate(tag_counts.items()):
             annotations.append(go.layout.Annotation(
                 x=max_val,
                 y=len(tag_counts) - i,
@@ -163,4 +163,4 @@ class PlotFluxTableAnalysis(Task):
         )
 
         return {'plot': PlotlyResource(target),
-                'table_changement': Table(table_changements)}
+                'table_changes': Table(table_changes)}
