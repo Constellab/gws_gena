@@ -33,11 +33,11 @@ class ContextBuilder(Task):
 
     """
 
-    input_specs = {
+    input_specs = InputSpecs({
         'network': InputSpec(Network),
         'flux_table': InputSpec(FluxTable, human_name="Flux table", is_optional=True),
-        'pheno_table': InputSpec(PhenotypeTable, human_name="Phenotype table", is_optional=True)}
-    output_specs = {'context': OutputSpec(Context)}
+        'pheno_table': InputSpec(PhenotypeTable, human_name="Phenotype table", is_optional=True)})
+    output_specs = OutputSpecs({'context': OutputSpec(Context)})
     config_specs = {}
 
     def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
