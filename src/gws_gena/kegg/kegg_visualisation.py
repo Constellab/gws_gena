@@ -49,8 +49,10 @@ class KEGGVisualisation(Task):
     })
     config_specs = {
             'genes_database': StrParam(
-            default_value="entrez", allowed_values=["entrez"], #TODO: add the possibility to put ensembl genes
+            default_value="entrez", allowed_values=["entrez","ensembl"],
             human_name="Genes Database", short_description="The database of the genes."),
+            'organism': StrParam(
+            human_name="Organism", optional = True, short_description="If genes are ensembl genes, please provide the organism studied."),
             'specie': StrParam(
             human_name="Specie", short_description="The specie studied."),
             'email': StrParam(
@@ -70,7 +72,29 @@ class KEGGVisualisation(Task):
         if (specie not in allowed_organisms["kegg.code"].values):
             raise Exception("The specie provided doesn't correspond to a kegg.code allowed. You can find the list of allowed values attached to this story: https://constellab.community/stories/e330483b-5b9e-452c-b5a4-f6b62506c9ad/how-to-visualise-a-kegg-pathway-using-constellab#introduction")
 
+
         ## Search all pathways where genes are evolved ##
+        if (genes_database == "ensembl"):
+            organism = params['organism']
+            #Run script R to translate gene ensembl to entrez genes names
+            cmd = f"Rscript --vanilla /lab/user/bricks/gws_gena/src/gws_gena/kegg/translate_ensembl_to_entrez.R {list_genes.path} {organism}"
+
+            shell_proxy: ShellProxy = KeggREnvHelper.create_proxy(self.message_dispatcher)
+            self.log_info_message('Translate gene ensembl to entrez genes names')
+            result = shell_proxy.run(cmd, shell_mode=True)
+
+            if result != 0:
+                raise Exception("An error occured during the execution of the script to translate ensembl genes into entrez genes.")
+
+            # Loop through the working directory and retrieve the list converted
+            self.log_info_message('Retrieve list of genes translated')
+            for filename in os.listdir(shell_proxy.working_dir):
+                file_path = os.path.join(shell_proxy.working_dir, filename)
+                if os.path.isfile(file_path):
+                    if filename.endswith("gene_entrez.csv"):
+                        list_genes = File(file_path)
+
+
         data = pd.read_csv(list_genes.path, header=0, index_col=0)
         #transform int data into str data
         list_gene_entrez = list(map(str, data.index))
@@ -116,7 +140,7 @@ class KEGGVisualisation(Task):
         result = shell_proxy.run(cmd, shell_mode=True)
 
         if result != 0:
-            raise Exception("An error occured during the execution of the script.")
+            raise Exception("An error occured during the execution of the script using pathview.")
 
         # Loop through the working directory and add files to the resource set
         self.log_info_message('Prepare output')

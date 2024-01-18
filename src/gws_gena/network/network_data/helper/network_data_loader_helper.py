@@ -424,6 +424,18 @@ class NetworkDataLoaderHelper(BaseHelper):
             for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
                 if rxn_data["id"].startswith(pref):
                     to_keep = False
+                    #Constraint the reaction after TO DO  : make an function  + faire que pour les reactions avec le préfixe EX_
+                    lower_bound = rxn_data["lower_bound"]
+                    upper_bound = rxn_data["upper_bound"]
+                    target_metabolite = next(iter(rxn_data["metabolites"]))
+                    for reaction in data["reactions"]:
+                        if (target_metabolite == "h_e"):
+                            break
+                        if target_metabolite in reaction["metabolites"] and reaction != rxn_data:
+                                for rea in data["reactions"]:
+                                    if (rea == reaction):
+                                        rea["lower_bound"] = lower_bound
+                                        rea["upper_bound"] = upper_bound
                     break
             if to_keep:
                 list_to_keep.append(i)
