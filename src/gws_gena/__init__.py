@@ -1,4 +1,8 @@
 
+# cobra
+from .cobra.cobra_smart_task.json_cobra_smart import SmartCobra
+from .cobra.conversion_annotation.conversion_annotation import ConvertAnnotation
+from .cobra.network_convert.convert_xml_to_json import ConvertXmlToJson
 # context
 from .context.context import Context
 from .context.context_builder import ContextBuilder
@@ -22,6 +26,8 @@ from .fba.fba_helper.fba_helper import FBAHelper
 # fva
 from .fva.fva import FVA
 from .fva.fva_result import FVAResult
+# kegg
+from .kegg.kegg_visualisation import KEGGVisualisation
 # KnockOut
 from .koa.koa import KOA
 from .koa.koa_result import KOAResult
@@ -60,7 +66,7 @@ from .recon.helper.recon_helper import ReconHelper
 from .recon.recon import DraftRecon
 # reduction
 from .reduction.twin_efm_table import TwinEFMTable
-from .reduction.twin_reducer import TwinReducer
+from .reduction.twin_reducer_deprecated import TwinReducer
 from .reduction.twin_reduction_table import TwinReductionTable
 # sanitizer
 from .sanitizer.gap.gap_filler import GapFiller

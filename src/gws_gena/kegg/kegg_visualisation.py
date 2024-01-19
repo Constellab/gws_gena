@@ -33,6 +33,9 @@ class KEGGVisualisation(Task):
 
     For the specie, you need to provide the kegg.code. You can find the list of allowed values attached to this story: https://constellab.community/stories/e330483b-5b9e-452c-b5a4-f6b62506c9ad/how-to-visualise-a-kegg-pathway-using-constellab#introduction
 
+    Organism names are constructed by concatenating the first letter of the name and the family name. Example: human - 'hsapiens', mouse - 'mmusculus'.
+    You can find the complete list here: https://biit.cs.ut.ee/gprofiler/page/organism-list
+
     Be aware that this task can take some time, especially the first time, as a virtual environment has to be installed, and also depending on the length of the genes provided, it can take more time.
 
     KEGG is a database resource for understanding high-level functions and utilities of the biological system.
@@ -52,7 +55,7 @@ class KEGGVisualisation(Task):
             default_value="entrez", allowed_values=["entrez","ensembl"],
             human_name="Genes Database", short_description="The database of the genes."),
             'organism': StrParam(
-            human_name="Organism", optional = True, short_description="If genes are ensembl genes, please provide the organism studied."),
+            human_name="Organism", optional = True, short_description="If genes are ensembl genes, please provide the organism studied (see documentation)"),
             'specie': StrParam(
             human_name="Specie", short_description="The specie studied."),
             'email': StrParam(
