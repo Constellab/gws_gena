@@ -316,12 +316,10 @@ class NetworkDataLoaderHelper(BaseHelper):
         out_data = copy.deepcopy(data)
         out_data = self._remove_ignored_reactions(out_data)
 
-        out_data["compartments"] = {}
         # prepare compartment
-
         if isinstance(data["compartments"], dict):
             # -> is bigg data
-            for bigg_id in data["compartments"].keys():
+            for bigg_id in out_data["compartments"].keys():
                 compart = Compartment.from_biota(bigg_id=bigg_id)
                 if compart is None:
                     if replace_unknown_compartments:
@@ -346,6 +344,7 @@ class NetworkDataLoaderHelper(BaseHelper):
                 "name": biomass_compart.name
             }
         elif isinstance(data["compartments"], list):
+            out_data["compartments"] = {}
             for compart_data in data["compartments"]:
                 id_ = compart_data["id"]
                 out_data["compartments"][id_] = compart_data
@@ -423,20 +422,34 @@ class NetworkDataLoaderHelper(BaseHelper):
             to_keep = True
             for pref in self.BIGG_REACTION_PREFIX_TO_IGNORE:
                 if rxn_data["id"].startswith(pref):
-                    to_keep = False
-                    #Constraint the reaction after TO DO  : make an function  + faire que pour les reactions avec le préfixe EX_
-                    lower_bound = rxn_data["lower_bound"]
-                    upper_bound = rxn_data["upper_bound"]
-                    target_metabolite = next(iter(rxn_data["metabolites"]))
-                    for reaction in data["reactions"]:
-                        if (target_metabolite == "h_e"):
-                            break
-                        if target_metabolite in reaction["metabolites"] and reaction != rxn_data:
-                                for rea in data["reactions"]:
-                                    if (rea == reaction):
-                                        rea["lower_bound"] = lower_bound
-                                        rea["upper_bound"] = upper_bound
-                    break
+                    if pref == "EX_":
+                        #Constraint the reaction after TO DO  : make an function  + faire que pour les reactions avec le préfixe EX_
+                        #lower_bound = rxn_data["lower_bound"]
+                        #upper_bound = rxn_data["upper_bound"]
+                        #target_metabolite = next(iter(rxn_data["metabolites"]))
+                        #for reaction in data["reactions"]:
+                        #    if (target_metabolite == "h_e"):
+                        #        break
+                        #    if target_metabolite in reaction["metabolites"] and reaction != rxn_data:
+                        #            for rea in data["reactions"]:
+                        #                if (rea == reaction):
+                        #                    rea["lower_bound"] = lower_bound
+                        #                    rea["upper_bound"] = upper_bound
+                        metabolite = next(iter(rxn_data["metabolites"]))
+                        #Add compartment environment
+                        if isinstance(data["compartments"], dict):  #If there is the first loading
+                            data["compartments"].update({"env" : "extracellular region (environment)"})
+                            #Create a new metabolite with the suffix "_env"
+                            new_metabolite = metabolite.split("_e")[0] + "_env"
+                            #Add this metabolite in the model
+                            data["metabolites"].append({'id': new_metabolite, 'compartment' : 'env' })
+                            #Add this metabolite to the reaction EX_
+                            rxn_data["metabolites"].update({new_metabolite: 1.0})
+
+
+                    else:
+                        to_keep = False
+                        break
             if to_keep:
                 list_to_keep.append(i)
 
