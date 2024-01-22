@@ -41,10 +41,6 @@
           {
             "name": "networkx",
             "version": "2.8.8"
-          },
-          {
-            "name": "cobra",
-            "version": "0.26.3"
           }
         ]
       },

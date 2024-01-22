@@ -1,6 +1,5 @@
 
 # cobra
-from .cobra.cobra_smart_task.json_cobra_smart import SmartCobra
 from .cobra.conversion_annotation.conversion_annotation import ConvertAnnotation
 from .cobra.network_convert.convert_xml_to_json import ConvertXmlToJson
 # context

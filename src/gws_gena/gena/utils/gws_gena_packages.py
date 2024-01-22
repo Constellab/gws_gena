@@ -9,5 +9,3 @@ class GwsGenaPackages():
     CVXPY = "cvxpy"
     EFMTOOL = "efmtool"
     NETWORKX = "networkx"
-    COBRA = "cobra"
-    
