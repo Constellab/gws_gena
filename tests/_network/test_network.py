@@ -33,7 +33,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(net.compounds["glc_D_e"].id, "glc_D_e")
         self.assertEqual(net.compounds["glc_D_e"].name, "D-Glucose")
         self.assertEqual(net.compounds["glc_D_e"].compartment.id, "e")
-        self.assertEqual(net.compounds["glc_D_e"].compartment.is_steady, False)
+        self.assertEqual(net.compounds["glc_D_e"].compartment.is_steady, True)
         self.assertEqual(net.compounds["atp_c"].id, "atp_c")
         self.assertEqual(net.compounds["atp_c"].name, "ATP C10H12N5O13P3")
         self.assertEqual(net.compounds["atp_c"].compartment.id, "c")
@@ -69,10 +69,10 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         print("--> S_intra")
         print(stoich_in)
         expected_s_in = DataFrame({
-            'glc_D_transport': [1.0, 0.0, 0.0, 0.0],
-            'GLNabc': [0.0, 1.0, -1.0, 1.0],
-            'biomass': [-1.0, 0.0, 0.0, 0.0],
-        }, index=["glc_D_c", "adp_c", "atp_c", "gln_L_c"])
+            'glc_D_transport': [-1.0,1.0, 0.0, 0.0, 0.0, 0.0],
+            'GLNabc': [0.0, 0.0, 1.0, -1.0, 1.0, -1.0],
+            'biomass': [0.0,-1.0, 0.0, 0.0, 0.0, 0.0],
+        }, index=["glc_D_e", "glc_D_c", "adp_c", "atp_c", "gln_L_c", "gln_L_e"])
 
         expected_s_in = expected_s_in.loc[stoich_in.index, :]
         expected_s_in = expected_s_in.loc[:, stoich_in.columns]
@@ -83,10 +83,10 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         print("--> S_extra")
         print(stoich_ex)
         expected_s_ex = DataFrame({
-            'glc_D_transport': [-1.0, 0.0, 0.0],
-            'GLNabc': [0.0, -1.0, 0.0],
-            'biomass': [0.0, 0.0, 1.0],
-        }, index=["glc_D_e", "gln_L_e", "biomass_b"])
+            'glc_D_transport': [0.0],
+            'GLNabc': [0.0],
+            'biomass': [1.0],
+        }, index=["biomass_b"])
 
         expected_s_ex = expected_s_ex.loc[stoich_ex.index, :]
         expected_s_ex = expected_s_ex.loc[:, stoich_ex.columns]
@@ -103,9 +103,12 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
             params={}
         )
 
-        self.print("ecoli successffuly imported - skip exchange reactions")
-        self.assertEqual(len(net.compounds), 73)
-        self.assertEqual(len(net.reactions), 75)
+        self.print("ecoli successffuly imported")
+        self.assertEqual(len(net.compounds), 93)
+        self.assertEqual(net.compounds["o2_env"].compartment.id, "env")
+        self.assertEqual(net.compounds["o2_env"].compartment.is_steady, False)
+        self.assertEqual(len(net.reactions), 95)
+        self.assertEqual(net.reactions["EX_o2_e"].id, "EX_o2_e")
 
         # with open(os.path.join(data_dir, './build/', 'ecoli_dump.json'), 'w', encoding="utf-8") as fp:
         #     data = net.dumps()
@@ -116,6 +119,6 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
             File(path=file_path),
             params={}
         )
-        self.print("ecoli successffuly imported - skip exchange reactions")
-        self.assertEqual(len(net.compounds), 73)
-        self.assertEqual(len(net.reactions), 75)
+        self.print("ecoli successffuly imported")
+        self.assertEqual(len(net.compounds), 93)
+        self.assertEqual(len(net.reactions), 95)

@@ -1,13 +1,13 @@
 import json
 
-from gws_gena.network.network_task.convert_xml_to_json import ConvertXmlToJson
+from gws_gena.cobra.network_convert.convert_xml_to_json import ConvertXmlToJson
 from gws_core import (File,TaskRunner)
 from gws_core import BaseTestCase
 
 class TestConvertXmlToJson(BaseTestCase):
     def test_convert_xml_to_json(self):
         #create a xml model :
-        xml_model = "/lab/user/bricks/gws_gena/tests/testdata/network_convert/e_coli_core.xml"
+        xml_model = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/e_coli_core.xml"
         xml_model = File(xml_model)
 
         #create the TaskRunner
@@ -20,7 +20,7 @@ class TestConvertXmlToJson(BaseTestCase):
         model_output_xml : File = outputs_xml['output_json_file']
 
         #import the expected model to compare it to the TaskRunner result.
-        expected_model_xml = "/lab/user/bricks/gws_gena/tests/testdata/network_convert/model_xml.json"
+        expected_model_xml = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/model_xml.json"
 
         #Compare the two model using an assert function :
         with open(model_output_xml.path, 'r', encoding="utf-8") as model:
@@ -35,7 +35,7 @@ class TestConvertXmlToJson(BaseTestCase):
 
     def test_convert_mat_to_json(self):
         #create a mat model :
-        mat_model = "/lab/user/bricks/gws_gena/tests/testdata/network_convert/e_coli_core.mat"
+        mat_model = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/e_coli_core.mat"
         mat_model = File(mat_model)
 
         #create the TaskRunner
@@ -49,7 +49,7 @@ class TestConvertXmlToJson(BaseTestCase):
         model_output_mat : File = outputs_mat['output_json_file']
 
         #import the expected model to compare it to the TaskRunner result.
-        expected_model_mat = "/lab/user/bricks/gws_gena/tests/testdata/network_convert/model_mat.json"
+        expected_model_mat = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/model_mat.json"
 
         #Compare the two model using an assert function :
         with open(model_output_mat.path, 'r', encoding="utf-8") as model:
