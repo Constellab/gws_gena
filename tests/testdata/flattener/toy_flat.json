@@ -394,7 +394,7 @@
                     "go_id": "GO:0005615",
                     "bigg_id": "e",
                     "color": "#ef66f0",
-                    "name": "extracellular space",
+                    "name": "extracellular space (theoretical supernatant)",
                     "network_name": "toy_cell"
                 }
             ]

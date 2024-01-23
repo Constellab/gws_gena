@@ -51,4 +51,4 @@ class TestPlotFluxTableAnalysis(BaseTestCase):
         expected_table = expected_table.reset_index(drop=True)
         expected_table = expected_table.to_dict()
         table_output_flux_analysis = table_output_flux_analysis.to_dict()
-        self.assertEqual(table_output_flux_analysis, expected_table)
+        self.assertDictEqual(table_output_flux_analysis, expected_table)

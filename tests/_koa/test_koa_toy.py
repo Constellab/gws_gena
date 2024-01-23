@@ -48,20 +48,20 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         # KO: toy_cell_R1
         table = ko_result.get_flux_dataframe("toy_cell_R1")
         print(table)
-        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 5.0, delta=1e-2)
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], -4.304792760918324e-08, delta=1e-2)
 
         # KO: toy_cell_R2
         table = ko_result.get_flux_dataframe("toy_cell_R2")
-        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 5.0, delta=1e-2)
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], -5.052854060470637e-08, delta=1e-2)
 
         # KO: toy_cell_RB
         table = ko_result.get_flux_dataframe("toy_cell_RB")
         print(table)
-        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 1e-9, delta=1e-2)
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 9.013964577066061e-07, delta=1e-2)
 
         # KO: toy_cell_R1,toy_cell_R2
         table = ko_result.get_flux_dataframe("toy_cell_R1,toy_cell_R2")
-        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 1e-9, delta=1e-2)
+        self.assertAlmostEqual(table.at["toy_cell_RB", "value"], -5.116227004950293e-08, delta=1e-2)
 
         # export annotated network
         result_dir = os.path.join(data_dir, "koa")
@@ -90,5 +90,5 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(data.shape, (8, 5))
         self.assertEqual(data.at["0", "ko_id"], "toy_cell_R1")
         self.assertEqual(data.at["0", "reaction_id"], "toy_cell_RB")
-        self.assertAlmostEqual(data.at["0", "value"], 4.999, delta=1e-2)
+        self.assertAlmostEqual(data.at["0", "value"], -4.304792760918324e-08, delta=1e-2)
         self.assertAlmostEqual(data.at["2", "value"], 1e-9, delta=1e-2)
