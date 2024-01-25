@@ -18,8 +18,7 @@ from .twin_reduction_table import TwinReductionTable
 
 
 
-@task_decorator("TwinReducer",human_name="Twin reducer", short_description="Perform model reduction based on a digital twin",
-                deprecated_since="0.5.5", deprecated_message="Please do not use this task anymore.")
+@task_decorator("TwinReducer",human_name="Twin reducer", short_description="Perform model reduction based on a digital twin")
 class TwinReducer(Task):
     """
     Class digital twin reduction

@@ -30,22 +30,22 @@
         {
             "id": "X1_e",
             "name": "X1_e",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "X2_e",
             "name": "X2_e",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "X4_e",
             "name": "X4_e",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "X5_e",
             "name": "X5_e",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "XB_b",
@@ -129,7 +129,7 @@
     ],
     "compartments": {
         "c": "cytosol",
-        "e": "extracellular",
+        "env": "extracellular region (environment)",
         "n": "nucleus",
         "b": "biomass"
     }

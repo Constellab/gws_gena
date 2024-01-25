@@ -65,7 +65,7 @@ from .recon.helper.recon_helper import ReconHelper
 from .recon.recon import DraftRecon
 # reduction
 from .reduction.twin_efm_table import TwinEFMTable
-from .reduction.twin_reducer_deprecated import TwinReducer
+from .reduction.twin_reducer import TwinReducer
 from .reduction.twin_reduction_table import TwinReductionTable
 # sanitizer
 from .sanitizer.gap.gap_filler import GapFiller

@@ -79,19 +79,15 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             #     data = net.dumps()
             #     json.dump(data, fp, indent=4)
 
-        #quad
-        self.print(f"Test FBAProto: Small network (toy + context + quad + relax=True)")
-        run_fba(context=True, solver="quad", relax_qssa=True, parsimony_strength=1.0)
+        # highs
+        for context in [True]:
+            self.print(f"Test FBAProto: Small network (toy + context={context} + linprog)")
+            run_fba(context=context, solver="highs")
 
-        # highs -> problem infeasible
-        #for context in [True]:
-        #    self.print(f"Test FBAProto: Small network (toy + context={context} + linprog)")
-        #    run_fba(context=context, solver="highs")
-
-        # quad -> problem infeasible when we don't relax
-        #for relax in [False, True]:
-        #    self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
-        #    if relax == True :
-        #        run_fba(context=True, solver="quad", relax_qssa=relax, parsimony_strength=1.0)
-        #    else:
-        #        run_fba(context=True, solver="quad", relax_qssa=relax)
+        # quad
+        for relax in [False, True]:
+            self.print(f"Test FBAProto: Small network (toy + context + quad + relax={relax})")
+            if relax == True :
+                run_fba(context=True, solver="quad", relax_qssa=relax, parsimony_strength=1.0)
+            else:
+                run_fba(context=True, solver="quad", relax_qssa=relax)
