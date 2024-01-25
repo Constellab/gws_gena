@@ -154,13 +154,23 @@ class Compartment:
 
     def is_extracellular(self) -> bool:
         """
-        Test if the compartment is intracellular
+        Test if the compartment is extracellular
 
-        : return: True if the compartment is intracellular, False otherwise
+        : return: True if the compartment is extracellular, False otherwise
         : rtype: `bool`
         """
 
         return self.go_id in [self.EXTRACELL_SPACE_GO_ID, self.EXTRACELL_REGION_GO_ID]
+
+    def is_extracellular_region_environment(self) -> bool:
+        """
+        Test if the compartment is extracellular region (environment)
+
+        : return: True if the compartment is extracellular region (environment), False otherwise
+        : rtype: `bool`
+        """
+
+        return self.go_id in [self.EXTRACELL_REGION_GO_ID]
 
     def is_cytosol(self) -> bool:
         """

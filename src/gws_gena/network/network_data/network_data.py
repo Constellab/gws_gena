@@ -377,7 +377,7 @@ class NetworkData(SerializableObjectJson):
         if not self.compound_exists(comp):
             raise BadRequestException(f"The reaction {comp.id} does not exist in the network")
 
-        if not comp.compartment.is_extracellular():
+        if not comp.compartment.is_extracellular_region_environment():
             return self.name + self.DELIMITER + comp.id
         else:
             return comp.id
@@ -399,7 +399,7 @@ class NetworkData(SerializableObjectJson):
         if not self.compartment_exists(compartment):
             raise BadRequestException(f"The compartment {compartment.id} does not exist in the network")
 
-        if not compartment.is_extracellular():
+        if not compartment.is_extracellular_region_environment():
             return SlugifyHelper.slugify_id(self.name + self.DELIMITER + compartment.id)
         else:
             return compartment.id

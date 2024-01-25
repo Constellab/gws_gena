@@ -17,7 +17,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         data_dir = os.path.join(testdata_dir, "toy")
         organism_result_dir = os.path.join(testdata_dir, 'fba', "toy_ctx")
 
-        def run_fba(ctx_name, solver="highs", relax_qssa=False):
+        def run_fba(ctx_name, solver="highs", relax_qssa=False, parsimony_strength = 0.0):
             file_path = os.path.join(data_dir, "ctx_data", f"{ctx_name}.csv")
             flux_data = FluxTableImporter.call(File(path=file_path), params={"delimiter": ","})
             net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params={})
@@ -57,8 +57,8 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
             result_dir = os.path.join(organism_result_dir, ctx_name, solver, relax_dir)
 
-            if not os.path.exists(result_dir):
-                os.makedirs(result_dir)
+            #if not os.path.exists(result_dir):
+            #    os.makedirs(result_dir)
             # # write test results in files
             # file_path = os.path.join(result_dir, "sv.csv")
             # with open(file_path, 'w', encoding="utf-8") as fp:

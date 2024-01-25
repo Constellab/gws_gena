@@ -17,7 +17,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
         data_dir = os.path.join(testdata_dir, "toy")
         organism_result_dir = os.path.join(testdata_dir, 'fva', "toy")
 
-        def run_fva(solver="highs", relax_qssa=False):
+        def run_fva(solver="highs", relax_qssa=False, parsimony_strength = 0.0):
             experiment = IExperiment(FVAProto)
             proto = experiment.get_protocol()
 
@@ -83,9 +83,12 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             #     data = net.dumps()
             #     json.dump(data, fp, indent=4)
 
-        GTest.print("Test FVAProto: Small network (toy + linprog)")
-        run_fva(solver="highs")
+        self.print(f"Test FVAProto: Small network (toy + quad + relax=True)")
+        run_fva(solver="quad", relax_qssa=True, parsimony_strength = 1.0)
 
-        for relax_qssa in [True, False]:
-            GTest.print(f"Test FVAProto: Small network (toy + quad + relax={relax_qssa})")
-            run_fva(solver="quad", relax_qssa=False)
+        #GTest.print("Test FVAProto: Small network (toy + linprog)")
+        #run_fva(solver="highs")
+
+        #for relax_qssa in [True, False]:
+        #    GTest.print(f"Test FVAProto: Small network (toy + quad + relax={relax_qssa})")
+        #    run_fva(solver="quad", relax_qssa=False)

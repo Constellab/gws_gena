@@ -106,4 +106,4 @@ class Context(Resource):
     def view_content_as_json(self, params: ConfigParams) -> JSONView:
         context_data = self.context_data
         data = context_data.dumps()
-        return JSONView(data['measures'][0:100])  # View modified to show only the 100 first values
+        return JSONView(data)
