@@ -41,6 +41,10 @@
           {
             "name": "networkx",
             "version": "2.8.8"
+          },
+          {
+            "name": "bioservices",
+            "version" : "1.11.2"
           }
         ]
       },
