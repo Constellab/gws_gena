@@ -34,6 +34,12 @@ class FBA(Task):
 
     A digital twin is a mathematical representation of the metabolic interactions involved in a living cell or microbial organism
     (e.g. animal cell, bacteria, fungus, etc.).
+
+    You need to provide your twin in the input and you can set some parameters. The most important is to choose whether you want to maximize or minimize the biomass flux.
+    Then, you can add other fluxes to optimize (fluxes to maximize and fluxes to minimize), the solver and some parameters related to the solver method.
+    The last parameter "Number of simulations" allows you to run multiple simulations of FBA using your context with multi target values.
+
+    In output you will get your twin annotated and two tables with the estimated fluxes.
     """
 
     input_specs = InputSpecs({'twin': InputSpec(Twin, human_name="Digital twin",

@@ -12,6 +12,14 @@ from ..twin.twin_builder import TwinBuilder
 @protocol_decorator("FBAProto", human_name="FBA protocol", short_description="Flux balance analysis protocol")
 class FBAProto(Protocol):
 
+    """
+    Protocol that wrapped the Twin builder and the FBA Tasks.
+
+    You can unfold this protocol to see these Tasks and the associated documentation.
+
+    You can also set the parameters directly from the dashboard of the protocol.
+    """
+
     def configure_protocol(self) -> None:
         fba: ProcessSpec = self.add_process(FBA, 'fba')
         twin_builder: ProcessSpec = self.add_process(TwinBuilder, 'twin_builder')
