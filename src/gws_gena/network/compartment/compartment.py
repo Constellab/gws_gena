@@ -143,6 +143,11 @@ class Compartment:
         return cls.from_biota(go_id=cls.EXTRACELL_SPACE_GO_ID)
 
     @ classmethod
+    def create_extracellular_region_environment_compartment(cls):
+        """ Create extracellular region (environment) compartment """
+        return cls.from_biota(go_id=cls.EXTRACELL_REGION_GO_ID)
+
+    @ classmethod
     def create_sink_compartment(cls):
         """ Create extracellular space compartment """
         return cls.from_biota(go_id=cls.SINK_GO_ID)
@@ -160,7 +165,7 @@ class Compartment:
         : rtype: `bool`
         """
 
-        return self.go_id in [self.EXTRACELL_SPACE_GO_ID, self.EXTRACELL_REGION_GO_ID]
+        return self.go_id == self.EXTRACELL_SPACE_GO_ID
 
     def is_extracellular_region_environment(self) -> bool:
         """
@@ -170,7 +175,7 @@ class Compartment:
         : rtype: `bool`
         """
 
-        return self.go_id in [self.EXTRACELL_REGION_GO_ID]
+        return self.go_id == self.EXTRACELL_REGION_GO_ID
 
     def is_cytosol(self) -> bool:
         """

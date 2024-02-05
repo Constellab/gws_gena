@@ -154,22 +154,35 @@ class ReconHelper(BaseHelper):
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
             subs = ReconHelper._retrieve_or_create_comp(
+                net, chebi_id, name, compartment=Compartment.create_extracellular_region_environment_compartment())
+            inter = ReconHelper._retrieve_or_create_comp(
                 net, chebi_id, name, compartment=Compartment.create_extracellular_compartment())
             prod = ReconHelper._retrieve_or_create_comp(
                 net, chebi_id, name, compartment=Compartment.create_cytosol_compartment())
             try:
-                rxn = Reaction(ReactionDict(id=prod.name+"_ex"))
-                rxn.add_product(prod, 1, net)
+                #reaction subs => inter
+                rxn = Reaction(ReactionDict(id=inter.name+"_env"))
+                rxn.add_product(inter, 1, net)
                 rxn.add_substrate(subs, 1, net)
                 net.add_reaction(rxn)
-                for comp in [subs, prod]:
+                for comp in [subs, inter]:
+                    net.update_compound_recon_tag(comp.id, {
+                        "id": comp.id,
+                        "is_supplemented": True
+                    })
+                #reaction inter => prod
+                rxn = Reaction(ReactionDict(id=prod.name+"_ex"))
+                rxn.add_product(prod, 1, net)
+                rxn.add_substrate(inter, 1, net)
+                net.add_reaction(rxn)
+                for comp in [inter, prod]:
                     net.update_compound_recon_tag(comp.id, {
                         "id": comp.id,
                         "is_supplemented": True
                     })
 
             except ReactionDuplicate:
-                # ... the reactoin alread exits => OK!
+                # ... the reaction already exits => OK!
                 pass
             except Exception as err:
                 raise BadRequestException(f"Cannot create culture medium reactions. Exception: {err}") from err
