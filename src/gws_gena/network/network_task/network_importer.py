@@ -15,7 +15,22 @@ from ..network import Network
 @importer_decorator("NetworkImporter", human_name="Network importer", source_type=File,
                     target_type=Network, supported_extensions=["json"])
 class NetworkImporter(ResourceImporter):
-    """ NetworkImporter """
+    """ Network Importer Task
+
+    This Task allows you to import genome-scale metabolic models in Constellab.
+    In input, provide your file and you will get a Network in output.
+
+    Be aware that in Constellab:
+        - The compartment extracellular space (theoretical supernatant) (GO:0005615) is consider at steady state.
+        - The compartment extracellular region (environment) (GO:0005576) is consider at the non-steady state.
+
+    So, if the metabolite can be consumed, you need to set its compartment to the compartment environment (GO:0005576) and create a new metabolite in the extracellular compartment (GO:0005615) and the associated reactions.
+    If the metabolite cannot be consumed, leave it in the extracellular compartment.
+
+    If your model comes from the BIGG database, you don't need to modify your model, this task will import it correctly automatically.
+
+    """
+
     config_specs: ConfigSpecs = {
         "translate_ids":
         BoolParam(

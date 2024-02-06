@@ -16,6 +16,14 @@ from ..recon.helper.recon_helper import ReconHelper
 class TransporterAdder(Task):
     """
     Transporter adder task.
+
+    This task involves adding compounds to an existing network. This can be used to add the medium compounds.
+
+    The task will add medium compounds to a network and also create associated medium reactions.
+
+    In input, provide your network and a Medium table (with the name and ChEBI ID of your metabolites).
+    In output you will get your extended network.
+
     """
 
     input_specs = InputSpecs({
