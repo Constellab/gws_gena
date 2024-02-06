@@ -16,6 +16,9 @@ class ConvertAnnotation(Task):
 
     Complete the annotation of a metabolic model thanks to internal correspondence tables.
     This task can add missing identifiers to metabolics and reactions. For metabolites, it adds ChEBI identifiers. For reactions, it can add Rhea identifiers and EC numbers.
+
+    Please provide your metabolic model in input. In output, you will get your model updated and a table summarising the changes made.
+
     """
     input_specs = InputSpecs({'input_model':  InputSpec(
         File, human_name="Model", short_description="The model to annotate")})
