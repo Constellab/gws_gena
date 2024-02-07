@@ -1,14 +1,16 @@
 import json
+import os
 
 from gws_gena.cobra.network_convert.convert_xml_to_json import ConvertXmlToJson
-from gws_core import (File,TaskRunner)
-from gws_core import BaseTestCase
+from gws_core import (File,TaskRunner,Settings,BaseTestCase)
+
+settings = Settings.get_instance()
 
 class TestConvertXmlToJson(BaseTestCase):
     def test_convert_xml_to_json(self):
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
         #create a xml model :
-        xml_model = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/e_coli_core.xml"
-        xml_model = File(xml_model)
+        xml_model= File(os.path.join(data_dir, "cobra/network_convert/e_coli_core.xml"))
 
         #create the TaskRunner
         runner_xml = TaskRunner(task_type=ConvertXmlToJson, inputs={'input_file': xml_model})
@@ -20,7 +22,7 @@ class TestConvertXmlToJson(BaseTestCase):
         model_output_xml : File = outputs_xml['output_json_file']
 
         #import the expected model to compare it to the TaskRunner result.
-        expected_model_xml = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/model_xml.json"
+        expected_model_xml = os.path.join(data_dir, "cobra/network_convert/model_xml.json")
 
         #Compare the two model using an assert function :
         with open(model_output_xml.path, 'r', encoding="utf-8") as model:
@@ -34,9 +36,9 @@ class TestConvertXmlToJson(BaseTestCase):
         self.assertDictEqual(data_output_xml,data_expected_xml)
 
     def test_convert_mat_to_json(self):
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
         #create a mat model :
-        mat_model = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/e_coli_core.mat"
-        mat_model = File(mat_model)
+        mat_model= File(os.path.join(data_dir, "cobra/network_convert/e_coli_core.mat"))
 
         #create the TaskRunner
         runner_mat = TaskRunner(task_type=ConvertXmlToJson, inputs={'input_file': mat_model})
@@ -49,7 +51,7 @@ class TestConvertXmlToJson(BaseTestCase):
         model_output_mat : File = outputs_mat['output_json_file']
 
         #import the expected model to compare it to the TaskRunner result.
-        expected_model_mat = "/lab/user/bricks/gws_gena/tests/testdata/cobra/network_convert/model_mat.json"
+        expected_model_mat = os.path.join(data_dir, "cobra/network_convert/model_mat.json")
 
         #Compare the two model using an assert function :
         with open(model_output_mat.path, 'r', encoding="utf-8") as model:

@@ -1,14 +1,16 @@
+import os
 from gws_gena.cobra.conversion_annotation.conversion_annotation import ConvertAnnotation
-from gws_core import (File,TaskRunner,Table,TableImporter)
-from gws_core import BaseTestCase
+from gws_core import (File,TaskRunner,Table,TableImporter,BaseTestCase,Settings)
 
+settings = Settings.get_instance()
 
 class TestConvertAnnotation(BaseTestCase):
     def test_convert_annotation(self):
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
         ## Lactococcus lactis case ##
         self.print(f"Test convert annotation : Lactococcus lactis")
         #load genes:
-        model_input= File("/lab/user/bricks/gws_gena/tests/testdata/cobra/convert_annotation/iNF517.json")
+        model_input= File(os.path.join(data_dir, "cobra/convert_annotation/iNF517.json"))
         #create the TaskRunner
         runner_convert_annotation = TaskRunner(task_type=ConvertAnnotation,
                                 inputs={'input_model':  model_input},
