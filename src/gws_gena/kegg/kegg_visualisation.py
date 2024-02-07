@@ -71,7 +71,8 @@ class KEGGVisualisation(Task):
         specie = params['specie']
 
         #Test if the specie provided is in the list of allowed organisms:
-        allowed_organisms = pd.read_csv("/lab/user/bricks/gws_gena/src/gws_gena/kegg/list_organisms_pathview.txt", header=0, index_col=0)
+        allowed_organisms = pd.read_csv(os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), "list_organisms_pathview.txt"), header=0, index_col=0)
         if (specie not in allowed_organisms["kegg.code"].values):
             raise Exception("The specie provided doesn't correspond to a kegg.code allowed. You can find the list of allowed values attached to this story: https://constellab.community/stories/e330483b-5b9e-452c-b5a4-f6b62506c9ad/how-to-visualise-a-kegg-pathway-using-constellab#introduction")
 
@@ -80,7 +81,9 @@ class KEGGVisualisation(Task):
         if (genes_database == "ensembl"):
             organism = params['organism']
             #Run script R to translate gene ensembl to entrez genes names
-            cmd = f"Rscript --vanilla /lab/user/bricks/gws_gena/src/gws_gena/kegg/translate_ensembl_to_entrez.R {list_genes.path} {organism}"
+            path_script_translate_ensembl_to_entrez = os.path.join(os.path.abspath(os.path.dirname(__file__)), "translate_ensembl_to_entrez.R")
+
+            cmd = f"Rscript --vanilla {path_script_translate_ensembl_to_entrez} {list_genes.path} {organism}"
 
             shell_proxy: ShellProxy = KeggREnvHelper.create_proxy(self.message_dispatcher)
             self.log_info_message('Translate gene ensembl to entrez genes names')
@@ -132,11 +135,12 @@ class KEGGVisualisation(Task):
             opfile.write("\n".join(pathway_kegg))
         pathway_kegg = File(pathway_kegg_path)
 
-        pathways_ok_path = "/lab/user/bricks/gws_gena/src/gws_gena/kegg/pathway_kegg_ok.txt"
+        pathways_ok_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "pathway_kegg_ok.txt")
 
         ## Map genes on pathways ##
         # Using the R script
-        cmd = f"Rscript --vanilla /lab/user/bricks/gws_gena/src/gws_gena/kegg/kegg_visualisation.R {list_genes.path} {specie} {pathway_kegg.path} {pathways_ok_path} {fold_change}"
+        path_script_kegg_visu = os.path.join(os.path.abspath(os.path.dirname(__file__)), "kegg_visualisation.R")
+        cmd = f"Rscript --vanilla {path_script_kegg_visu} {list_genes.path} {specie} {pathway_kegg.path} {pathways_ok_path} {fold_change}"
 
         shell_proxy: ShellProxy = KeggREnvHelper.create_proxy(self.message_dispatcher)
         self.log_info_message('Mapping genes on KEGG pathways')
