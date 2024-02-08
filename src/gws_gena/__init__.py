@@ -80,6 +80,7 @@ from .transporter.transporter_adder import TransporterAdder
 from .twin.flat_twin import FlatTwin
 from .twin.helper.twin_helper import TwinHelper
 from .twin.twin import Twin
+from .twin.twin_task import TwinExporter
 from .twin.twin_annotator import TwinAnnotator
 from .twin.twin_builder import TwinBuilder
 from .twin.twin_flattener import TwinFlattener
