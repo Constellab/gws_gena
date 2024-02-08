@@ -71,7 +71,7 @@ class TwinImporter(ResourceImporter):
 
 
 @exporter_decorator("TwinExporter", human_name="Twin exporter",
-                    short_description="Import a digital twin of cell metabolism",
+                    short_description="Export a digital twin of cell metabolism",
                     source_type=Twin, target_type=File)
 class TwinExporter(ResourceExporter):
     """ TwinExporter
@@ -95,7 +95,7 @@ class TwinExporter(ResourceExporter):
 
         file_name = params.get_value("file_name", "twin")
         file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
-        file_path = os.path.join(dest_dir, file_name+file_format)
+        file_path = os.path.join(dest_dir, file_name+ '.' +file_format)
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(resource.dumps(), f)
 
