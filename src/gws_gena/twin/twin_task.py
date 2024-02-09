@@ -97,6 +97,6 @@ class TwinExporter(ResourceExporter):
         file_format = FileHelper.clean_extension(params.get_value("file_format", "json"))
         file_path = os.path.join(dest_dir, file_name+ '.' +file_format)
         with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(resource.dumps(), f)
+            json.dump(resource.dumps(deep=True), f)
 
         return target_type(path=file_path)
