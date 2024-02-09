@@ -7,7 +7,7 @@ import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import (File, GTest, Settings,TaskRunner)
 from gws_gena import (Context, ContextImporter, FlatTwin, Network,
-                      NetworkImporter, Twin, TwinHelper, TwinExporter,TwinBuilder)
+                      NetworkImporter, Twin, TwinHelper,TwinBuilder)
 from pandas import DataFrame
 
 settings = Settings.get_instance()
