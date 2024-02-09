@@ -19,6 +19,10 @@ class DraftRecon(Task):
     DraftRecon task.
 
     This task performs a draft reconstruction of a metabolic network using a list of EC numbers or taxonomy IDs.
+
+    In input, you need to provide at least a resource EC number Table or set the parameter "tax_id".
+    You can also add a Biomass Reaction Table describing the composition of a cell (or organism) biomass.
+
     """
 
     input_specs = InputSpecs({
