@@ -18,6 +18,7 @@ from .data.task.ec_table_task import ECTableImporter
 from .data.task.entity_id_table_task import EntityIDTableImporter
 from .data.task.flux_table_task import FluxTableImporter
 from .data.task.medium_table_task import MediumTableImporter
+from .data.task.phenotype_table_task import PhenotypeTableImporter
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult
