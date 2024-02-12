@@ -28,6 +28,9 @@ class ContextImporter(ResourceImporter):
     ContextImporter Task
 
     Import a metabolic context
+
+    This Tasks also allows to import a context with multiple simulations. So if you have different values of target,lower_bound,upper_bound; set them as a list in your JSON File like this:
+    {"id": "reaction1", "name": "", "lower_bound": [0.04,  0.045,  0.035], "upper_bound": [0.01, 0.008, -0.02], "target": [0.03, -0.003, 0.001], "confidence_score": [1, 1, 1], "variables": [{"reference_id": "Metabolite1", "coefficient": 1.0}]}
     """
 
     config_specs: ConfigSpecs = {

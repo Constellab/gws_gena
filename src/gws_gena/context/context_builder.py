@@ -20,7 +20,7 @@ class ContextBuilder(Task):
     """
     ContextBuilder Task
 
-    This task creates a `Context` object using a `FluxTable` and metabolic `Network`.
+    This task creates a `Context` object using a `FluxTable` or a 'PhenotypeTable' and a metabolic `Network`.
     A `Context` object is used to create digital twins and perform metabolic flux analyses.
 
     - Inputs

@@ -26,6 +26,13 @@ class FluxTableImporter(TableImporter):
 
     Allows to import a `csv` or `xls` file and create a `FluxTable` resource object.
     The `FluxTable` is a generic table of entity IDs (CheBI IDs, Rhea IDs, EC Numbers, User-defined IDs, ...).
+
+    The header of you Table can be the following: "reaction_id,target,lower_bound,upper_bound,confidence_score"
+
+    This Tasks manages multiple simulations. So if you have different values of target,lower_bound,upper_bound; set them as a list like this:
+    reaction_id,target,lower_bound,upper_bound,confidence_score
+    reaction1,"[0.04,  0.045,  0.035]","[0.01, 0.008, -0.02]","[0.03, -0.003, 0.001]","[1, 1, 1]"
+
     """
 
     config_specs: ConfigSpecs = {
