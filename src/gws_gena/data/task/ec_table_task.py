@@ -25,6 +25,16 @@ class ECTableImporter(TableImporter):
 
     Allows to import a `csv` or `xls` file and create a `ECTable` resource object.
     The `ECTable` is a table of EC numbers.
+
+    Your File must have at least:
+    - a column with the compound name
+    - a column with the ec-number 
+
+    For example:
+    | component           | ec_number |
+    |---------------------|-----------|
+    | PNEG_00964          | 1.4.1.2   |
+    | PNEG_02355          | 4.2.1.10  |
     """
 
     config_specs: ConfigSpecs = {

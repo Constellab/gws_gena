@@ -29,7 +29,7 @@ class ReactionRemover(Task):
         "reverse_remove":
         BoolParam(
             default_value=False, visibility="protected",
-            short_description="Set True to remove the reactions not given in the input list. By default, ")}
+            short_description="Set True to remove the reactions not given in the input list. By default, False. ")}
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]

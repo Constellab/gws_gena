@@ -24,6 +24,14 @@ class EntityIDTableImporter(TableImporter):
     EntityIDTableImporter class
 
     Allows to import a `csv` or `xls` file and create a `EntityIDTable` resource object.
+
+    Your File must have at least:
+    - a column with the ID of the entity
+    For example:
+
+    | id           |  name                  |
+    | -------------|------------------------|
+    | CHEBI:57972  |  L-alanine             |
     """
 
     config_specs: ConfigSpecs = {
