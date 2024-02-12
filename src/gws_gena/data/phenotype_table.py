@@ -34,10 +34,10 @@ class PhenotypeTable(Table):
 
     For example:
 
-    | id                  | target    | lower_bound  | lower_bound  | confidence_score   | chebi_id     |
+    | id                  | target    | lower_bound  | upper_bound  | confidence_score   | chebi_id     |
     | --------------------|-----------|--------------|--------------|--------------------|--------------|
     | biomass             |           | 0            | 1000         | 1.0                | biomass      |
-    | 2-oxoglutarate      |           | 0            | 1000         | 1.0                | CEHBI:16810  |
+    | 2-oxoglutarate      |           | 0            | 1000         | 1.0                | CHEBI:16810  |
     | glutamine           | 1.23      | 0            | 2.0          | 1.0                | CHEBI:18050  |
 
     """

@@ -26,6 +26,27 @@ class PhenotypeTableImporter(TableImporter):
 
     Allows to import a `csv` or `xls` file and create a `PhenotypeTable` resource object.
     The `PhenotypeTable` is a generic table of entity IDs (CheBI IDs, Rhea IDs, EC Numbers, User-defined IDs, ...).
+
+
+    The phenotype table is similar to the flux table but the fluxes are related to
+    entities (metabolite, biomass) instead of reactions. Qualitative observations are described by
+    upper and lower bound only
+
+    * The first column is the list of `entity ids`. They uniquely identify each reaction of a network.
+    * The next columns are:
+      * target: the value of the flux measured experimentally (e.g. `mol/L/h`) `[required]`
+      * upper_bound: the upper bound of the flux (e.g. `mol/L/h`) `[required]`
+      * lower_bound: the lower bound of the flux (e.g. `mol/L/h`) `[required]`
+      * confidence_score: the confidence score of the flux `[required]`
+      * ... : other optional columns
+
+    For example:
+
+    | id                  | target    | lower_bound  | upper_bound  | confidence_score   | chebi_id     |
+    | --------------------|-----------|--------------|--------------|--------------------|--------------|
+    | biomass             |           | 0            | 1000         | 1.0                | biomass      |
+    | 2-oxoglutarate      |           | 0            | 1000         | 1.0                | CHEBI:16810  |
+    | glutamine           | 1.23      | 0            | 2.0          | 1.0                | CHEBI:18050  |
     """
 
     config_specs: ConfigSpecs = {
