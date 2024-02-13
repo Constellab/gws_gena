@@ -18,7 +18,7 @@ class IsolateFinder(Task):
     """
     IsolateFinder.
 
-    Finds wether genes/reactions are isolates, i.e. topologically non-connected to the cell growth
+    Determines whether genes/reactions are isolated, i.e. not topologically connected to cell growth.
     """
 
     input_specs = InputSpecs({'network': InputSpec(Network)})
