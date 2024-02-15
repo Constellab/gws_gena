@@ -26,6 +26,18 @@ class MediumTableImporter(TableImporter):
 
     Allows to import a `csv` or `xls` file and create a `MediumTable` object resource.
     The `MediumTable` is a table representing a culture medium composition.
+
+    Your file must have:
+    - a column with the compound name
+    - a column with the chebi id
+
+    For example:
+
+    | entity              | chebi_id     |
+    | --------------------|--------------|
+    | 2-oxoglutarate      | CHEBI:16810  |
+    | glutamine           | CHEBI:18050  |
+
     """
 
     config_specs: ConfigSpecs = {
