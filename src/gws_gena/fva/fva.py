@@ -101,10 +101,11 @@ class FVA(Task):
     """
     FVA class
 
-    Performs flux variability analysis. It is based on the paper of (Gudmundsson and Thiele, Bioinformatics 2010).
+    Performs Flux Variability Analysis (FVA).
+    It calculates the minimum and maximum flux values for each reaction in a metabolic network while satisfying certain constraints;
 
+    It is based on the paper of (Gudmundsson and Thiele, Bioinformatics 2010).
     See also:
-
     > Steinn Gudmundsson & Ines Thiele, Computationally efficient flux variability analysis,
     BMC Bioinformatics, volume 11, Article number: 489 (2010),
     https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-489
