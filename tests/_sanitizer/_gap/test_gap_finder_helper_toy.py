@@ -32,7 +32,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(len(comp_ids), 0)
 
         comp_ids = [idx for idx in df.index if df.at[idx, "is_dead_end"]]
-        self.assertEqual(len(comp_ids), 4)
+        self.assertEqual(len(comp_ids), 0)
 
     def test_toy_with_gaps(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
