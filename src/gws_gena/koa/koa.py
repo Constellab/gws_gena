@@ -23,7 +23,9 @@ from .koa_result import KOAResult
 @task_decorator("KOA", human_name="KOA", short_description="Knockout Analysis")
 class KOA(Task):
     """
-    KOA class.
+    Knock-out analysis class.
+
+    Perform an FBA by knocking out some compounds.
     """
 
     input_specs = InputSpecs({
@@ -56,7 +58,7 @@ class KOA(Task):
         # is_monitored_fluxes_expanded = False
         full_ko_result_list = []
         for i in range(0, ko_table.nb_rows):
-            current_ko_table = ko_table.select_by_row_positions([i])
+            current_ko_table = ko_table.select_by_row_indexes([i])
 
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
             ko_id: str = current_ko_table.get_ids()[0]
@@ -94,7 +96,7 @@ class KOA(Task):
         # set simulations
         simulations = []
         for i in range(0, ko_table.nb_rows):
-            current_ko_table = ko_table.select_by_row_positions([i])
+            current_ko_table = ko_table.select_by_row_indexes([i])
 
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
             ko_id: str = current_ko_table.get_ids()[0]
