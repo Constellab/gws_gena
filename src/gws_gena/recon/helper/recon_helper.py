@@ -32,7 +32,7 @@ class ReconHelper(BaseHelper):
 
     def create_network_with_taxonomy(
             self, unique_name: str, tax_id: str, tax_search_method: str) -> Network:
-        """ Create a network realated to a given taxonomy level """
+        """ Create a network related to a given taxonomy level """
         try:
             tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
         except Exception as err:
@@ -82,11 +82,29 @@ class ReconHelper(BaseHelper):
                 #     "error": str(err)
                 # })
             net.update_reaction_recon_tag(ec_number, ec_tag)
-        return net
+
+        #We create a copy of the network, each metabolite extra must have a metabolite env
+        new_net = net.copy()
+        #We parse the compounds of the network
+        for compound,info in net.compounds.items():
+            if (compound.endswith('_extracellular space (theoretical supernatant)')):
+                if (info.compartment.go_id == "GO:0005615"):
+                    name_env = compound.rsplit('_', 1)[0]
+                    #if the metabolite env doesn't exist in the network, we will create it
+                    if (name_env + "_extracellular region (environment)" not in new_net.compounds):
+                        #create reaction env
+                        reaction_env = Reaction(dict(id="reaction_env_"+ name_env))
+                        new_net.add_reaction(reaction_env)
+                        reaction_env.add_substrate(info, -1, new_net)
+                        #create compound env
+                        compound_env= Compound(dict(name=name_env, compartment=Compartment.from_biota(go_id=Compartment.EXTRACELL_REGION_GO_ID)))
+                        reaction_env.add_product(compound_env, +1, new_net)
+
+        return new_net
 
     def create_network_with_ec_table(
             self, unique_name: str, ec_table: ECTable, tax_id: str, tax_search_method: str) -> Network:
-        """ Create a network realated to a list of EC numbers """
+        """ Create a network related to a list of EC numbers """
         ec_list = ec_table.get_ec_numbers()
         net = Network()
         net.name = unique_name
@@ -145,7 +163,24 @@ class ReconHelper(BaseHelper):
                     ec_tag["errors"].append(str(err))
 
             net.update_ec_recon_tag(ec, ec_tag)
-        return net
+
+        #We create a copy of the network, each metabolite extra must have a metabolite env
+        new_net = net.copy()
+        #We parse the compounds of the network
+        for compound,info in net.compounds.items():
+            if (compound.endswith('_extracellular space (theoretical supernatant)')):
+                if (info.compartment.go_id == "GO:0005615"):
+                    name_env = compound.rsplit('_', 1)[0]
+                    #if the metabolite env doesn't exist in the network, we will create it
+                    if (name_env + "_extracellular region (environment)" not in new_net.compounds):
+                        #create reaction env
+                        reaction_env = Reaction(dict(id="reaction_env_"+ name_env))
+                        new_net.add_reaction(reaction_env)
+                        reaction_env.add_substrate(info, -1, new_net)
+                        #create compound env
+                        compound_env= Compound(dict(name=name_env, compartment=Compartment.from_biota(go_id=Compartment.EXTRACELL_REGION_GO_ID)))
+                        reaction_env.add_product(compound_env, +1, new_net)
+        return new_net
 
     def add_medium_to_network(self, net: Network, medium_table: MediumTable):
         """ Add medium compounds to a network """
