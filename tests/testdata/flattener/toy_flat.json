@@ -154,7 +154,7 @@
                     "inchi": "",
                     "type": "default",
                     "level": 2,
-                    "compartment": "e",
+                    "compartment": "env",
                     "chebi_id": "",
                     "kegg_id": "",
                     "layout": {
@@ -173,7 +173,7 @@
                     "inchi": "",
                     "type": "default",
                     "level": 2,
-                    "compartment": "e",
+                    "compartment": "env",
                     "chebi_id": "",
                     "kegg_id": "",
                     "layout": {
@@ -192,7 +192,7 @@
                     "inchi": "",
                     "type": "default",
                     "level": 2,
-                    "compartment": "e",
+                    "compartment": "env",
                     "chebi_id": "",
                     "kegg_id": "",
                     "layout": {
@@ -211,7 +211,7 @@
                     "inchi": "",
                     "type": "default",
                     "level": 2,
-                    "compartment": "e",
+                    "compartment": "env",
                     "chebi_id": "",
                     "kegg_id": "",
                     "layout": {
@@ -390,11 +390,11 @@
                     "network_name": "toy_cell"
                 },
                 {
-                    "id": "e",
-                    "go_id": "GO:0005615",
-                    "bigg_id": "e",
-                    "color": "#ef66f0",
-                    "name": "extracellular space (theoretical supernatant)",
+                    "id": "env",
+                    "go_id": "GO:0005576",
+                    "bigg_id": "env",
+                    "color": "#5a5052",
+                    "name": "extracellular region (environment)",
                     "network_name": "toy_cell"
                 }
             ]
