@@ -76,8 +76,8 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         # print(len(recon_net.reactions))
         # print(len(recon_net.compounds))
-        self.assertEqual(len(recon_net.reactions), 36)
-        self.assertEqual(len(recon_net.compounds), 99)
+        self.assertEqual(len(recon_net.reactions), 37)
+        self.assertEqual(len(recon_net.compounds), 100)
 
         comp_ids = recon_net.get_compound_ids()
         self.assertTrue("Biomass_biomass" in comp_ids)
