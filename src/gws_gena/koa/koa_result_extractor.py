@@ -14,10 +14,12 @@ from .koa_result import KOAResult
 
 
 @task_decorator("KOAResultExtractor", human_name="KOA result extractor",
-                short_description="Extractor a list of fluxes as a table")
+                short_description="Extract a list of fluxes as a table")
 class KOAResultExtractor(Task):
     """
-    KOA result extractor.
+    Knock-out analysis result extractor.
+
+    Specify the fluxes you want to extract by following this structure "network_NameReaction".
     """
 
     input_specs = InputSpecs({
