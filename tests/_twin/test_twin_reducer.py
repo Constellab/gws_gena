@@ -41,7 +41,7 @@ class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):
 
         file = os.path.join(data_dir, "./reduction/efm.csv")
         expected_efm: DataFrame = pandas.read_csv(file, index_col=0, encoding="utf-8")
-        # self.assertEqual(efm.get_data().shape, expected_efm.shape)
+        self.assertEqual(efm.get_data().shape, expected_efm.shape)
 
         # cols = expected_efm.columns.tolist()
         # efm = efm.get_data().loc[:, cols]
@@ -49,7 +49,7 @@ class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):
 
         file = os.path.join(data_dir, "./reduction/K.csv")
         expected_K = pandas.read_csv(file, index_col=0)
-        # self.assertEqual(K.get_data().shape, expected_K.shape)
+        self.assertEqual(K.get_data().shape, expected_K.shape)
 
         print('\n--- EFM Bastin & Provost ---')
         print(efm)

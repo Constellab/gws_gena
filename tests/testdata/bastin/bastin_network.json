@@ -4,7 +4,7 @@
         {
             "id": "Gluc_e",
             "name": "Glucose",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "Gluc6P_c",
@@ -29,12 +29,12 @@
         {
             "id": "Lactate_e",
             "name": "Lactate",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "CO2_e",
             "name": "CO2",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "Oxa_c",
@@ -64,12 +64,12 @@
         {
             "id": "NH4_e",
             "name": "NH4",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "Ala_e",
             "name": "Alanine",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "Citrate_c",
@@ -79,7 +79,7 @@
         {
             "id": "Gln_e",
             "name": "Glutamine",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "R5P_c",
@@ -94,12 +94,12 @@
         {
             "id": "Purine_e",
             "name": "Purine nucleotides",
-            "compartment":"e"
+            "compartment":"env"
         },
         {
             "id": "Pyrimidine_e",
             "name": "Pyrimidine nucleotides",
-            "compartment":"e"
+            "compartment":"env"
         }
     ],
     "reactions": [
@@ -303,7 +303,7 @@
     ],
     "compartments": {
         "c": "cytosol",
-        "e": "extracellular",
+        "env": "extracellular",
         "n": "nucleus",
         "b": "biomass"
     }
