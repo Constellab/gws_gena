@@ -53,8 +53,8 @@ class MediumTable(Table):
 
     # -- S --
 
-    def select_by_column_indexes(self, positions: List[int]) -> 'MediumTable':
-        table = super().select_by_column_indexes(positions)
+    def select_by_column_indexes(self, indexes: List[int]) -> 'MediumTable':
+        table = super().select_by_column_indexes(indexes)
         if not self.chebi_column in table.column_names:
             raise BadRequestException("The chebi_column is required and must be selected")
         if not self.entity_column in table.column_names:
