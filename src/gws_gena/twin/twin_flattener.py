@@ -12,7 +12,7 @@ from .twin import Twin
 
 
 @task_decorator("TwinFlattener", human_name="Twin flattener",
-                short_description="Flatten a digital twin of cell metabolism")
+                short_description="Flatten a digital twin of cell metabolism", hide = True)
 class TwinFlattener(Task):
     """ TwinFlattener
 
