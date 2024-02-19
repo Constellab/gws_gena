@@ -64,8 +64,8 @@ class BiomassReactionTable(Table):
 
     # -- S --
 
-    def select_by_column_positions(self, positions: List[int]) -> 'BiomassReactionTable':
-        table = super().select_by_column_positions(positions)
+    def select_by_column_indexes(self, positions: List[int]) -> 'BiomassReactionTable':
+        table = super().select_by_column_indexes(positions)
         if not self.biomass_column in table.column_names:
             raise BadRequestException("The biomass_column is required and must be selected")
         if not table.chebi_column in table.column_names:

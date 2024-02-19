@@ -44,8 +44,8 @@ class ECTable(Table):
 
     # -- S --
 
-    def select_by_column_positions(self, positions: List[int]) -> 'ECTable':
-        table = super().select_by_column_positions(positions)
+    def select_by_column_indexes(self, positions: List[int]) -> 'ECTable':
+        table = super().select_by_column_indexes(positions)
         if not self.ec_column in table.column_names:
             raise BadRequestException("The ec_column is required and must be selected")
         return table
