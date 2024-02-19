@@ -22,6 +22,7 @@ from .twin_reduction_table import TwinReductionTable
 class TwinReducer(Task):
     """
     Class digital twin reduction
+    Provide a twin in input and set the parameters to get a table of elementary flux modes and a reduction table.
     """
 
     input_specs = InputSpecs({
