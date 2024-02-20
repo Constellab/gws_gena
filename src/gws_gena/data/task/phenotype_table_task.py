@@ -47,6 +47,10 @@ class PhenotypeTableImporter(TableImporter):
     | biomass             |           | 0            | 1000         | 1.0                | biomass      |
     | 2-oxoglutarate      |           | 0            | 1000         | 1.0                | CHEBI:16810  |
     | glutamine           | 1.23      | 0            | 2.0          | 1.0                | CHEBI:18050  |
+
+    This Task manages multiple simulations. So if you have different values of target,lower_bound,upper_bound; set them as a list like this:
+    id,target,lower_bound,upper_bound,confidence_score,chebi_id
+    id1,"[0.04,  0.045,  0.035]","[0.01, 0.008, -0.02]","[0.03, -0.003, 0.001]","[1, 1, 1]",CHEBI
     """
 
     config_specs: ConfigSpecs = {
