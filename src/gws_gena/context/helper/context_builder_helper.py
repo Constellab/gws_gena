@@ -6,13 +6,12 @@
 import math
 import ast
 
-from gws_core import (BadRequestException, ConfigParams, InputSpec, OutputSpec,
-                      Task, TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (BadRequestException)
 
 from ...data.flux_table import FluxTable
 from ...data.phenotype_table import PhenotypeTable
-from ...network.network import Network
 from ...network.reaction.reaction import Reaction
+from ...network.compound.compound import Compound
 from ..context import Context
 from ..measure import Measure
 from ..typing.measure_typing import MeasureDict
@@ -64,8 +63,10 @@ class ContextBuilderHelper(BaseHelper):
 
             if key == "rxn":
                 ids = table.get_reaction_ids()
+                data = net.reactions
             else:
                 ids = table.get_entity_ids()
+                data = net.compounds
 
             if isinstance(targets[0], str):  # if there is multiple simulations
                 for i in range(0, len(targets)):
@@ -92,29 +93,24 @@ class ContextBuilderHelper(BaseHelper):
                 if not are_all_values_float_or_int(scores):
                     raise BadRequestException("All values for scores value must be a int or float.")
 
-                if key == "rxn":
-                    ids = table.get_reaction_ids()
-                else:
-                    ids = table.get_entity_ids()
-
                 for i, ref_id in enumerate(ids):
-                    if ref_id in net.reactions:
+                    if ref_id in data:
                         for j in range(0, len(ubounds[i])):
                             if ubounds[i][j] < lbounds[i][j]:
-                                raise BadRequestException(
-                                    f"Flux {ref_id} for the simulation {j}: the upper bound must be greater than lower bound")
+                                raise BadRequestException(f"Flux {ref_id} for the simulation {j}: the upper bound must be greater than lower bound")
                             if targets[i][j] < lbounds[i][j]:
-                                raise BadRequestException(
-                                    f"Flux {ref_id} for the simulation {j}: the target must be greater than lower bound")
+                                raise BadRequestException(f"Flux {ref_id} for the simulation {j}: the target must be greater than lower bound")
                             if targets[i][j] > ubounds[i][j]:
-                                raise BadRequestException(
-                                    f"Flux {ref_id} for the simulation {j}: the target must be smaller than upper bound")
+                                raise BadRequestException(f"Flux {ref_id} for the simulation {j}: the target must be smaller than upper bound")
 
                         lbound = lbounds[i]
-                        lbound = [Reaction.LOWER_BOUND if math.isnan(x) else x for x in lbound]
-
                         ubound = ubounds[i]
-                        ubound = [Reaction.UPPER_BOUND if math.isnan(x) else x for x in ubound]
+                        if key == "rxn":
+                            lbound = [Reaction.LOWER_BOUND if math.isnan(x) else x for x in lbound]
+                            ubound = [Reaction.UPPER_BOUND if math.isnan(x) else x for x in ubound]
+                        else:
+                            lbound = [Compound.LOWER_BOUND if math.isnan(x) else x for x in lbound]
+                            ubound = [Compound.UPPER_BOUND if math.isnan(x) else x for x in ubound]
 
                         score = scores[i]
                         score = [1.0 if math.isnan(x) else x for x in score]
@@ -143,7 +139,7 @@ class ContextBuilderHelper(BaseHelper):
                         else:
                             ctx.add_compound_data(measure)
                     else:
-                        raise Exception(f"No reference reaction found with id {ref_id}")
+                        raise Exception(f"No reference reaction or metabolite found with id {ref_id}")
 
             elif (isinstance(targets[0], (float, int))):  # if there is only one simulation
                 # test if all values are int or float
@@ -156,25 +152,23 @@ class ContextBuilderHelper(BaseHelper):
                 if not are_all_values_float_or_int(scores):
                     raise BadRequestException("All values for scores value must be a int or float.")
 
-                if key == "rxn":
-                    ids = table.get_reaction_ids()
-                else:
-                    ids = table.get_entity_ids()
-
                 for i, ref_id in enumerate(ids):
-                    if ref_id in net.reactions:
+                    if ref_id in data:
                         if ubounds[i] < lbounds[i]:
-                            raise BadRequestException(
-                                f"Flux {ref_id}: the upper bound must be greater than lower bound")
+                            raise BadRequestException(f"Flux {ref_id}: the upper bound must be greater than lower bound")
                         if targets[i] < lbounds[i]:
                             raise BadRequestException(f"Flux {ref_id}: the target must be greater than lower bound")
                         if targets[i] > ubounds[i]:
                             raise BadRequestException(f"Flux {ref_id}: the target must be smaller than upper bound")
 
-                        lbound = Reaction.LOWER_BOUND if math.isnan(lbounds[i]) else lbounds[i]
-                        lbound = [lbound]
+                        if key == "rxn":
+                            lbound = Reaction.LOWER_BOUND if math.isnan(lbounds[i]) else lbounds[i]
+                            ubound = Reaction.UPPER_BOUND if math.isnan(ubounds[i]) else ubounds[i]
+                        else :
+                            lbound = Compound.LOWER_BOUND if math.isnan(lbounds[i]) else lbounds[i]
+                            ubound = Compound.UPPER_BOUND if math.isnan(ubounds[i]) else ubounds[i]
 
-                        ubound = Reaction.UPPER_BOUND if math.isnan(ubounds[i]) else ubounds[i]
+                        lbound = [lbound]
                         ubound = [ubound]
 
                         score = 1.0 if math.isnan(scores[i]) else scores[i]
@@ -203,11 +197,11 @@ class ContextBuilderHelper(BaseHelper):
                         else:
                             ctx.add_compound_data(measure)
                     else:
-                        raise Exception(f"No reference reaction found with id {ref_id}")
+                        raise Exception(f"No reference reaction or metabolite found with id {ref_id}")
 
             else:
                 raise Exception(
-                    f"The target values are not of the correct type. We expected float, int or string. Strings store lists of simulations")
+                    "The target values are not of the correct type. We expected float, int or string. Strings store lists of simulations")
 
         return ctx
 

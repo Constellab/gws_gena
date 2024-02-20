@@ -57,6 +57,9 @@ class Compound:
     COFACTOR_TYPE = "cofactor"
     RESIDUE_TYPE = "residue"
 
+    LOWER_BOUND = -1000.0
+    UPPER_BOUND = 1000.0
+
     id: str = ""
     name: str = ""
     charge: float = None
