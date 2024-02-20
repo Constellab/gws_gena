@@ -1,0 +1,3 @@
+id, target,lower_bound,upper_bound,confidence_score,chebi_id,
+X1_c,,0,1000,1.0,,
+X2_c,1.3,-1,10,1.0,,
