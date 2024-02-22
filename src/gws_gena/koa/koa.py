@@ -25,7 +25,9 @@ class KOA(Task):
     """
     Knock-out analysis class.
 
-    Perform an FBA by knocking out some compounds.
+    Perform an FBA by knocking out some reactions.
+    Reactions to knockout can be provided with a EntityIDTable or a ECTable.
+    Please note that if you provide a EntityIDTable, the reaction id must be "network_reaction1".
     """
 
     input_specs = InputSpecs({
@@ -106,7 +108,6 @@ class KOA(Task):
                 "name": f"KO analysis: {ko_info}",
                 "description": f"Simulation after knockout of reaction(s): {ko_info}"
             })
-        koa_result.set_simulations(simulations)
 
         # annotate twin
         koa_result.set_simulations(simulations)
