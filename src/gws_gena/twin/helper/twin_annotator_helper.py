@@ -4,13 +4,13 @@
 # About us: https://gencovery.com
 
 from typing import List
-from gws_core import BadRequestException, Table, Task
+from gws_core import BadRequestException
 from gws_gena.network.typing.simulation_typing import SimulationDict
 
+from gws_gena.fba.fba_result import FBAResult
 from ...helper.base_helper import BaseHelper
 from ..flat_twin import FlatTwin
 from ..twin import Twin
-from gws_gena.fba.fba_result import FBAResult
 
 # ####################################################################
 #

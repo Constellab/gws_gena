@@ -39,11 +39,11 @@ class TwinAnnotator(Task):
         twin = inputs["twin"]
         helper = TwinAnnotatorHelper()
         helper.attach_task(self)
-        if (isinstance(metabolic_fluxes, FVAResult)):
+        if isinstance(metabolic_fluxes, FVAResult):
             helper.annotate_from_fva_result(twin = twin, simulation= None, fva_result = metabolic_fluxes)
-        elif (isinstance(metabolic_fluxes, FBAResult)):
+        elif isinstance(metabolic_fluxes, FBAResult):
             helper.annotate_from_fba_result(twin = twin, simulation= None, fba_result = metabolic_fluxes)
-        elif (isinstance(metabolic_fluxes, KOAResult)):
+        elif isinstance(metabolic_fluxes, KOAResult):
             helper.annotate_from_koa_result(twin = twin, koa_result = metabolic_fluxes)
 
         return {"twin": twin}
