@@ -72,6 +72,12 @@ class TwinAnnotatorHelper(BaseHelper):
         """
         Annotate a twin using from FBAResult
         """
+        if simulation is None:
+            simulation = SimulationDict({
+                "id": "fba_sim",
+                "name": "fba simulation",
+                "description": "Metabolic flux simulation"
+            })
 
         if isinstance(twin, FlatTwin):
             raise BadRequestException("Cannot annotate a FlatTwin. A non-flat Twin is required")
@@ -110,8 +116,14 @@ class TwinAnnotatorHelper(BaseHelper):
         """
         Annotate a twin using from FVAResult
         """
+        if simulation is None:
+            simulation = SimulationDict({
+                "id": "fva_sim",
+                "name": "fva simulation",
+                "description": "Metabolic flux simulation"
+            })
 
-        return self.annotate_from_fba_result(twin, fva_result)
+        return self.annotate_from_fba_result(twin, simulation, fva_result)
 
     def annotate_from_koa_result(self, twin: Twin, koa_result: 'KOAResult'):
         """
