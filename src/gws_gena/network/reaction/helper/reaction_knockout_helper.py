@@ -29,7 +29,7 @@ class ReactionKnockOutHelper(BaseHelper):
         all_ids = []
         found_id = []
 
-        if isinstance(reaction_table, (EntityIDTable, ECTable,)):
+        if isinstance(reaction_table, (EntityIDTable, ECTable)):
             # ko using RXN_ID and EC_NUMBER
             if isinstance(reaction_table, EntityIDTable):
                 id_list: list = reaction_table.get_ids()

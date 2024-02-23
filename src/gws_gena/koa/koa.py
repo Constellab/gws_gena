@@ -28,6 +28,10 @@ class KOA(Task):
     Perform an FBA by knocking out some reactions.
     Reactions to knockout can be provided with a EntityIDTable or a ECTable.
     Please note that if you provide a EntityIDTable, the reaction id must be "network_reaction1".
+
+    If you want to perform multiple knockout at the same time; provide them like this:
+    id
+    "reaction1, reaction2, reaction3"
     """
 
     input_specs = InputSpecs({
@@ -63,7 +67,10 @@ class KOA(Task):
             current_ko_table = ko_table.select_by_row_indexes([i])
 
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
-            ko_id: str = current_ko_table.get_ids()[0]
+            if isinstance(current_ko_table, EntityIDTable):
+                ko_id: str = current_ko_table.get_ids()[0]
+            else:
+                ko_id: str =  current_ko_table.get_ec_numbers()[0]
 
             perc = 100 * (i/ko_table.nb_rows)
             self.update_progress_value(
@@ -101,7 +108,11 @@ class KOA(Task):
             current_ko_table = ko_table.select_by_row_indexes([i])
 
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
-            ko_id: str = current_ko_table.get_ids()[0]
+
+            if isinstance(current_ko_table, EntityIDTable):
+                ko_id: str = current_ko_table.get_ids()[0]
+            else:
+                ko_id: str =  current_ko_table.get_ec_numbers()[0]
 
             simulations.append({
                 "id": f"{ko_id}",

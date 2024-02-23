@@ -46,7 +46,11 @@ class KOAResult(ResourceSet):
             self._twin = twin
             self._ko_table = ko_table
 
-            ko_ids = ko_table.get_ids()
+            if isinstance(ko_table, EntityIDTable):
+                ko_ids = ko_table.get_ids()
+            else:
+                ko_ids = ko_table.get_ec_numbers()
+
             for i, current_data in enumerate(data):
                 flux_df = current_data["fluxes"]
                 invalid_ko_ids = current_data["invalid_ko_ids"]
@@ -89,7 +93,12 @@ class KOAResult(ResourceSet):
 
     def get_ko_ids(self) -> List[str]:
         """ Get the ids of the knock-outed reactions """
-        return self._ko_table.get_ids()
+        #return self._ko_table.get_ids()
+        if isinstance(self._ko_table, EntityIDTable):
+            return self._ko_table.get_ids()
+        else:
+            return self._ko_table.get_ec_numbers()
+
 
     # -- S --
 
