@@ -2,9 +2,10 @@
 # This software is the exclusive property of Gencovery SAS.
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
-import multiprocessing
-from typing import Tuple
-from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec, Logger,
+
+#import multiprocessing
+from typing import Tuple, List
+from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
                       InputSpecs, ListParam, OutputSpec, OutputSpecs, StrParam, TableConcatHelper,
                       Task, TaskInputs, TaskOutputs, task_decorator, Table, IntParam)
 
@@ -14,15 +15,6 @@ from ..twin.helper.twin_helper import TwinHelper
 from .fba_helper.fba_helper import FBAHelper
 from .fba_result import FBAResult
 
-from ..context.variable import Variable
-from ..context.context import Context
-from ..context.measure import Measure
-from ..context.helper.context_builder_helper import ContextBuilderHelper
-from ..context.typing.measure_typing import MeasureDict
-from ..context.typing.variable_typing import VariableDict
-from ..twin.twin_builder import TwinBuilder
-
-from gws_gena.network.network import Network
 
 
 @task_decorator("FBA", human_name="FBA", short_description="Flux balance analysis")
