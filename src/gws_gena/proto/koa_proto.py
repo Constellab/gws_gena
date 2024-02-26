@@ -3,8 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (FIFO2, ConfigParams, ProcessSpec, Protocol, Sink, Source,
-                      protocol_decorator)
+from gws_core import (ProcessSpec, Protocol,protocol_decorator)
 
 from ..koa.koa import KOA
 from ..twin.twin_builder import TwinBuilder

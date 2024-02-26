@@ -5,12 +5,9 @@
 
 from typing import List, Union
 
-import pandas as pd
 from gws_core import (BadRequestException, BarPlotView, ConfigParams,
-                      DataFrameRField, JSONView, ListParam, ListRField,
-                      MultiViews, Resource, ResourceRField, ResourceSet,
-                      StringHelper, StrParam, Table, TechnicalInfo,
-                      resource_decorator, view)
+                      JSONView, ListParam, ListRField, ResourceRField, ResourceSet,
+                      StringHelper, Table, TechnicalInfo, resource_decorator, view)
 from pandas import DataFrame
 
 from ..data.ec_table import ECTable

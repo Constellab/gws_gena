@@ -3,16 +3,15 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import (File,ResourceSet,OutputSpec, OutputSpecs,Logger, InputSpec, InputSpecs,task_decorator,TaskInputs,Task,
-                    Table,StrParam, TaskOutputs,ConfigParams,TableConcatHelper,ListParam,Folder,ShellProxy)
-
-from .kegg_r_env_task import KeggREnvHelper
 import os
+import sys
+
 import pandas as pd
 from bioservices.kegg import KEGG
-import sys
-import Bio
 from Bio import Entrez
+from gws_core import (File,ResourceSet,OutputSpec, OutputSpecs, InputSpec, InputSpecs,task_decorator,TaskInputs,Task,
+                    StrParam, TaskOutputs,ConfigParams,ShellProxy)
+from .kegg_r_env_task import KeggREnvHelper
 
 
 @task_decorator("KEGGVisualisation", human_name="Kegg Visualisation",

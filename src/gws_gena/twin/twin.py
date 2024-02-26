@@ -3,14 +3,12 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import Dict, TypedDict
+from typing import Dict
 
 from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
-                      Resource, ResourceService, ResourceSet, StrRField,
-                      resource_decorator, view)
+                    ResourceSet,resource_decorator, view)
 
 from ..context.context import Context
-from ..context.variable import Variable
 from ..network.network import Network
 from .typing.twin_typing import TwinDict
 
@@ -219,7 +217,7 @@ class Twin(ResourceSet):
             net = Network.loads(val)
             nets[net.name] = net
             twin.add_network(net)
-        
+
         for val in data.get("contexts", []):
             ctx = Context.loads(val)
             current_ctx_name = ctx.name

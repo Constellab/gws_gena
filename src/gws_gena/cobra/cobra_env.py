@@ -1,5 +1,5 @@
-from gws_core import (PipShellProxy, MessageDispatcher)
 import os
+from gws_core import (PipShellProxy, MessageDispatcher)
 
 
 class CobraEnvHelper():

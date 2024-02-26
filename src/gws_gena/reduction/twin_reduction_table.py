@@ -3,7 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import BadRequestException, Table, resource_decorator
+from gws_core import  Table, resource_decorator
 
 
 @resource_decorator("TwinReductionTable",

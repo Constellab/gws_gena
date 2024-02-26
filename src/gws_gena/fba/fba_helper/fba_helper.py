@@ -4,7 +4,6 @@
 # About us: https://gencovery.com
 
 import math
-import re
 
 import cvxpy as cp
 import numpy as np

@@ -3,7 +3,7 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from typing import Dict, List
+from typing import List
 
 import networkx as nx
 from gws_biota import Cofactor as BiotaCofactor
