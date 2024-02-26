@@ -6,17 +6,12 @@
 from typing import List, Union
 
 import pandas as pd
-from gws_core import (BadRequestException, ListRField, ResourceRField,
-                      ResourceSet, SerializableRField, Table, TechnicalInfo,
+from gws_core import (BadRequestException, ResourceSet,Table, TechnicalInfo,
                       resource_decorator)
 from pandas import DataFrame
 from scipy import stats
 
-from ..network.network import Network
-from ..network.reaction.reaction import Reaction
-from ..network.typing.pathway_typing import ReactionPathwayDict
 from .fba_optimize_result import FBAOptimizeResult
-
 
 @resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True)
 class FBAResult(ResourceSet):
