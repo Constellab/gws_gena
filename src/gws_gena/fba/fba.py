@@ -83,7 +83,7 @@ class FBA(Task):
             short_description="Set True to perform parsimonious FBA (pFBA). In this case the quad solver is used. Set False otherwise"),
         "number_of_simulations":
         IntParam(
-            min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
+            default_value=None,min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Number of simulations",
             short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations.")
         #,
@@ -103,7 +103,8 @@ class FBA(Task):
 
         number_of_simulations = params["number_of_simulations"]
         #If number_of_simulations is not provided, keep all the simulations
-        number_of_simulations = next((len(measure.target) for _, measure in context.reaction_data.items()), None)
+        if number_of_simulations is None :
+            number_of_simulations = next((len(measure.target) for _, measure in context.reaction_data.items()), None)
 
         # check the length of the values
         for name_measure, measure in context.reaction_data.items():
