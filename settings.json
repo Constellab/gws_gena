@@ -3,7 +3,7 @@
   "author": "Gencovery",
   "author_email": "admin@gencovery.com",
   "description": "Genome-based regulatory Network Analytics (GENA)",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "variables": {
     "gws_gena:testdata_dir": "${CURRENT_DIR}/tests/testdata"
   },
