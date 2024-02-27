@@ -20,6 +20,9 @@ class NetworkImporter(ResourceImporter):
     This Task allows you to import genome-scale metabolic models in Constellab.
     In input, provide your file and you will get a Network in output.
 
+    In the parameters you need to specify the ID of the metabolite associated with the biomass.
+    If you don't have any in your model, set the "Add biomass metabolite" option to True.
+
     Be aware that in Constellab:
         - The compartment extracellular space (theoretical supernatant) (GO:0005615) is consider at steady state.
         - The compartment extracellular region (environment) (GO:0005576) is consider at the non-steady state.
