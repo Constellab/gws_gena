@@ -1,8 +1,5 @@
-import os
-
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import Settings
-from gws_gena import GapFinderHelper, Unicell
+from gws_gena import Unicell
 
 
 class TestUnicell(BaseTestCaseUsingFullBiotaDB):

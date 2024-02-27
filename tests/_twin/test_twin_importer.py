@@ -1,21 +1,16 @@
 
-import json
 import os
 
-import numpy
-import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (File, GTest, Settings,TaskRunner)
-from gws_gena import (Context, ContextImporter, FlatTwin, Network,
-                      NetworkImporter, Twin, TwinHelper,TwinBuilder)
-from pandas import DataFrame
+from gws_core import (File, Settings,TaskRunner)
+from gws_gena import (ContextImporter,NetworkImporter, Twin,TwinBuilder)
 
 settings = Settings.get_instance()
 
 class TestTwinImporter(BaseTestCaseUsingFullBiotaDB):
 
     def test_twin_importer(self):
-        self.print(f"Test Task Twin importer")
+        self.print("Test Task Twin importer")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "small_net")
 
@@ -38,4 +33,3 @@ class TestTwinImporter(BaseTestCaseUsingFullBiotaDB):
         twin = outputs["twin"]
 
         self.assertIsInstance(twin,Twin)
-

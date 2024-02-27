@@ -1,7 +1,6 @@
 
 import os
 
-from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, Settings, TaskRunner,BaseTestCaseLight
 from gws_gena import EntityIDTableImporter
 
@@ -12,7 +11,7 @@ class TestEntityIdImporter(BaseTestCaseLight):
         settings = Settings.get_instance()
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        self.print(f"Test EntityIDTableImporter")
+        self.print("Test EntityIDTableImporter")
 
         # run trainer
         tester = TaskRunner(

@@ -7,11 +7,11 @@ from gws_gena import PhenotypeTableImporter
 
 class TestPhenotypeTableImporter(BaseTestCaseLight):
 
-    def test_Phenotype_Table_importer(self):
+    def test_phenotype_table_importer(self):
         settings = Settings.get_instance()
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        self.print(f"Test PhenotypeTableImporter")
+        self.print("Test PhenotypeTableImporter")
 
         # run trainer
         tester = TaskRunner(

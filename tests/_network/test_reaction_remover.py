@@ -2,7 +2,7 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_core import File, Settings, TaskRunner
 from gws_gena import (ECTableImporter, EntityIDTableImporter, NetworkImporter,
                       ReactionRemover)
 

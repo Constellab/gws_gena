@@ -1,11 +1,9 @@
 
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import Compound, Network, NetworkImporter, Reaction, Twin
-from pandas import DataFrame
+from gws_core import File, Settings
+from gws_gena import NetworkImporter
 
 settings = Settings.get_instance()
 

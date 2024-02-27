@@ -4,7 +4,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, Settings
-from gws_gena import Context, ContextImporter, Network, NetworkImporter, Twin
+from gws_gena import ContextImporter, NetworkImporter, Twin
 
 settings = Settings.get_instance()
 

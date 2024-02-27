@@ -12,7 +12,7 @@ class TestFluxTableImporter(BaseTestCaseUsingFullBiotaDB):
         settings = Settings.get_instance()
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        self.print(f"Test Flux Table importer : only one simulation")
+        self.print("Test Flux Table importer : only one simulation")
 
         # run trainer
         tester = TaskRunner(
@@ -26,7 +26,7 @@ class TestFluxTableImporter(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(flux_table.get_data().iloc[0, 0], "R1_ex")
         self.assertEqual(flux_table.get_data().iloc[0,1], 30.0)
 
-        self.print(f"Test Flux Table importer : multiple simulations")
+        self.print("Test Flux Table importer : multiple simulations")
 
         tester = TaskRunner(
             inputs={"source": File(path=os.path.join(data_dir, "data/fluxTableMulti.csv"))},
