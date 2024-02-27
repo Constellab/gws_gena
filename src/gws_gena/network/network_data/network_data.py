@@ -171,7 +171,6 @@ class NetworkData(SerializableObjectJson):
     # -- C --
 
     def copy(self) -> 'NetworkData':
-        from ..network import Network
         net_data: NetworkData = NetworkData()
         net_data.name = self.name
         net_data.compounds = {k: v.copy() for k, v in self.compounds.items()}
@@ -775,6 +774,8 @@ class NetworkData(SerializableObjectJson):
             skip_orphans: bool = False,
             translate_ids: bool = False,
             replace_unknown_compartments: bool = False,
+            biomass_metabolite_id_user: str = None,
+            add_biomass : bool = False,
             task: Task = None) -> 'NetworkData':
         """ Load JSON data and create a Network  """
 
@@ -786,7 +787,9 @@ class NetworkData(SerializableObjectJson):
             biomass_reaction_id=biomass_reaction_id,
             skip_orphans=skip_orphans,
             translate_ids=translate_ids,
-            replace_unknown_compartments=replace_unknown_compartments
+            replace_unknown_compartments=replace_unknown_compartments,
+            biomass_metabolite_id_user = biomass_metabolite_id_user,
+            add_biomass = add_biomass
         )
 
     # -- N --

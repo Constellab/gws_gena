@@ -5,8 +5,8 @@
 
 from typing import Dict, List, Optional
 
-import numpy as np
-from gws_core import (BadRequestException, BoolParam, ConfigParams, JSONView,
+
+from gws_core import (ConfigParams, JSONView,
                       Resource, SerializableRField, Table, TableView, Task,
                       resource_decorator, view)
 from pandas import DataFrame
@@ -394,6 +394,8 @@ class Network(Resource):
               skip_orphans: bool = False,
               translate_ids: bool = False,
               replace_unknown_compartments: bool = False,
+              biomass_metabolite_id_user: str = None,
+              add_biomass : bool = False,
               task: Task = None) -> 'Network':
         """ Create a Network from JSON data  """
 
@@ -404,6 +406,8 @@ class Network(Resource):
             skip_orphans=skip_orphans,
             translate_ids=translate_ids,
             replace_unknown_compartments=replace_unknown_compartments,
+            biomass_metabolite_id_user = biomass_metabolite_id_user,
+            add_biomass = add_biomass,
             task=task
         )
         network.name = network.network_data.name

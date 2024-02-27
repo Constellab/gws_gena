@@ -4,13 +4,11 @@
 # About us: https://gencovery.com
 
 import copy
-import re
 from typing import List
 
-from gws_biota import Compound as BiotaCompound
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import EnzymeOrtholog as BiotaEnzymeOrtholog
-from gws_core import BadRequestException, Logger
+from gws_core import BadRequestException
 
 from ....helper.base_helper import BaseHelper
 from ...compartment.compartment import Compartment
@@ -233,7 +231,9 @@ class NetworkDataLoaderHelper(BaseHelper):
               biomass_reaction_id: str = None,
               skip_orphans: bool = False,
               translate_ids: bool = False,
-              replace_unknown_compartments: bool = False) -> 'NetworkData':
+              replace_unknown_compartments: bool = False,
+              biomass_metabolite_id_user: str = None,
+              add_biomass: bool = False) -> 'NetworkData':
         """ Load JSON data and create a Network  """
         from ....mapper.bigg_mapper import BiggMapper
         from ...compound.compound import Compound
@@ -278,36 +278,56 @@ class NetworkDataLoaderHelper(BaseHelper):
         )
 
         # check if the biomass compartment exists
-        if net.get_biomass_compound() is None:
-            self.log_warning_message(
-                "No explicit biomass entity found. Trying to infer and add an explicit biomass entity ...")
-            if biomass_reaction_id:
-                self.log_warning_message(f'Looking for user biomass reaction "{biomass_reaction_id}" ...')
-                if biomass_reaction_id in net.reactions.get_elements():
-                    rxn = net.reactions[biomass_reaction_id]
-                    biomass = Compound(
-                        CompoundDict(
-                            name="biomass",
-                            compartment=Compartment.create_biomass_compartment()
-                        ))
-                    rxn.add_product(biomass, 1, net)
-                else:
-                    raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
-            else:
-                self.log_warning_message('No user biomass given')
-                biomass = None
-                for rxn in net.reactions.values():
-                    if "biomass" in rxn.id.lower():
-                        # can be used as biomas reaction
-                        if biomass is None:
-                            biomass = Compound(
-                                CompoundDict(
-                                    name="biomass",
-                                    compartment=Compartment.create_biomass_compartment()
-                                ))
+        if biomass_metabolite_id_user is not None:
+            if biomass_metabolite_id_user != "" :
+                #Check if the metabolite exists in the network
+                if biomass_metabolite_id_user not in net.compounds:
+                    #If not, raise an Exception
+                    raise Exception(f"The metabolite {biomass_metabolite_id_user} doesn't exist in the network.")
+
+                #Check if the metabolite produced by the reaction is in the biomass compartment
+                compartment_go_id = net.compounds[biomass_metabolite_id_user].compartment.go_id
+                if compartment_go_id !='GO:0016049':
+                    #If not, raise an Exception
+                    raise Exception(f"The metabolite {biomass_metabolite_id_user} must be in the biomass compartment")
+
+                #Check is the metabolite biomass is not used in another reaction as substrates
+                for reaction in net.reactions:
+                    if biomass_metabolite_id_user in net.reactions[reaction].substrates:
+                        #If not, raise an Exception
+                        raise Exception(f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction}. Verify your biomass_metabolite_id.")
+
+        if add_biomass is True:
+            if net.get_biomass_compound() is None:
+                self.log_warning_message(
+                    "No explicit biomass entity found. Trying to infer and add an explicit biomass entity ...")
+                if biomass_reaction_id:
+                    self.log_warning_message(f'Looking for user biomass reaction "{biomass_reaction_id}" ...')
+                    if biomass_reaction_id in net.reactions.get_elements():
+                        rxn = net.reactions[biomass_reaction_id]
+                        biomass = Compound(
+                            CompoundDict(
+                                name="biomass",
+                                compartment=Compartment.create_biomass_compartment()
+                            ))
                         rxn.add_product(biomass, 1, net)
-                        self.log_warning_message(
-                            f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')
+                    else:
+                        raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
+                else:
+                    self.log_warning_message('No user biomass given')
+                    biomass = None
+                    for rxn in net.reactions.values():
+                        if "biomass" in rxn.id.lower():
+                            # can be used as biomas reaction
+                            if biomass is None:
+                                biomass = Compound(
+                                    CompoundDict(
+                                        name="biomass",
+                                        compartment=Compartment.create_biomass_compartment()
+                                    ))
+                            rxn.add_product(biomass, 1, net)
+                            self.log_warning_message(
+                                f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')
 
         return net
 

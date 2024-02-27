@@ -7,7 +7,7 @@ import json
 from typing import Type
 
 from gws_core import (BadRequestException, BoolParam, ConfigParams,
-                      ConfigSpecs, File, ResourceImporter, importer_decorator)
+                      ConfigSpecs, File, ResourceImporter, importer_decorator,StrParam)
 
 from ..network import Network
 
@@ -32,6 +32,15 @@ class NetworkImporter(ResourceImporter):
     """
 
     config_specs: ConfigSpecs = {
+        "biomass_metabolite_id_user":
+        StrParam(
+            default_value = "", human_name="Biomass metabolite id", short_description="The id of the Biomass metabolite", optional = True),
+        "add_biomass":
+        BoolParam(
+            human_name="Add biomass metabolite",
+            default_value=False,
+            visibility=BoolParam.PROTECTED_VISIBILITY,
+            short_description="Add biomass metabolite in a compartment biomass."),
         "translate_ids":
         BoolParam(
             human_name="Translate all ids",
@@ -66,6 +75,14 @@ class NetworkImporter(ResourceImporter):
         translate_ids = params.get_value("translate_ids", False)
         skip_orphans = params.get_value("skip_orphans", False)
         replace_unknown_compartments = params.get_value("replace_unknown_compartments", False)
+        biomass_metabolite_id_user = params.get_value("biomass_metabolite_id_user", None)
+        add_biomass = params.get_value("add_biomass", False)
+
+        if (add_biomass is True and biomass_metabolite_id_user):
+            raise Exception("If there is already a biomass metabolite in the network, we can't add one. Set the parameter 'add_biomass' to False")
+        if (add_biomass is False and not biomass_metabolite_id_user):
+            raise Exception("A biomass metabolite must be present in the network. Set the biomass_metabolite_id_user parameter with your meatbolite or set add_biomass to True.")
+
         with open(source.path, 'r', encoding="utf-8") as fp:
             try:
                 data = json.load(fp)
@@ -78,8 +95,9 @@ class NetworkImporter(ResourceImporter):
                     data,
                     skip_orphans=skip_orphans,
                     translate_ids=translate_ids,
-                    replace_unknown_compartments=replace_unknown_compartments
-                )
+                    replace_unknown_compartments=replace_unknown_compartments,
+                    biomass_metabolite_id_user = biomass_metabolite_id_user,
+                    add_biomass = add_biomass)
             elif data.get("network"):
                 # is gws resource
                 net = Network.loads(
