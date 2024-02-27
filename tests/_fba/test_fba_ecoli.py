@@ -21,7 +21,8 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             organism_result_dir = os.path.join(data_dir, 'fba', organism)
             net = NetworkImporter.call(
                 File(os.path.join(organism_dir, f"{organism}.json")),
-                params={"translate_ids": translate_ids}
+                params={"translate_ids": translate_ids,
+                "add_biomass" : True}
             )
             ctx = ContextImporter.call(File(
                 os.path.join(organism_dir, f"{organism}_context.json")
@@ -76,7 +77,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             # file_path = os.path.join(result_dir, "sv.csv")
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(sv.to_csv())
-            
+
             table = fluxes.to_numpy()
             table = numpy.array(table, dtype=float)
             file_path = os.path.join(result_dir, "flux.csv")

@@ -24,7 +24,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "small_net.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params={"skip_orphans": True}
+            params={"skip_orphans": True,"add_biomass" : True}
         )
 
         def do_test(context_name):
@@ -90,7 +90,7 @@ class TestTwin(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "toy.json")),
-            {}
+            {"add_biomass" : True}
         )
         ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "toy_context.json")),

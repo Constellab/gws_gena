@@ -1,12 +1,9 @@
-import json
+
 import os
 
-import numpy
-import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ExperimentService, File, GTest, IExperiment, Settings
-from gws_gena import (Context, ContextImporter, FVAProto, Network,
-                      NetworkImporter, Twin)
+from gws_core import  File, GTest, IExperiment, Settings
+from gws_gena import (ContextImporter, FVAProto,NetworkImporter)
 
 settings = Settings.get_instance()
 
@@ -23,7 +20,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             organism_dir = os.path.join(data_dir, organism)
             organism_result_dir = os.path.join(data_dir, 'fva', organism)
             net = NetworkImporter.call(
-                File(path=os.path.join(organism_dir, f"{organism}.json"))
+                File(path=os.path.join(organism_dir, f"{organism}.json")),params = {"add_biomass" : True}
             )
             ctx = ContextImporter.call(File(
                 path=os.path.join(organism_dir, f"{organism}_context.json")

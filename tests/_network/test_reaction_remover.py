@@ -18,7 +18,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
             File(
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
-            params={})
+            params={"add_biomass" : True})
         table = ECTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "ec_table.csv")),
             params={})
@@ -33,7 +33,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
 
         original_net = NetworkImporter.call(
             File(path=os.path.join(data_dir,  "reaction_remover", "toy_with_added_reactions.json")),
-            params={}
+            params={"add_biomass" : True}
         )
 
         self.assertEqual(len(net.reactions), 7)
@@ -49,7 +49,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
             File(
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
-            params={})
+            params={"add_biomass" : True})
         table = EntityIDTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "id_table.csv")),
             params={'id_column': 'ids'})
@@ -65,7 +65,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
 
         original_net = NetworkImporter.call(
             File(path=os.path.join(data_dir,  "reaction_remover", "toy_with_added_reactions.json")),
-            params={}
+            params={"add_biomass" : True}
         )
 
         # self.assertEqual(len(net.reactions), 7)

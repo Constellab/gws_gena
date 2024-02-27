@@ -15,7 +15,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko.json")),
-            {}
+            params = {"add_biomass" : True}
         )
         ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko_context.json")),

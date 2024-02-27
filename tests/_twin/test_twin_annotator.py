@@ -17,7 +17,7 @@ class TestTwinAnnotator(BaseTestCaseUsingFullBiotaDB):
         organism_dir = os.path.join(data_dir, organism)
         net = NetworkImporter.call(
             File(os.path.join(organism_dir, f"{organism}.json")),
-            params={}
+            params={"add_biomass" : True}
         )
         ctx = ContextImporter.call(File(
             os.path.join(organism_dir, f"{organism}_context.json")

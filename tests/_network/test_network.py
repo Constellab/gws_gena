@@ -21,7 +21,8 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=file_path),
-            params={'skip_orphans': True}
+            params={'skip_orphans': True,
+                    "add_biomass" : True}
         )
 
         json_data = net.dumps()
@@ -100,7 +101,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=file_path),
-            params={}
+            params={"add_biomass" : True}
         )
 
         self.print("ecoli successffuly imported")
@@ -117,8 +118,26 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         # import 2
         net = NetworkImporter.call(
             File(path=file_path),
-            params={}
+            params={"add_biomass" : True}
         )
-        self.print("ecoli successffuly imported")
+        self.print("ecoli successfully imported")
         self.assertEqual(len(net.compounds), 93)
         self.assertEqual(len(net.reactions), 95)
+
+    def test_network_import_file_with_metabolite_biomass(self):
+        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = os.path.join(data_dir, "ecoli")
+        file_path = os.path.join(data_dir, "ecoli_with_biomass_metabolite.json")
+
+        net = NetworkImporter.call(
+            File(path=file_path),
+            params={"add_biomass" : False,
+            "biomass_metabolite_id_user" : "biomass_biomass"}
+        )
+
+        self.print("ecoli with metabolite biomass successffuly imported")
+        self.assertEqual(len(net.compounds), 93)
+        self.assertEqual(net.compounds["o2_env"].compartment.id, "env")
+        self.assertEqual(net.compounds["o2_env"].compartment.is_steady, False)
+        self.assertEqual(len(net.reactions), 95)
+        self.assertEqual(net.reactions["EX_o2_e"].id, "EX_o2_e")

@@ -19,7 +19,7 @@ class TestTwinReductionHelper(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "bastin_network.json")),
-            {}
+            {"add_biomass" : True}
         )
         ctx = ContextImporter.call(
             File(path=os.path.join(data_dir, "bastin_context_reduce.json")),

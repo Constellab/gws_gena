@@ -14,7 +14,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
     def test_reaction_ec_adder(self):
         self.print("Test reaction EC adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={})
+        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={"add_biomass" : True})
         table = ECTableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "ec_table.csv")),
             params={})
@@ -38,7 +38,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
     def test_reaction_id_adder(self):
         self.print("Test reaction ID adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
-        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={})
+        net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={"add_biomass" : True})
         self.assertEqual(len(net.reactions), 7)
 
         table = EntityIDTableImporter.call(

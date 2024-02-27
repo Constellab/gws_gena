@@ -1,14 +1,9 @@
 
-import json
 import os
 
-import numpy
-import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import (Context, ContextImporter, FlatTwin, GapFinderHelper,
-                      Network, NetworkImporter, Twin, TwinHelper)
-from pandas import DataFrame
+from gws_core import File,  Settings
+from gws_gena import (GapFinderHelper,NetworkImporter )
 
 settings = Settings.get_instance()
 
@@ -22,7 +17,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params={}
+            params={"add_biomass" : True}
         )
 
         helper = GapFinderHelper()
@@ -41,7 +36,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy_network.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params={}
+            params={"add_biomass" : True}
         )
 
         helper = GapFinderHelper()
@@ -59,7 +54,7 @@ class TestDeadEndFinderHelper(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy_with_orphan.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params={}
+            params={"add_biomass" : True}
         )
 
         helper = GapFinderHelper()

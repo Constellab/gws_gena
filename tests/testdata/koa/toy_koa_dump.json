@@ -239,24 +239,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": -2.1947700697516247e-05,
-                        "lower_bound": -2.1947700697516247e-05,
-                        "upper_bound": -2.1947700697516247e-05
+                        "value": 4.0434558480063966e-08,
+                        "lower_bound": 4.0434558480063966e-08,
+                        "upper_bound": 4.0434558480063966e-08
                     },
                     "toy_cell_R2": {
-                        "value": 5.00011177302245,
-                        "lower_bound": 5.00011177302245,
-                        "upper_bound": 5.00011177302245
+                        "value": -1.0629011877763505e-07,
+                        "lower_bound": -1.0629011877763505e-07,
+                        "upper_bound": -1.0629011877763505e-07
                     },
                     "toy_cell_RB": {
-                        "value": 3.809623921806655e-12,
-                        "lower_bound": 3.809623921806655e-12,
-                        "upper_bound": 3.809623921806655e-12
+                        "value": 1.3729120792868292e-07,
+                        "lower_bound": 1.3729120792868292e-07,
+                        "upper_bound": 1.3729120792868292e-07
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 1e-09,
-                        "lower_bound": 1e-09,
-                        "upper_bound": 1e-09
+                        "value": -2.9294089773958094e-08,
+                        "lower_bound": -2.9294089773958094e-08,
+                        "upper_bound": -2.9294089773958094e-08
                     }
                 }
             },
@@ -283,24 +283,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.000037514290899,
-                        "lower_bound": 5.000037514290899,
-                        "upper_bound": 5.000037514290899
+                        "value": -2.742049817632658e-07,
+                        "lower_bound": -2.742049817632658e-07,
+                        "upper_bound": -2.742049817632658e-07
                     },
                     "toy_cell_R2": {
-                        "value": -6.0549260585965125e-05,
-                        "lower_bound": -6.0549260585965125e-05,
-                        "upper_bound": -6.0549260585965125e-05
+                        "value": -4.1817151723326646e-08,
+                        "lower_bound": -4.1817151723326646e-08,
+                        "upper_bound": -4.1817151723326646e-08
                     },
                     "toy_cell_RB": {
-                        "value": 7.6224796199861e-12,
-                        "lower_bound": 7.6224796199861e-12,
-                        "upper_bound": 7.6224796199861e-12
+                        "value": -6.439567256191866e-10,
+                        "lower_bound": -6.439567256191866e-10,
+                        "upper_bound": -6.439567256191866e-10
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 1e-09,
-                        "lower_bound": 1e-09,
-                        "upper_bound": 1e-09
+                        "value": -8.570365724961662e-08,
+                        "lower_bound": -8.570365724961662e-08,
+                        "upper_bound": -8.570365724961662e-08
                     }
                 }
             },
@@ -328,24 +328,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.000015543216349,
-                        "lower_bound": 5.000015543216349,
-                        "upper_bound": 5.000015543216349
+                        "value": -4.304792760918324e-08,
+                        "lower_bound": -4.304792760918324e-08,
+                        "upper_bound": -4.304792760918324e-08
                     },
                     "toy_cell_R2": {
-                        "value": 5.000051117106049,
-                        "lower_bound": 5.000051117106049,
-                        "upper_bound": 5.000051117106049
+                        "value": -5.052854060470637e-08,
+                        "lower_bound": -5.052854060470637e-08,
+                        "upper_bound": -5.052854060470637e-08
                     },
                     "toy_cell_RB": {
-                        "value": 1.142558904339924e-11,
-                        "lower_bound": 1.142558904339924e-11,
-                        "upper_bound": 1.142558904339924e-11
+                        "value": 9.013964577066061e-07,
+                        "lower_bound": 9.013964577066061e-07,
+                        "upper_bound": 9.013964577066061e-07
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 2e-09,
-                        "lower_bound": 2e-09,
-                        "upper_bound": 2e-09
+                        "value": -5.116227004950293e-08,
+                        "lower_bound": -5.116227004950293e-08,
+                        "upper_bound": -5.116227004950293e-08
                     }
                 }
             },
@@ -372,24 +372,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": -2.196138384560388e-05,
-                        "lower_bound": -2.196138384560388e-05,
-                        "upper_bound": -2.196138384560388e-05
+                        "value": -5.780138354856593e-08,
+                        "lower_bound": -5.780138354856593e-08,
+                        "upper_bound": -5.780138354856593e-08
                     },
                     "toy_cell_R2": {
-                        "value": 5.000111826363078,
-                        "lower_bound": 5.000111826363078,
-                        "upper_bound": 5.000111826363078
+                        "value": -6.332815307895918e-08,
+                        "lower_bound": -6.332815307895918e-08,
+                        "upper_bound": -6.332815307895918e-08
                     },
                     "toy_cell_RB": {
-                        "value": 3.81288256348933e-12,
-                        "lower_bound": 3.81288256348933e-12,
-                        "upper_bound": 3.81288256348933e-12
+                        "value": -3.496330516846668e-08,
+                        "lower_bound": -3.496330516846668e-08,
+                        "upper_bound": -3.496330516846668e-08
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 1e-09,
-                        "lower_bound": 1e-09,
-                        "upper_bound": 1e-09
+                        "value": -5.798969564741993e-08,
+                        "lower_bound": -5.798969564741993e-08,
+                        "upper_bound": -5.798969564741993e-08
                     }
                 }
             },
@@ -416,24 +416,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": -2.1954539073940313e-05,
-                        "lower_bound": -2.1954539073940313e-05,
-                        "upper_bound": -2.1954539073940313e-05
+                        "value": -4.912240657096316e-08,
+                        "lower_bound": -4.912240657096316e-08,
+                        "upper_bound": -4.912240657096316e-08
                     },
                     "toy_cell_R2": {
-                        "value": 5.000111799683218,
-                        "lower_bound": 5.000111799683218,
-                        "upper_bound": 5.000111799683218
+                        "value": -7.883899232617453e-08,
+                        "lower_bound": -7.883899232617453e-08,
+                        "upper_bound": -7.883899232617453e-08
                     },
                     "toy_cell_RB": {
-                        "value": 3.811252197986017e-12,
-                        "lower_bound": 3.811252197986017e-12,
-                        "upper_bound": 3.811252197986017e-12
+                        "value": -1.667743775801688e-08,
+                        "lower_bound": -1.667743775801688e-08,
+                        "upper_bound": -1.667743775801688e-08
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 1e-09,
-                        "lower_bound": 1e-09,
-                        "upper_bound": 1e-09
+                        "value": -6.164433860700414e-08,
+                        "lower_bound": -6.164433860700414e-08,
+                        "upper_bound": -6.164433860700414e-08
                     }
                 }
             },
@@ -460,24 +460,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 5.000037525979646,
-                        "lower_bound": 5.000037525979646,
-                        "upper_bound": 5.000037525979646
+                        "value": -1.7769416848727058e-07,
+                        "lower_bound": -1.7769416848727058e-07,
+                        "upper_bound": -1.7769416848727058e-07
                     },
                     "toy_cell_R2": {
-                        "value": -6.056370315861596e-05,
-                        "lower_bound": -6.056370315861596e-05,
-                        "upper_bound": -6.056370315861596e-05
+                        "value": -1.3379117416319287e-07,
+                        "lower_bound": -1.3379117416319287e-07,
+                        "upper_bound": -1.3379117416319287e-07
                     },
                     "toy_cell_RB": {
-                        "value": 7.625737565128266e-12,
-                        "lower_bound": 7.625737565128266e-12,
-                        "upper_bound": 7.625737565128266e-12
+                        "value": -1.1964929724417798e-07,
+                        "lower_bound": -1.1964929724417798e-07,
+                        "upper_bound": -1.1964929724417798e-07
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 1e-09,
-                        "lower_bound": 1e-09,
-                        "upper_bound": 1e-09
+                        "value": -1.4402246583642665e-07,
+                        "lower_bound": -1.4402246583642665e-07,
+                        "upper_bound": -1.4402246583642665e-07
                     }
                 }
             },
@@ -504,24 +504,24 @@
             "data": {
                 "simulations": {
                     "toy_cell_R1": {
-                        "value": 10.000031053388781,
-                        "lower_bound": 10.000031053388781,
-                        "upper_bound": 10.000031053388781
+                        "value": -2.930988033884288e-07,
+                        "lower_bound": -2.930988033884288e-07,
+                        "upper_bound": -2.930988033884288e-07
                     },
                     "toy_cell_R2": {
-                        "value": 10.000102103209565,
-                        "lower_bound": 10.000102103209565,
-                        "upper_bound": 10.000102103209565
+                        "value": -3.187109166466104e-07,
+                        "lower_bound": -3.187109166466104e-07,
+                        "upper_bound": -3.187109166466104e-07
                     },
                     "toy_cell_RB": {
-                        "value": 2.2890304114449885e-11,
-                        "lower_bound": 2.2890304114449885e-11,
-                        "upper_bound": 2.2890304114449885e-11
+                        "value": -8.652461355998755e-08,
+                        "lower_bound": -8.652461355998755e-08,
+                        "upper_bound": -8.652461355998755e-08
                     },
                     "toy_cell_R1,toy_cell_R2": {
-                        "value": 4e-09,
-                        "lower_bound": 4e-09,
-                        "upper_bound": 4e-09
+                        "value": -3.2607580491331004e-07,
+                        "lower_bound": -3.2607580491331004e-07,
+                        "upper_bound": -3.2607580491331004e-07
                     }
                 }
             },
@@ -544,7 +544,7 @@
             "go_id": "GO:0005615",
             "bigg_id": "e",
             "color": "#ef66f0",
-            "name": "extracellular space"
+            "name": "extracellular space (theoretical supernatant)"
         },
         {
             "id": "b",

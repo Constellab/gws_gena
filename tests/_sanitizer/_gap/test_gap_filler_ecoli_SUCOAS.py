@@ -2,7 +2,7 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_core import File, Settings, TaskRunner
 from gws_gena import GapFiller, GapFinderHelper, NetworkImporter
 
 settings = Settings.get_instance()
@@ -15,7 +15,7 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "./ecoli/gaps/ecoli_without_SUCOAS.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            {}
+            {"add_biomass" : True}
         )
 
         # params = {"tax_id":  "562"}  # ecoli

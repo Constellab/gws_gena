@@ -20,7 +20,8 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             organism_dir = os.path.join(data_dir, organism)
             organism_result_dir = os.path.join(data_dir, 'fba', organism)
             net = NetworkImporter.call(
-                File(os.path.join(organism_dir, f"{organism}.json"))
+                File(os.path.join(organism_dir, f"{organism}.json")),
+                params= {"add_biomass" : True}
             )
             ctx = ContextImporter.call(File(
                 os.path.join(organism_dir, f"{organism}_context.json")

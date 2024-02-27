@@ -24,7 +24,7 @@ class TestTransporterAdder(BaseTestCaseUsingFullBiotaDB):
 
         net: Network = NetworkImporter.call(
             File(path=os.path.join(data_dir, "recon_net.json")),
-            params={'skip_orphans': True}
+            params={'skip_orphans': True,"add_biomass" : True}
         )
 
         print(len(net.compounds))

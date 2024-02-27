@@ -20,7 +20,8 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
             net = NetworkImporter.call(File(
-                path=os.path.join(data_dir, "toy.json"))
+                path=os.path.join(data_dir, "toy.json")),
+                params = {"add_biomass" : True}
             )
             ctx = ContextImporter.call(
                 File(path=os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json")))

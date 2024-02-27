@@ -18,7 +18,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(os.path.join(data_dir, "ecoli", "ecoli.json")),
-            {}
+            params = {"add_biomass" : True}
         )
 
         ctx = ContextImporter.call(

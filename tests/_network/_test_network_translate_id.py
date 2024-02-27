@@ -19,7 +19,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=file_path),
-            params={"translate_ids": True}
+            params={"translate_ids": True,"add_biomass" : True}
         )
 
         self.print("ecoli successffuly imported - skip exchange reactions")
@@ -33,7 +33,8 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         # import 2
         net = NetworkImporter.call(
             File(path=file_path),
-            params={"translate_ids": True}
+            params={"translate_ids": True,
+                    "add_biomass" : True}
         )
         self.print("ecoli successffuly imported - skip exchange reactions")
         self.assertEqual(len(net.compounds), 73)

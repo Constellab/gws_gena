@@ -24,7 +24,7 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
 
         # network
         file_path = os.path.join(data_dir, "toy.json")
-        net = NetworkImporter.call(File(path=file_path), params={})
+        net = NetworkImporter.call(File(path=file_path), params={"add_biomass" : True})
 
         # experiment
         tester = TaskRunner(

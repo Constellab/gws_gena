@@ -1,28 +1,23 @@
 
-import json
 import os
 
-import numpy
-import pandas as pd
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (File, GTest, Settings,TaskRunner)
-from gws_gena import (Context, ContextImporter, FlatTwin, Network,
-                      NetworkImporter, Twin, TwinHelper, TwinExporter,TwinBuilder)
-from pandas import DataFrame
+from gws_core import (File, Settings,TaskRunner)
+from gws_gena import (ContextImporter,NetworkImporter,TwinExporter,TwinBuilder)
 
 settings = Settings.get_instance()
 
 class TestTwinExporter(BaseTestCaseUsingFullBiotaDB):
 
     def test_twin_exporter(self):
-        self.print(f"Test Task Twin exporter")
+        self.print("Test Task Twin exporter")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "small_net")
 
         file_path = os.path.join(data_dir, "small_net.json")
         net = NetworkImporter.call(
             File(path=file_path),
-            params={"skip_orphans": True}
+            params={"skip_orphans": True,"add_biomass" : True}
         )
 
         file_path = os.path.join(data_dir,"small_context.json")
@@ -39,7 +34,7 @@ class TestTwinExporter(BaseTestCaseUsingFullBiotaDB):
         twin = outputs["twin"]
 
         ## CASE JSON exporter ##
-        self.print(f"Test json export")
+        self.print("Test json export")
         twin_exporter = TwinExporter.call(
             twin,
             params={'file_name': "twin",

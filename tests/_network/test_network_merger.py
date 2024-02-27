@@ -19,8 +19,8 @@ class TestMerge(BaseTestCaseUsingFullBiotaDB):
         file1 = File(path=os.path.join(data_dir, "network_merger", "net1.json"))
         file2 = File(path=os.path.join(data_dir, "network_merger", "net2.json"))
 
-        net1 = NetworkImporter.call(file1, {})
-        net2 = NetworkImporter.call(file2, {})
+        net1 = NetworkImporter.call(file1, {"add_biomass" : True})
+        net2 = NetworkImporter.call(file2, {"add_biomass" : True})
         n1 = len(net1.reactions)
         n2 = len(net2.reactions)
 

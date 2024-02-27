@@ -20,7 +20,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         def run_fba(ctx_name, solver="highs", relax_qssa=False, parsimony_strength = 0.0):
             file_path = os.path.join(data_dir, "ctx_data", f"{ctx_name}.csv")
             flux_data = FluxTableImporter.call(File(path=file_path), params={"delimiter": ","})
-            net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params={})
+            net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params={"add_biomass" : True})
 
             # build context
             tester = TaskRunner(

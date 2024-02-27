@@ -19,7 +19,8 @@ class TestGraph(BaseTestCaseUsingFullBiotaDB):
 
         net = NetworkImporter.call(
             File(path=file_path),
-            params={"skip_orphans": True}
+            params={"skip_orphans": True,
+                    "add_biomass" : True}
         )
 
         graph = Graph(net)

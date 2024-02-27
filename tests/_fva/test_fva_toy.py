@@ -28,7 +28,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
             net = NetworkImporter.call(File(
                 path=os.path.join(data_dir, "toy.json")
-            ))
+            ),params = {"add_biomass" : True})
             ctx = ContextImporter.call(File(
                 path=os.path.join(data_dir, "toy_context.json")
             ))
