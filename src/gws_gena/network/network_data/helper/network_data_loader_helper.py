@@ -38,7 +38,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         return annotation_dict
 
     def _create_compounds_from_dump(
-            self, net, data: 'NetworkDict', *, mapping_dict, skip_orphans, translate_ids):
+            self, net, data: 'NetworkDict', *, mapping_dict, skip_orphans):
         from ...compound.compound import Compound
 
         added_comps = {}
@@ -77,10 +77,8 @@ class NetworkDataLoaderHelper(BaseHelper):
             else:
                 compartment = Compartment(data["compartments"][compart_id])
 
-            if translate_ids:
-                used_comp_id = None
-            else:
-                used_comp_id = comp_id
+
+            used_comp_id = comp_id
 
             # create compound
             comp = Compound(
@@ -144,7 +142,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         return biota_enzymes_dict
 
     def _creates_reactions_from_dump(
-            self, net, data: 'NetworkDict', *, added_comps, mapping_dict, translate_ids):
+            self, net, data: 'NetworkDict', *, added_comps, mapping_dict):
 
         from ...reaction.reaction import Reaction
 
@@ -177,10 +175,7 @@ class NetworkDataLoaderHelper(BaseHelper):
                 if biota_rxn is not None:
                     rxn_data["rhea_id"] = biota_rxn.rhea_id
 
-            if translate_ids:
-                used_rxn_id = None
-            else:
-                used_rxn_id = rxn_data["id"]
+            used_rxn_id = rxn_data["id"]
 
             rxn = Reaction(
                 ReactionDict(
@@ -230,12 +225,10 @@ class NetworkDataLoaderHelper(BaseHelper):
     def loads(self, data: 'NetworkDict', *,
               biomass_reaction_id: str = None,
               skip_orphans: bool = False,
-              translate_ids: bool = False,
               replace_unknown_compartments: bool = False,
               biomass_metabolite_id_user: str = None,
               add_biomass: bool = False) -> 'NetworkData':
         """ Load JSON data and create a Network  """
-        from ....mapper.bigg_mapper import BiggMapper
         from ...compound.compound import Compound
         from ...network import NetworkData
 
@@ -252,8 +245,6 @@ class NetworkDataLoaderHelper(BaseHelper):
             raise BadRequestException("Invalid network dump. Reactions not found")
 
         mapping_dict = {}
-        if translate_ids:
-            mapping_dict = BiggMapper.create_mapping_dict(data)
 
         self.log_info_message("Loading simulations ...")
         net = self._loads_simulations_from_dump(net, data)
@@ -264,8 +255,7 @@ class NetworkDataLoaderHelper(BaseHelper):
             net,
             data,
             mapping_dict=mapping_dict,
-            skip_orphans=skip_orphans,
-            translate_ids=translate_ids
+            skip_orphans=skip_orphans
         )
 
         self.log_info_message("Creating reactions ...")
@@ -273,8 +263,7 @@ class NetworkDataLoaderHelper(BaseHelper):
             net,
             data,
             added_comps=added_comps,
-            mapping_dict=mapping_dict,
-            translate_ids=translate_ids
+            mapping_dict=mapping_dict
         )
 
         # check if the biomass compartment exists

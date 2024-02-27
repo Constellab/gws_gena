@@ -14,15 +14,14 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
     def test_large_fba(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
-        def run_fba(organism, solver="highs", relax_qssa=False, translate_ids=False):
+        def run_fba(organism, solver="highs", relax_qssa=False):
             experiment = IExperiment(FBAProto)
             proto = experiment.get_protocol()
             organism_dir = os.path.join(data_dir, organism)
             organism_result_dir = os.path.join(data_dir, 'fba', organism)
             net = NetworkImporter.call(
                 File(os.path.join(organism_dir, f"{organism}.json")),
-                params={"translate_ids": translate_ids,
-                "add_biomass" : True}
+                params={"add_biomass" : True}
             )
             ctx = ContextImporter.call(File(
                 os.path.join(organism_dir, f"{organism}_context.json")
@@ -93,7 +92,3 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         for relax in [False, True]:
             self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             run_fba(organism=organism, solver="quad", relax_qssa=relax)
-
-        # for relax in [True]:
-        #     self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad + translate ids)")
-        #     run_fba(organism=organism, solver="quad", relax_qssa=relax, translate_ids=True)

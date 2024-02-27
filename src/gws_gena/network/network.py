@@ -392,7 +392,6 @@ class Network(Resource):
     @ classmethod
     def loads(cls, data: NetworkDict, *, biomass_reaction_id: str = None,
               skip_orphans: bool = False,
-              translate_ids: bool = False,
               replace_unknown_compartments: bool = False,
               biomass_metabolite_id_user: str = None,
               add_biomass : bool = False,
@@ -404,7 +403,6 @@ class Network(Resource):
             data,
             biomass_reaction_id=biomass_reaction_id,
             skip_orphans=skip_orphans,
-            translate_ids=translate_ids,
             replace_unknown_compartments=replace_unknown_compartments,
             biomass_metabolite_id_user = biomass_metabolite_id_user,
             add_biomass = add_biomass,

@@ -46,7 +46,7 @@ class Unicell:
         with open(path, 'r', encoding="utf-8") as fp:
             data = json.load(fp)
 
-        net = Network.loads(data, translate_ids=False)
+        net = Network.loads(data)
 
         return net
 

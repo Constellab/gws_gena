@@ -44,12 +44,6 @@ class NetworkImporter(ResourceImporter):
             default_value=False,
             visibility=BoolParam.PROTECTED_VISIBILITY,
             short_description="Add biomass metabolite in a compartment biomass."),
-        "translate_ids":
-        BoolParam(
-            human_name="Translate all ids",
-            default_value=False,
-            visibility=BoolParam.PROTECTED_VISIBILITY,
-            short_description="If possible, translate all (compound and reaction) (recommended)"),
         "replace_unknown_compartments":
         BoolParam(
             human_name="Set default compartment as others",
@@ -75,7 +69,6 @@ class NetworkImporter(ResourceImporter):
         """
 
         net: Network
-        translate_ids = params.get_value("translate_ids", False)
         skip_orphans = params.get_value("skip_orphans", False)
         replace_unknown_compartments = params.get_value("replace_unknown_compartments", False)
         biomass_metabolite_id_user = params.get_value("biomass_metabolite_id_user", None)
@@ -97,7 +90,6 @@ class NetworkImporter(ResourceImporter):
                 net = Network.loads(
                     data,
                     skip_orphans=skip_orphans,
-                    translate_ids=translate_ids,
                     replace_unknown_compartments=replace_unknown_compartments,
                     biomass_metabolite_id_user = biomass_metabolite_id_user,
                     add_biomass = add_biomass)
@@ -106,7 +98,6 @@ class NetworkImporter(ResourceImporter):
                 net = Network.loads(
                     data["network"],
                     skip_orphans=skip_orphans,
-                    translate_ids=translate_ids,
                     replace_unknown_compartments=replace_unknown_compartments
                 )
             elif data.get("data", {}).get("network"):
@@ -115,7 +106,6 @@ class NetworkImporter(ResourceImporter):
                 net = Network.loads(
                     data["data"]["network"],
                     skip_orphans=skip_orphans,
-                    translate_ids=translate_ids,
                     replace_unknown_compartments=replace_unknown_compartments
                 )
             else:
