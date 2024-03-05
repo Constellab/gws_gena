@@ -1,6 +1,6 @@
 import os
 from gws_gena.kegg.kegg_visualisation import KEGGVisualisation
-from gws_core import (File,TaskRunner,Settings,BaseTestCase)
+from gws_core import (File,TaskRunner,Settings,BaseTestCase,TableImporter)
 
 settings = Settings.get_instance()
 
@@ -21,9 +21,31 @@ class TestKEGGVisualisation(BaseTestCase):
         #execute the TaskRunner
         outputs_kegg_visualisation = runner_kegg_visualisation.run()
 
-        #check if we retrieve one of the output
+        #check if we retrieve the output
         pathways = outputs_kegg_visualisation['pathways'].get_resources()
         self.assertTrue("hsa00480.pathview.png" in pathways)
+        list_pathway_error = outputs_kegg_visualisation['list_pathway_error']
+        self.assertTrue("hsa01240" in list_pathway_error.to_dataframe().values)
+
+        ## CASE HSA ONLY GENES WITH TABLE ##
+        self.print("Test KEGG Visualisation : human TABLE")
+        #load genes:
+        list_genes= TableImporter.call(File(path=os.path.join(data_dir, "kegg/genes_human.txt")), params={"index_column": -1})
+        #create the TaskRunner
+        runner_kegg_visualisation = TaskRunner(task_type=KEGGVisualisation,
+                                inputs={'list_genes':  list_genes},
+                                params = {'genes_database': "entrez",
+                                        'specie': "hsa",
+                                        'email': "your email here",
+                                        'fold_change': "No"})
+        #execute the TaskRunner
+        outputs_kegg_visualisation = runner_kegg_visualisation.run()
+
+        #check if we retrieve the output
+        pathways = outputs_kegg_visualisation['pathways'].get_resources()
+        self.assertTrue("hsa00480.pathview.png" in pathways)
+        list_pathway_error = outputs_kegg_visualisation['list_pathway_error']
+        self.assertTrue("hsa01240" in list_pathway_error.to_dataframe().values)####################
 
         ## CASE HSA GENES + ONE FOLD CHANGE ##
         self.print("Test KEGG Visualisation : human + 1 fold change")
@@ -39,9 +61,11 @@ class TestKEGGVisualisation(BaseTestCase):
         #execute the TaskRunner
         outputs_kegg_visualisation = runner_kegg_visualisation.run()
 
-        #check if we retrieve one of the output
+        #check if we retrieve the output
         pathways = outputs_kegg_visualisation['pathways'].get_resources()
         self.assertTrue("hsa00480.pathview.png" in pathways)
+        list_pathway_error = outputs_kegg_visualisation['list_pathway_error']
+        self.assertTrue("hsa01240" in list_pathway_error.to_dataframe().values)
 
         ## CASE HSA GENES + TWO FOLD CHANGE ##
         self.print("Test KEGG Visualisation : human + 2 fold change")
@@ -56,9 +80,11 @@ class TestKEGGVisualisation(BaseTestCase):
         #execute the TaskRunner
         outputs_kegg_visualisation = runner_kegg_visualisation.run()
 
-        #check if we retrieve one of the output
+        #check if we retrieve the output
         pathways = outputs_kegg_visualisation['pathways'].get_resources()
         self.assertTrue("hsa00480.pathview.multi.png" in pathways)
+        list_pathway_error = outputs_kegg_visualisation['list_pathway_error']
+        self.assertTrue("hsa01240" in list_pathway_error.to_dataframe().values)
 
 
         ## CASE HSA GENES ENSEMBL + TWO FOLD CHANGE ##
@@ -75,6 +101,8 @@ class TestKEGGVisualisation(BaseTestCase):
         #execute the TaskRunner
         outputs_kegg_visualisation = runner_kegg_visualisation.run()
 
-        #check if we retrieve one of the output
+        #check if we retrieve the output
         pathways = outputs_kegg_visualisation['pathways'].get_resources()
         self.assertTrue("hsa00562.pathview.multi.png" in pathways)
+        list_pathway_error = outputs_kegg_visualisation['list_pathway_error']
+        self.assertTrue("hsa04215" in list_pathway_error.to_dataframe().values)

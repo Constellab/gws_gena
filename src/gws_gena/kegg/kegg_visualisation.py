@@ -44,7 +44,7 @@ class KEGGVisualisation(Task):
     """
 
     input_specs = InputSpecs({
-        'list_genes': InputSpec(File),
+        'list_genes': InputSpec([File,Table], human_name="Genes List ", short_description="The file or the Table with genes and fold changes."),
     })
     output_specs = OutputSpecs({
         'pathways': OutputSpec(ResourceSet, human_name='Pathways KEGG', short_description='Pathways KEGG colored.'),
@@ -65,7 +65,16 @@ class KEGGVisualisation(Task):
             human_name="Fold Change", short_description="Does the file contain the fold change of gene expression?")}
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        list_genes: File = inputs['list_genes']
+        if isinstance(inputs['list_genes'],Table):
+            list_genes: Table = inputs['list_genes']
+            list_genes = list_genes.to_dataframe()
+            list_genes_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "list_genes.csv")
+            list_genes.to_csv(list_genes_path, index=False)
+            list_genes = File(list_genes_path)
+
+        elif isinstance(inputs['list_genes'],File):
+            list_genes: File = inputs['list_genes']
+
         genes_database = params['genes_database']
         fold_change = params['fold_change']
         specie = params['specie']
@@ -73,12 +82,12 @@ class KEGGVisualisation(Task):
         #Test if the specie provided is in the list of allowed organisms:
         allowed_organisms = pd.read_csv(os.path.join(
             os.path.abspath(os.path.dirname(__file__)), "list_organisms_pathview.txt"), header=0, index_col=0)
-        if (specie not in allowed_organisms["kegg.code"].values):
+        if specie not in allowed_organisms["kegg.code"].values:
             raise Exception("The specie provided doesn't correspond to a kegg.code allowed. You can find the list of allowed values attached to this story: https://constellab.community/stories/e330483b-5b9e-452c-b5a4-f6b62506c9ad/how-to-visualise-a-kegg-pathway-using-constellab#introduction")
 
 
         ## Search all pathways where genes are evolved ##
-        if (genes_database == "ensembl"):
+        if genes_database == "ensembl":
             organism = params['organism']
             #Run script R to translate gene ensembl to entrez genes names
             path_script_translate_ensembl_to_entrez = os.path.join(os.path.abspath(os.path.dirname(__file__)), "translate_ensembl_to_entrez.R")
