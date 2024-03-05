@@ -4,13 +4,11 @@
 # About us: https://gencovery.com
 
 import os
-import sys
 
 import pandas as pd
 from bioservices.kegg import KEGG
-from Bio import Entrez
-from gws_core import (File,ResourceSet,OutputSpec, OutputSpecs, InputSpec, InputSpecs,task_decorator,TaskInputs,Task,
-                    StrParam, TaskOutputs,ConfigParams,ShellProxy)
+from gws_core import (File,Table,ResourceSet,OutputSpec, OutputSpecs, InputSpec, InputSpecs,task_decorator,TaskInputs,Task,
+                    StrParam, TaskOutputs,ConfigParams,ShellProxy, TableImporter)
 from .kegg_r_env_task import KeggREnvHelper
 
 
@@ -37,6 +35,8 @@ class KEGGVisualisation(Task):
 
     Be aware that this task can take some time, especially the first time, as a virtual environment has to be installed, and also depending on the length of the genes provided, it can take more time.
 
+    In the output you will also get a Table with the pathways where genes are mapped, but these pathways can't be shown with the pathview package.
+
     KEGG is a database resource for understanding high-level functions and utilities of the biological system.
     Kanehisa Laboratories owns and controls the rights to KEGG.
     Although the KEGG database is made freely available for academic use via the website, it is not in the public domain.
@@ -47,7 +47,8 @@ class KEGGVisualisation(Task):
         'list_genes': InputSpec(File),
     })
     output_specs = OutputSpecs({
-        'pathways': OutputSpec(ResourceSet, human_name='Pathways KEGG', short_description='Pathways KEGG colored.')
+        'pathways': OutputSpec(ResourceSet, human_name='Pathways KEGG', short_description='Pathways KEGG colored.'),
+        'list_pathway_error': OutputSpec(Table, human_name='list_pathway_error', short_description='List of pathways in error.')
     })
     config_specs = {
             'genes_database': StrParam(
@@ -104,22 +105,11 @@ class KEGGVisualisation(Task):
         #transform int data into str data
         list_gene_entrez = list(map(str, data.index))
 
-        # *Always* tell NCBI who you are
-        Entrez.email = params['email']
-
-        #We use the function to convert gene id to gene names
-        ret = self.retrieve_annotation(list_gene_entrez)
-
-        #We create a list with the names
-        name = []
-        for i in range (0, len(ret["DocumentSummarySet"]["DocumentSummary"])):
-            name.append(ret["DocumentSummarySet"]["DocumentSummary"][i]["Name"])
-
         #We search the KEGG pathway in which the genes are evolved and we create a list of these pathways
         self.log_info_message('Search the KEGG pathway in which the genes are evolved. This step can be long if there are many genes.')
         k = KEGG()
         list_code_pathways = []
-        for gene in name :
+        for gene in list_gene_entrez :
             pathways = k.get_pathway_by_gene(gene=gene, organism = specie)
             if pathways is not None:
                 for code_pathway in pathways :
@@ -134,12 +124,10 @@ class KEGGVisualisation(Task):
             opfile.write("\n".join(pathway_kegg))
         pathway_kegg = File(pathway_kegg_path)
 
-        pathways_ok_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "pathway_kegg_ok.txt")
-
         ## Map genes on pathways ##
         # Using the R script
         path_script_kegg_visu = os.path.join(os.path.abspath(os.path.dirname(__file__)), "kegg_visualisation.R")
-        cmd = f"Rscript --vanilla {path_script_kegg_visu} {list_genes.path} {specie} {pathway_kegg.path} {pathways_ok_path} {fold_change}"
+        cmd = f"Rscript --vanilla {path_script_kegg_visu} {list_genes.path} {specie} {pathway_kegg.path} {fold_change}"
 
         shell_proxy: ShellProxy = KeggREnvHelper.create_proxy(self.message_dispatcher)
         self.log_info_message('Mapping genes on KEGG pathways')
@@ -150,27 +138,20 @@ class KEGGVisualisation(Task):
 
         # Loop through the working directory and add files to the resource set
         self.log_info_message('Prepare output')
+
+        #retrieve the list of pathways with error
+        list_pathway_error = os.path.join(shell_proxy.working_dir, "list_pathway_error.csv")
+        list_pathway_error = TableImporter.call(File(path=list_pathway_error), params={"index_column": -1})
+        dataframe_pathway_error = list_pathway_error.to_dataframe()
+
         resource_set_pathways: ResourceSet = ResourceSet()
         resource_set_pathways.name = "Set of pathways"
         for filename in os.listdir(shell_proxy.working_dir):
             file_path = os.path.join(shell_proxy.working_dir, filename)
             if os.path.isfile(file_path):
                 if filename.endswith("pathview.png") or filename.endswith("pathview.multi.png"):
-                    resource_set_pathways.add_resource(File(file_path), filename)
+                    if filename.split(".pathview")[0] not in dataframe_pathway_error.values :
+                        resource_set_pathways.add_resource(File(file_path), filename)
 
 
-        return {'pathways': resource_set_pathways}
-
-
-    #Function to convert gene id to gene names
-    def retrieve_annotation(self,id_list):
-        request = Entrez.epost("gene", id=",".join(id_list))
-        try:
-            result = Entrez.read(request)
-        except RuntimeError as e:
-            sys.exit(-1)
-        webEnv = result["WebEnv"]
-        queryKey = result["QueryKey"]
-        data = Entrez.esummary(db="gene", webenv=webEnv, query_key=queryKey)
-        annotations = Entrez.read(data)
-        return annotations
+        return {'pathways': resource_set_pathways, 'list_pathway_error': list_pathway_error}
