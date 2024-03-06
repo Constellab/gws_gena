@@ -24,6 +24,8 @@ class PlotFluxTableAnalysis(Task):
     This task takes two fluxes tables and a file containing at least a column with the modified reactions in input.
 
     Gives a scatter plot with coloured points and a table in output.
+
+    In the advanced parameters you can specify a column where you can specify whether the modified reaction was up-regulated or down-regulated.
     """
 
     input_specs = InputSpecs({'flux_table_condition1':  InputSpec(Table),
@@ -41,7 +43,9 @@ class PlotFluxTableAnalysis(Task):
                     'log_x': BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Axis x in log",
                                        short_description="True to consider the x axis as logarithmic. False otherwise."),
                     'log_y': BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Axis y in log",
-                                       short_description="True to consider the y axis as logarithmic. False otherwise.")}
+                                       short_description="True to consider the y axis as logarithmic. False otherwise."),
+                    'column_reaction_tag_modified': StrParam(default_value="", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Column tag reaction modified",
+                                       short_description="Name of the column containing the tag of the reaction modified (up or down regulated).", optional = True)}
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         flux_table_condition1: Table = inputs["flux_table_condition1"]
@@ -55,6 +59,7 @@ class PlotFluxTableAnalysis(Task):
         threshold = params["threshold"]
         log_x = params["log_x"]
         log_y = params["log_y"]
+        column_reaction_tag_modified = params["column_reaction_tag_modified"]
 
         # We load the flux tables and the reactions modified
         flux_condition1 = flux_table_condition1.get_data()
@@ -89,7 +94,11 @@ class PlotFluxTableAnalysis(Task):
 
             # We tag each reaction depending the fluxes values
             if reaction_id in list_reactions_modified[column_reaction_id].values:
-                tag = "Modified flux"
+                if column_reaction_tag_modified:
+                    index = list_reactions_modified.index[(list_reactions_modified[column_reaction_id] == reaction_id)].tolist()[0]
+                    tag = "Modified flux " + list_reactions_modified[column_reaction_tag_modified][index]
+                else :
+                    tag = "Modified flux"
             # If the reaction was created by the FBA, it's also tagged with "Modified flux"
             elif reaction_id.startswith('measure'):
                 tag = "Modified flux"
