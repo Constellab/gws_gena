@@ -88,7 +88,7 @@ class FBAHelper(BaseHelper):
         else:
             flat_twin: FlatTwin = twin.flatten()
 
-        c, A_eq, b_eq, bounds, c_out = cls.build_problem(
+        c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize,fluxes_to_minimize = cls.build_problem(
             flat_twin,
             biomass_optimization=biomass_optimization,
             fluxes_to_maximize=fluxes_to_maximize,
@@ -226,7 +226,7 @@ class FBAHelper(BaseHelper):
         c = cls.__upgrade_c_with_fluxes_to_min_max(c, flat_net, fluxes_to_maximize, direction="max")
         A_eq, b_eq = cls.__upgrade_Aeq_beq_with_output_coefficient_score(A_eq, b_eq, beq_confidence_score)
 
-        return c, A_eq, b_eq, bounds, c_out
+        return c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize,fluxes_to_minimize
 
     # -- C --
 

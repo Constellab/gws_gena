@@ -10,7 +10,7 @@ import cvxpy as cp
 import numpy as np
 from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
                       Logger, OutputSpec, OutputSpecs, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+                      TaskOutputs, task_decorator, StrParam,FloatParam)
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -41,6 +41,7 @@ def _do_parallel_loop(kwargs):
     relax_qssa = kwargs["relax_qssa"]
     qssa_relaxation_strength = kwargs["qssa_relaxation_strength"]
     parsimony_strength = kwargs["parsimony_strength"]
+    gamma = kwargs["gamma"]
 
     if (i % step) == 0:
         Logger.progress(f" flux {i+1}/{m} ...")
@@ -53,12 +54,10 @@ def _do_parallel_loop(kwargs):
     else:
         bounds = deepcopy(bounds)
         for k in indexes_of_fluxes_to_minimize:
-            bounds[k][0] = x0[k]*0.975
-            bounds[k][1] = x0[k]*1.025
+            bounds[k][1] = x0[k]*gamma
 
         for k in indexes_of_fluxes_to_maximize:
-            bounds[k][0] = x0[k]*0.975
-            bounds[k][1] = x0[k]*1.025
+            bounds[k][0] = x0[k]*gamma
 
         # min
         cf.iloc[i, 0] = 1.0
@@ -118,7 +117,9 @@ class FVA(Task):
         'fva_result': OutputSpec(FVAResult, human_name="FVA result table", short_description="The FVA result tables")
     })
     config_specs = {
-        **FBA.config_specs
+        **FBA.config_specs,
+        'gamma':FloatParam(default_value=1.0, human_name="γ",min_value=0.0,max_value=1.0,visibility=StrParam.PROTECTED_VISIBILITY,
+            short_description="γ determines whether the analysis is conducted with respect to suboptimal network states (where 0 ≤ γ < 1) or to the optimal state (where γ = 1). A value of 0.9 implies that the objective must be at least 90% of its maximum.")
     }
     __CVXPY_MAX_ITER = 100000
 
@@ -129,8 +130,10 @@ class FVA(Task):
         relax_qssa = params["relax_qssa"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
+        biomass_optimization=params["biomass_optimization"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
         parsimony_strength = 0.0  # params["parsimony_strength"]
+        gamma = params["gamma"]
 
         if relax_qssa and solver != "quad":
             self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
@@ -145,8 +148,9 @@ class FVA(Task):
         else:
             flat_twin: FlatTwin = twin.flatten()
 
-        c, A_eq, b_eq, bounds, c_out = FBAHelper.build_problem(
+        c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize,fluxes_to_minimize = FBAHelper.build_problem(
             flat_twin,
+            biomass_optimization=biomass_optimization,
             fluxes_to_maximize=fluxes_to_maximize,
             fluxes_to_minimize=fluxes_to_minimize
         )
@@ -170,7 +174,7 @@ class FVA(Task):
             raise BadRequestException(f"Convergence error. Optimization message: '{res.message}'")
 
         self.log_info_message(
-            message=f"Peforming variability analysis around the optimal value using solver '{solver}' ...")
+            message=f"Performing variability analysis around the optimal value using solver '{solver}' ...")
         x0 = res.x
         m = x0.shape[0]
         step = max(1, int(m/10))  # plot only 10 iterations on screen
@@ -184,12 +188,12 @@ class FVA(Task):
                                                                    c, x0,
                                                                    fluxes_to_maximize,
                                                                    fluxes_to_minimize,
-                                                                   step, m)
+                                                                   step, m,gamma)
         else:
             xmin, xmax = self.__solve_with_parloop(
                 c, A_eq, b_eq, bounds, c_out, x0, fluxes_to_maximize,
                 fluxes_to_minimize, step, m, solver, relax_qssa,
-                qssa_relaxation_strength, parsimony_strength)
+                qssa_relaxation_strength, parsimony_strength, gamma)
         res.xmin = xmin
         res.xmax = xmax
         fva_result = FVAResult()
@@ -209,7 +213,7 @@ class FVA(Task):
     def __solve_with_parloop(c, A_eq, b_eq, bounds, c_out, x0,
                              fluxes_to_maximize,
                              fluxes_to_minimize,
-                             step, m, solver, relax_qssa, qssa_relaxation_strength, parsimony_strength):
+                             step, m, solver, relax_qssa, qssa_relaxation_strength, parsimony_strength, gamma):
 
         max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
         min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
@@ -233,7 +237,8 @@ class FVA(Task):
                 solver=solver,
                 relax_qssa=relax_qssa,
                 qssa_relaxation_strength=qssa_relaxation_strength,
-                parsimony_strength=parsimony_strength
+                parsimony_strength=parsimony_strength,
+                gamma=gamma
             ))
         result = pool.map(_do_parallel_loop, params)
         # gather results
@@ -254,17 +259,16 @@ class FVA(Task):
                                              c, x0,
                                              fluxes_to_maximize,
                                              fluxes_to_minimize,
-                                             step, m):
+                                             step, m, gamma):
         max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
         min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
         lb = warm_solver["lb_par"]
         ub = warm_solver["ub_par"]
         for k in max_idx:
-            lb.value[k] = x0[k]*0.975
-            ub.value[k] = x0[k]*1.025
+            lb.value[k] = x0[k]*gamma
+
         for k in min_idx:
-            lb.value[k] = x0[k]*0.975
-            ub.value[k] = x0[k]*1.025
+            ub.value[k] = x0[k]*gamma
 
         xmin = np.zeros(x0.shape)
         xmax = np.zeros(x0.shape)
