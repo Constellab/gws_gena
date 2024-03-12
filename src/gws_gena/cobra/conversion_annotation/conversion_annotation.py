@@ -3,7 +3,8 @@ import os
 import pandas as pd
 from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, StrParam, Table, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+                      TaskOutputs, task_decorator, TaskRunner)
+from .create_database_task import TransformMetabolitesFile, TransformReactionsFile
 
 from ..cobra_env import CobraEnvHelper
 
@@ -58,13 +59,36 @@ class ConvertAnnotation(Task):
         reaction_id = params["reaction_id"]
         reaction_name = params["reaction_name"]
 
+        #TransformMetabolitesFile
+        runner_transform_metabolites_file = TaskRunner(task_type=TransformMetabolitesFile)
+        #execute the TaskRunner
+        outputs_transform_metabolites_file = runner_transform_metabolites_file.run()
+        #check if we retrieve the output
+        path_metabolites = outputs_transform_metabolites_file['output'].list_dir_path()
+        for path in path_metabolites:
+            if path.endswith('restructured_metabolites_file.txt'):
+                db_metabolites_path = path
+                break
+
+        #TransformReactionsFile
+        runner_transform_reactions_file = TaskRunner(task_type=TransformReactionsFile)
+        #execute the TaskRunner
+        outputs_transform_reactions_file = runner_transform_reactions_file.run()
+        #check if we retrieve the output
+        path_reactions = outputs_transform_reactions_file['output'].list_dir_path()
+        for path in path_reactions:
+            if path.endswith('restructured_reactions_file.txt'):
+                db_reactions_path = path
+                break
+
+
         shell_proxy = CobraEnvHelper.create_proxy(self.message_dispatcher)
 
         output_path = os.path.join(shell_proxy.working_dir, "model_annotated.json")
         results_path = os.path.join(shell_proxy.working_dir, "results.csv")
 
         shell_proxy.run(
-            f"python3 {self.script_conversion_annotation} {input_model.path} {output_path} {metabolites_id} {metabolites_name} {reaction_id} {reaction_name} {results_path}",
+            f"python3 {self.script_conversion_annotation} {input_model.path} {output_path} {metabolites_id} {metabolites_name} {reaction_id} {reaction_name} {results_path} {db_metabolites_path} {db_reactions_path}",
             shell_mode=True)
 
         model_annotated = File(output_path)

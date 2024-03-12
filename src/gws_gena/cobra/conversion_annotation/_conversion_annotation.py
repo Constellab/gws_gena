@@ -1,6 +1,7 @@
 import sys
 import os
 import pandas as pd
+import re
 from cobra.io import save_json_model, load_json_model
 
 #Function to annotate metabolites
@@ -15,6 +16,8 @@ def annotate_metabolites(model, db_bigg_chebi, metabolites_id, metabolites_name)
                 bigg = metabolite.name
             elif (metabolites_id == "BiGG"):
                 bigg = metabolite.id
+            #If there is the id of the compartment at the end of the bigg id, we remove it
+            bigg = re.sub(r'(_c$|_e$|_b$|_cm$|_cx$|_g$|_h$|_f$|_m$|_i$|_im$|_mm$|_l$|_n$|_p$|_r$|_s$|_env$|_u$|_um$|_v$|_x$|_y$|_w$)', '', bigg)
             # We search into the database we created
             if (bigg in db_bigg_chebi.BIGG.values):
                 index_bigg = db_bigg_chebi.index[(db_bigg_chebi['BIGG'] == bigg)].tolist()[0]
@@ -81,17 +84,17 @@ metabolites_name = sys.argv[4]
 reaction_id = sys.argv[5]
 reaction_name = sys.argv[6]
 results_path = sys.argv[7]
+db_metabolites_path = sys.argv[8]
+db_reactions_path = sys.argv[9]
 
 
 # Load metabolic model
 model = load_json_model(input_model)
 # Load the database Reactions
-db_bigg_rhea = pd.read_csv(os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), "database_bigg_rhea.csv"), sep='\t')
-# Load the database Metabolites
-db_bigg_chebi = pd.read_csv(os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), "database_bigg_chebi.csv"), sep='\t')
+db_bigg_rhea = pd.read_csv(db_reactions_path, sep='\t', dtype=str)
 
+# Load the database Metabolites
+db_bigg_chebi = pd.read_csv(db_metabolites_path, sep='\t', dtype=str)
 
 # Metabolites
 if (metabolites_id != "Other" or metabolites_name != "Other"):
