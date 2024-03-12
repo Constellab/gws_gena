@@ -50,7 +50,6 @@ class TransformReactionsFile(Task):
         reactions_dict = {}
         with open(reactions_file, "r", encoding='utf-8') as file:
             for line in file:
-                self.log_info_message(line.split()[0])
                 #Check if there is a RHEA and/or EC number in the line and create a dictionary if there is.
                 if "rhea" in line:
                     bigg_id = line.split()[0]
