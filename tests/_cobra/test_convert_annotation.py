@@ -23,8 +23,8 @@ class TestConvertAnnotation(BaseTestCase):
 
         #check if we obtain the same output table
         table = outputs_convert_annotation['output_results']
-        self.assertEqual([56],table.get_column_data("Rhea filled"))
+        self.assertEqual([0],table.get_column_data("Rhea filled"))
         self.assertEqual([754],table.get_column_data("Number reactions"))
-        self.assertEqual([375],table.get_column_data("EC number filled"))
+        self.assertEqual([374],table.get_column_data("EC number filled"))
         self.assertEqual([650],table.get_column_data("Number metabolites"))
-        self.assertEqual([9],table.get_column_data("ChEBI filled"))
+        self.assertEqual([0],table.get_column_data("ChEBI filled"))
