@@ -6,6 +6,9 @@ from gws_core import (task_decorator, Task, OutputSpec, OutputSpecs, Folder,
 @task_decorator("TransformMetabolitesFile", human_name="Metabolites file transformation",
                 short_description="Transformation of the Bigg Models database metabolites file", hide = True)
 class TransformMetabolitesFile(Task):
+    """
+    Task to create database with metabolites from BiGG. This task is used in the conversion annotation task.
+    """
     output_specs = OutputSpecs({"output": OutputSpec(Folder, human_name="Output folder",
                                                      short_description="transformed metabolites file")})
     config_specs = {"URL": StrParam(default_value="http://bigg.ucsd.edu/static/namespace/bigg_models_metabolites.txt",
@@ -39,6 +42,9 @@ class TransformMetabolitesFile(Task):
 @task_decorator("TransformReactionsFile", human_name="Reactions file transformation",
                  short_description="Transformation of the Bigg Models database reactions file", hide = True)
 class TransformReactionsFile(Task):
+    """
+    Task to create database with reactions from BiGG. This task is used in the conversion annotation task.
+    """
     output_specs = OutputSpecs({"output": OutputSpec(Folder, human_name="Output folder",
                                                      short_description="transformed reactions file")})
     config_specs = {"URL": StrParam(default_value="http://bigg.ucsd.edu/static/namespace/bigg_models_reactions.txt",
