@@ -3,7 +3,7 @@ import csv
 from gws_core import (task_decorator, Task, OutputSpec, OutputSpecs, Folder,
                       ConfigParams, StrParam, TaskInputs, TaskOutputs, Settings, FileDownloader)
 
-@task_decorator("TransformMetabolitesFile", human_name="Metabolites file transformation",
+@task_decorator("Transform_metabolites_file", human_name="Metabolites file transformation",
                 short_description="Transformation of the Bigg Models database metabolites file", hide = True)
 class TransformMetabolitesFile(Task):
     """
@@ -39,7 +39,7 @@ class TransformMetabolitesFile(Task):
         return {"output": Folder(destination_dir)}
 
 
-@task_decorator("TransformReactionsFile", human_name="Reactions file transformation",
+@task_decorator("Transform_reactions_file", human_name="Reactions file transformation",
                  short_description="Transformation of the Bigg Models database reactions file", hide = True)
 class TransformReactionsFile(Task):
     """
