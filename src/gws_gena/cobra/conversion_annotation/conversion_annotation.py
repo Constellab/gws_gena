@@ -3,14 +3,15 @@ import os
 import pandas as pd
 from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, StrParam, Table, Task, TaskInputs,
-                      TaskOutputs, task_decorator, TaskRunner)
+                      TaskOutputs, task_decorator, TaskRunner,TypingStyle)
 from .create_database_task import TransformMetabolitesFile, TransformReactionsFile
 
 from ..cobra_env import CobraEnvHelper
 
 
 @task_decorator("ConvertAnnotation", human_name="Convert Model Annotation",
-                short_description="This task adds metabolites and reactions identifiers (ChEBI, Rhea and ec-number) to a model")
+                short_description="This task adds metabolites and reactions identifiers (ChEBI, Rhea and ec-number) to a model",
+                style=TypingStyle.material_icon(material_icon_name="hub", background_color="#d9d9d9"))
 class ConvertAnnotation(Task):
     """
     Convert annotation task class
