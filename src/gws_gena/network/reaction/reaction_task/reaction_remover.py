@@ -5,7 +5,7 @@
 
 from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs,
                       OutputSpec, OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator, TypingStyle)
 
 from ....data.ec_table import ECTable
 from ....data.entity_id_table import EntityIDTable
@@ -14,7 +14,8 @@ from ..helper.reaction_remover_helper import ReactionRemoverHelper
 
 
 @task_decorator("ReactionRemover", human_name="Reaction remover",
-                short_description="Remove a list of reactions from a network")
+                short_description="Remove a list of reactions from a network",
+                style=TypingStyle.material_icon(material_icon_name="sync_alt", background_color="#d9d9d9"))
 class ReactionRemover(Task):
 
     input_specs = InputSpecs({

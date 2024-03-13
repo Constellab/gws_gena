@@ -7,7 +7,7 @@ import copy
 
 from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs,
                       ListParam, OutputSpec, OutputSpecs, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+                      TaskOutputs, task_decorator, TypingStyle)
 
 from ..network.reaction.reaction import Reaction
 from ..twin.flat_twin import FlatTwin
@@ -18,7 +18,8 @@ from .twin_reduction_table import TwinReductionTable
 
 
 
-@task_decorator("TwinReducer",human_name="Twin reducer", short_description="Perform model reduction based on a digital twin")
+@task_decorator("TwinReducer",human_name="Twin reducer", short_description="Perform model reduction based on a digital twin",
+                style=TypingStyle.material_icon(material_icon_name="device_hub", background_color="#d9d9d9"))
 class TwinReducer(Task):
     """
     Class digital twin reduction

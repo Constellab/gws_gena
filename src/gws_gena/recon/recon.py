@@ -5,7 +5,7 @@
 
 from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
                       OutputSpec, OutputSpecs, StringHelper, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+                      TaskInputs, TaskOutputs, task_decorator, TypingStyle)
 
 from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.ec_table import ECTable
@@ -13,7 +13,8 @@ from ..network.network import Network
 from .helper.recon_helper import ReconHelper
 
 
-@task_decorator("DraftRecon001", human_name="Draft recon", short_description="Draft network reconstruction")
+@task_decorator("DraftRecon001", human_name="Draft recon", short_description="Draft network reconstruction",
+style=TypingStyle.material_icon(material_icon_name="build", background_color="#d9d9d9"))
 class DraftRecon(Task):
     """
     DraftRecon task.

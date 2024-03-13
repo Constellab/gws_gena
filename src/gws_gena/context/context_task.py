@@ -9,7 +9,7 @@ from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       FileHelper, ResourceExporter, ResourceImporter, StrParam,
-                      exporter_decorator, importer_decorator)
+                      exporter_decorator, importer_decorator, TypingStyle)
 
 from .context import Context
 
@@ -22,7 +22,8 @@ from .context import Context
 
 @importer_decorator("ContextImporter", human_name="Context importer",
                     short_description="Metabolic context importer",
-                    source_type=File, target_type=Context, supported_extensions=["json"])
+                    source_type=File, target_type=Context, supported_extensions=["json"],
+                    style=TypingStyle.material_icon(material_icon_name="tune", background_color="#d9d9d9"))
 class ContextImporter(ResourceImporter):
     """
     ContextImporter Task
@@ -63,7 +64,8 @@ class ContextImporter(ResourceImporter):
 
 @exporter_decorator("ContextExporter", human_name="Context exporter",
                     short_description="Metabolic context exporter",
-                    source_type=Context, target_type=File)
+                    source_type=Context, target_type=File,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_upload", background_color="#d9d9d9"))
 class ContextExporter(ResourceExporter):
     """
     ContextExporter

@@ -5,7 +5,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator, TypingStyle)
 
 from ..fba.fba_result import FBAResult
 from ..fva.fva_result import FVAResult
@@ -21,7 +21,8 @@ from .twin import Twin
 
 
 @task_decorator("TwinAnnotator", human_name="Twin annotator",
-                short_description="Annotate a digital twin of cell metabolism with estimated metabolic fluxes")
+                short_description="Annotate a digital twin of cell metabolism with estimated metabolic fluxes",
+                style=TypingStyle.material_icon(material_icon_name="auto_fix_high", background_color="#d9d9d9"))
 class TwinAnnotator(Task):
     """ TwinAnnotator
 

@@ -2,13 +2,14 @@ import os
 
 from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator, TypingStyle)
 
 from ..cobra_env import CobraEnvHelper
 
 
 @task_decorator("ConvertXmlToJson", human_name="XML/Matlab to JSON",
-                short_description="This task converts a xml file or a matlab file into a json file")
+                short_description="This task converts a xml file or a matlab file into a json file",
+                style=TypingStyle.material_icon(material_icon_name="published_with_changes", background_color="#d9d9d9"))
 class ConvertXmlToJson(Task):
     input_specs = InputSpecs({'input_file':  InputSpec(File)})
     output_specs = OutputSpecs({'output_json_file': OutputSpec(File)})

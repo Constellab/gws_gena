@@ -8,12 +8,13 @@ import os
 import pandas as pd
 from bioservices.kegg import KEGG
 from gws_core import (File,Table,ResourceSet,OutputSpec, OutputSpecs, InputSpec, InputSpecs,task_decorator,TaskInputs,Task,
-                    StrParam, TaskOutputs,ConfigParams,ShellProxy, TableImporter)
+                    StrParam, TaskOutputs,ConfigParams,ShellProxy, TableImporter, TypingStyle)
 from .kegg_r_env_task import KeggREnvHelper
 
 
 @task_decorator("KEGGVisualisation", human_name="Kegg Visualisation",
-                short_description="Generate KEGG pathway from a list of genes.")
+                short_description="Generate KEGG pathway from a list of genes.",
+                style=TypingStyle.material_icon(material_icon_name="collections_bookmark", background_color="#d9d9d9"))
 class KEGGVisualisation(Task):
     """
     Generates a KEGG pathway using the genes specified in the input.

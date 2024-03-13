@@ -6,7 +6,7 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      StrParam, Table, TableImporter, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator, TypingStyle)
 
 from ..flux_table import FluxTable
 
@@ -19,7 +19,8 @@ from ..flux_table import FluxTable
 
 @importer_decorator("FluxTableImporter", human_name="Flux table importer",
                     short_description="Metabolic flux table importer", target_type=FluxTable,
-                    supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    supported_extensions=Table.ALLOWED_FILE_FORMATS,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class FluxTableImporter(TableImporter):
     """
     FluxTableImporter class

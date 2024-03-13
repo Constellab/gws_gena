@@ -6,13 +6,12 @@ import plotly.graph_objects as go
 from gws_core import (BoolParam, ConfigParams, File, FloatParam, InputSpec,
                       InputSpecs, OutputSpec, OutputSpecs, PlotlyResource,
                       StrParam, Table, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator,TypingStyle)
 
 
 @task_decorator("PlotFluxTableAnalysis", human_name="Flux Table Analysis",
-                short_description="This task permits to plot a graph to analyse two fluxes tables from FBA."
-                "This task takes two fluxes tables and a file containing a column with the modified reactions in input."
-                "Gives a plot and a table in output.")
+                short_description="This task permits to plot a graph to analyse two fluxes tables from FBA.",
+                style=TypingStyle.material_icon(material_icon_name="query_stats", background_color="#d9d9d9"))
 class PlotFluxTableAnalysis(Task):
     """
     Flux Table Analysis class

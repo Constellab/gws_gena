@@ -8,13 +8,14 @@ from typing import List
 import pandas
 from gws_core import (ConfigParams, InputSpec, InputSpecs, ListParam,
                       OutputSpec, OutputSpecs, Table, Task, TaskInputs,
-                      TaskOutputs, task_decorator)
+                      TaskOutputs, task_decorator, TypingStyle)
 
 from .koa_result import KOAResult
 
 
 @task_decorator("KOAResultExtractor", human_name="KOA result extractor",
-                short_description="Extract a list of fluxes as a table")
+                short_description="Extract a list of fluxes as a table",
+                    style=TypingStyle.material_icon(material_icon_name="output", background_color="#d9d9d9"))
 class KOAResultExtractor(Task):
     """
     Knock-out analysis result extractor.

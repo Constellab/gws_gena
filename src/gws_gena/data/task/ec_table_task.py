@@ -6,7 +6,7 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      StrParam, Table, TableImporter, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator, TypingStyle)
 
 from ..ec_table import ECTable
 
@@ -18,7 +18,8 @@ from ..ec_table import ECTable
 
 
 @importer_decorator("ECTableImporter", human_name="EC number table importer",
-                    target_type=ECTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    target_type=ECTable, supported_extensions=Table.ALLOWED_FILE_FORMATS,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class ECTableImporter(TableImporter):
     """
     ECTableImporter class
@@ -28,7 +29,7 @@ class ECTableImporter(TableImporter):
 
     Your File must have at least:
     - a column with the compound name
-    - a column with the ec-number 
+    - a column with the ec-number
 
     For example:
     | component           | ec_number |

@@ -5,7 +5,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator, TypingStyle)
 
 from ..data.ec_table import ECTable
 from ..data.entity_id_table import EntityIDTable
@@ -20,7 +20,8 @@ from ..twin.twin import Twin
 from .koa_result import KOAResult
 
 
-@task_decorator("KOA", human_name="KOA", short_description="Knockout Analysis")
+@task_decorator("KOA", human_name="KOA", short_description="Knockout Analysis",
+style=TypingStyle.material_icon(material_icon_name="delete_forever", background_color="#d9d9d9"))
 class KOA(Task):
     """
     Knock-out analysis class.

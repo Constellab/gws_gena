@@ -9,14 +9,15 @@ from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       FileHelper, ResourceExporter, StrParam,
-                      exporter_decorator)
+                      exporter_decorator, TypingStyle)
 from pandas import DataFrame
 
 from ..network import Network
 
 
 @exporter_decorator(unique_name="NetworkExporter", human_name="Network exporter", source_type=Network,
-                    target_type=File)
+                    target_type=File,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_upload", background_color="#d9d9d9"))
 class NetworkExporter(ResourceExporter):
     ALLOWED_FILE_FORMATS = ["json", "csv", "tsv", "txt", "xls", "xlsx"]
     DEFAULT_FILE_FORMAT = "json"

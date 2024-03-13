@@ -5,7 +5,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator, TypingStyle)
 
 from ....data.ec_table import ECTable
 from ....data.entity_id_table import EntityIDTable
@@ -13,7 +13,8 @@ from ...network import Network
 from ..helper.reaction_adder_helper import ReactionAdderHelper
 
 
-@task_decorator("ReactionAdder", human_name="Reaction adder", short_description="Add a list of reactions to a network")
+@task_decorator("ReactionAdder", human_name="Reaction adder", short_description="Add a list of reactions to a network",
+style=TypingStyle.material_icon(material_icon_name="sync_alt", background_color="#d9d9d9"))
 class ReactionAdder(Task):
     """
     ReactionAdder class.

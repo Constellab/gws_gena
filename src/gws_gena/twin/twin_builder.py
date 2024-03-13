@@ -5,7 +5,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator, TypingStyle)
 
 from ..context.context import Context
 from ..network.network import Network
@@ -19,7 +19,8 @@ from .twin import Twin
 
 
 @task_decorator("TwinBuilder", human_name="Twin builder",
-                short_description="Build a digital twin of cell metabolism using a metabolic network and a context")
+                short_description="Build a digital twin of cell metabolism using a metabolic network and a context",
+                style=TypingStyle.material_icon(material_icon_name="build_circle", background_color="#d9d9d9"))
 class TwinBuilder(Task):
     """ TwinBuilder
 

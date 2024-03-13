@@ -6,7 +6,7 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      StrParam, Table, TableImporter, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator, TypingStyle)
 
 from ..medium_table import MediumTable
 
@@ -19,7 +19,8 @@ from ..medium_table import MediumTable
 
 @importer_decorator("MediumTableImporter", human_name="Medium table importer",
                     short_description="Culture medium table importer", target_type=MediumTable,
-                    supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    supported_extensions=Table.ALLOWED_FILE_FORMATS,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class MediumTableImporter(TableImporter):
     """
     MediumTableImporter class

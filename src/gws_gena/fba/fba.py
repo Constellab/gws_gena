@@ -7,7 +7,7 @@
 from typing import Tuple, List
 from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
                       InputSpecs, ListParam, OutputSpec, OutputSpecs, StrParam, TableConcatHelper,
-                      Task, TaskInputs, TaskOutputs, task_decorator, Table, IntParam)
+                      Task, TaskInputs, TaskOutputs, task_decorator, Table, IntParam, TypingStyle)
 
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
@@ -17,7 +17,8 @@ from .fba_result import FBAResult
 
 
 
-@task_decorator("FBA", human_name="FBA", short_description="Flux balance analysis")
+@task_decorator("FBA", human_name="FBA", short_description="Flux balance analysis",
+                style=TypingStyle.material_icon(material_icon_name="settings_suggest", background_color="#d9d9d9"))
 class FBA(Task):
     """
     FBA task class

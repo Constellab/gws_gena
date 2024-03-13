@@ -10,7 +10,7 @@ import cvxpy as cp
 import numpy as np
 from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
                       Logger, OutputSpec, OutputSpecs, Task, TaskInputs,
-                      TaskOutputs, task_decorator, StrParam,FloatParam)
+                      TaskOutputs, task_decorator, StrParam, FloatParam, TypingStyle)
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -95,7 +95,8 @@ def _do_parallel_loop(kwargs):
     return xmin, xmax
 
 
-@task_decorator("FVA", human_name="FVA", short_description="Flux variability analysis")
+@task_decorator("FVA", human_name="FVA", short_description="Flux variability analysis",
+                style=TypingStyle.material_icon(material_icon_name="settings_suggest", background_color="#d9d9d9"))
 class FVA(Task):
     """
     FVA class

@@ -6,7 +6,7 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      StrParam, Table, TableImporter, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator, TypingStyle)
 
 from ..biomass_reaction_table import BiomassReactionTable
 
@@ -18,7 +18,8 @@ from ..biomass_reaction_table import BiomassReactionTable
 
 
 @importer_decorator("BiomassReactionTableImporter", human_name="Biomass reaction table importer",
-                    target_type=BiomassReactionTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    target_type=BiomassReactionTable, supported_extensions=Table.ALLOWED_FILE_FORMATS,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class BiomassReactionTableImporter(TableImporter):
     """
     BiomassReactionTableImporter class

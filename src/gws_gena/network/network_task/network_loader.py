@@ -5,7 +5,7 @@ from gws_core import (task_decorator, Task, OutputSpec, OutputSpecs, File,
 
 @task_decorator("LoadBiggModels", human_name="Load BiGG Models",
                 short_description="Retrieve data from Bigg Models database",
-                style=TypingStyle.material_icon(material_icon_name="hub", background_color="#089bcc"))
+                style=TypingStyle.material_icon(material_icon_name="travel_explore", background_color="#089bcc"))
 class LoadBiGGModels(Task):
     """
     This task allows you to retrieve a metabolic model from the BiGG database.

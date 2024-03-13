@@ -7,13 +7,14 @@ import json
 from typing import Type
 
 from gws_core import (BadRequestException, BoolParam, ConfigParams,
-                      ConfigSpecs, File, ResourceImporter, importer_decorator,StrParam)
+                      ConfigSpecs, File, ResourceImporter, importer_decorator,StrParam, TypingStyle)
 
 from ..network import Network
 
 
 @importer_decorator("NetworkImporter", human_name="Network importer", source_type=File,
-                    target_type=Network, supported_extensions=["json"])
+                    target_type=Network, supported_extensions=["json"],
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class NetworkImporter(ResourceImporter):
     """ Network Importer Task
 

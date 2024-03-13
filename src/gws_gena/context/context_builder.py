@@ -5,7 +5,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator)
+                      task_decorator, TypingStyle)
 
 from ..data.flux_table import FluxTable
 from ..data.phenotype_table import PhenotypeTable
@@ -15,7 +15,8 @@ from .helper.context_builder_helper import ContextBuilderHelper
 
 
 @task_decorator("ContextBuilder", human_name="Context builder",
-                short_description="Build a context for a metabolic network using a flux table")
+                short_description="Build a context for a metabolic network using a flux table",
+                style=TypingStyle.material_icon(material_icon_name="build", background_color="#d9d9d9"))
 class ContextBuilder(Task):
     """
     ContextBuilder Task

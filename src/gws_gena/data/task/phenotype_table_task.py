@@ -6,7 +6,7 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      StrParam, Table, TableImporter, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator, TypingStyle)
 
 from ..phenotype_table import PhenotypeTable
 
@@ -19,7 +19,8 @@ from ..phenotype_table import PhenotypeTable
 
 @importer_decorator("PhenotypeTableImporter", human_name="Phenotype table importer",
                     short_description="Phenotype table importer importer", target_type=PhenotypeTable,
-                    supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    supported_extensions=Table.ALLOWED_FILE_FORMATS,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class PhenotypeTableImporter(TableImporter):
     """
     PhenotypeTableImporter class

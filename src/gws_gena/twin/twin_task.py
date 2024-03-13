@@ -9,7 +9,7 @@ from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
                       FileHelper, ResourceExporter, ResourceImporter, StrParam,
-                      exporter_decorator, importer_decorator)
+                      exporter_decorator, importer_decorator, TypingStyle)
 
 from .twin import Twin
 
@@ -22,7 +22,8 @@ from .twin import Twin
 
 @importer_decorator("TwinImporter", human_name="Twin importer",
                     short_description="Import a digital twin of cell metabolism",
-                    source_type=File, target_type=Twin, supported_extensions=["json"])
+                    source_type=File, target_type=Twin, supported_extensions=["json"],
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class TwinImporter(ResourceImporter):
     """ TwinImporter
 
@@ -72,7 +73,8 @@ class TwinImporter(ResourceImporter):
 
 @exporter_decorator("TwinExporter", human_name="Twin exporter",
                     short_description="Export a digital twin of cell metabolism",
-                    source_type=Twin, target_type=File)
+                    source_type=Twin, target_type=File,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_upload", background_color="#d9d9d9"))
 class TwinExporter(ResourceExporter):
     """ TwinExporter
 

@@ -6,7 +6,7 @@
 from typing import Type
 
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      StrParam, Table, TableImporter, importer_decorator)
+                      StrParam, Table, TableImporter, importer_decorator, TypingStyle)
 
 from ..entity_id_table import EntityIDTable
 
@@ -18,7 +18,8 @@ from ..entity_id_table import EntityIDTable
 
 
 @importer_decorator("EntityIDTableImporter", human_name="Entity ID table importer",
-                    target_type=EntityIDTable, supported_extensions=Table.ALLOWED_FILE_FORMATS)
+                    target_type=EntityIDTable, supported_extensions=Table.ALLOWED_FILE_FORMATS,
+                    style=TypingStyle.material_icon(material_icon_name="cloud_download", background_color="#d9d9d9"))
 class EntityIDTableImporter(TableImporter):
     """
     EntityIDTableImporter class

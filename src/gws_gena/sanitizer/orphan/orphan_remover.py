@@ -4,14 +4,15 @@
 # About us: https://gencovery.com
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpecs, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+                      TaskInputs, TaskOutputs, task_decorator, TypingStyle)
 
 from ...network.network import Network
 from ..gap.helper.gap_finder_helper import GapFinderHelper
 
 
 @task_decorator("OrphanRemover", human_name="Orphan remover",
-                short_description="Remove orphan compounds from a network")
+                short_description="Remove orphan compounds from a network",
+                style=TypingStyle.material_icon(material_icon_name="delete_forever", background_color="#d9d9d9"))
 class OrphanRemover(Task):
     """
     OrphanRemover.
