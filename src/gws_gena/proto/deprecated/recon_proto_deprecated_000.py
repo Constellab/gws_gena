@@ -3,15 +3,16 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import ProcessSpec, Protocol, protocol_decorator
+from gws_core import ProcessSpec, Protocol, protocol_decorator, TypingDeprecated
 
 from ...recon.deprecated.recon_deprecated_000 import DraftRecon000
 from ...sanitizer.gap.gap_filler import GapFiller
 
 
 @protocol_decorator("ReconProto", human_name="Recon protocol",
-                    short_description="Protocol for metabolic network reconstruction", deprecated_since="0.5.0",
-                    deprecated_message="Please reconsider to use the latest version of ReconProto")
+                    short_description="Protocol for metabolic network reconstruction",
+                    deprecated = TypingDeprecated(deprecated_since="0.5.0", deprecated_message="Please reconsider to use the latest version of ReconProto"))
+
 class ReconProto000(Protocol):
     """ ReconProto """
 

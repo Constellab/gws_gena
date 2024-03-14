@@ -5,7 +5,7 @@
 
 from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
                       OutputSpec, OutputSpecs, StringHelper, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+                      TaskInputs, TaskOutputs, task_decorator, TypingDeprecated)
 
 from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.ec_table import ECTable
@@ -15,7 +15,7 @@ from ..helper.recon_helper import ReconHelper
 
 
 @task_decorator("DraftRecon", human_name="Draft recon", short_description="Draft network reconstruction",
-                deprecated_since="0.5.0", deprecated_message="Please reconsider to user the laters version of DraftRecon")
+                deprecated = TypingDeprecated(deprecated_since="0.5.0", deprecated_message="Please reconsider to user the laters version of DraftRecon"))
 class DraftRecon000(Task):
     """
     DraftRecon task.
