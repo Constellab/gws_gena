@@ -6,13 +6,14 @@
 from typing import List
 
 from gws_core import (ConfigParams, JSONView, Resource, SerializableRField,
-                      resource_decorator, view)
+                      resource_decorator, view, TypingStyle)
 
 from .context_data.context_data import ContextData
 from .measure import Measure
 
 
-@resource_decorator("Context", human_name="Network context", short_description="Context of metabolic network")
+@resource_decorator("Context", human_name="Network context", short_description="Context of metabolic network",
+                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#245678'))
 class Context(Resource):
     """
     Context class

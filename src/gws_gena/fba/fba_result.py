@@ -7,13 +7,14 @@ from typing import List, Union
 
 import pandas as pd
 from gws_core import (BadRequestException, ResourceSet,Table, TechnicalInfo,
-                      resource_decorator)
+                      resource_decorator, TypingStyle)
 from pandas import DataFrame
 from scipy import stats
 
 from .fba_optimize_result import FBAOptimizeResult
 
-@resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True)
+@resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True,
+                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#FFC300'))
 class FBAResult(ResourceSet):
     """
     FBAResult class.

@@ -5,12 +5,13 @@
 
 from typing import List
 
-from gws_core import BadRequestException, StrRField, Table, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator, TypingStyle
 
 
 @resource_decorator("ECTable",
                     human_name="EC number table",
-                    short_description="Table of EC numbers")
+                    short_description="Table of EC numbers",
+                    style=TypingStyle.material_icon(material_icon_name='table_chart', background_color='#82E0AA'))
 class ECTable(Table):
     """
     ECTable class

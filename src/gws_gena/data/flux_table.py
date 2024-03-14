@@ -5,12 +5,11 @@
 
 from typing import List
 
-from gws_core import BadRequestException, StrRField, Table, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator, TypingStyle
 
 
-@resource_decorator("FluxTable",
-                    human_name="Flux table",
-                    short_description="Table of metabolic flux measurements")
+@resource_decorator("FluxTable", human_name="Flux table", short_description="Table of metabolic flux measurements",
+                    style=TypingStyle.material_icon(material_icon_name='article', background_color='#8BF030'))
 class FluxTable(Table):
     """
     FluxTable class.

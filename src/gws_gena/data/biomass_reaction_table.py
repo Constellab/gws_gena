@@ -5,12 +5,13 @@
 
 from typing import List
 
-from gws_core import BadRequestException, StrRField, Table, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator, TypingStyle
 
 
 @resource_decorator("BiomassReactionTable",
                     human_name="Biomass reaction table",
-                    short_description="Stoichiometry table describing the biomass composition")
+                    short_description="Stoichiometry table describing the biomass composition",
+                    style=TypingStyle.material_icon(material_icon_name='table_chart', background_color='#F9E79F'))
 class BiomassReactionTable(Table):
     """
     BiomassReactionTable class

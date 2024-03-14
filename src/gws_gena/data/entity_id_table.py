@@ -6,11 +6,12 @@
 
 from typing import List
 
-from gws_core import BadRequestException, StrRField, Table, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator, TypingStyle
 
 
 @resource_decorator("EntityIDTable", human_name="Entity ID table",
-                    short_description="Generic table of entity IDs (e.g. CheBI IDs, Rhea IDs, EC Numbers, User-defined IDs, ...)")
+                    short_description="Generic table of entity IDs (e.g. CheBI IDs, Rhea IDs, EC Numbers, User-defined IDs, ...)",
+                    style=TypingStyle.material_icon(material_icon_name='table_chart', background_color='#45B39D'))
 class EntityIDTable(Table):
     """
     EntityIDTable class

@@ -7,7 +7,7 @@ from typing import List, Union
 
 from gws_core import (BadRequestException, BarPlotView, ConfigParams,
                       JSONView, ListParam, ListRField, ResourceRField, ResourceSet,
-                      StringHelper, Table, TechnicalInfo, resource_decorator, view)
+                      StringHelper, Table, TechnicalInfo, resource_decorator, view, TypingStyle)
 from pandas import DataFrame
 
 from ..data.ec_table import ECTable
@@ -16,7 +16,8 @@ from ..twin.twin import Twin
 
 
 @resource_decorator("KOAResult", human_name="KOA result",
-                    short_description="Knockout analysis result", hide=True)
+                    short_description="Knockout analysis result", hide=True,
+                    style=TypingStyle.material_icon(material_icon_name='troubleshoot', background_color='#CB4335'))
 class KOAResult(ResourceSet):
     """
     KOAResultTable

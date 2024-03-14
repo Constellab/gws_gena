@@ -4,7 +4,7 @@
 # About us: https://gencovery.com
 
 
-from gws_core import StrRField, Table, resource_decorator
+from gws_core import StrRField, Table, resource_decorator, TypingStyle
 
 # ####################################################################
 #
@@ -13,9 +13,8 @@ from gws_core import StrRField, Table, resource_decorator
 # ####################################################################
 
 
-@resource_decorator("PhenotypeTable",
-                    human_name="Phenotype table",
-                    short_description="Phenotype table")
+@resource_decorator("PhenotypeTable", human_name="Phenotype table", short_description="Phenotype table",
+                    style=TypingStyle.material_icon(material_icon_name='table_chart', background_color='#5499C7'))
 class PhenotypeTable(Table):
     """
     Phenotype table

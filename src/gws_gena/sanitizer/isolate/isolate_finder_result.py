@@ -3,11 +3,12 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import ResourceSet, TechnicalInfo, resource_decorator
+from gws_core import ResourceSet, TechnicalInfo, resource_decorator, TypingStyle
 
 
 @resource_decorator("IsolateFinderResult", human_name="Isolate finder result",
-                    short_description="Result containing the lists of compounds and reactions that are not connected to cell growth")
+                    short_description="Result containing the lists of compounds and reactions that are not connected to cell growth",
+                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#ECCD4E'))
 class IsolateFinderResult(ResourceSet):
     """
     IsolateFinderResult

@@ -3,14 +3,13 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import ConfigParams, File, TabularView, resource_decorator, view
+from gws_core import ConfigParams, File, TabularView, resource_decorator, view, TypingStyle
 
 from .view.network_view import NetworkView
 
 
-@resource_decorator("NetworkFile",
-                    human_name="NetworkFile",
-                    short_description="Metabolic network file")
+@resource_decorator("NetworkFile", human_name="NetworkFile", short_description="Metabolic network file",
+                    style=TypingStyle.material_icon(material_icon_name='hub', background_color='#F86104'))
 class NetworkFile(File):
 
     @view(view_type=NetworkView, human_name="Network")

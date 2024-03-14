@@ -5,7 +5,7 @@
 
 from typing import List
 
-from gws_core import BadRequestException, StrRField, Table, resource_decorator
+from gws_core import BadRequestException, StrRField, Table, resource_decorator, TypingStyle
 
 # ####################################################################
 #
@@ -14,9 +14,8 @@ from gws_core import BadRequestException, StrRField, Table, resource_decorator
 # ####################################################################
 
 
-@resource_decorator("MediumTable",
-                    human_name="Medium table",
-                    short_description="Table of culture medium composition")
+@resource_decorator("MediumTable", human_name="Medium table", short_description="Table of culture medium composition",
+                    style=TypingStyle.material_icon(material_icon_name='table_chart', background_color='#D7BDE2'))
 class MediumTable(Table):
     """
     MediumTable class

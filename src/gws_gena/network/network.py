@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 
 from gws_core import (ConfigParams, JSONView,
                       Resource, SerializableRField, Table, TableView, Task,
-                      resource_decorator, view)
+                      resource_decorator, view, TypingStyle)
 from pandas import DataFrame
 
 from .compartment.compartment import Compartment
@@ -22,7 +22,8 @@ from .view.network_view import NetworkView
 
 @resource_decorator("Network",
                     human_name="Network",
-                    short_description="Metabolic network")
+                    short_description="Metabolic network",
+                    style=TypingStyle.material_icon(material_icon_name='hub', background_color='#EB984E'))
 class Network(Resource):
     """
     Class that represents a network.
@@ -394,7 +395,7 @@ class Network(Resource):
               skip_orphans: bool = False,
               replace_unknown_compartments: bool = False,
               biomass_metabolite_id_user: str = None,
-              add_biomass : bool = False,
+              add_biomass: bool = False,
               task: Task = None) -> 'Network':
         """ Create a Network from JSON data  """
 
@@ -404,8 +405,8 @@ class Network(Resource):
             biomass_reaction_id=biomass_reaction_id,
             skip_orphans=skip_orphans,
             replace_unknown_compartments=replace_unknown_compartments,
-            biomass_metabolite_id_user = biomass_metabolite_id_user,
-            add_biomass = add_biomass,
+            biomass_metabolite_id_user=biomass_metabolite_id_user,
+            add_biomass=add_biomass,
             task=task
         )
         network.name = network.network_data.name
