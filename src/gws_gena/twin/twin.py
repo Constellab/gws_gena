@@ -14,7 +14,7 @@ from .typing.twin_typing import TwinDict
 
 
 @resource_decorator("Twin", human_name="Twin", short_description="Twin of cell metabolism",
-                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#FFA122'))
+                    style=TypingStyle.material_icon(material_icon_name='hub', background_color='#FFA122'))
 class Twin(ResourceSet):
     """
     Class that represents a twin.

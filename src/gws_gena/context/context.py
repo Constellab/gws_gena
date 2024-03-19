@@ -13,7 +13,7 @@ from .measure import Measure
 
 
 @resource_decorator("Context", human_name="Network context", short_description="Context of metabolic network",
-                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#245678'))
+                    style=TypingStyle.material_icon(material_icon_name='tune', background_color='#245678'))
 class Context(Resource):
     """
     Context class

@@ -14,7 +14,7 @@ from scipy import stats
 from .fba_optimize_result import FBAOptimizeResult
 
 @resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True,
-                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#FFC300'))
+                    style=TypingStyle.material_icon(material_icon_name='assessment', background_color='#FFC300'))
 class FBAResult(ResourceSet):
     """
     FBAResult class.

@@ -8,7 +8,7 @@ from gws_core import ResourceSet, TechnicalInfo, resource_decorator, TypingStyle
 
 @resource_decorator("IsolateFinderResult", human_name="Isolate finder result",
                     short_description="Result containing the lists of compounds and reactions that are not connected to cell growth",
-                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#ECCD4E'))
+                    style=TypingStyle.material_icon(material_icon_name='manage_search', background_color='#ECCD4E'))
 class IsolateFinderResult(ResourceSet):
     """
     IsolateFinderResult

@@ -16,7 +16,7 @@ from .twin import Twin
 
 @resource_decorator("FlatTwin", human_name="Flat twin",
                     short_description="Flat digital twin of cell metabolism",
-                    style=TypingStyle.material_icon(material_icon_name='home', background_color='#FFCE8B'))
+                    style=TypingStyle.material_icon(material_icon_name='account_tree', background_color='#FFCE8B'))
 class FlatTwin(Twin):
     """ FlatTwin
 
