@@ -54,7 +54,8 @@ class Measure:
                 self.variables.append(Variable(data_))
 
         if self.id:
-            self.id = SlugifyHelper.slugify_id(self.id)
+            #self.id = SlugifyHelper.slugify_id(self.id)
+            self.id = self.id
         else:
             self.id = self._generate_unique_id()
 

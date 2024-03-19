@@ -116,6 +116,11 @@ class ContextBuilderHelper(BaseHelper):
                         score = [1.0 if math.isnan(x) else x for x in score]
 
                         target = targets[i]
+                        for value in target :
+                            #test if one target is not in the range of the value of the network
+                            if value > data[ref_id].upper_bound or value < data[ref_id].lower_bound :
+                                #raises a warning
+                                self.log_warning_message(f'The value {value} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
                         for i in range(len(target)):
                             if math.isnan(target[i]):
                                 target[i] = 0.0
@@ -124,6 +129,7 @@ class ContextBuilderHelper(BaseHelper):
                         measure = Measure(
                             MeasureDict(
                                 id=f"{key}_" + ref_id,
+                                name = None,
                                 target=target,
                                 upper_bound=ubound,
                                 lower_bound=lbound,
@@ -177,11 +183,17 @@ class ContextBuilderHelper(BaseHelper):
                         if math.isnan(targets[i]):
                             targets[i] = 0.0
                             score = [0.0]  # set the output confidence score to zero if it is NaN
+
                         target = [targets[i]]
+                        #test if the target is not in the range of the value of the network
+                        if target[0] > data[ref_id].upper_bound or target[0] < data[ref_id].lower_bound :
+                            #raises a warning
+                            self.log_warning_message(f'The value {target[0]} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
 
                         measure = Measure(
                             MeasureDict(
                                 id=f"{key}_" + ref_id,
+                                name = None,
                                 target=target,
                                 upper_bound=ubound,
                                 lower_bound=lbound,
