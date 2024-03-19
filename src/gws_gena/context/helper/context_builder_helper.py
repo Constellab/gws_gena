@@ -121,6 +121,7 @@ class ContextBuilderHelper(BaseHelper):
                             if value > data[ref_id].upper_bound or value < data[ref_id].lower_bound :
                                 #raises a warning
                                 self.log_warning_message(f'The value {value} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
+
                         for i in range(len(target)):
                             if math.isnan(target[i]):
                                 target[i] = 0.0
