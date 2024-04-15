@@ -30,19 +30,23 @@ class NetworkView(View):
         """
         from ..network import Network
         if not isinstance(data, Network):
-            raise BadRequestException("NetworkView data must be an instance of Network")
+            raise BadRequestException(
+                "NetworkView data must be an instance of Network")
 
         self._data = data
 
-    def to_dict(self, params: ConfigParams) -> dict:
+    # def to_dict(self, params: ConfigParams) -> dict:
         # if params["layout"] == "spring":
         #     dump_data = self._spring_layout(params)
         # else:
-        dump_data = self._data.dumps(refresh_layout=True)
-        return {
-            **super().to_dict(params),
-            "data": dump_data
-        }
+     #   dump_data = self._data.dumps(refresh_layout=True)
+       # return {
+        #    **super().to_dict(params),
+        #   "data": dump_data
+        # }
+
+    def data_to_dict(self, params: ConfigParams) -> dict:
+        return self._data.dumps(refresh_layout=True)
 
     # def _spring_layout(self, params: ConfigParams):
     #     full = params["full"]
