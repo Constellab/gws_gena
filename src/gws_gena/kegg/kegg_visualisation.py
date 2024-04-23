@@ -1,7 +1,9 @@
 import os
+import sys
 
 import pandas as pd
 from bioservices.kegg import KEGG
+from Bio import Entrez
 from gws_core import (File,Table,ResourceSet,OutputSpec, OutputSpecs, InputSpec, InputSpecs,task_decorator,TaskInputs,Task,
                     StrParam, TaskOutputs,ConfigParams,ShellProxy, TableImporter, TypingStyle)
 from .kegg_r_env_task import KeggREnvHelper
@@ -110,6 +112,8 @@ class KEGGVisualisation(Task):
         #transform int data into str data
         list_gene_entrez = list(map(str, data.index))
 
+
+
         #We search the KEGG pathway in which the genes are evolved and we create a list of these pathways
         self.log_info_message('Search the KEGG pathway in which the genes are evolved. This step can be long if there are many genes.')
         k = KEGG()
@@ -121,6 +125,32 @@ class KEGGVisualisation(Task):
                     list_code_pathways.append(code_pathway)
         #We keep only unique pathway
         pathway_kegg = list(set(list_code_pathways))
+
+        if not pathway_kegg :
+            # *Always* tell NCBI who you are
+            Entrez.email = params['email']
+
+            #We use the function to convert gene id to gene names
+            ret = self.retrieve_annotation(list_gene_entrez)
+
+            #We create a list with the names
+            name = []
+            for i in range (0, len(ret["DocumentSummarySet"]["DocumentSummary"])):
+                name.append(ret["DocumentSummarySet"]["DocumentSummary"][i]["Name"])
+
+            #We search the KEGG pathway in which the genes are evolved and we create a list of these pathways
+            self.log_info_message('Search the KEGG pathway in which the genes are evolved. This step can be long if there are many genes.')
+            k = KEGG()
+            list_code_pathways = []
+            for gene in name :
+                pathways = k.get_pathway_by_gene(gene=gene, organism = specie)
+                if pathways is not None:
+                    for code_pathway in pathways :
+                        list_code_pathways.append(code_pathway)
+            #We keep only unique pathway
+            pathway_kegg = list(set(list_code_pathways))
+            if not pathway_kegg :
+                raise Exception("No mapped pathway was found for the genes provided. Check or improve your list.")
 
         #We save these pathways in a file
         pathway_kegg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "pathway_kegg.csv")
@@ -160,3 +190,16 @@ class KEGGVisualisation(Task):
 
 
         return {'pathways': resource_set_pathways, 'list_pathway_error': list_pathway_error}
+
+    #Function to convert gene id to gene names
+    def retrieve_annotation(self,id_list):
+        request = Entrez.epost("gene", id=",".join(id_list))
+        try:
+            result = Entrez.read(request)
+        except RuntimeError as e:
+            sys.exit(-1)
+        web_env = result["WebEnv"]
+        query_key = result["QueryKey"]
+        data = Entrez.esummary(db="gene", webenv=web_env, query_key=query_key)
+        annotations = Entrez.read(data)
+        return annotations
