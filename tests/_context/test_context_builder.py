@@ -2,8 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner
-from gws_gena import ContextBuilder, FluxTableImporter, NetworkImporter,PhenotypeTableImporter
+from gws_core import File, Settings, TaskRunner, TableImporter
+from gws_gena import ContextBuilder, FluxTableImporter, NetworkImporter
 
 settings = Settings.get_instance()
 
@@ -20,7 +20,7 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
 
         # pheno_table
         file_path = os.path.join(data_dir, "phenotype_table_context.csv")
-        pheno_table = PhenotypeTableImporter.call(File(path=file_path), params={"delimiter": ","})
+        pheno_table = TableImporter.call(File(path=file_path), params={"delimiter": ","})
 
         # network
         file_path = os.path.join(data_dir, "toy.json")

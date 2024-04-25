@@ -1,0 +1,3 @@
+id_name, target_name,lower_bound_name,upper_bound_name,confidence_score_name,chebi_id
+fdp_i,,0,1000,1.0,
+dhap_i,,0,1000,1.0,

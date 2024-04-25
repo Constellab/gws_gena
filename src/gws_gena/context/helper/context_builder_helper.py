@@ -2,10 +2,9 @@
 import math
 import ast
 
-from gws_core import (BadRequestException)
+from gws_core import (BadRequestException,Table)
 
 from ...data.flux_table import FluxTable
-from ...data.phenotype_table import PhenotypeTable
 from ...network.reaction.reaction import Reaction
 from ...network.compound.compound import Compound
 from ..context import Context
@@ -13,6 +12,7 @@ from ..measure import Measure
 from ..typing.measure_typing import MeasureDict
 from ..typing.variable_typing import VariableDict
 from ...helper.base_helper import BaseHelper
+from ...data.task.transformer_phenotype_table import TransformerPhenotypeTable
 
 
 class ContextBuilderHelper(BaseHelper):
@@ -28,10 +28,30 @@ class ContextBuilderHelper(BaseHelper):
     - The `Network` is a metabolic network
     """
 
-    def build(self, net, flux_table: FluxTable, pheno_table: PhenotypeTable) -> Context:
+    def build(self, net, flux_table: FluxTable, pheno_table: Table) -> Context:
         ctx = Context()
         if (flux_table is None) and (pheno_table is None):
             return ctx
+
+        entity_id_column_name = TransformerPhenotypeTable.entity_id_column_name
+        target_column_name = TransformerPhenotypeTable.target_column_name
+        lower_bound_column_name = TransformerPhenotypeTable.lower_bound_column_name
+        upper_bound_column_name = TransformerPhenotypeTable.upper_bound_column_name
+        confidence_score_column = TransformerPhenotypeTable.confidence_score_column
+
+        #Test if the table for phenotype table has the right column names
+        if pheno_table :
+            if not pheno_table.column_exists(entity_id_column_name):
+                raise Exception(f"Cannot import Phenotype Table: no column with name '{entity_id_column_name}' found, use the Transformer Phenotype Table")
+            if not pheno_table.column_exists(target_column_name):
+                raise Exception(f"Cannot import Phenotype Table: no column with name '{target_column_name}', use the Transformer Phenotype Table")
+            if not pheno_table.column_exists(upper_bound_column_name):
+                raise Exception(f"Cannot import Phenotype Table: no column with name '{upper_bound_column_name}', use the Transformer Phenotype Table")
+            if not pheno_table.column_exists(lower_bound_column_name):
+                raise Exception(f"Cannot import Phenotype Table: no column with name '{lower_bound_column_name}', use the Transformer Phenotype Table")
+            if not pheno_table.column_exists(confidence_score_column):
+                raise Exception(f"Cannot import Phenotype Table: no column with name '{confidence_score_column}', use the Transformer Phenotype Table")
+
 
         all_tables = {'rxn': flux_table, 'met': pheno_table}
 
@@ -52,16 +72,16 @@ class ContextBuilderHelper(BaseHelper):
             if table is None:
                 continue
 
-            targets = table.get_targets()
-            ubounds = table.get_upper_bounds()
-            lbounds = table.get_lower_bounds()
-            scores = table.get_confidence_scores()
+            targets = table.get_column_data(target_column_name)
+            ubounds = table.get_column_data(upper_bound_column_name)
+            lbounds = table.get_column_data(lower_bound_column_name)
+            scores = table.get_column_data(confidence_score_column)
 
             if key == "rxn":
                 ids = table.get_reaction_ids()
                 data = net.reactions
             else:
-                ids = table.get_entity_ids()
+                ids = table.get_column_data(entity_id_column_name)
                 data = net.compounds
 
             if isinstance(targets[0], str):  # if there is multiple simulations
@@ -113,10 +133,16 @@ class ContextBuilderHelper(BaseHelper):
 
                         target = targets[i]
                         for value in target :
-                            #test if one target is not in the range of the value of the network
-                            if value > data[ref_id].upper_bound or value < data[ref_id].lower_bound :
-                                #raises a warning
-                                self.log_warning_message(f'The value {value} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
+                            if isinstance(data[ref_id],Reaction):
+                                #test if one target is not in the range of the value of the network
+                                if value > data[ref_id].upper_bound or value < data[ref_id].lower_bound :
+                                    #raises a warning
+                                    self.log_warning_message(f'The value {value} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
+                            elif isinstance(data[ref_id],Compound):
+                                #test if one target is not in the range of the value of the network
+                                if value > data[ref_id].UPPER_BOUND or value < data[ref_id].LOWER_BOUND :
+                                    #raises a warning
+                                    self.log_warning_message(f'The value {value} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
 
                         for i in range(len(target)):
                             if math.isnan(target[i]):
@@ -183,9 +209,14 @@ class ContextBuilderHelper(BaseHelper):
 
                         target = [targets[i]]
                         #test if the target is not in the range of the value of the network
-                        if target[0] > data[ref_id].upper_bound or target[0] < data[ref_id].lower_bound :
-                            #raises a warning
-                            self.log_warning_message(f'The value {target[0]} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
+                        if isinstance(data[ref_id],Reaction):
+                            if target[0] > data[ref_id].upper_bound or target[0] < data[ref_id].lower_bound :
+                                #raises a warning
+                                self.log_warning_message(f'The value {target[0]} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
+                        elif isinstance(data[ref_id],Compound):
+                            if target[0] > data[ref_id].UPPER_BOUND or target[0] < data[ref_id].LOWER_BOUND :
+                                #raises a warning
+                                self.log_warning_message(f'The value {target[0]} is not within the range of the reaction {ref_id} in the network. In the network, the range is [{data[ref_id].lower_bound} : {data[ref_id].upper_bound}]')
 
                         measure = Measure(
                             MeasureDict(
@@ -232,6 +263,7 @@ class ContextBuilderHelper(BaseHelper):
                 measure = Measure(
                     MeasureDict(
                         id=measure_id,
+                        name = None,
                         target=value_target,
                         upper_bound=value_upper,
                         lower_bound=value_lower,

@@ -1,10 +1,9 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle)
+                      task_decorator, TypingStyle, Table)
 
 from ..data.flux_table import FluxTable
-from ..data.phenotype_table import PhenotypeTable
 from ..network.network import Network
 from .context import Context
 from .helper.context_builder_helper import ContextBuilderHelper
@@ -17,7 +16,7 @@ class ContextBuilder(Task):
     """
     ContextBuilder Task
 
-    This task creates a `Context` object using a `FluxTable` or a 'PhenotypeTable' and a metabolic `Network`.
+    This task creates a `Context` object using a `FluxTable` or a 'Phenotype Table' and a metabolic `Network`.
     A `Context` object is used to create digital twins and perform metabolic flux analyses.
 
     - Inputs
@@ -33,13 +32,12 @@ class ContextBuilder(Task):
     input_specs = InputSpecs({
         'network': InputSpec(Network),
         'flux_table': InputSpec(FluxTable, human_name="Flux table", is_optional=True),
-        'pheno_table': InputSpec(PhenotypeTable, human_name="Phenotype table", is_optional=True)})
+        'pheno_table': InputSpec(Table, human_name="Phenotype table", is_optional=True)})
     output_specs = OutputSpecs({'context': OutputSpec(Context)})
-    config_specs = {}
 
     def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         flux_table: FluxTable = inputs.get("flux_table")
-        pheno_table: PhenotypeTable = inputs.get("pheno_table")
+        pheno_table: Table = inputs.get("pheno_table")
 
         net: Network = inputs["network"]
         helper = ContextBuilderHelper()
