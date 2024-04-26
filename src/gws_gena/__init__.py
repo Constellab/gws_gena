@@ -20,6 +20,8 @@ from .data.task.flux_table_task import FluxTableImporter
 from .data.task.medium_table_task import MediumTableImporter
 from .data.task.phenotype_table_task import PhenotypeTableImporter
 from .data.task.transformer_phenotype_table import TransformerPhenotypeTable
+from .data.task.transformer_ec_number_table import TransformerECNumberTable
+from .data.task.transformer_entity_id_table import TransformerEntityIDTable
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult

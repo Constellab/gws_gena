@@ -1,10 +1,11 @@
 
 from typing import List, Tuple
+from gws_core import Table
 
-from ....data.ec_table import ECTable
 from ....data.entity_id_table import EntityIDTable
 from ....helper.base_helper import BaseHelper
 from ...network import Network
+from ....data.task.transformer_ec_number_table import TransformerECNumberTable
 
 
 class ReactionKnockOutHelper(BaseHelper):
@@ -13,7 +14,7 @@ class ReactionKnockOutHelper(BaseHelper):
     FLUX_EPSILON = 1e-9
 
     def knockout_list_of_reactions(
-            self, network: Network, reaction_table: (ECTable, EntityIDTable),
+            self, network: Network, reaction_table: (Table, EntityIDTable),
             ko_delimiter=None, inplace=False) -> Tuple[Network, List]:
         """ knockout a list of reactions in a network """
 
@@ -25,12 +26,13 @@ class ReactionKnockOutHelper(BaseHelper):
         all_ids = []
         found_id = []
 
-        if isinstance(reaction_table, (EntityIDTable, ECTable)):
+        if isinstance(reaction_table, (EntityIDTable, Table)):
+            ec_number_name = TransformerECNumberTable.ec_number_name
             # ko using RXN_ID and EC_NUMBER
             if isinstance(reaction_table, EntityIDTable):
                 id_list: list = reaction_table.get_ids()
-            else:
-                id_list: list = reaction_table.get_ec_numbers()
+            elif reaction_table.column_exists(TransformerECNumberTable.ec_number_name):
+                id_list: list = reaction_table.get_column_data(ec_number_name)
 
             for rxn_id, rxn in new_net.reactions.items():
                 rhea_id = rxn.rhea_id

@@ -3,11 +3,11 @@ import math
 
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
-from gws_core import BadRequestException, Logger
+from gws_core import BadRequestException, Logger, Table
 
 from ...data.biomass_reaction_table import BiomassReactionTable
-from ...data.ec_table import ECTable
 from ...data.medium_table import MediumTable
+from ...data.task.transformer_ec_number_table import TransformerECNumberTable
 from ...helper.base_helper import BaseHelper
 from ...network.compartment.compartment import Compartment
 from ...network.compound.compound import Compound
@@ -99,9 +99,10 @@ class ReconHelper(BaseHelper):
         return new_net
 
     def create_network_with_ec_table(
-            self, unique_name: str, ec_table: ECTable, tax_id: str, tax_search_method: str) -> Network:
+            self, unique_name: str, ec_table: Table, tax_id: str, tax_search_method: str) -> Network:
         """ Create a network related to a list of EC numbers """
-        ec_list = ec_table.get_ec_numbers()
+        ec_number_name = TransformerECNumberTable.ec_number_name
+        ec_list = ec_table.get_column_data(ec_number_name)
         net = Network()
         net.name = unique_name
 

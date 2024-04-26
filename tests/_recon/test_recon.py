@@ -1,9 +1,8 @@
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings
-from gws_gena import BiomassReactionTableImporter, ECTableImporter, ReconProto
+from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
+from gws_gena import BiomassReactionTableImporter, ReconProto, TransformerECNumberTable
 
 
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
@@ -13,11 +12,16 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "recon")
 
-        ec_table = ECTableImporter.call(File(
-            path=os.path.join(data_dir, "recon_ec_table.csv")),
-            {
-                "ec_column": "EC Number"
-        })
+        ec_table = TableImporter.call(File(
+            path=os.path.join(data_dir, "recon_ec_table.csv")))
+
+        # run transformer
+        runner_transformer = TaskRunner(
+            inputs={"table": ec_table},
+            task_type=TransformerECNumberTable,
+            params = {'ec_number_column': "EC Number"})
+
+        ec_table = runner_transformer.run()['transformed_table']
 
         biomass_table = BiomassReactionTableImporter.call(File(
             path=os.path.join(data_dir, "recon_biomass.csv")),

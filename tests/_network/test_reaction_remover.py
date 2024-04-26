@@ -2,8 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner
-from gws_gena import (ECTableImporter, EntityIDTableImporter, NetworkImporter,
+from gws_core import File, Settings, TaskRunner,TableImporter
+from gws_gena import (EntityIDTableImporter, NetworkImporter,
                       ReactionRemover)
 
 settings = Settings.get_instance()
@@ -19,7 +19,7 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
             params={"add_biomass" : True})
-        table = ECTableImporter.call(
+        table = TableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "ec_table.csv")),
             params={})
 

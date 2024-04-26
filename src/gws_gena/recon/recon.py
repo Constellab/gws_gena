@@ -1,10 +1,10 @@
 
 from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
                       OutputSpec, OutputSpecs, StringHelper, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator, TypingStyle)
+                      TaskInputs, TaskOutputs, task_decorator, TypingStyle, Table)
 
 from ..data.biomass_reaction_table import BiomassReactionTable
-from ..data.ec_table import ECTable
+from ..data.task.transformer_ec_number_table import TransformerECNumberTable
 from ..network.network import Network
 from .helper.recon_helper import ReconHelper
 
@@ -23,7 +23,7 @@ class DraftRecon(Task):
     """
 
     input_specs = InputSpecs({
-        'ec_table': InputSpec(ECTable, human_name="Table of ec numbers", is_optional=True),
+        'ec_table': InputSpec(Table, human_name="Table of ec numbers", is_optional=True),
         'biomass_table': InputSpec(BiomassReactionTable, is_optional=True),
     })
     output_specs = OutputSpecs({'network': OutputSpec(Network)})
@@ -57,6 +57,9 @@ class DraftRecon(Task):
         if not tax_search_method:
             tax_search_method = None
         if inputs.get('ec_table'):
+            ec_number_name = TransformerECNumberTable.ec_number_name
+            if not inputs['ec_table'].column_exists(ec_number_name):
+                raise Exception(f"Cannot import EC Table: no column with name '{ec_number_name}' use the Transformer EC Number Table")
             return helper.create_network_with_ec_table(
                 unique_name=unique_name,
                 ec_table=inputs['ec_table'],

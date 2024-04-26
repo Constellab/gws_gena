@@ -1,20 +1,20 @@
 
-from gws_core import BadRequestException
+from gws_core import BadRequestException, Table
 
-from ....data.ec_table import ECTable
 from ....data.entity_id_table import EntityIDTable
 from ....helper.base_helper import BaseHelper
 from ...network import Network, Reaction
-
+from ....data.task.transformer_ec_number_table import TransformerECNumberTable
 
 class ReactionAdderHelper(BaseHelper):
     """ ReactionAdderHelper """
 
-    def add_reactions(self, network: Network, reaction_table: (ECTable, EntityIDTable),
+    def add_reactions(self, network: Network, reaction_table: (Table, EntityIDTable),
                       tax_id: str, tax_search_method: str = 'bottom_up') -> Network:
 
-        if isinstance(reaction_table, ECTable):
-            ec_list: list = reaction_table.get_ec_numbers()
+        ec_number_name = TransformerECNumberTable.ec_number_name
+        if reaction_table.column_exists(TransformerECNumberTable.ec_number_name):
+            ec_list: list = reaction_table.get_column_data(ec_number_name)
             for ec in ec_list:
                 try:
                     rxns = Reaction.from_biota(ec_number=ec, tax_id=tax_id,
@@ -22,7 +22,7 @@ class ReactionAdderHelper(BaseHelper):
                     for rxn in rxns:
                         network.add_reaction(rxn)
                 except BadRequestException as err:
-                    self.log_warning_message(f"A warning occured when adding reactiosn: {err}")
+                    self.log_warning_message(f"A warning occured when adding reactions: {err}")
 
         elif isinstance(reaction_table, EntityIDTable):
             id_list: list = reaction_table.get_ids()
@@ -33,3 +33,6 @@ class ReactionAdderHelper(BaseHelper):
                         network.add_reaction(rxn)
                 except BadRequestException as err:
                     self.log_warning_message(f"A warning occured when adding reactions: {err}")
+
+        else:
+            raise Exception(f"Cannot import reaction table : no column with name '{ec_number_name}' found or EntityIDTable, use the Transformer EC Number Table")

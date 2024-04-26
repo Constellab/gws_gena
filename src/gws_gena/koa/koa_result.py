@@ -6,7 +6,7 @@ from gws_core import (BadRequestException, BarPlotView, ConfigParams,
                       StringHelper, Table, TechnicalInfo, resource_decorator, view, TypingStyle)
 from pandas import DataFrame
 
-from ..data.ec_table import ECTable
+from ..data.task.transformer_ec_number_table import TransformerECNumberTable
 from ..data.entity_id_table import EntityIDTable
 from ..twin.twin import Twin
 
@@ -26,7 +26,7 @@ class KOAResult(ResourceSet):
     _twin: Twin = ResourceRField()
     _ko_table: Twin = ResourceRField()
 
-    def __init__(self, data: List[DataFrame] = None, twin: Twin = None, ko_table: Union[ECTable, EntityIDTable] = None):
+    def __init__(self, data: List[DataFrame] = None, twin: Twin = None, ko_table: Union[Table, EntityIDTable] = None):
         super().__init__()
         if twin is None:
             self._simulations = []
@@ -34,16 +34,25 @@ class KOAResult(ResourceSet):
             if not isinstance(twin, Twin):
                 raise BadRequestException("A twin is required")
 
-            if not isinstance(ko_table, (ECTable, EntityIDTable)):
-                raise BadRequestException("The ko table must be an isntance of ECTable or EntityIDTable")
+            if not isinstance(ko_table, (Table, EntityIDTable)): #TODO : ça ne sera plus que table désormais
+                raise BadRequestException("The ko table must be an instance of Table or EntityIDTable")
+
+            ec_number_name = TransformerECNumberTable.ec_number_name
+
+            if ko_table.column_exists(ec_number_name):
+                name_column_ids = ec_number_name
+                ko_ids = ko_table.get_column_data(name_column_ids)
+
+            elif isinstance(ko_table,EntityIDTable): #TODO: faire pour entity id
+                ko_ids = ko_table.get_ids()
+
+            else:
+                raise Exception(f"Cannot import KO Table: no column with name '{ec_number_name}' or 'entity_id_name found, use the Transformer EC Number Table or Transformer Entity id Table")
 
             self._twin = twin
             self._ko_table = ko_table
 
-            if isinstance(ko_table, EntityIDTable):
-                ko_ids = ko_table.get_ids()
-            else:
-                ko_ids = ko_table.get_ec_numbers()
+            #ko_ids = ko_table.get_column_data(name_column_ids) #TODO: à décommenter quand ce sera fait pour entity id
 
             for i, current_data in enumerate(data):
                 flux_df = current_data["fluxes"]

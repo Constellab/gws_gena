@@ -2,8 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskRunner
-from gws_gena import (ECTableImporter, EntityIDTableImporter, NetworkImporter,
+from gws_core import ConfigParams, File, Settings, TaskRunner, TableImporter
+from gws_gena import (EntityIDTableImporter, NetworkImporter,
                       ReactionAdder)
 
 settings = Settings.get_instance()
@@ -15,7 +15,7 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         self.print("Test reaction EC adder")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={"add_biomass" : True})
-        table = ECTableImporter.call(
+        table = TableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "ec_table.csv")),
             params={})
 

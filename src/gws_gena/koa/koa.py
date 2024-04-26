@@ -1,9 +1,9 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle)
+                      task_decorator, TypingStyle, Table)
 
-from ..data.ec_table import ECTable
+from ..data.task.transformer_ec_number_table import TransformerECNumberTable
 from ..data.entity_id_table import EntityIDTable
 from ..fba.fba import FBA
 from ..fba.fba_helper.fba_helper import FBAHelper
@@ -23,7 +23,7 @@ class KOA(Task):
     Knock-out analysis class.
 
     Perform an FBA by knocking out some reactions.
-    Reactions to knockout can be provided with a EntityIDTable or a ECTable.
+    Reactions to knockout can be provided with a EntityIDTable or a EC Table.
     Please note that if you provide a EntityIDTable, the reaction id must be "network_reaction1".
 
     If you want to perform multiple knockout at the same time; provide them like this:
@@ -33,7 +33,7 @@ class KOA(Task):
 
     input_specs = InputSpecs({
         'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze"),
-        'ko_table': InputSpec([EntityIDTable, ECTable], human_name="KO table", short_description="The table of KO hypotheses"),
+        'ko_table': InputSpec([EntityIDTable, Table], human_name="KO table", short_description="The table of KO hypotheses"),
     })
     output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
@@ -47,7 +47,7 @@ class KOA(Task):
             short_description="The delimiter used to separate IDs or EC numbers when multiple KO are performed")}
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        ko_table: ECTable = inputs["ko_table"]
+        ko_table: Table = inputs["ko_table"]
         twin: FlatTwin = inputs["twin"].flatten()
         solver = params["solver"]
         biomass_optimization = params["biomass_optimization"]
@@ -67,7 +67,8 @@ class KOA(Task):
             if isinstance(current_ko_table, EntityIDTable):
                 ko_id: str = current_ko_table.get_ids()[0]
             else:
-                ko_id: str =  current_ko_table.get_ec_numbers()[0]
+                ec_number_name = TransformerECNumberTable.ec_number_name
+                ko_id: str =  current_ko_table.get_column_data(ec_number_name)[0]
 
             perc = 100 * (i/ko_table.nb_rows)
             self.update_progress_value(
@@ -109,7 +110,8 @@ class KOA(Task):
             if isinstance(current_ko_table, EntityIDTable):
                 ko_id: str = current_ko_table.get_ids()[0]
             else:
-                ko_id: str =  current_ko_table.get_ec_numbers()[0]
+                ec_number_name = TransformerECNumberTable.ec_number_name
+                ko_id: str =  current_ko_table.get_column_data(ec_number_name)[0]
 
             simulations.append({
                 "id": f"{ko_id}",
