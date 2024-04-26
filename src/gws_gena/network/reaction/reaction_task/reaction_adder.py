@@ -3,7 +3,6 @@ from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
                       task_decorator, TypingStyle,Table)
 
-from ....data.entity_id_table import EntityIDTable
 from ...network import Network
 from ..helper.reaction_adder_helper import ReactionAdderHelper
 
@@ -19,8 +18,7 @@ class ReactionAdder(Task):
 
     input_specs = InputSpecs({
         'network': InputSpec(Network, human_name="Network", short_description="Network to complete"),
-        'reaction_table': InputSpec(
-            (Table, EntityIDTable), human_name="Table of EC numbers or IDs", short_description="The table of reactions to add"),
+        'reaction_table': InputSpec(Table, human_name="Table of EC numbers or IDs", short_description="The table of reactions to add"),
     })
     output_specs = OutputSpecs({
         'network': OutputSpec(Network, human_name="Network", short_description="The network after completion"),
@@ -44,7 +42,6 @@ class ReactionAdder(Task):
 
         helper = ReactionAdderHelper()
         helper.attach_task(self)
-        helper.add_reactions(
-            network, reaction_table, tax_id, tax_search_method=tax_search_method)
+        helper.add_reactions(network, reaction_table, tax_id, tax_search_method=tax_search_method)
 
         return {"network": network}

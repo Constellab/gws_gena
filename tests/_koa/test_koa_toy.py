@@ -2,8 +2,8 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner
-from gws_gena import (KOA, ContextImporter, EntityIDTableImporter,
+from gws_core import File, Settings, TaskRunner, TableImporter
+from gws_gena import (KOA, ContextImporter, TransformerEntityIDTable, 
                       KOAResultExtractor, NetworkImporter, Twin)
 
 settings = Settings.get_instance()
@@ -21,10 +21,14 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko_context.json")),
             {}
         )
-        ko_table = EntityIDTableImporter.call(
+
+        ko_table = TableImporter.call(
             File(path=os.path.join(data_dir, "koa", "toy", "ko_table.csv")),
             {}
         )
+        runner_transformer = TaskRunner( inputs={"table": ko_table},
+            task_type=TransformerEntityIDTable, params = {'id_column_name': "id"})
+        ko_table = runner_transformer.run()['transformed_table']
 
         twin = Twin()
         twin.add_network(network=net, related_context=ctx)

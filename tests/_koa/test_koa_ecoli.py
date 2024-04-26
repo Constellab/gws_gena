@@ -1,9 +1,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings
-from gws_gena import (ContextImporter, EntityIDTableImporter, KOAProto,
-                      NetworkImporter)
+from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
+from gws_gena import (ContextImporter, KOAProto, NetworkImporter, TransformerEntityIDTable)
 
 settings = Settings.get_instance()
 
@@ -25,10 +24,13 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             File(path=os.path.join(data_dir, "ecoli", "ecoli_context.json")),
             {}
         )
-        ko_table = EntityIDTableImporter.call(
+        ko_table = TableImporter.call(
             File(path=os.path.join(data_dir, "koa", "ecoli", "ko_table.csv")),
             {}
         )
+        runner_transformer = TaskRunner( inputs={"table": ko_table},
+            task_type=TransformerEntityIDTable, params = {'id_column_name': "id"})
+        ko_table = runner_transformer.run()['transformed_table']
 
         proto.set_input("network", net)
         proto.set_input("context", ctx)

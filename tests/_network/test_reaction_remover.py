@@ -3,8 +3,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, Settings, TaskRunner,TableImporter
-from gws_gena import (EntityIDTableImporter, NetworkImporter,
-                      ReactionRemover)
+from gws_gena import (NetworkImporter, ReactionRemover, TransformerEntityIDTable)
 
 settings = Settings.get_instance()
 
@@ -50,9 +49,15 @@ class TestReactionremover(BaseTestCaseUsingFullBiotaDB):
                 path=os.path.join(
                     data_dir, "reaction_remover", "toy_with_added_reactions.json")),
             params={"add_biomass" : True})
-        table = EntityIDTableImporter.call(
+
+        table = TableImporter.call(
             File(path=os.path.join(data_dir, "reaction_remover", "id_table.csv")),
-            params={'id_column': 'ids'})
+            {}
+        )
+        runner_transformer = TaskRunner( inputs={"table": table},
+            task_type=TransformerEntityIDTable, params = {'id_column_name': "ids"})
+        table = runner_transformer.run()['transformed_table']
+
 
         tester = TaskRunner(
             params={},

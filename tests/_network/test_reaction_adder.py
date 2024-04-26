@@ -3,8 +3,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import ConfigParams, File, Settings, TaskRunner, TableImporter
-from gws_gena import (EntityIDTableImporter, NetworkImporter,
-                      ReactionAdder)
+from gws_gena import (NetworkImporter, ReactionAdder, TransformerEntityIDTable)
 
 settings = Settings.get_instance()
 
@@ -41,9 +40,13 @@ class TestReactionAdder(BaseTestCaseUsingFullBiotaDB):
         net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy", "toy.json")), params={"add_biomass" : True})
         self.assertEqual(len(net.reactions), 7)
 
-        table = EntityIDTableImporter.call(
+        table = TableImporter.call(
             File(path=os.path.join(data_dir, "reaction_adder", "rhea_id_table.csv")),
-            params={'id_column': 'rhea_id'})
+            {}
+        )
+        runner_transformer = TaskRunner( inputs={"table": table},
+            task_type=TransformerEntityIDTable, params = {'id_column_name': "rhea_id"})
+        table = runner_transformer.run()['transformed_table']
 
         tester = TaskRunner(
             params={},

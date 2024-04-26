@@ -4,7 +4,7 @@ from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       task_decorator, TypingStyle, Table)
 
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
-from ..data.entity_id_table import EntityIDTable
+from ..data.task.transformer_entity_id_table import TransformerEntityIDTable
 from ..fba.fba import FBA
 from ..fba.fba_helper.fba_helper import FBAHelper
 from ..fba.fba_result import FBAResult
@@ -23,8 +23,8 @@ class KOA(Task):
     Knock-out analysis class.
 
     Perform an FBA by knocking out some reactions.
-    Reactions to knockout can be provided with a EntityIDTable or a EC Table.
-    Please note that if you provide a EntityIDTable, the reaction id must be "network_reaction1".
+    Reactions to knockout can be provided with a Entity ID Table or a EC Table.
+    Please note that if you provide a Entity ID Table, the reaction id must be "network_reaction1".
 
     If you want to perform multiple knockout at the same time; provide them like this:
     id
@@ -33,7 +33,7 @@ class KOA(Task):
 
     input_specs = InputSpecs({
         'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze"),
-        'ko_table': InputSpec([EntityIDTable, Table], human_name="KO table", short_description="The table of KO hypotheses"),
+        'ko_table': InputSpec(Table, human_name="KO table", short_description="The table of KO hypotheses"),
     })
     output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
@@ -58,16 +58,17 @@ class KOA(Task):
         parsimony_strength = params["parsimony_strength"]
         ko_delimiter = params.get_value("ko_delimiter", ",")
 
+        id_column_name = TransformerEntityIDTable.id_column
+        ec_number_name = TransformerECNumberTable.ec_number_name
         # is_monitored_fluxes_expanded = False
         full_ko_result_list = []
         for i in range(0, ko_table.nb_rows):
             current_ko_table = ko_table.select_by_row_indexes([i])
 
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
-            if isinstance(current_ko_table, EntityIDTable):
-                ko_id: str = current_ko_table.get_ids()[0]
-            else:
-                ec_number_name = TransformerECNumberTable.ec_number_name
+            if current_ko_table.column_exists(id_column_name):
+                ko_id: str =  current_ko_table.get_column_data(id_column_name)[0]
+            elif current_ko_table.column_exists(ec_number_name):
                 ko_id: str =  current_ko_table.get_column_data(ec_number_name)[0]
 
             perc = 100 * (i/ko_table.nb_rows)
@@ -107,10 +108,9 @@ class KOA(Task):
 
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
 
-            if isinstance(current_ko_table, EntityIDTable):
-                ko_id: str = current_ko_table.get_ids()[0]
-            else:
-                ec_number_name = TransformerECNumberTable.ec_number_name
+            if current_ko_table.column_exists(id_column_name):
+                ko_id: str =  current_ko_table.get_column_data(id_column_name)[0]
+            elif current_ko_table.column_exists(ec_number_name):
                 ko_id: str =  current_ko_table.get_column_data(ec_number_name)[0]
 
             simulations.append({

@@ -7,7 +7,7 @@ from gws_core import (BadRequestException, BarPlotView, ConfigParams,
 from pandas import DataFrame
 
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
-from ..data.entity_id_table import EntityIDTable
+from ..data.task.transformer_entity_id_table import TransformerEntityIDTable
 from ..twin.twin import Twin
 
 
@@ -26,7 +26,7 @@ class KOAResult(ResourceSet):
     _twin: Twin = ResourceRField()
     _ko_table: Twin = ResourceRField()
 
-    def __init__(self, data: List[DataFrame] = None, twin: Twin = None, ko_table: Union[Table, EntityIDTable] = None):
+    def __init__(self, data: List[DataFrame] = None, twin: Twin = None, ko_table: Union[Table] = None):
         super().__init__()
         if twin is None:
             self._simulations = []
@@ -34,25 +34,23 @@ class KOAResult(ResourceSet):
             if not isinstance(twin, Twin):
                 raise BadRequestException("A twin is required")
 
-            if not isinstance(ko_table, (Table, EntityIDTable)): #TODO : ça ne sera plus que table désormais
-                raise BadRequestException("The ko table must be an instance of Table or EntityIDTable")
+            if not isinstance(ko_table, Table):
+                raise BadRequestException("The ko table must be an instance of Table")
 
             ec_number_name = TransformerECNumberTable.ec_number_name
+            entity_id_name = TransformerEntityIDTable.id_column
 
             if ko_table.column_exists(ec_number_name):
                 name_column_ids = ec_number_name
-                ko_ids = ko_table.get_column_data(name_column_ids)
-
-            elif isinstance(ko_table,EntityIDTable): #TODO: faire pour entity id
-                ko_ids = ko_table.get_ids()
-
+            elif ko_table.column_exists(entity_id_name):
+                name_column_ids = entity_id_name
             else:
-                raise Exception(f"Cannot import KO Table: no column with name '{ec_number_name}' or 'entity_id_name found, use the Transformer EC Number Table or Transformer Entity id Table")
+                raise Exception(f"Cannot import KO Table: no column with name '{ec_number_name}' or '{entity_id_name}' found, use the Transformer EC Number Table or Transformer Entity id Table")
+
+            ko_ids = ko_table.get_column_data(name_column_ids)
 
             self._twin = twin
             self._ko_table = ko_table
-
-            #ko_ids = ko_table.get_column_data(name_column_ids) #TODO: à décommenter quand ce sera fait pour entity id
 
             for i, current_data in enumerate(data):
                 flux_df = current_data["fluxes"]
@@ -96,11 +94,15 @@ class KOAResult(ResourceSet):
 
     def get_ko_ids(self) -> List[str]:
         """ Get the ids of the knock-outed reactions """
-        #return self._ko_table.get_ids()
-        if isinstance(self._ko_table, EntityIDTable):
-            return self._ko_table.get_ids()
-        else:
-            return self._ko_table.get_ec_numbers()
+        ec_number_name = TransformerECNumberTable.ec_number_name
+        entity_id_name = TransformerEntityIDTable.id_column
+        if self._ko_table.column_exists(entity_id_name):
+            name_column_ids = entity_id_name
+        elif self._ko_table.column_exists(ec_number_name):
+            name_column_ids = ec_number_name
+        return self._ko_table.get_column_data(name_column_ids)
+
+
 
 
     # -- S --

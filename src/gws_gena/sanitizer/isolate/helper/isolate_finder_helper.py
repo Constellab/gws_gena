@@ -5,11 +5,9 @@ import networkx as nx
 from gws_core import BadRequestException, Table
 from pandas import DataFrame
 
-from ....data.entity_id_table import EntityIDTable
 from ....helper.base_helper import BaseHelper
 from ....network.graph.graph import Graph
 from ....network.network import Network
-
 
 class IsolateFinderHelper(BaseHelper):
 
@@ -37,7 +35,7 @@ class IsolateFinderHelper(BaseHelper):
                     rxn_ids.append(rxn_id)
 
         comp_data = DataFrame(comp_data, columns=["id", "chebi_id", "name"])
-        comp_table = EntityIDTable(comp_data)
+        comp_table = Table(comp_data)
 
         # reaction table
         rxn_data = []
@@ -45,6 +43,6 @@ class IsolateFinderHelper(BaseHelper):
             rxn = network.get_reaction_by_id(rxn_id)
             rxn_data.append([rxn.id, rxn.rhea_id, rxn.name])
         rxn_data = DataFrame(rxn_data, columns=["id", "rhea_id", "name"])
-        rxn_table = EntityIDTable(rxn_data)
+        rxn_table = Table(rxn_data)
 
         return comp_table, rxn_table
