@@ -5,7 +5,7 @@ from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import BadRequestException, Logger, Table
 
-from ...data.medium_table import MediumTable
+from ...data.task.transformer_medium_table import TransformerMediumTable
 from ...data.task.transformer_ec_number_table import TransformerECNumberTable
 from ...data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
 from ...helper.base_helper import BaseHelper
@@ -179,10 +179,12 @@ class ReconHelper(BaseHelper):
                         reaction_env.add_product(compound_env, +1, new_net)
         return new_net
 
-    def add_medium_to_network(self, net: Network, medium_table: MediumTable):
+    def add_medium_to_network(self, net: Network, medium_table: Table):
         """ Add medium compounds to a network """
-        entities = medium_table.get_entities()
-        chebi_ids = medium_table.get_chebi_ids()
+        chebi_id_column_name = TransformerMediumTable.chebi_id_column_name
+        chebi_ids = medium_table.get_column_data(chebi_id_column_name)
+        entity_column_name = TransformerMediumTable.entity_column_name
+        entities = medium_table.get_column_data(entity_column_name)
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
             subs = ReconHelper._retrieve_or_create_comp(

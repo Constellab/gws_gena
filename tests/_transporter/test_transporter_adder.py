@@ -2,9 +2,9 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner
-from gws_gena import (MediumTableImporter, Network, NetworkImporter,
-                      TransporterAdder)
+from gws_core import File, Settings, TaskRunner, TableImporter
+from gws_gena import (Network, NetworkImporter,
+                      TransporterAdder,TransformerMediumTable)
 
 settings = Settings.get_instance()
 
@@ -15,12 +15,15 @@ class TestTransporterAdder(BaseTestCaseUsingFullBiotaDB):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
         data_dir = os.path.join(data_dir, "transporter_adder")
 
-        medium_table = MediumTableImporter.call(
-            File(path=os.path.join(data_dir, "recon_medium.csv")),
-            {
-                "entity_column": "Name of the metabolite",
-                "chebi_column": "Chebi ID"
-            })
+        medium_table = TableImporter.call(File(path=os.path.join(data_dir, "recon_medium.csv")), params={"index_column": -1})
+        # run trainer
+        tester = TaskRunner(
+            inputs={"table": medium_table},
+            task_type=TransformerMediumTable,
+            params = {"entity_column": "Name of the metabolite",
+                    "chebi_id_column": "Chebi ID"})
+
+        medium_table = tester.run()['transformed_table']
 
         net: Network = NetworkImporter.call(
             File(path=os.path.join(data_dir, "recon_net.json")),

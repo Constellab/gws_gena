@@ -23,6 +23,8 @@ from .data.task.transformer_phenotype_table import TransformerPhenotypeTable
 from .data.task.transformer_ec_number_table import TransformerECNumberTable
 from .data.task.transformer_entity_id_table import TransformerEntityIDTable
 from .data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
+from .data.task.transformer_medium_table import TransformerMediumTable
+from .data.task.transformer_flux_table import TransformerFluxTable
 # fba
 from .fba.fba import FBA
 from .fba.fba_result import FBAResult

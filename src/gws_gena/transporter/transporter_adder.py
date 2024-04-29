@@ -1,9 +1,9 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle)
+                      task_decorator, TypingStyle, Table)
 
-from ..data.medium_table import MediumTable
+from ..data.task.transformer_medium_table import TransformerMediumTable
 from ..network.network import Network
 from ..recon.helper.recon_helper import ReconHelper
 
@@ -25,7 +25,7 @@ class TransporterAdder(Task):
 
     input_specs = InputSpecs({
         'network': InputSpec(Network, human_name="The network"),
-        'medium_table': InputSpec(MediumTable, human_name="Medium table")
+        'medium_table': InputSpec(Table, human_name="Medium table")
     })
     output_specs = OutputSpecs({'network': OutputSpec(Network)})
 
@@ -35,6 +35,14 @@ class TransporterAdder(Task):
 
         net = inputs['network']
         medium_table = inputs['medium_table']
+
+        entity_column_name = TransformerMediumTable.entity_column_name
+        if not medium_table.column_exists(entity_column_name):
+            raise Exception(f"Cannot import Medium Table: no column with name '{entity_column_name}' use the Transformer Medium Table")
+        chebi_id_column_name = TransformerMediumTable.chebi_id_column_name
+        if not medium_table.column_exists(chebi_id_column_name):
+            raise Exception(f"Cannot import Medium Table: no column with name '{chebi_id_column_name}' use the Transformer Medium Table")
+
 
         helper.add_medium_to_network(net, medium_table)
 
