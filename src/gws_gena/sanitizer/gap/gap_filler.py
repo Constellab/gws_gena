@@ -1,14 +1,14 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle)
+                      TypingStyle, task_decorator)
 
 from ...network.network import Network
 from .helper.gap_filler_helper import GapFillerHelper
 
 
 @task_decorator("GapFiller", human_name="Gap filler", short_description="Fills gaps in networks",
-style=TypingStyle.material_icon(material_icon_name="auto_fix_high", background_color="#d9d9d9"))
+                style=TypingStyle.material_icon(material_icon_name="auto_fix_high", background_color="#d9d9d9"))
 class GapFiller(Task):
     """
     GapFiller class.
@@ -37,7 +37,7 @@ class GapFiller(Task):
         tax_id = params["tax_id"]
 
         helper = GapFillerHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         # net = helper.fill_gaps(net, tax_id=tax_id)
         net = helper.fill_gaps(net)
 

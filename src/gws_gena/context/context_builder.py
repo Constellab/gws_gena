@@ -1,7 +1,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle, Table)
+                      OutputSpecs, Table, Task, TaskInputs, TaskOutputs,
+                      TypingStyle, task_decorator)
 
 from ..network.network import Network
 from .context import Context
@@ -40,7 +40,7 @@ class ContextBuilder(Task):
 
         net: Network = inputs["network"]
         helper = ContextBuilderHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         ctx = helper.build(net, flux_table, pheno_table)
 
         return {"context": ctx}

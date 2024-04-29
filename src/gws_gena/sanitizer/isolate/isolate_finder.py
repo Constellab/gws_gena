@@ -1,7 +1,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle)
+                      OutputSpecs, Task, TaskInputs, TaskOutputs, TypingStyle,
+                      task_decorator)
 
 from ...network.network import Network
 from .helper.isolate_finder_helper import IsolateFinderHelper
@@ -25,7 +25,7 @@ class IsolateFinder(Task):
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]
         helper = IsolateFinderHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         comp_table, rxn_table = helper.find_isolates(network)
 
         result = IsolateFinderResult()

@@ -1,16 +1,18 @@
 
 from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
-                      OutputSpec, OutputSpecs, StringHelper, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator, TypingStyle, Table)
+                      OutputSpec, OutputSpecs, StringHelper, StrParam, Table,
+                      Task, TaskInputs, TaskOutputs, TypingStyle,
+                      task_decorator)
 
+from ..data.task.transformer_biomass_reaction_table import \
+    TransformerBiomassReactionTable
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
-from ..data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
 from ..network.network import Network
 from .helper.recon_helper import ReconHelper
 
 
 @task_decorator("DraftRecon001", human_name="Draft recon", short_description="Draft network reconstruction",
-style=TypingStyle.material_icon(material_icon_name="build", background_color="#d9d9d9"))
+                style=TypingStyle.material_icon(material_icon_name="build", background_color="#d9d9d9"))
 class DraftRecon(Task):
     """
     DraftRecon task.
@@ -40,13 +42,14 @@ class DraftRecon(Task):
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = self._create_network(params, inputs)
         helper = ReconHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
 
         if inputs.get('biomass_table'):
             biomass_table = inputs['biomass_table']
             biomass_column_name = TransformerBiomassReactionTable.biomass_column_name
             if not biomass_table.column_exists(biomass_column_name):
-                raise Exception(f"Cannot import Biomass Table: no column with name '{biomass_column_name}' use the Transformer Biomass Reaction Table")
+                raise Exception(
+                    f"Cannot import Biomass Table: no column with name '{biomass_column_name}' use the Transformer Biomass Reaction Table")
 
             helper.add_biomass_equation_to_network(net, biomass_table)
 
@@ -54,7 +57,7 @@ class DraftRecon(Task):
 
     def _create_network(self, params, inputs):
         helper = ReconHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         unique_name = params["unique_name"]
         tax_id = params['tax_id']
         tax_search_method = params['tax_search_method']
@@ -63,7 +66,8 @@ class DraftRecon(Task):
         if inputs.get('ec_table'):
             ec_number_name = TransformerECNumberTable.ec_number_name
             if not inputs['ec_table'].column_exists(ec_number_name):
-                raise Exception(f"Cannot import EC Table: no column with name '{ec_number_name}' use the Transformer EC Number Table")
+                raise Exception(
+                    f"Cannot import EC Table: no column with name '{ec_number_name}' use the Transformer EC Number Table")
             return helper.create_network_with_ec_table(
                 unique_name=unique_name,
                 ec_table=inputs['ec_table'],

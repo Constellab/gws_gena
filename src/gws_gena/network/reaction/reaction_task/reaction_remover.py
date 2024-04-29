@@ -1,7 +1,7 @@
 
 from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs,
-                      OutputSpec, OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle, Table)
+                      OutputSpec, OutputSpecs, Table, Task, TaskInputs,
+                      TaskOutputs, TypingStyle, task_decorator)
 
 from ...network import Network
 from ..helper.reaction_remover_helper import ReactionRemoverHelper
@@ -30,7 +30,7 @@ class ReactionRemover(Task):
         reaction_table = inputs["reaction_table"]
         reverse_remove = params["reverse_remove"]
         helper = ReactionRemoverHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         helper.remove_list_of_reactions(
             network, reaction_table, reverse_remove=reverse_remove)
         return {"network": network}

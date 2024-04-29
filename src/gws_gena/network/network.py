@@ -1,10 +1,8 @@
 
 from typing import Dict, List, Optional
 
-
-from gws_core import (ConfigParams, JSONView,
-                      Resource, SerializableRField, Table, TableView, Task,
-                      resource_decorator, view, TypingStyle)
+from gws_core import (ConfigParams, JSONView, Resource, SerializableRField,
+                      Table, TableView, TypingStyle, resource_decorator, view)
 from pandas import DataFrame
 
 from .compartment.compartment import Compartment
@@ -144,12 +142,12 @@ class Network(Resource):
 
     # -- D --
 
-    def dumps(self, refresh_layout: bool = False, task: Task = None) -> NetworkDict:
+    def dumps(self, refresh_layout: bool = False) -> NetworkDict:
         """
         Dumps the network
         """
 
-        return self.network_data.dumps(refresh_layout=refresh_layout, task=task)
+        return self.network_data.dumps(refresh_layout=refresh_layout)
 
     # -- E --
 
@@ -386,13 +384,12 @@ class Network(Resource):
 
     # -- L --
 
-    @ classmethod
-    def loads(cls, data: NetworkDict, *, biomass_reaction_id: str = None,
+    @classmethod
+    def loads(cls, data: NetworkDict, biomass_reaction_id: str = None,
               skip_orphans: bool = False,
               replace_unknown_compartments: bool = False,
               biomass_metabolite_id_user: str = None,
-              add_biomass: bool = False,
-              task: Task = None) -> 'Network':
+              add_biomass: bool = False) -> 'Network':
         """ Create a Network from JSON data  """
 
         network = cls()
@@ -403,7 +400,6 @@ class Network(Resource):
             replace_unknown_compartments=replace_unknown_compartments,
             biomass_metabolite_id_user=biomass_metabolite_id_user,
             add_biomass=add_biomass,
-            task=task
         )
         network.name = network.network_data.name
         return network
