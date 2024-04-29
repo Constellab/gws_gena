@@ -8,17 +8,6 @@ from .context.context_builder import ContextBuilder
 from .context.helper.context_builder_helper import ContextBuilderHelper
 from .context.context_task import ContextExporter, ContextImporter
 # table
-from .data.biomass_reaction_table import BiomassReactionTable
-from .data.ec_table import ECTable
-from .data.entity_id_table import EntityIDTable
-from .data.flux_table import FluxTable
-from .data.medium_table import MediumTable
-from .data.task.biomass_reaction_table_task import BiomassReactionTableImporter
-from .data.task.ec_table_task import ECTableImporter
-from .data.task.entity_id_table_task import EntityIDTableImporter
-from .data.task.flux_table_task import FluxTableImporter
-from .data.task.medium_table_task import MediumTableImporter
-from .data.task.phenotype_table_task import PhenotypeTableImporter
 from .data.task.transformer_phenotype_table import TransformerPhenotypeTable
 from .data.task.transformer_ec_number_table import TransformerECNumberTable
 from .data.task.transformer_entity_id_table import TransformerEntityIDTable
@@ -61,13 +50,11 @@ from .network.reaction.reaction_task.reaction_adder import ReactionAdder
 from .network.reaction.reaction_task.reaction_remover import ReactionRemover
 from .network.view.network_view import NetworkView
 # proto
-from .proto.deprecated.recon_proto_deprecated_000 import ReconProto000
 from .proto.fba_proto import FBAProto
 from .proto.fva_proto import FVAProto
 from .proto.koa_proto import KOAProto
 from .proto.recon_proto import ReconProto
 # recon
-from .recon.deprecated.recon_deprecated_000 import DraftRecon000
 from .recon.helper.recon_helper import ReconHelper
 from .recon.recon import DraftRecon
 # reduction
