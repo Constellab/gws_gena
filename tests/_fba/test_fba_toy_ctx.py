@@ -3,9 +3,8 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings, TaskRunner
-from gws_gena import (ContextBuilder, FBAProto, FluxTableImporter,
-                      NetworkImporter)
+from gws_core import File, IExperiment, Settings, TaskRunner, TableImporter
+from gws_gena import (ContextBuilder, FBAProto, NetworkImporter,TransformerFluxTable)
 
 settings = Settings.get_instance()
 
@@ -19,7 +18,14 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
         def run_fba(ctx_name, solver="highs", relax_qssa=False, parsimony_strength = 0.0):
             file_path = os.path.join(data_dir, "ctx_data", f"{ctx_name}.csv")
-            flux_data = FluxTableImporter.call(File(path=file_path), params={"delimiter": ","})
+            flux_data = TableImporter.call(File(path=file_path), params={"delimiter": ","})
+            tester = TaskRunner(
+                inputs={"table": flux_data},task_type=TransformerFluxTable,
+                params = {'entity_id_column': "reaction_id",'target_column': "target",
+                        'lower_bound_column': "lower_bound",'upper_bound_column': "upper_bound",
+                        'confidence_score_column' : "confidence_score"})
+            flux_data = tester.run()['transformed_table']
+
             net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params={"add_biomass" : True})
 
             # build context

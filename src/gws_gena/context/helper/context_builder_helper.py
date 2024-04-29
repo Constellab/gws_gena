@@ -4,7 +4,6 @@ import ast
 
 from gws_core import (BadRequestException,Table)
 
-from ...data.flux_table import FluxTable
 from ...network.reaction.reaction import Reaction
 from ...network.compound.compound import Compound
 from ..context import Context
@@ -13,13 +12,14 @@ from ..typing.measure_typing import MeasureDict
 from ..typing.variable_typing import VariableDict
 from ...helper.base_helper import BaseHelper
 from ...data.task.transformer_phenotype_table import TransformerPhenotypeTable
+from ...data.task.transformer_flux_table import TransformerFluxTable
 
 
 class ContextBuilderHelper(BaseHelper):
     """
     ContextBuilderHelper
 
-    This helper creates a `Context` object using a `FluxTable` and metabolic `Network`.
+    This helper creates a `Context` object using a `Flux Table` and metabolic `Network`.
     A `Context` object is used to create digital twins and perform metabolic flux analyses.
 
     - The `flux_table` gives a list of metabolic fluxes experimentally measured.
@@ -28,7 +28,7 @@ class ContextBuilderHelper(BaseHelper):
     - The `Network` is a metabolic network
     """
 
-    def build(self, net, flux_table: FluxTable, pheno_table: Table) -> Context:
+    def build(self, net, flux_table: Table, pheno_table: Table) -> Context:
         ctx = Context()
         if (flux_table is None) and (pheno_table is None):
             return ctx
@@ -51,6 +51,24 @@ class ContextBuilderHelper(BaseHelper):
                 raise Exception(f"Cannot import Phenotype Table: no column with name '{lower_bound_column_name}', use the Transformer Phenotype Table")
             if not pheno_table.column_exists(confidence_score_column):
                 raise Exception(f"Cannot import Phenotype Table: no column with name '{confidence_score_column}', use the Transformer Phenotype Table")
+
+        flux_table_entity_id_column_name = TransformerFluxTable.entity_id_column_name
+        flux_table_target_column_name = TransformerFluxTable.target_column_name
+        flux_table_lower_bound_column_name = TransformerFluxTable.lower_bound_column_name
+        flux_table_upper_bound_column_name = TransformerFluxTable.upper_bound_column_name
+        flux_table_confidence_score_column = TransformerFluxTable.confidence_score_column
+        #Test if the table for flux_table has the right column names
+        if flux_table :
+            if not flux_table.column_exists(flux_table_entity_id_column_name):
+                raise Exception(f"Cannot import Flux Table: no column with name '{flux_table_entity_id_column_name}' found, use the Transformer Flux Table")
+            if not flux_table.column_exists(flux_table_target_column_name):
+                raise Exception(f"Cannot import Flux Table: no column with name '{flux_table_target_column_name}', use the Transformer Flux Table")
+            if not flux_table.column_exists(flux_table_upper_bound_column_name):
+                raise Exception(f"Cannot import Flux Table: no column with name '{flux_table_upper_bound_column_name}', use the Transformer Flux Table")
+            if not flux_table.column_exists(flux_table_lower_bound_column_name):
+                raise Exception(f"Cannot import Flux Table: no column with name '{flux_table_lower_bound_column_name}', use the Transformer Flux Table")
+            if not flux_table.column_exists(flux_table_confidence_score_column):
+                raise Exception(f"Cannot import Flux Table: no column with name '{flux_table_confidence_score_column}', use the Transformer Flux Table")
 
 
         all_tables = {'rxn': flux_table, 'met': pheno_table}
@@ -78,7 +96,7 @@ class ContextBuilderHelper(BaseHelper):
             scores = table.get_column_data(confidence_score_column)
 
             if key == "rxn":
-                ids = table.get_reaction_ids()
+                ids = table.get_column_data(flux_table_entity_id_column_name)
                 data = net.reactions
             else:
                 ids = table.get_column_data(entity_id_column_name)
