@@ -5,9 +5,9 @@ from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import BadRequestException, Logger, Table
 
-from ...data.biomass_reaction_table import BiomassReactionTable
 from ...data.medium_table import MediumTable
 from ...data.task.transformer_ec_number_table import TransformerECNumberTable
+from ...data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
 from ...helper.base_helper import BaseHelper
 from ...network.compartment.compartment import Compartment
 from ...network.compound.compound import Compound
@@ -21,7 +21,7 @@ from ...network.typing.reaction_typing import ReactionDict
 class ReconHelper(BaseHelper):
     """ ReconHelper """
 
-    def add_biomass_equation_to_network(self, net: Network, biomass_table: BiomassReactionTable):
+    def add_biomass_equation_to_network(self, net: Network, biomass_table: Table):
         """ Add the biomass equation to a network """
         biomass_comps = self._create_biomass_compounds(net, biomass_table)
         self._create_biomass_rxns(net, biomass_comps, biomass_table)
@@ -249,8 +249,8 @@ class ReconHelper(BaseHelper):
 
     def _create_biomass_rxns(self, net, biomass_comps, biomass_table):
         col_names = biomass_table.column_names
-        chebi_col_name = biomass_table.chebi_column
-        entity_column = biomass_table.entity_column
+        chebi_col_name = TransformerBiomassReactionTable.chebi_id_column_name
+        entity_column = TransformerBiomassReactionTable.entity_column_name
         for col_name in col_names:
             if col_name == chebi_col_name or col_name == entity_column:
                 continue
@@ -286,9 +286,11 @@ class ReconHelper(BaseHelper):
                 })
 
     def _create_biomass_compounds(self, net, biomass_table):
-        entities = biomass_table.get_entities()
-        chebi_ids = biomass_table.get_chebi_ids()
-        biomass_col_name = biomass_table.biomass_column
+        chebi_id_column_name = TransformerBiomassReactionTable.chebi_id_column_name
+        chebi_ids = biomass_table.get_column_data(chebi_id_column_name)
+        entity_column_name = TransformerBiomassReactionTable.entity_column_name
+        entities = biomass_table.get_column_data(entity_column_name)
+        biomass_col_name = TransformerBiomassReactionTable.biomass_column_name
         _comps = []
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]

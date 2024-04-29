@@ -3,8 +3,8 @@ from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
                       OutputSpec, OutputSpecs, StringHelper, StrParam, Task,
                       TaskInputs, TaskOutputs, task_decorator, TypingStyle, Table)
 
-from ..data.biomass_reaction_table import BiomassReactionTable
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
+from ..data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
 from ..network.network import Network
 from .helper.recon_helper import ReconHelper
 
@@ -24,7 +24,7 @@ class DraftRecon(Task):
 
     input_specs = InputSpecs({
         'ec_table': InputSpec(Table, human_name="Table of ec numbers", is_optional=True),
-        'biomass_table': InputSpec(BiomassReactionTable, is_optional=True),
+        'biomass_table': InputSpec(Table, is_optional=True),
     })
     output_specs = OutputSpecs({'network': OutputSpec(Network)})
     config_specs = {
@@ -44,6 +44,10 @@ class DraftRecon(Task):
 
         if inputs.get('biomass_table'):
             biomass_table = inputs['biomass_table']
+            biomass_column_name = TransformerBiomassReactionTable.biomass_column_name
+            if not biomass_table.column_exists(biomass_column_name):
+                raise Exception(f"Cannot import Biomass Table: no column with name '{biomass_column_name}' use the Transformer Biomass Reaction Table")
+
             helper.add_biomass_equation_to_network(net, biomass_table)
 
         return {"network": net}

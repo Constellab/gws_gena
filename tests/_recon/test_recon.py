@@ -2,7 +2,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
-from gws_gena import BiomassReactionTableImporter, ReconProto, TransformerECNumberTable
+from gws_gena import TransformerBiomassReactionTable, ReconProto, TransformerECNumberTable
 
 
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
@@ -23,13 +23,16 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         ec_table = runner_transformer.run()['transformed_table']
 
-        biomass_table = BiomassReactionTableImporter.call(File(
-            path=os.path.join(data_dir, "recon_biomass.csv")),
-            {
-                "entity_column": "Component",
-                "chebi_column": "Chebi ID",
-                "biomass_column": "Biomass"
-        })
+        # run transformer
+        biomass_table = TableImporter.call(File(path=os.path.join(data_dir, "recon_biomass.csv")))
+        runner_transformer_biomasss = TaskRunner(
+            inputs={"table": biomass_table},
+            task_type=TransformerBiomassReactionTable,
+            params = {"entity_column": "Component",
+                    "chebi_id_column": "Chebi ID",
+                    "biomass_column": "Biomass"})
+
+        biomass_table = runner_transformer_biomasss.run()['transformed_table']
 
         experiment = IExperiment(ReconProto)
         proto = experiment.get_protocol()
@@ -84,7 +87,7 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(len(recon_net.compounds), 100)
 
         comp_ids = recon_net.get_compound_ids()
-        self.assertTrue("Biomass_biomass" in comp_ids)
+        self.assertTrue("Biomass_cytosol" in comp_ids)
         self.assertTrue("CHEBI:16526_cytosol" in comp_ids)
 
         rxn_ids = recon_net.get_reaction_ids()
