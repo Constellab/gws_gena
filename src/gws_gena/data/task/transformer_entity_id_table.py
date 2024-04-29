@@ -3,8 +3,8 @@ from gws_core import (ConfigParams, ConfigSpecs, Task,
                       StrParam, Table, TypingStyle,
                       task_decorator, InputSpecs, InputSpec, OutputSpec, OutputSpecs, TaskInputs, TaskOutputs)
 
-@task_decorator("TransformerEntityIDTable", human_name="Transformer EC Number Table",
-                    short_description="Task to transform table into EC Number",
+@task_decorator("TransformerEntityIDTable", human_name="Transformer Entity ID Table",
+                    short_description="Task to transform table into Entity ID",
                     style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"))
 class TransformerEntityIDTable(Task):
     """
