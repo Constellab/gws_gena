@@ -1,14 +1,5 @@
-
-import json
-import os
-import unittest
-
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_biota import Compound as BiotaCompound
-from gws_core import GTest, Settings
-from gws_gena import (BiomassReactionTable, Compartment, Compound, Network,
-                      Reaction, Twin)
-from pandas import DataFrame
+from gws_gena import (Compartment, Compound)
 
 
 class TestNetwork(BaseTestCaseUsingFullBiotaDB):
