@@ -24,7 +24,7 @@ class ContextBuilder(Task):
       - The `Phenotype table` gives the list of internal metabolic variations that are experimentally measured.
     - Output
       - The `Context` object that can be used for flux simulation
-    It generally corresponds to the consupmtion or production rates of a list on metabolites measured in a bioreactor.
+    It generally corresponds to the consumption or production rates of a list on metabolites measured in a bioreactor.
 
     """
 
