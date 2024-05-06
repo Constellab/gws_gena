@@ -1,7 +1,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle)
+                      OutputSpecs, Task, TaskInputs, TaskOutputs, TypingStyle,
+                      task_decorator)
 
 from ..fba.fba_result import FBAResult
 from ..fva.fva_result import FVAResult
@@ -26,8 +26,15 @@ class TwinAnnotator(Task):
     """
 
     input_specs = InputSpecs({
-        'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
-        'metabolic_fluxes': InputSpec((FBAResult,FVAResult,KOAResult), human_name="Estimated metabolic fluxes", short_description="The FBA, FVA or KOA result")})
+        'twin':
+        OutputSpec(
+            Twin, human_name="Simulated digital twin",
+            short_description="The simulated digital twin"),
+        'metabolic_fluxes':
+        InputSpec(
+            (FBAResult, FVAResult, KOAResult),
+            human_name="Estimated metabolic fluxes",
+            short_description="The FBA, FVA or KOA result")})
     output_specs = OutputSpecs({'twin': OutputSpec(Twin, human_name="Digital twin",
                                short_description="The annotated digital twin")})
 
@@ -35,12 +42,12 @@ class TwinAnnotator(Task):
         metabolic_fluxes = inputs['metabolic_fluxes']
         twin = inputs["twin"]
         helper = TwinAnnotatorHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         if isinstance(metabolic_fluxes, FVAResult):
-            helper.annotate_from_fva_result(twin = twin, simulation= None, fva_result = metabolic_fluxes)
+            helper.annotate_from_fva_result(twin=twin, simulation=None, fva_result=metabolic_fluxes)
         elif isinstance(metabolic_fluxes, FBAResult):
-            helper.annotate_from_fba_result(twin = twin, simulation= None, fba_result = metabolic_fluxes)
+            helper.annotate_from_fba_result(twin=twin, simulation=None, fba_result=metabolic_fluxes)
         elif isinstance(metabolic_fluxes, KOAResult):
-            helper.annotate_from_koa_result(twin = twin, koa_result = metabolic_fluxes)
+            helper.annotate_from_koa_result(twin=twin, koa_result=metabolic_fluxes)
 
         return {"twin": twin}

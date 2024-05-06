@@ -4,9 +4,10 @@ from copy import deepcopy
 
 import cvxpy as cp
 import numpy as np
-from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
-                      Logger, OutputSpec, OutputSpecs, Task, TaskInputs,
-                      TaskOutputs, task_decorator, StrParam, FloatParam, TypingStyle)
+from gws_core import (BadRequestException, ConfigParams, FloatParam, InputSpec,
+                      InputSpecs, Logger, OutputSpec, OutputSpecs, StrParam,
+                      Task, TaskInputs, TaskOutputs, TypingStyle,
+                      task_decorator)
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -16,9 +17,9 @@ from ..fba.fba_result import FBAOptimizeResult
 from ..network.network import Network
 from ..twin.flat_twin import FlatTwin
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
+from ..twin.helper.twin_helper import TwinHelper
 from ..twin.twin import Twin
 from .fva_result import FVAResult
-from ..twin.helper.twin_helper import TwinHelper
 
 
 def _do_parallel_loop(kwargs):
@@ -115,8 +116,8 @@ class FVA(Task):
     })
     config_specs = {
         **FBA.config_specs,
-        'gamma':FloatParam(default_value=1.0, human_name="γ",min_value=0.0,max_value=1.0,visibility=StrParam.PROTECTED_VISIBILITY,
-            short_description="γ determines whether the analysis is conducted with respect to suboptimal network states (where 0 ≤ γ < 1) or to the optimal state (where γ = 1). A value of 0.9 implies that the objective must be at least 90% of its maximum.")
+        'gamma': FloatParam(default_value=1.0, human_name="γ", min_value=0.0, max_value=1.0, visibility=StrParam.PROTECTED_VISIBILITY,
+                            short_description="γ determines whether the analysis is conducted with respect to suboptimal network states (where 0 ≤ γ < 1) or to the optimal state (where γ = 1). A value of 0.9 implies that the objective must be at least 90% of its maximum.")
     }
     __CVXPY_MAX_ITER = 100000
 
@@ -127,7 +128,7 @@ class FVA(Task):
         relax_qssa = params["relax_qssa"]
         fluxes_to_maximize = params["fluxes_to_maximize"]
         fluxes_to_minimize = params["fluxes_to_minimize"]
-        biomass_optimization=params["biomass_optimization"]
+        biomass_optimization = params["biomass_optimization"]
         qssa_relaxation_strength = params["qssa_relaxation_strength"]
         parsimony_strength = 0.0  # params["parsimony_strength"]
         gamma = params["gamma"]
@@ -145,7 +146,7 @@ class FVA(Task):
         else:
             flat_twin: FlatTwin = twin.flatten()
 
-        c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize,fluxes_to_minimize = FBAHelper.build_problem(
+        c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize, fluxes_to_minimize = FBAHelper.build_problem(
             flat_twin,
             biomass_optimization=biomass_optimization,
             fluxes_to_maximize=fluxes_to_maximize,
@@ -185,7 +186,7 @@ class FVA(Task):
                                                                    c, x0,
                                                                    fluxes_to_maximize,
                                                                    fluxes_to_minimize,
-                                                                   step, m,gamma)
+                                                                   step, m, gamma)
         else:
             xmin, xmax = self.__solve_with_parloop(
                 c, A_eq, b_eq, bounds, c_out, x0, fluxes_to_maximize,
@@ -198,7 +199,7 @@ class FVA(Task):
         fva_result = FVAResult(fva_result.get_fluxes_dataframe(), fva_result.get_sv_dataframe())
         # annotate twin
         helper = TwinAnnotatorHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         twin = helper.annotate_from_fva_results(twin, [fva_result])
 
         return {

@@ -1,7 +1,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle, Table)
+                      OutputSpecs, StrParam, Table, Task, TaskInputs,
+                      TaskOutputs, TypingStyle, task_decorator)
 
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
 from ..data.task.transformer_entity_id_table import TransformerEntityIDTable
@@ -17,7 +17,7 @@ from .koa_result import KOAResult
 
 
 @task_decorator("KOA", human_name="KOA", short_description="Knockout Analysis",
-style=TypingStyle.material_icon(material_icon_name="delete_forever", background_color="#d9d9d9"))
+                style=TypingStyle.material_icon(material_icon_name="delete_forever", background_color="#d9d9d9"))
 class KOA(Task):
     """
     Knock-out analysis class.
@@ -67,9 +67,9 @@ class KOA(Task):
 
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
             if current_ko_table.column_exists(id_column_name):
-                ko_id: str =  current_ko_table.get_column_data(id_column_name)[0]
+                ko_id: str = current_ko_table.get_column_data(id_column_name)[0]
             elif current_ko_table.column_exists(ec_number_name):
-                ko_id: str =  current_ko_table.get_column_data(ec_number_name)[0]
+                ko_id: str = current_ko_table.get_column_data(ec_number_name)[0]
 
             perc = 100 * (i/ko_table.nb_rows)
             self.update_progress_value(
@@ -77,13 +77,13 @@ class KOA(Task):
 
             current_ko_twin = twin.copy()
             helper = ReactionKnockOutHelper()
-            helper.attach_task(self)
+            helper.attach_message_dispatcher(self.message_dispatcher)
             for _, net in current_ko_twin.networks.items():
                 _, invalid_ko_ids = helper.knockout_list_of_reactions(
                     net, current_ko_table, ko_delimiter=ko_delimiter, inplace=True)
 
             fba_helper = FBAHelper()
-            fba_helper.attach_task(self)
+            fba_helper.attach_message_dispatcher(self.message_dispatcher)
             current_result: FBAResult = fba_helper.run(
                 current_ko_twin, solver, fluxes_to_maximize, fluxes_to_minimize,
                 biomass_optimization=biomass_optimization,
@@ -109,9 +109,9 @@ class KOA(Task):
             ko_info = current_ko_table.get_data().iloc[0, :].values.tolist()
 
             if current_ko_table.column_exists(id_column_name):
-                ko_id: str =  current_ko_table.get_column_data(id_column_name)[0]
+                ko_id: str = current_ko_table.get_column_data(id_column_name)[0]
             elif current_ko_table.column_exists(ec_number_name):
-                ko_id: str =  current_ko_table.get_column_data(ec_number_name)[0]
+                ko_id: str = current_ko_table.get_column_data(ec_number_name)[0]
 
             simulations.append({
                 "id": f"{ko_id}",
@@ -122,7 +122,7 @@ class KOA(Task):
         # annotate twin
         koa_result.set_simulations(simulations)
         helper = TwinAnnotatorHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         twin = helper.annotate_from_koa_result(inputs["twin"], koa_result)
 
         return {

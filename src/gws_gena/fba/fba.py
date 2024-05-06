@@ -1,16 +1,17 @@
 
-#import multiprocessing
-from typing import Tuple, List
+# import multiprocessing
+from typing import List, Tuple
+
 from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
-                      InputSpecs, ListParam, OutputSpec, OutputSpecs, StrParam, TableConcatHelper,
-                      Task, TaskInputs, TaskOutputs, task_decorator, Table, IntParam, TypingStyle)
+                      InputSpecs, IntParam, ListParam, OutputSpec, OutputSpecs,
+                      StrParam, Table, TableConcatHelper, Task, TaskInputs,
+                      TaskOutputs, TypingStyle, task_decorator)
 
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
-from ..twin.twin import Twin
 from ..twin.helper.twin_helper import TwinHelper
+from ..twin.twin import Twin
 from .fba_helper.fba_helper import FBAHelper
 from .fba_result import FBAResult
-
 
 
 @task_decorator("FBA", human_name="FBA", short_description="Flux balance analysis",
@@ -72,16 +73,16 @@ class FBA(Task):
             short_description="Set True to perform parsimonious FBA (pFBA). In this case the quad solver is used. Set False otherwise"),
         "number_of_simulations":
         IntParam(
-            default_value=None,min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
+            default_value=None, min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Number of simulations",
             short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations.")
-        #,
-        #"number_of_processes":
-        #IntParam(
+        # ,
+        # "number_of_processes":
+        # IntParam(
         #    default_value=2, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY,
         #    human_name="Number of processes",
         #    short_description="Set the number of processes to use to parallelise the execution of FBA.")
-        }
+    }
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
@@ -91,8 +92,8 @@ class FBA(Task):
         network = next(iter(twin.networks.values()))
 
         number_of_simulations = params["number_of_simulations"]
-        #If number_of_simulations is not provided, keep all the simulations
-        if number_of_simulations is None :
+        # If number_of_simulations is not provided, keep all the simulations
+        if number_of_simulations is None:
             number_of_simulations = next((len(measure.target) for _, measure in context.reaction_data.items()), None)
 
         # check the length of the values
@@ -143,20 +144,21 @@ class FBA(Task):
         #     Logger.log_exception_stack_trace(e)
         #     raise e
 
-        #If number of simulations is not None, there is a context with simulations
-        if (number_of_simulations) :
+        # If number of simulations is not None, there is a context with simulations
+        if (number_of_simulations):
             for i in range(0, number_of_simulations):  # run through the number of simulations
-                new_twin = TwinHelper.build_twin_from_sub_context(self,twin, i)
+                new_twin = TwinHelper.build_twin_from_sub_context(self, twin, i)
                 fba_results.append(self.call_fba((i, new_twin, params)))
-                self.update_progress_value(((i+1) / number_of_simulations) * 100, message="Running FBA for all simulations")
-        else : #if number of simulations is None, there is no context provided, so we run only one FBA
-            new_twin = TwinHelper.build_twin_from_sub_context(self,twin, 0)
+                self.update_progress_value(((i+1) / number_of_simulations) * 100,
+                                           message="Running FBA for all simulations")
+        else:  # if number of simulations is None, there is no context provided, so we run only one FBA
+            new_twin = TwinHelper.build_twin_from_sub_context(self, twin, 0)
             fba_results.append(self.call_fba((0, new_twin, params)))
             self.update_progress_value(100, message="Running FBA")
 
         self.log_info_message('Annotating the twin')
         annotator_helper = TwinAnnotatorHelper()
-        annotator_helper.attach_task(self)
+        annotator_helper.attach_message_dispatcher(self.message_dispatcher)
         result_twin = annotator_helper.annotate_from_fba_results(twin, fba_results)
         self.log_info_message('Merging all fba results')
         # merge all fba results
@@ -183,7 +185,7 @@ class FBA(Task):
 
         # Run the FBA for this twin
         fba_helper = FBAHelper()
-        #fba_helper.attach_task(self)
+        # fba_helper.attach_task(self)
         fba_result = fba_helper.run(
             twin, solver=params["solver"],
             fluxes_to_maximize=params["fluxes_to_maximize"],
@@ -192,6 +194,5 @@ class FBA(Task):
             relax_qssa=params["relax_qssa"],
             qssa_relaxation_strength=params["qssa_relaxation_strength"],
             parsimony_strength=params["parsimony_strength"])
-
 
         return fba_result

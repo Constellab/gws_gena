@@ -1,7 +1,7 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle, Table)
+                      OutputSpecs, Table, Task, TaskInputs, TaskOutputs,
+                      TypingStyle, task_decorator)
 
 from ..data.task.transformer_medium_table import TransformerMediumTable
 from ..network.network import Network
@@ -31,18 +31,19 @@ class TransporterAdder(Task):
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         helper = ReconHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
 
         net = inputs['network']
         medium_table = inputs['medium_table']
 
         entity_column_name = TransformerMediumTable.entity_column_name
         if not medium_table.column_exists(entity_column_name):
-            raise Exception(f"Cannot import Medium Table: no column with name '{entity_column_name}' use the Transformer Medium Table")
+            raise Exception(
+                f"Cannot import Medium Table: no column with name '{entity_column_name}' use the Transformer Medium Table")
         chebi_id_column_name = TransformerMediumTable.chebi_id_column_name
         if not medium_table.column_exists(chebi_id_column_name):
-            raise Exception(f"Cannot import Medium Table: no column with name '{chebi_id_column_name}' use the Transformer Medium Table")
-
+            raise Exception(
+                f"Cannot import Medium Table: no column with name '{chebi_id_column_name}' use the Transformer Medium Table")
 
         helper.add_medium_to_network(net, medium_table)
 

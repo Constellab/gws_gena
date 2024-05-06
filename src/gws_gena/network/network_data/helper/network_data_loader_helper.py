@@ -73,7 +73,6 @@ class NetworkDataLoaderHelper(BaseHelper):
             else:
                 compartment = Compartment(data["compartments"][compart_id])
 
-
             used_comp_id = comp_id
 
             # create compound
@@ -125,7 +124,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         query = BiotaEnzymeOrtholog.select().where(BiotaEnzymeOrtholog.ec_number.in_(ec_numbers))
         biota_enzymes_dict = {}
         rxn_biota_helper = ReactionBiotaHelper()
-        rxn_biota_helper.attach_task(self._task)
+        rxn_biota_helper.attach_message_dispatcher(self._message_dispatcher)
 
         enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
             query, load_taxonomy=False, load_pathway=True)
@@ -149,7 +148,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         rxn_print_interval = int(total_number_of_reactions / total_number_of_prints) or 1
 
         rxn_biota_helper = ReactionBiotaHelper()
-        rxn_biota_helper.attach_task(self._task)
+        rxn_biota_helper.attach_message_dispatcher(self._message_dispatcher)
 
         # load all enzymes if possible
         biota_enzymes_dict = self._load_all_enzymes(data)
@@ -264,23 +263,24 @@ class NetworkDataLoaderHelper(BaseHelper):
 
         # check if the biomass compartment exists
         if biomass_metabolite_id_user is not None:
-            if biomass_metabolite_id_user != "" :
-                #Check if the metabolite exists in the network
+            if biomass_metabolite_id_user != "":
+                # Check if the metabolite exists in the network
                 if biomass_metabolite_id_user not in net.compounds:
-                    #If not, raise an Exception
+                    # If not, raise an Exception
                     raise Exception(f"The metabolite {biomass_metabolite_id_user} doesn't exist in the network.")
 
-                #Check if the metabolite produced by the reaction is in the biomass compartment
+                # Check if the metabolite produced by the reaction is in the biomass compartment
                 compartment_go_id = net.compounds[biomass_metabolite_id_user].compartment.go_id
-                if compartment_go_id !='GO:0016049':
-                    #If not, raise an Exception
+                if compartment_go_id != 'GO:0016049':
+                    # If not, raise an Exception
                     raise Exception(f"The metabolite {biomass_metabolite_id_user} must be in the biomass compartment")
 
-                #Check is the metabolite biomass is not used in another reaction as substrates
+                # Check is the metabolite biomass is not used in another reaction as substrates
                 for reaction in net.reactions:
                     if biomass_metabolite_id_user in net.reactions[reaction].substrates:
-                        #If not, raise an Exception
-                        raise Exception(f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction}. Verify your biomass_metabolite_id.")
+                        # If not, raise an Exception
+                        raise Exception(
+                            f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction}. Verify your biomass_metabolite_id.")
 
         if add_biomass is True:
             if net.get_biomass_compound() is None:
@@ -429,14 +429,14 @@ class NetworkDataLoaderHelper(BaseHelper):
                 if rxn_data["id"].startswith(pref):
                     if pref == "EX_":
                         metabolite = next(iter(rxn_data["metabolites"]))
-                        #Add compartment environment
-                        if isinstance(data["compartments"], dict):  #If there is the first loading
-                            data["compartments"].update({"env" : "extracellular region (environment)"})
-                            #Create a new metabolite with the suffix "_env"
+                        # Add compartment environment
+                        if isinstance(data["compartments"], dict):  # If there is the first loading
+                            data["compartments"].update({"env": "extracellular region (environment)"})
+                            # Create a new metabolite with the suffix "_env"
                             new_metabolite = metabolite.split("_e")[0] + "_env"
-                            #Add this metabolite in the model
-                            data["metabolites"].append({'id': new_metabolite, 'compartment' : 'env' })
-                            #Add this metabolite to the reaction EX_
+                            # Add this metabolite in the model
+                            data["metabolites"].append({'id': new_metabolite, 'compartment': 'env'})
+                            # Add this metabolite to the reaction EX_
                             rxn_data["metabolites"].update({new_metabolite: 1.0})
                     else:
                         to_keep = False

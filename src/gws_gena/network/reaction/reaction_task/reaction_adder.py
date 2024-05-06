@@ -1,14 +1,14 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle,Table)
+                      OutputSpecs, StrParam, Table, Task, TaskInputs,
+                      TaskOutputs, TypingStyle, task_decorator)
 
 from ...network import Network
 from ..helper.reaction_adder_helper import ReactionAdderHelper
 
 
 @task_decorator("ReactionAdder", human_name="Reaction adder", short_description="Add a list of reactions to a network",
-style=TypingStyle.material_icon(material_icon_name="sync_alt", background_color="#d9d9d9"))
+                style=TypingStyle.material_icon(material_icon_name="sync_alt", background_color="#d9d9d9"))
 class ReactionAdder(Task):
     """
     ReactionAdder class.
@@ -39,9 +39,8 @@ class ReactionAdder(Task):
         tax_search_method = params['tax_search_method']
         reaction_table = inputs["reaction_table"]
 
-
         helper = ReactionAdderHelper()
-        helper.attach_task(self)
+        helper.attach_message_dispatcher(self.message_dispatcher)
         helper.add_reactions(network, reaction_table, tax_id, tax_search_method=tax_search_method)
 
         return {"network": network}

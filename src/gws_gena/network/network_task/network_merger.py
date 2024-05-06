@@ -1,14 +1,14 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, TypingStyle)
+                      OutputSpecs, Task, TaskInputs, TaskOutputs, TypingStyle,
+                      task_decorator)
 
 from ..helper.network_merger import NetworkMergerHelper
 from ..network import Network
 
 
-@task_decorator("NetworkMerger", human_name="Network merger", short_description="Merge two networks"
-,style=TypingStyle.material_icon(material_icon_name="merge", background_color="#d9d9d9"))
+@task_decorator("NetworkMerger", human_name="Network merger", short_description="Merge two networks",
+                style=TypingStyle.material_icon(material_icon_name="merge", background_color="#d9d9d9"))
 class NetworkMerger(Task):
     """
     NetworkMerger class.
@@ -28,6 +28,6 @@ class NetworkMerger(Task):
         net2 = inputs['network_2']
 
         merger_helper = NetworkMergerHelper()
-        merger_helper.attach_task(self)
+        merger_helper.attach_message_dispatcher(self.message_dispatcher)
         net = merger_helper.merge(destination_network=net1, source_network=net2)
         return {'network': net}

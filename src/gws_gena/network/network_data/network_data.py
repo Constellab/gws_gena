@@ -6,8 +6,7 @@ import numpy as np
 from gws_biota import EnzymeClass
 from gws_biota import Reaction as BiotaReaction
 from gws_biota import Taxonomy as BiotaTaxonomy
-from gws_core import (BadRequestException, Logger, SerializableObjectJson,
-                      Table, Task)
+from gws_core import BadRequestException, Logger, SerializableObjectJson, Table
 from pandas import DataFrame
 
 from ..compartment.compartment import Compartment
@@ -265,14 +264,12 @@ class NetworkData(SerializableObjectJson):
 
     # -- D --
 
-    def dumps(self, refresh_layout: bool = False, task: Task = None) -> NetworkDict:
+    def dumps(self, refresh_layout: bool = False) -> NetworkDict:
         """
         Dumps the network data
         """
 
         helper = NetworkDataDumperHelper()
-        if task:
-            helper.attach_task(task)
         return helper.dumps(self, refresh_layout=refresh_layout)
 
     # -- E --
@@ -763,27 +760,24 @@ class NetworkData(SerializableObjectJson):
 
     # -- L --
 
-    @ classmethod
+    @classmethod
     def loads(
             cls, data: NetworkDict, *,
             biomass_reaction_id: str = None,
             skip_orphans: bool = False,
             replace_unknown_compartments: bool = False,
             biomass_metabolite_id_user: str = None,
-            add_biomass : bool = False,
-            task: Task = None) -> 'NetworkData':
+            add_biomass: bool = False) -> 'NetworkData':
         """ Load JSON data and create a Network  """
 
         helper = NetworkDataLoaderHelper()
-        if task:
-            helper.attach_task(task)
         return helper.loads(
             data,
             biomass_reaction_id=biomass_reaction_id,
             skip_orphans=skip_orphans,
             replace_unknown_compartments=replace_unknown_compartments,
-            biomass_metabolite_id_user = biomass_metabolite_id_user,
-            add_biomass = add_biomass
+            biomass_metabolite_id_user=biomass_metabolite_id_user,
+            add_biomass=add_biomass
         )
 
     # -- N --
