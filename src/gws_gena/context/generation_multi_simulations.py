@@ -10,7 +10,7 @@ import numpy as np
                 style=TypingStyle.material_icon(material_icon_name="library_add", background_color="#d9d9d9"))
 class GenerationMultiSimulations(Task):
     """
-    ContextBuilder MultiSimulations Task
+    GenerationMultiSimulations Task
 
     This task allows you to generate data simulations to contextualise a digital twin.
 
