@@ -2,8 +2,8 @@
 from json import dumps, loads
 from typing import List
 
-from gws_core import (BrickMigration, File, Folder, ResourceModel, TaskModel,
-                      Version, brick_migration, Table)
+from gws_core import (BrickMigration, File, Folder, ResourceModel, TaskModel, ProcessModel,
+                      Version, brick_migration, Table, ProtocolModel)
 
 
 @brick_migration('0.7.0', short_description='Replace specific tables types to Table')
@@ -24,10 +24,10 @@ class Migration070(BrickMigration):
         for key, value in typing_dict.items():
             ResourceModel.replace_resource_typing_name(key, value)
 
-        # replace the references in the tasks inputs and outputs specs
-        tasks_models: List[TaskModel] = list(TaskModel.select())
-        for task_model in tasks_models:
+        # replace the references in the processes inputs and outputs specs
+        process_models: List[ProcessModel] = list(TaskModel.select()) + list(ProtocolModel.select())
+        for process_model in process_models:
             for key, value in typing_dict.items():
-                task_model.data = loads(dumps(task_model.data).replace(key, value))
+                process_model.data = loads(dumps(process_model.data).replace(key, value))
 
-            task_model.save(skip_hook=True)
+            process_model.save(skip_hook=True)
