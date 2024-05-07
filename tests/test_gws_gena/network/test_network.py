@@ -38,6 +38,7 @@ class TestNetwork(BaseTestCaseUsingFullBiotaDB):
         self.assertEqual(net.compounds["atp_c"].name, "ATP C10H12N5O13P3")
         self.assertEqual(net.compounds["atp_c"].compartment.id, "c")
         self.assertEqual(len(net.reactions), 3)
+        self.assertEqual(net.reactions['biomass'].gene_reaction_rule,'')
         self.assertEqual(
             net.reactions["GLNabc"].to_str(),
             "(1.0) atp_c + (1.0) gln_L_e <==()==> (1.0) adp_c + (1.0) gln_L_c")

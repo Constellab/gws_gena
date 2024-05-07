@@ -43,6 +43,7 @@ class NetworkData(SerializableObjectJson):
     _compartment_chebi_ids: Dict[str, str] = None
     _ec_rxn_ids_map: Dict[str, str] = None
     _rhea_rxn_ids_map: Dict[str, str] = None
+    _gpr_rxn_ids_map: Dict[str, str] = None
 
     def __init__(self):
         super().__init__()
@@ -57,6 +58,7 @@ class NetworkData(SerializableObjectJson):
             self._compartment_chebi_ids = {}
             self._ec_rxn_ids_map = {}
             self._rhea_rxn_ids_map = {}
+            self._gpr_rxn_ids_map = {}
 
     def serialize(self) -> NetworkDict:
         """
@@ -151,6 +153,8 @@ class NetworkData(SerializableObjectJson):
         # update maps
         if rxn.rhea_id:
             self._rhea_rxn_ids_map[rxn.rhea_id] = rxn.id
+        if rxn.gene_reaction_rule:
+            self._gpr_rxn_ids_map[rxn.gene_reaction_rule] = rxn.id
         for enzyme in rxn.enzymes:
             ec_number = enzyme.get("ec_number")
             if ec_number:
@@ -177,6 +181,7 @@ class NetworkData(SerializableObjectJson):
         net_data._compartment_chebi_ids = copy.deepcopy(self._compartment_chebi_ids)
         net_data._ec_rxn_ids_map = copy.deepcopy(self._ec_rxn_ids_map)
         net_data._rhea_rxn_ids_map = copy.deepcopy(self._rhea_rxn_ids_map)
+        net_data._gpr_rxn_ids_map = copy.deepcopy(self._gpr_rxn_ids_map)
         return net_data
 
     def create_stoichiometric_matrix(self) -> DataFrame:

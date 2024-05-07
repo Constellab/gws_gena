@@ -14,4 +14,5 @@ ReactionDict = TypedDict("ReactionDict", {
     "rhea_id": str,
     "enzyme": EnzymeDict,
     "layout": BiotaReactionLayoutDict,
+    "gene_reaction_rule": str
 })

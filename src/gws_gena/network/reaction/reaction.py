@@ -37,10 +37,12 @@ class Reaction:
     :type lower_bound: `float`
     :property upper_bound: The upper bound of the reaction flux (metabolic flux)
     :type upper_bound: `float`
-    :property rhea_id: The corresponding Rhea if of the reaction
+    :property rhea_id: The corresponding Rhea of the reaction
     :type rhea_id: `str`
     :property enzymes: The details on the enzymes that regulates the reaction
     :type enzymes: `list[dict]`
+    :type gene_reaction_rule: 'str'
+    :property gene_reaction_rule: The gene reaction rule of the reaction
     """
 
     LOWER_BOUND = -1000.0
@@ -57,6 +59,7 @@ class Reaction:
     substrates: Dict[str, Substrate] = None
     data: dict = None
     layout: BiotaReactionLayoutDict = None
+    gene_reaction_rule: str = ""
 
     def __init__(self, dict_: ReactionDict = None):
         if dict_ is None:
@@ -100,6 +103,9 @@ class Reaction:
 
         if self.layout is None:
             self.layout = {}
+
+        if self.gene_reaction_rule is None:
+            self.gene_reaction_rule = ""
 
     # -- A --
 
@@ -189,6 +195,7 @@ class Reaction:
         rxn.upper_bound = self.upper_bound
         rxn.rhea_id = self.rhea_id
         rxn.enzymes = self.enzymes
+        rxn.gene_reaction_rule = self.gene_reaction_rule
 
         rxn.layout = self.layout.copy()
         rxn.data = copy.deepcopy(self.data)
@@ -338,7 +345,7 @@ class Reaction:
         """ Set data """
         return self.data.get(slot, default)
 
-    
+
 
     # -- I --
 

@@ -180,7 +180,8 @@ class NetworkDataLoaderHelper(BaseHelper):
                     upper_bound=rxn_data.get("upper_bound", Reaction.upper_bound),
                     enzymes=enzyme_list,
                     direction=rxn_data.get("direction", "B"),
-                    rhea_id=rxn_data.get("rhea_id", "")
+                    rhea_id=rxn_data.get("rhea_id", ""),
+                    gene_reaction_rule= rxn_data.get("gene_reaction_rule","")
                 ))
             rxn.layout = rxn_data.get("layout", {})
 
@@ -418,6 +419,9 @@ class NetworkDataLoaderHelper(BaseHelper):
                     else:
                         ec_numbers = [ec_number]
                     rxn_data['ec_numbers'] = ec_numbers
+
+            if rxn_data.get("gene_reaction_rule"):
+                rxn_data["gene_reaction_rule"] = rxn_data.get("gene_reaction_rule")
 
         return out_data
 

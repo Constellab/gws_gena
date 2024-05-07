@@ -71,7 +71,8 @@ class NetworkDataDumperHelper(BaseHelper):
                 "upper_bound": _rxn.upper_bound,
                 "layout": {"x": None, "y": None},
                 "data": _rxn.data,
-                "balance": _rxn.compute_mass_and_charge_balance()
+                "balance": _rxn.compute_mass_and_charge_balance(),
+                "gene_reaction_rule": _rxn.gene_reaction_rule
             })
 
         for _compart in network_data.compartments.values():
