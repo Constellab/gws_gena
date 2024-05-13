@@ -1,14 +1,9 @@
 
-from typing import List, Union
-
 from gws_core import (BadRequestException, BarPlotView, ConfigParams,
-                      JSONView, ListParam, ListRField, ResourceRField, ResourceSet,
+                      ListParam, ListRField, ResourceSet,
                       StringHelper, Table, TechnicalInfo, resource_decorator, view, TypingStyle)
 from pandas import DataFrame
-
-from ..data.task.transformer_ec_number_table import TransformerECNumberTable
-from ..data.task.transformer_entity_id_table import TransformerEntityIDTable
-from ..twin.twin import Twin
+from typing import List
 
 
 @resource_decorator("KOAResult", human_name="KOA result",
@@ -23,46 +18,33 @@ class KOAResult(ResourceSet):
 
     FLUX_TABLE_NAME = "Flux table"
     _simulations = ListRField()
-    _twin: Twin = ResourceRField()
-    _ko_table: Twin = ResourceRField()
+    # _ko_table = ResourceRField()
 
-    def __init__(self, data: List[DataFrame] = None, twin: Twin = None, ko_table: Union[Table] = None):
+    _ko_list: List[str] = ListRField()
+
+    def __init__(self, data: List[DataFrame] = None, ko_list: List[str] = None):
         super().__init__()
-        if twin is None:
-            self._simulations = []
-        else:
-            if not isinstance(twin, Twin):
-                raise BadRequestException("A twin is required")
+        self._simulations = []
 
-            if not isinstance(ko_table, Table):
-                raise BadRequestException("The ko table must be an instance of Table")
+        if not ko_list:
+            ko_list = []
 
-            ec_number_name = TransformerECNumberTable.ec_number_name
-            entity_id_name = TransformerEntityIDTable.id_column
+        if not isinstance(ko_list, list):
+            raise BadRequestException(
+                "The ko list must be an instance of list")
+        self._ko_list = ko_list
 
-            if ko_table.column_exists(ec_number_name):
-                name_column_ids = ec_number_name
-            elif ko_table.column_exists(entity_id_name):
-                name_column_ids = entity_id_name
-            else:
-                raise Exception(f"Cannot import KO Table: no column with name '{ec_number_name}' or '{entity_id_name}' found, use the Transformer EC Number Table or Transformer Entity id Table")
-
-            ko_ids = ko_table.get_column_data(name_column_ids)
-
-            self._twin = twin
-            self._ko_table = ko_table
-
+        if data:
             for i, current_data in enumerate(data):
                 flux_df = current_data["fluxes"]
                 invalid_ko_ids = current_data["invalid_ko_ids"]
                 flux_table = Table(data=flux_df)
-                flux_table.name = self._create_flux_table_name(ko_ids[i])
-                flux_table.add_technical_info(TechnicalInfo(key="invalid_ko_ids", value=f"{invalid_ko_ids}"))
+                flux_table.name = self._create_flux_table_name(ko_list[i])
+                flux_table.add_technical_info(TechnicalInfo(
+                    key="invalid_ko_ids", value=f"{invalid_ko_ids}"))
                 self.add_resource(flux_table)
 
-            self._set_technical_info()
-
-    # -- C --
+        self._set_technical_info()
 
     def _create_flux_table_name(self, ko_id):
         slug_id = StringHelper.slugify(ko_id, snakefy=True, to_lower=False)
@@ -73,14 +55,6 @@ class KOAResult(ResourceSet):
     def get_simulations(self):
         """ Get simulations """
         return self._simulations
-
-    def get_twin(self):
-        """ Get the related twin """
-        return self._twin
-
-    def get_ko_table(self):
-        """ Get the related KO table """
-        return self._ko_table
 
     def get_flux_table(self, ko_id) -> Table:
         """ Get the flux table """
@@ -94,16 +68,7 @@ class KOAResult(ResourceSet):
 
     def get_ko_ids(self) -> List[str]:
         """ Get the ids of the knock-outed reactions """
-        ec_number_name = TransformerECNumberTable.ec_number_name
-        entity_id_name = TransformerEntityIDTable.id_column
-        if self._ko_table.column_exists(entity_id_name):
-            name_column_ids = entity_id_name
-        elif self._ko_table.column_exists(ec_number_name):
-            name_column_ids = ec_number_name
-        return self._ko_table.get_column_data(name_column_ids)
-
-
-
+        return self._ko_list
 
     # -- S --
 
@@ -144,16 +109,3 @@ class KOAResult(ResourceSet):
         barplot_view.y_label = "flux"
 
         return barplot_view
-
-    @view(view_type=JSONView, human_name='Summary', short_description='View as summary')
-    def view_as_summary(self, _: ConfigParams) -> JSONView:
-        """
-        View as summary
-        """
-        json_v = JSONView()
-        data = {
-            "twin": self.get_twin().get_summary(),
-            "KO IDs": self.get_ko_ids()
-        }
-        json_v.set_data(data)
-        return json_v

@@ -1,11 +1,8 @@
 
 from typing import List, Tuple
-from gws_core import Table
 
 from ....helper.base_helper import BaseHelper
 from ...network import Network
-from ....data.task.transformer_ec_number_table import TransformerECNumberTable
-from ....data.task.transformer_entity_id_table import TransformerEntityIDTable
 
 
 class ReactionKnockOutHelper(BaseHelper):
@@ -14,7 +11,7 @@ class ReactionKnockOutHelper(BaseHelper):
     FLUX_EPSILON = 1e-9
 
     def knockout_list_of_reactions(
-            self, network: Network, reaction_table: Table,
+            self, network: Network, reactions: List[str],
             ko_delimiter=None, inplace=False) -> Tuple[Network, List]:
         """ knockout a list of reactions in a network """
 
@@ -26,25 +23,14 @@ class ReactionKnockOutHelper(BaseHelper):
         all_ids = []
         found_id = []
 
-        id_column_name = TransformerEntityIDTable.id_column
-        ec_number_name = TransformerECNumberTable.ec_number_name
-
-        if isinstance(reaction_table, Table) and (reaction_table.column_exists(id_column_name) or reaction_table.column_exists(ec_number_name)) :
-            # ko using RXN_ID and EC_NUMBER
-            if reaction_table.column_exists(id_column_name):
-                name_column_ids = id_column_name
-            elif reaction_table.column_exists(ec_number_name):
-                name_column_ids = ec_number_name
-
-            id_list: list = reaction_table.get_column_data(name_column_ids)
-
+        if isinstance(reactions, list):
             for rxn_id, rxn in new_net.reactions.items():
                 rhea_id = rxn.rhea_id
                 ec_number_tab = []
                 for enzyme in rxn.enzymes:
                     ec_number_tab.append(enzyme.get("ec_number"))
 
-                for _, ko_id_str in enumerate(id_list):
+                for _, ko_id_str in enumerate(reactions):
                     if ko_delimiter:
                         ko_ids = ko_id_str.split(ko_delimiter)
                     else:
@@ -57,7 +43,7 @@ class ReactionKnockOutHelper(BaseHelper):
                             rxn.upper_bound = self.FLUX_EPSILON
                             found_id.append(ko_id)
         else:
-            raise Exception(f"Cannot import KO Table: no column with name '{ec_number_name}' or '{id_column_name}' found, use the Transformer EC Number Table or Transformer Entity id Table")
+            raise Exception("the reactions param must be a list of string")
 
         # write warnings
         not_found_id = []
