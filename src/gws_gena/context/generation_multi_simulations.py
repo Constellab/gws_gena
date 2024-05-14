@@ -76,14 +76,14 @@ class GenerationMultiSimulations(Task):
             #Compute the covariance matrix
             covariance_matrix = np.cov(experimental_data, rowvar=True)
             #Generate random numbers from the mean and the covariance
-            matrix_generated = np.random.multivariate_normal(mean_vector,covariance_matrix, number_simulations)
+            matrix_generated = np.random.default_rng().multivariate_normal(mean_vector,covariance_matrix, number_simulations)
         elif type_generation == "Normal distribution":
             #Compute the mean of the replicates
             mean_vector = np.mean(experimental_data, axis=1)
             #Compute the standard deviation
             std = np.std(experimental_data,axis=1)
             #Generate random numbers from the mean and the covariance
-            matrix_generated = np.random.normal(mean_vector,std, (number_simulations,len(experimental_data)))
+            matrix_generated = np.random.default_rng().normal(mean_vector,std, (number_simulations,len(experimental_data)))
         #Add them into a dataframe
         matrix_generated = pd.DataFrame(matrix_generated)
         matrix_generated.columns = [experimental_data.index]
