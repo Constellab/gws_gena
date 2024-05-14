@@ -30,7 +30,10 @@ class KOA(Task):
     Genes to knockout can be provided with a Entity ID Table.
     Please note that if you provide a Entity ID Table, the reaction id must be "network_reaction1".
 
-    If you want to perform multiple knockout at the same time (e.g. id1,id2 and id3); provide them like this:
+    In the output you will get a twin, a KOA result with the estimated fluxes for each knockout and a summary table.
+    This table is useful if you provide genes to know which reactions have been knocked out by which genes.
+
+    If you want to perform multiple knockout at the same time (e.g. id1, id2 and id3); provide them like this:
     id
     "network_id1,network_id2,network_id3"
     "network_id4"
@@ -42,7 +45,8 @@ class KOA(Task):
     })
     output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
-        'koa_result': OutputSpec(KOAResult, human_name="KOA result tables", short_description="The KOA result tables")
+        'koa_result': OutputSpec(KOAResult, human_name="KOA result tables", short_description="The KOA result tables"),
+        'table_summary' : OutputSpec(Table, human_name="Table Summary", short_description="The table summarising the reactions knocked out")
     })
     config_specs = {
         **FBA.config_specs,
@@ -72,7 +76,7 @@ class KOA(Task):
         ec_number_name = TransformerECNumberTable.ec_number_name
 
         ### If the user provides genes to knockout
-        if (type_ko == "genes"):
+        if type_ko == "genes":
             if not ko_table.column_exists(id_column_name):
                 raise Exception(f"If your elements to be knocked out are genes, you need to have a column named {id_column_name}")
 
@@ -81,6 +85,7 @@ class KOA(Task):
             dict_reactions_gpr = {value: key for key,value in dict_gpr_reactions.items()}
 
             df_ko = pd.DataFrame()
+            df_genes_reactions = pd.DataFrame()
             for line in genes_to_ko:
                 # get the genes
                 unique_genes_dict = self.extract_unique_genes(dictionary = dict_reactions_gpr)
@@ -102,16 +107,25 @@ class KOA(Task):
                 # Extend the dataframe
                 if reactions_to_knockout:
                     reactions_to_knockout = ','.join(reactions_to_knockout)
-                else:
-                    self.log_warning_message(f"The gene(s) {line} doesn't knock out any reactions. No output is provided for this line.")
+                line = ','.join(line)
+                genes_to_knockout = pd.Series(line, dtype='str')
                 reactions_to_knockout = pd.Series(reactions_to_knockout, dtype='str')
+                #Fill Dataframe for the Table Summary
+                df_temp = pd.DataFrame({'Genes to knockout': genes_to_knockout,'Reactions to knockout': reactions_to_knockout})
+                df_genes_reactions = pd.concat([df_genes_reactions, df_temp])
+                #Fill Dataframe for the KO Task
                 df_ko = pd.concat([df_ko, reactions_to_knockout])
 
+            table_summary = Table(df_genes_reactions)
             # Add column 'entity_id'
             df_ko.rename(columns={0: 'entity_id'}, inplace=True)
+            #Delete duplicates values
+            df_ko = df_ko.drop_duplicates(subset=['entity_id'],keep='first')
             # create ko table entity id
             ko_table = Table(df_ko)
-
+        else:
+            table_summary = ko_table
+        table_summary.name = "Table summary"
 
         ko_list: List[str]
         if ko_table.column_exists(id_column_name):
@@ -120,7 +134,6 @@ class KOA(Task):
             ko_list = ko_table.get_column_data(ec_number_name)
         else:
             raise Exception(f'Missing column {id_column_name} or {ec_number_name}. Please use TransformerEntityIDTable or TransformerECNumberTable.')
-
         # is_monitored_fluxes_expanded = False
         full_ko_result_list = []
         i = 0
@@ -171,7 +184,8 @@ class KOA(Task):
 
         return {
             "koa_result": koa_result,
-            "twin": twin
+            "twin": twin,
+            "table_summary" : table_summary
         }
 
     # Function to parse values and extract unique elements
