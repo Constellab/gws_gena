@@ -35,7 +35,7 @@ class GenerationMultiSimulations(Task):
         'number_simulations': IntParam(human_name="Number of simulations", min_value=1,short_description="Number of simulations to generate"),
         'type_generation': StrParam(human_name="Distribution generation",
            short_description="Law to follow to generate simulated data from your data distribution",
-           allowed_values = ["Multivariate normal distribution", "Normal distribution"]),
+           allowed_values = ["Multivariate normal distribution", "Normal distribution","Uniform distribution"]),
         "confidence_score":FloatParam(
             default_value=1.0, min_value=0.0, max_value=1.0, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Confidence score",
@@ -78,12 +78,15 @@ class GenerationMultiSimulations(Task):
             #Generate random numbers from the mean and the covariance
             matrix_generated = np.random.default_rng().multivariate_normal(mean_vector,covariance_matrix, number_simulations)
         elif type_generation == "Normal distribution":
-            #Compute the mean of the replicates
             mean_vector = np.mean(experimental_data, axis=1)
-            #Compute the standard deviation
             std = np.std(experimental_data,axis=1)
             #Generate random numbers from the mean and the covariance
             matrix_generated = np.random.default_rng().normal(mean_vector,std, (number_simulations,len(experimental_data)))
+        elif type_generation == "Uniform distribution":
+            low = np.min(experimental_data, axis = 1)
+            high = np.max(experimental_data, axis = 1)
+            matrix_generated = np.random.default_rng().uniform(low,high,(number_simulations,len(experimental_data)))
+
         #Add them into a dataframe
         matrix_generated = pd.DataFrame(matrix_generated)
         matrix_generated.columns = [experimental_data.index]
