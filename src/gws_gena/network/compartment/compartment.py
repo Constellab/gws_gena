@@ -110,6 +110,7 @@ class Compartment:
         if biota_compart:
             return Compartment(
                 CompartmentDict(
+                    id = biota_compart.bigg_id,
                     go_id=biota_compart.go_id,
                     bigg_id=biota_compart.bigg_id,
                     name=biota_compart.name,
