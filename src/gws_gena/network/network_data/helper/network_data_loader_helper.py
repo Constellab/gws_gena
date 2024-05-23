@@ -435,10 +435,12 @@ class NetworkDataLoaderHelper(BaseHelper):
                         metabolite = next(iter(rxn_data["metabolites"]))
                         # Add compartment environment
                         if isinstance(data["compartments"], dict):  # If there is the first loading
-                            if "env" not in data["compartments"]: #test if there is no "env" compartment already
-                                data["compartments"].update({"env": "extracellular region (environment)"})
-                                # Create a new metabolite with the suffix "_env"
-                                new_metabolite = metabolite.split("_e")[0] + "_env"
+                            data["compartments"].update({"env": "extracellular region (environment)"})
+                            # Create a new metabolite with the suffix "_env"
+                            new_metabolite = metabolite.split("_e")[0] + "_env"
+                            # Check if the new metabolite is already in the data["metabolites"]
+                            metabolite_found = any(new_metabolite in meta.values() for meta in data["metabolites"])
+                            if not metabolite_found:
                                 # Add this metabolite in the model
                                 data["metabolites"].append({'id': new_metabolite, 'compartment': 'env'})
                                 # Add this metabolite to the reaction EX_
