@@ -74,7 +74,7 @@ class NetworkImporter(ResourceImporter):
         if (add_biomass is True and biomass_metabolite_id_user):
             raise Exception("If there is already a biomass metabolite in the network, we can't add one. Set the parameter 'add_biomass' to False")
         if (add_biomass is False and not biomass_metabolite_id_user):
-            raise Exception("A biomass metabolite must be present in the network. Set the biomass_metabolite_id_user parameter with your meatbolite or set add_biomass to True.")
+            raise Exception("A biomass metabolite must be present in the network. Set the biomass_metabolite_id_user parameter with your metabolite or set add_biomass to True.")
 
         with open(source.path, 'r', encoding="utf-8") as fp:
             try:
