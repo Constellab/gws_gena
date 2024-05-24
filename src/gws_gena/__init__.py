@@ -2,6 +2,7 @@
 # cobra
 from .cobra.conversion_annotation.conversion_annotation import ConvertAnnotation
 from .cobra.network_convert.convert_xml_to_json import ConvertXmlToJson
+from .cobra.network_mergem.network_mergem import NetworkMergem
 # context
 from .context.context import Context
 from .context.context_builder import ContextBuilder
