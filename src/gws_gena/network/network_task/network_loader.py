@@ -1,11 +1,12 @@
 import os
 import pandas as pd
 from gws_core import (task_decorator, Task, OutputSpec, OutputSpecs, File,
-                      ConfigParams, StrParam, TaskInputs, TaskOutputs,TypingStyle)
+                      ConfigParams, StrParam, TaskInputs, TaskOutputs, TypingStyle)
 
 @task_decorator("LoadBiggModels", human_name="Load BiGG Models",
                 short_description="Retrieve data from Bigg Models database",
-                style=TypingStyle.material_icon(material_icon_name="travel_explore", background_color="#089bcc"))
+                style=TypingStyle.community_image(icon_technical_name="bigg", background_color="#CAE8F5"))
+
 class LoadBiGGModels(Task):
     """
     This task allows you to retrieve a metabolic model from the BiGG database.
