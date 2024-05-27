@@ -1,7 +1,7 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, GTest, IExperiment, Settings
+from gws_core import File, IExperiment, Settings
 from gws_gena import ContextImporter, FVAProto, NetworkImporter
 
 settings = Settings.get_instance()
@@ -20,7 +20,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             organism_result_dir = os.path.join(data_dir, 'fva', organism)
             net = NetworkImporter.call(
                 File(path=os.path.join(organism_dir, f"{organism}.json")),
-                params = {"add_biomass" : True}
+                params={"add_biomass": True}
             )
             ctx = ContextImporter.call(File(
                 path=os.path.join(organism_dir, f"{organism}_context.json")
@@ -45,14 +45,14 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
             # test results
             result = proto.get_output("fva_result")
-            #biomass_flux = result.get_biomass_flux_dataframe()
-            #print("---------------- BIOMASS FLUX ----------------")
-            #print(biomass_flux)
-            #print("----------------------------------------------")
+            # biomass_flux = result.get_biomass_flux_dataframe()
+            # print("---------------- BIOMASS FLUX ----------------")
+            # print(biomass_flux)
+            # print("----------------------------------------------")
 
             result_dir = os.path.join(organism_result_dir, solver, relax_dir)
             file_path = os.path.join(result_dir, "biomass_flux.csv")
-            #with open(file_path, 'w', encoding="utf-8") as fp:
+            # with open(file_path, 'w', encoding="utf-8") as fp:
             #    fp.write(biomass_flux.to_csv())
 
             # fluxes = result.get_fluxes_dataframe()
@@ -80,8 +80,6 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
         # ecoli
         organism = "ecoli"
-        GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + linprog)")
         run_fva(organism=organism, solver="highs")
         for relax in [True]:
-            GTest.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             run_fva(organism=organism, solver="quad", relax_qssa=relax)

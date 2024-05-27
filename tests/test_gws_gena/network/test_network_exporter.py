@@ -1,11 +1,9 @@
 
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, GTest, Settings
-from gws_gena import Compound, Network, NetworkImporter, NetworkExporter, Reaction, Twin
-from pandas import DataFrame
+from gws_core import File, Settings
+from gws_gena import NetworkExporter, NetworkImporter
 
 settings = Settings.get_instance()
 
@@ -20,7 +18,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "small_net.json")
 
         net = NetworkImporter.call(File(path=file_path),
-                                    params={"add_biomass" : True})
+                                   params={"add_biomass": True})
 
         ## CASE JSON exporter ##
         self.print(f"Test json export")
@@ -28,7 +26,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_exporter = NetworkExporter.call(
             net,
             params={'file_name': "network",
-            'file_format' : "json"}
+                    'file_format': "json"}
         )
 
         self.assertTrue(file_exporter.is_json())
@@ -39,7 +37,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_exporter = NetworkExporter.call(
             net,
             params={'file_name': "network",
-            'file_format' : "csv"}
+                    'file_format': "csv"}
         )
 
         self.assertTrue(file_exporter.is_csv())
@@ -50,11 +48,10 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_exporter = NetworkExporter.call(
             net,
             params={'file_name': "network",
-            'file_format' : "txt"}
+                    'file_format': "txt"}
         )
 
         self.assertTrue(file_exporter.is_txt())
-
 
         self.print("Test Network Exporter with ecoli with metabolite biomass")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
@@ -63,8 +60,8 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "ecoli_with_biomass_metabolite.json")
 
         net = NetworkImporter.call(File(path=file_path),
-                                    params={"add_biomass" : False,
-                                            "biomass_metabolite_id_user" : "biomass_biomass"})
+                                   params={"add_biomass": False,
+                                           "biomass_metabolite_id_user": "biomass_biomass"})
 
         ## CASE JSON exporter ##
         self.print(f"Test json export")
@@ -72,7 +69,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_exporter = NetworkExporter.call(
             net,
             params={'file_name': "network",
-            'file_format' : "json"}
+                    'file_format': "json"}
         )
 
         self.assertTrue(file_exporter.is_json())
@@ -83,7 +80,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_exporter = NetworkExporter.call(
             net,
             params={'file_name': "network",
-            'file_format' : "csv"}
+                    'file_format': "csv"}
         )
 
         self.assertTrue(file_exporter.is_csv())
@@ -94,7 +91,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         file_exporter = NetworkExporter.call(
             net,
             params={'file_name': "network",
-            'file_format' : "txt"}
+                    'file_format': "txt"}
         )
 
         self.assertTrue(file_exporter.is_txt())
