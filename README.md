@@ -53,6 +53,12 @@ This section is for users who want to install the brick manually. It can also be
 
 We recommend installing using Ubuntu 22.04 with python 3.10.
 
+Required packages are listed in the ```settings.json``` file, for now the packages must be installed manually.
+
+```bash
+pip install cvxpy==1.3.0 efmtool==0.2.0 networkx==2.8.8 bioservices==1.11.2
+```
+
 #### Usage
 
 ▶️ To start the server :
