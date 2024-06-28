@@ -242,7 +242,8 @@
                     "balance": {
                         "mass": null,
                         "charge": null
-                    }
+                    },
+                    "gene_reaction_rule": ""
                 },
                 {
                     "id": "toy_cell_R2",
@@ -263,7 +264,8 @@
                     "balance": {
                         "mass": null,
                         "charge": null
-                    }
+                    },
+                    "gene_reaction_rule": ""
                 },
                 {
                     "id": "toy_cell_RB",
@@ -285,7 +287,8 @@
                     "balance": {
                         "mass": null,
                         "charge": null
-                    }
+                    },
+                    "gene_reaction_rule": ""
                 },
                 {
                     "id": "toy_cell_R1_ex",
@@ -306,7 +309,8 @@
                     "balance": {
                         "mass": null,
                         "charge": null
-                    }
+                    },
+                    "gene_reaction_rule": ""
                 },
                 {
                     "id": "toy_cell_R2_ex",
@@ -327,7 +331,8 @@
                     "balance": {
                         "mass": null,
                         "charge": null
-                    }
+                    },
+                    "gene_reaction_rule": ""
                 },
                 {
                     "id": "toy_cell_R4_ex",
@@ -348,7 +353,8 @@
                     "balance": {
                         "mass": null,
                         "charge": null
-                    }
+                    },
+                    "gene_reaction_rule": ""
                 },
                 {
                     "id": "toy_cell_R5_ex",
@@ -369,7 +375,8 @@
                     "balance": {
                         "mass": null,
                         "charge": null
-                    }
+                    },
+                    "gene_reaction_rule": ""
                 }
             ],
             "compartments": [
