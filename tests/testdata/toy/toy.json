@@ -132,5 +132,6 @@
         "env": "extracellular region (environment)",
         "n": "nucleus",
         "b": "biomass"
-    }
+    },
+    "genes": {}
 }
