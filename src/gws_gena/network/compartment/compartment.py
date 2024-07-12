@@ -26,11 +26,11 @@ class Compartment:
     OTHER_GO_ID = "GO:0005575"
     SINK_GO_ID = "GO:0005576"
 
-    id = None
-    go_id = None
-    bigg_id = None
-    name = None
-    color = None
+    id: str = None
+    go_id : str = None
+    bigg_id : str = None
+    name : str = None
+    color :str = None
     is_steady: bool = None
 
     def __init__(self, dict_: CompartmentDict = None):
@@ -51,7 +51,7 @@ class Compartment:
 
         self.id = SlugifyHelper.slugify_id(self.id)
         self.name = biota_compart.name
-        self.is_steady = biota_compart.data["is_steady"]
+        self.is_steady = biota_compart.is_steady
         self.bigg_id = biota_compart.bigg_id
         self.color = biota_compart.color
 
@@ -114,7 +114,7 @@ class Compartment:
                     go_id=biota_compart.go_id,
                     bigg_id=biota_compart.bigg_id,
                     name=biota_compart.name,
-                    is_steady=biota_compart.data["is_steady"]
+                    is_steady=biota_compart.is_steady
                 ))
         else:
             return None
