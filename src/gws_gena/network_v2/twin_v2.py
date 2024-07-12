@@ -15,7 +15,7 @@ class TwinV2(ResourceSet):
     A twin is defined by a set of networks related to a set of contexts. It
     can therefore be used for simulation and prediction.
     """
-    DEFAUTL_NAME = "twin"
+    DEFAULT_NAME = "twin"
 
     NETWORK_NAME = "network"
     CONTEXT_NAME = "context"
@@ -23,15 +23,37 @@ class TwinV2(ResourceSet):
     def __init__(self):
         super().__init__()
         if not self.name:
-            self.name = self.DEFAUTL_NAME
+            self.name = self.DEFAULT_NAME
 
     def set_network(self, network: NetworkCobra) -> None:
+        """
+        Set a network to the twin
+
+        :param network: The network to add
+        :type network: `gena.network.NetworkCobra`
+        """
+        if not isinstance(network, NetworkCobra):
+            raise Exception("The network must an instance of Network")
+        if self.resource_exists(network.name):
+            raise Exception(f"Network name '{network.name}' duplicated")
+
         self.add_resource(network, self.NETWORK_NAME)
 
     def get_network(self) -> NetworkCobra:
         return self.get_resource(self.NETWORK_NAME)
 
     def set_context(self, context: Context) -> None:
+        """
+        Set a context to the twin
+
+        :param context: The context to add
+        :type context: `gena.context.Context`
+        """
+        if not isinstance(context, Context):
+            raise Exception("The context must be an instance of Context")
+        if self.resource_exists(context.name):
+            raise Exception(f'The context "{context.name}" duplicate')
+
         self.add_resource(context, self.CONTEXT_NAME)
 
     def get_context(self) -> Context:
