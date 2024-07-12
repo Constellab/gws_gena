@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, TypedDict
 import numpy as np
 from cobra.core import Metabolite, Model, Reaction
 from cobra.io import model_from_dict, model_to_dict
+from gws_biota import Compartment as BiotaCompartment
 from gws_core import (ConfigParams, DictRField, JSONView, Resource, Table,
                       TableView, TypingStyle, resource_decorator, view)
 from gws_gena.network.view.network_view import NetworkView
@@ -31,7 +32,7 @@ class NetworkCobra(Resource):
 
     BIOMASS_GO_ID = "GO:0016049"
     REACTION_LOWER_BOUND = -1000.0
-    REACITON_UPPER_BOUND = 1000.0
+    REACTION_UPPER_BOUND = 1000.0
 
     network_dict = DictRField()
 
@@ -59,6 +60,32 @@ class NetworkCobra(Resource):
 
     def get_metabolite_ids(self):
         return [metabolite.id for metabolite in self.get_metabolites()]
+
+    def has_metabolite(self, metabolite_id: str) -> bool:
+        return metabolite_id in self.get_metabolite_ids()
+
+    def get_metabolite_by_id(self, metabolite_id: str) -> Optional[Metabolite]:
+        cobra_model = self.get_cobra_model()
+        return cobra_model.metabolites.get_by_id(metabolite_id)
+
+    def get_metabolite_by_id_and_check(self, metabolite_id: str) -> Metabolite :
+        metabolite = self.get_metabolite_by_id(metabolite_id)
+        if not metabolite:
+            raise Exception(f"Metabolite {metabolite_id} not found")
+        return metabolite
+
+    def get_biomass_metabolite(self) -> Metabolite:
+        """
+        Get the biomass metabolite if it exists
+
+        :returns: The biomass metabolite
+        :rtype: Metabolite
+        """
+        for metabolite in self.get_metabolites():
+            compartment_go_id = BiotaCompartment.get_by_bigg_id(metabolite.compartment).go_id
+            if compartment_go_id == self.BIOMASS_GO_ID:
+                return metabolite
+        return None
 
     ############################################### REACTION ###############################################
 
@@ -102,7 +129,7 @@ class NetworkCobra(Resource):
     def get_biomass_reaction(self) -> Optional[Reaction]:
         """ Get the biomass reaction """
         for reaction in self.get_reactions():
-            if self.BIOMASS_GO_ID in reaction.compartments:
+            if "b" in reaction.compartments:
                 return reaction
 
         return None
