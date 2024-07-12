@@ -40,7 +40,7 @@ class TwinHelperV2:
         # filter out non-steady metabolites
         stready_metabolites: List[Metabolite] = []
         for metabolite in network.get_metabolites():
-            compartment = Compartment.get_by_big_id_or_go_id_or_none(metabolite.compartment)
+            compartment = Compartment.get_by_bigg_id_or_go_id_or_none(metabolite.compartment)
             if compartment and compartment.is_steady:
                 stready_metabolites.append(metabolite)
 
@@ -89,7 +89,7 @@ class TwinHelperV2:
             data=np.zeros((len(rxn_data_ids), 4))
         )
         b.loc[:, "lb"] = NetworkCobra.REACTION_LOWER_BOUND
-        b.loc[:, "ub"] = NetworkCobra.REACITON_UPPER_BOUND
+        b.loc[:, "ub"] = NetworkCobra.REACTION_UPPER_BOUND
         b.loc[:, "confidence_score"] = 1.0
 
         S_int = cls.create_steady_stoichiometric_matrix(twin)
@@ -100,7 +100,7 @@ class TwinHelperV2:
             data=np.zeros((len(internal_met_ids), 4))
         )
         r.loc[:, "lb"] = NetworkCobra.REACTION_LOWER_BOUND
-        r.loc[:, "ub"] = NetworkCobra.REACITON_UPPER_BOUND
+        r.loc[:, "ub"] = NetworkCobra.REACTION_UPPER_BOUND
         r.loc[:, "confidence_score"] = 1.0
 
         for measure in context.reaction_data.values():
