@@ -75,12 +75,6 @@ class FBAV2(Task):
             default_value=None, min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Number of simulations",
             short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations.")
-        # ,
-        # "number_of_processes":
-        # IntParam(
-        #    default_value=2, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY,
-        #    human_name="Number of processes",
-        #    short_description="Set the number of processes to use to parallelise the execution of FBA.")
     }
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
@@ -96,24 +90,24 @@ class FBAV2(Task):
 
         # check the length of the values
         for name_measure, measure in context.reaction_data.items():
-            if (len(measure.target) < number_of_simulations):
+            if len(measure.target) < number_of_simulations:
                 raise Exception(
                     "The number of target values must be at least equal to the number of simulations. For " +
                     name_measure + ", there are " + str(len(measure.target)) +
                     " values of targets while the number of simulations is set to " + str(number_of_simulations))
-            if (len(measure.upper_bound) < number_of_simulations):
+            if len(measure.upper_bound) < number_of_simulations:
                 raise Exception(
                     "The number of upper bound values must be at least equal to the number of simulations. For " +
                     name_measure + ", there are " + str(len(measure.upper_bound)) +
                     " values of upper bound while the number of simulations is set to " +
                     str(number_of_simulations))
-            if (len(measure.lower_bound) < number_of_simulations):
+            if len(measure.lower_bound) < number_of_simulations:
                 raise Exception(
                     "The number of lower bound values must be at least equal to the number of simulations. For " +
                     name_measure + ", there are " + str(len(measure.lower_bound)) +
                     " values of lower_bound while the number of simulations is set to " +
                     str(number_of_simulations))
-            if (len(measure.confidence_score) < number_of_simulations):
+            if len(measure.confidence_score) < number_of_simulations:
                 raise Exception(
                     "The number of confidence score values must be at least equal to the number of simulations. For " +
                     name_measure + ", there are " + str(len(measure.confidence_score)) +
