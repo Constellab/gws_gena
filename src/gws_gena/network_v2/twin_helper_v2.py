@@ -6,7 +6,7 @@ from cobra.core import Metabolite
 from gws_biota import Compartment
 from gws_biota.compound.cofactor import Cofactor
 from gws_core import BadRequestException
-from gws_gena.context.helper.context_builder_helper import ContextBuilderHelper
+from gws_gena.context.helper.context_builder_helper_v2 import ContextBuilderHelperV2
 from gws_gena.network_v2.network_cobra import NetworkCobra
 from gws_gena.network_v2.twin_v2 import TwinV2
 from pandas import DataFrame
@@ -99,8 +99,8 @@ class TwinHelperV2:
             columns=["target", "lb", "ub", "confidence_score"],
             data=np.zeros((len(internal_met_ids), 4))
         )
-        r.loc[:, "lb"] = NetworkCobra.REACTION_LOWER_BOUND
-        r.loc[:, "ub"] = NetworkCobra.REACTION_UPPER_BOUND
+        r.loc[:, "lb"] = NetworkCobra.METABOLITE_LOWER_BOUND
+        r.loc[:, "ub"] = NetworkCobra.METABOLITE_UPPER_BOUND
         r.loc[:, "confidence_score"] = 1.0
 
         for measure in context.reaction_data.values():
@@ -138,7 +138,7 @@ class TwinHelperV2:
 
         new_twin.set_network(base_twin.get_network())
 
-        context_builder = ContextBuilderHelper()
+        context_builder = ContextBuilderHelperV2()
         new_context = context_builder.build_sub_context(
             base_twin.get_context(), index)
         new_twin.set_context(new_context)

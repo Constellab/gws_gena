@@ -2,13 +2,14 @@
 from typing import Dict, List, Optional, TypedDict
 
 import numpy as np
+from pandas import DataFrame
 from cobra.core import Metabolite, Model, Reaction
 from cobra.io import model_from_dict, model_to_dict
 from gws_biota import Compartment as BiotaCompartment
 from gws_core import (ConfigParams, DictRField, JSONView, Resource, Table,
                       TableView, TypingStyle, resource_decorator, view)
 from gws_gena.network.view.network_view import NetworkView
-from pandas import DataFrame
+from ..sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
 
 
 class ReactionSimulation(TypedDict):
@@ -33,6 +34,8 @@ class NetworkCobra(Resource):
     BIOMASS_GO_ID = "GO:0016049"
     REACTION_LOWER_BOUND = -1000.0
     REACTION_UPPER_BOUND = 1000.0
+    METABOLITE_LOWER_BOUND = -1000.0
+    METABOLITE_UPPER_BOUND = 1000.0
 
     network_dict = DictRField()
 
@@ -57,6 +60,10 @@ class NetworkCobra(Resource):
 
     def get_metabolites(self) -> List[Metabolite]:
         return self.get_cobra_model().metabolites
+
+    def get_metabolites_dict(self) -> Dict[str, Metabolite]:
+        metabolites = self.get_cobra_model().metabolites
+        return {metabolite.id: metabolite for metabolite in metabolites}
 
     def get_metabolite_ids(self):
         return [metabolite.id for metabolite in self.get_metabolites()]
@@ -91,6 +98,10 @@ class NetworkCobra(Resource):
 
     def get_reactions(self) -> List[Reaction]:
         return self.get_cobra_model().reactions
+
+    def get_reactions_dict(self) -> Dict[str, Reaction]:
+        reactions = self.get_cobra_model().reactions
+        return {reaction.id: reaction for reaction in reactions}
 
     def get_reaction_ids(self):
         return [reaction.id for reaction in self.get_reactions()]
@@ -223,7 +234,6 @@ class NetworkCobra(Resource):
     @view(view_type=TableView, human_name="Reaction gaps")
     def view_gaps_as_table(self, _: ConfigParams) -> TableView:
         """ View gaps as table """
-        from ..sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
         helper = GapFinderHelper()
         data: DataFrame() = helper.find_gaps(self)
         table = Table(data)
