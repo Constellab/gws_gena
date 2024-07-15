@@ -113,28 +113,27 @@ class NetworkImporterV2(ResourceImporter):
         return net
 
     def manage_biomass(self, net: "NetworkCobra", biomass_metabolite_id_user: str = None, add_biomass: bool = False):
-        if biomass_metabolite_id_user is not None:
-            if biomass_metabolite_id_user != "":
-                if not net.has_metabolite(biomass_metabolite_id_user):
-                    # if the metabolite doesn't exist in the network, raises an error
-                    raise Exception(f"The metabolite {biomass_metabolite_id_user} doesn't exist in the network.")
-                else:
-                    # Check if the metabolite produced by the reaction is in the biomass compartment
-                    compartment = net.get_metabolite_by_id_and_check(biomass_metabolite_id_user).compartment
-                    compartment_go_id = BiotaCompartment.get_by_bigg_id(compartment).go_id
-                    if compartment_go_id != 'GO:0016049':
-                        # If not, raise an Exception
-                        raise Exception(f"The metabolite {biomass_metabolite_id_user} must be in the biomass compartment")
+        if biomass_metabolite_id_user != "":
+            if not net.has_metabolite(biomass_metabolite_id_user):
+                # if the metabolite doesn't exist in the network, raises an error
+                raise Exception(f"The metabolite {biomass_metabolite_id_user} doesn't exist in the network.")
+            else:
+                # Check if the metabolite produced by the reaction is in the biomass compartment
+                compartment = net.get_metabolite_by_id_and_check(biomass_metabolite_id_user).compartment
+                compartment_go_id = BiotaCompartment.get_by_bigg_id(compartment).go_id
+                if compartment_go_id != 'GO:0016049':
+                    # If not, raise an Exception
+                    raise Exception(f"The metabolite {biomass_metabolite_id_user} must be in the biomass compartment")
 
-                    # Check if the metabolite biomass is not used in another reaction as a substrate
-                    for reaction_id in net.get_reaction_ids():
-                        reaction = net.get_reaction_by_id_and_check(reaction_id)
-                        # Check if the biomass metabolite is a reactant in the current reaction
-                        if biomass_metabolite_id_user in [met.id for met in reaction.reactants]:
-                            raise ValueError(
-                                f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction_id}. Verify your biomass_metabolite_id.")
+                # Check if the metabolite biomass is not used in another reaction as a substrate
+                for reaction_id in net.get_reaction_ids():
+                    reaction = net.get_reaction_by_id_and_check(reaction_id)
+                    # Check if the biomass metabolite is a reactant in the current reaction
+                    if biomass_metabolite_id_user in [met.id for met in reaction.reactants]:
+                        raise ValueError(
+                            f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction_id}. Verify your biomass_metabolite_id.")
 
-        if add_biomass:
+        elif add_biomass:
             if net.get_biomass_metabolite() is None:
                 for reaction in net.get_reaction_ids():
                     if "biomass" in reaction.lower():
