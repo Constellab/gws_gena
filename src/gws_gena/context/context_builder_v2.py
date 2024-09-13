@@ -3,7 +3,7 @@ from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Table, Task, TaskInputs, TaskOutputs,
                       TypingStyle, task_decorator)
 
-from gws_gena.network_v2.network_cobra import NetworkCobra
+from gws_gena.network.network_cobra import NetworkCobra
 from .context import Context
 from .helper.context_builder_helper_v2 import ContextBuilderHelperV2
 

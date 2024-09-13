@@ -21,7 +21,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             organism_result_dir = os.path.join(data_dir, 'fba', organism)
             net = NetworkImporter.call(
                 File(os.path.join(organism_dir, f"{organism}.json")),
-                params= {"add_biomass" : True}
+                params= {"biomass_metabolite_id_user" : "Biomass_b""}
             )
             ctx = ContextImporter.call(File(
                 os.path.join(organism_dir, f"{organism}_context_2simus.json")
@@ -33,10 +33,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba.set_param('solver', solver)
             fba.set_param('relax_qssa', relax_qssa)
             fba.set_param('qssa_relaxation_strength', 1)
-            if organism == 'ecoli':
-                fba.set_param('biomass_optimization', "maximize")
-            else:
-                fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
+            fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
             experiment.run()
 

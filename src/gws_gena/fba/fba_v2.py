@@ -6,11 +6,13 @@ from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
                       StrParam, Table, TableConcatHelper, Task, TaskInputs,
                       TaskOutputs, TypingStyle, task_decorator)
 from gws_gena.fba.fba_result import FBAResult
-from gws_gena.network_v2.fba_helper_v2 import FBAHelperV2
-from gws_gena.network_v2.twin_annotator_helper_v2 import TwinAnnotatorHelperV2
-from gws_gena.network_v2.twin_helper_v2 import TwinHelperV2
-from gws_gena.network_v2.twin_v2 import TwinV2
-
+from gws_gena.fba.fba_helper.fba_helper_v2 import FBAHelperV2
+from gws_gena.twin.helper.twin_annotator_helper_v2 import TwinAnnotatorHelperV2
+from gws_gena.twin.helper.twin_helper_v2 import TwinHelperV2
+from gws_gena.twin.twin_v2 import TwinV2
+from gws_gena.network.network_cobra import NetworkCobra
+from cobra.core import Metabolite
+from gws_biota import Compartment as BiotaCompartment
 
 @task_decorator("FBAV2", human_name="FBA V2", short_description="Flux balance analysis",
                 style=TypingStyle.community_icon(icon_technical_name="cone", background_color="#d9d9d9"))
@@ -74,13 +76,117 @@ class FBAV2(Task):
         IntParam(
             default_value=None, min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Number of simulations",
-            short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations.")
+            short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations."),
+        "biomass_metabolite_id_user":
+        StrParam(
+            default_value="", human_name="Biomass metabolite id",
+            short_description="The id of the Biomass metabolite", optional=True),
+        "add_biomass":
+        BoolParam(
+            human_name="Add biomass metabolite", default_value=False,
+            visibility=BoolParam.PROTECTED_VISIBILITY,
+            short_description="Add biomass metabolite in a compartment biomass.")
     }
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+        biomass_metabolite_id_user = params.get_value("biomass_metabolite_id_user", None)
+        add_biomass = params.get_value("add_biomass", False)
+        if (add_biomass is True and biomass_metabolite_id_user):
+            raise Exception(
+                "If there is already a biomass metabolite in the network, we can't add one. Set the parameter 'add_biomass' to False")
+        if (add_biomass is False and not biomass_metabolite_id_user):
+            raise Exception(
+                "A biomass metabolite must be present in the network. Set the biomass_metabolite_id_user parameter with your metabolite or set add_biomass to True.")
+
         twin: TwinV2 = inputs["twin"]
+
+        ####TODO : en cours
+        #Act on the network to add environnement compartment
+        def add_environnement_compartment(network : NetworkCobra):
+            model = network.get_cobra_model()
+            BIGG_REACTION_PREFIX_TO_IGNORE = ["EX_", "DM_"]
+            list_to_keep = []
+            for i, rxn_data in enumerate(network.get_reactions()):
+                to_keep = True
+                for pref in BIGG_REACTION_PREFIX_TO_IGNORE:
+                    if rxn_data.id.startswith(pref):
+                        if pref == "EX_":
+                            metabolite = next(iter(rxn_data.metabolites)).id
+                            # Add compartment environment
+                            if isinstance(network.get_compartments(), dict):  # If there is the first loading
+                                # Create a new metabolite with the suffix "_env"
+                                new_metabolite_id = metabolite.split("_e")[0] + "_env"
+                                # Check if the new metabolite is already in the data["metabolites"]
+                                metabolite_found = network.has_metabolite(new_metabolite_id)
+                                if not metabolite_found:
+                                    # Create a new metabolite
+                                    new_metabolite = Metabolite(id=new_metabolite_id, name=new_metabolite_id,compartment='env')
+                                    # Add the new metabolite to the reaction
+                                    reaction_cobra = model.reactions.get_by_id(rxn_data.id)
+                                    reaction_cobra.add_metabolites({new_metabolite: 1.0})
+                                    # Add this metabolite to the reaction EX_
+                                    model.compartments = {"env": {'id': 'env', 'go_id': 'GO:0005576', 'name': 'extracellular region (environment)'}}
+                                    #network.set_compartments({"env": {'id': 'env', 'go_id': 'GO:0005576', 'name': 'extracellular region (environment)'}})
+                        else:
+                            to_keep = False
+                            break
+                if to_keep:
+                    list_to_keep.append(i)
+
+            nb_ignored_rxns = len(network.get_reactions()) - len(list_to_keep)
+            if nb_ignored_rxns > 0:
+                self.log_info_message(f"{nb_ignored_rxns} reactions with prefixes {BIGG_REACTION_PREFIX_TO_IGNORE} were ignored")
+                rxn_data = [network.get_reactions()[i] for i in list_to_keep]
+                #network.add_reactions(rxn_data)
+                model.add_reactions(rxn_data)
+
+            network.set_cobra_model(model)
+            return network
+
+        def manage_biomass(net: "NetworkCobra", biomass_metabolite_id_user: str = None, add_biomass: bool = False):
+            if biomass_metabolite_id_user != "":
+                if not net.has_metabolite(biomass_metabolite_id_user):
+                    # if the metabolite doesn't exist in the network, raises an error
+                    raise Exception(f"The metabolite {biomass_metabolite_id_user} doesn't exist in the network.")
+                else:
+                    # Check if the metabolite produced by the reaction is in the biomass compartment
+                    compartment = net.get_metabolite_by_id_and_check(biomass_metabolite_id_user).compartment
+                    compartment_go_id = BiotaCompartment.get_by_bigg_id(compartment).go_id
+                    if compartment_go_id != 'GO:0016049':
+                        # If not, raise an Exception
+                        raise Exception(f"The metabolite {biomass_metabolite_id_user} must be in the biomass compartment")
+
+                    # Check if the metabolite biomass is not used in another reaction as a substrate
+                    for reaction_id in net.get_reaction_ids():
+                        reaction = net.get_reaction_by_id_and_check(reaction_id)
+                        # Check if the biomass metabolite is a reactant in the current reaction
+                        if biomass_metabolite_id_user in [met.id for met in reaction.reactants]:
+                            raise ValueError(
+                                f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction_id}. Verify your biomass_metabolite_id.")
+
+            elif add_biomass:
+                if net.get_biomass_metabolite() is None:
+                    for reaction in net.get_reaction_ids():
+                        if "biomass" in reaction.lower():
+                            # can be used as biomass reaction
+                            biomass = Metabolite(id = "biomass", name="biomass", compartment='b')
+                            model = net.get_cobra_model()
+                            reaction_cobra = model.reactions.get_by_id(reaction)
+                            reaction_cobra.add_metabolites({biomass: 1})
+                            self.log_warning_message(
+                                f'Reaction "{reaction_cobra.id} ({reaction_cobra.name})" was automatically inferred as biomass reaction')
+                            net.set_cobra_model(model)
+            return net
+
+        network = twin.get_network()
+        network = manage_biomass(network,biomass_metabolite_id_user = biomass_metabolite_id_user, add_biomass = add_biomass)
+        network = add_environnement_compartment(network)
+        twin_env = TwinV2()
+        twin_env.set_context(twin.get_context())
+        twin_env.set_network(network)
+
         # retrieve the context of the twin
-        context = twin.get_context()
+        context = twin_env.get_context()
 
         number_of_simulations = params["number_of_simulations"]
         # If number_of_simulations is not provided, keep all the simulations
@@ -120,12 +226,12 @@ class FBAV2(Task):
         if (number_of_simulations):
             # run through the number of simulations
             for i in range(0, number_of_simulations):
-                new_twin = TwinHelperV2.build_twin_from_sub_context(twin, i)
+                new_twin = TwinHelperV2.build_twin_from_sub_context(twin_env, i)
                 fba_results.append(self.call_fba(new_twin, params))
                 self.update_progress_value(((i+1) / number_of_simulations) * 100,
                                            message="Running FBA for all simulations")
         else:  # if number of simulations is None, there is no context provided, so we run only one FBA
-            new_twin = TwinHelperV2.build_twin_from_sub_context(twin, 0)
+            new_twin = TwinHelperV2.build_twin_from_sub_context(twin_env, 0)
             fba_results.append(self.call_fba(new_twin, params))
             self.update_progress_value(100, message="Running FBA")
 
@@ -133,7 +239,7 @@ class FBAV2(Task):
         annotator_helper = TwinAnnotatorHelperV2()
         annotator_helper.attach_message_dispatcher(self.message_dispatcher)
         result_twin = annotator_helper.annotate_from_fba_results(
-            twin, fba_results)
+            twin_env, fba_results)
 
         self.log_info_message('Merging all fba results')
         # merge all fba results

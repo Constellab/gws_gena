@@ -6,7 +6,7 @@ from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings, TaskRunner, TableImporter
 from gws_gena import TransformerFluxTable
 from gws_gena.context.context_builder_v2 import ContextBuilderV2
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
 from gws_gena.proto.fba_proto_v2 import FBAProtoV2
 
 settings = Settings.get_instance()
@@ -29,7 +29,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
                         'confidence_score_column' : "confidence_score"})
             flux_data = tester.run()['transformed_table']
 
-            net = NetworkImporterV2.call(File(path=os.path.join(data_dir, "toy.json")), params={"add_biomass" : True})
+            net = NetworkImporterV2.call(File(path=os.path.join(data_dir, "toy.json")))
 
             # build context
             tester = TaskRunner(
@@ -46,7 +46,8 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             proto.set_input("context", ctx)
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
-            fba.set_param('fluxes_to_maximize', ["RB"])
+            fba.set_param('fluxes_to_maximize', ["toy_RB"])
+            fba.set_param("add_biomass", True)
             experiment.run()
 
             # test results

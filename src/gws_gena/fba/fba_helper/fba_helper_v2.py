@@ -9,9 +9,9 @@ from gws_core import BadRequestException, Logger
 from gws_gena.fba.fba_optimize_result import FBAOptimizeResult
 from gws_gena.fba.fba_result import FBAResult
 from gws_gena.helper.base_helper import BaseHelper
-from gws_gena.network_v2.network_cobra import NetworkCobra
-from gws_gena.network_v2.twin_helper_v2 import TwinHelperV2
-from gws_gena.network_v2.twin_v2 import TwinV2
+from gws_gena.network.network_cobra import NetworkCobra
+from gws_gena.twin.helper.twin_helper_v2 import TwinHelperV2
+from gws_gena.twin.twin_v2 import TwinV2
 from pandas import DataFrame
 from scipy.optimize import linprog
 
@@ -80,9 +80,13 @@ class FBAHelperV2(BaseHelper):
 
         if not isinstance(twin, TwinV2):
             raise BadRequestException("A twin is required")
+        else:
+            #Make some changes on the twin to put model name before compounds and reactions
+            twin_modified = twin.set_model_name_twin()
+
 
         c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize, fluxes_to_minimize = cls.build_problem(
-            twin,
+            twin_modified,
             biomass_optimization=biomass_optimization,
             fluxes_to_maximize=fluxes_to_maximize,
             fluxes_to_minimize=fluxes_to_minimize,
@@ -122,7 +126,7 @@ class FBAHelperV2(BaseHelper):
         if fluxes_to_minimize is None:
             fluxes_to_minimize = []
         if not isinstance(twin, TwinV2):
-            raise BadRequestException("A flat twin is required")
+            raise BadRequestException("A Twin V2 is required")
 
         network: NetworkCobra = twin.get_network()
 

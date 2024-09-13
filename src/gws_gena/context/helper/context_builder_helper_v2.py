@@ -5,7 +5,7 @@ import ast
 from gws_core import (BadRequestException,Table)
 
 from cobra.core import Reaction
-from gws_gena.network_v2.network_cobra import NetworkCobra
+from gws_gena.network.network_cobra import NetworkCobra
 from ..context import Context
 from ..measure import Measure
 from ..typing.measure_typing import MeasureDict

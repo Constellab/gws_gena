@@ -5,9 +5,9 @@ import pandas
 from gws_core import BaseTestCase, File, Settings, TaskRunner
 from gws_gena import ContextImporter
 from gws_gena.fba.fba_result import FBAResult
-from gws_gena.network_v2.fba_v2 import FBAV2
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
-from gws_gena.network_v2.twin_v2 import TwinV2
+from gws_gena.fba.fba_v2 import FBAV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
+from gws_gena.twin.twin_v2 import TwinV2
 
 
 # gws_gena/test_fba_toy_v2
@@ -41,8 +41,7 @@ class TestFBA(BaseTestCase):
                  solver="highs", relax_qssa=False, parsimony_strength=0.0):
 
         net = NetworkImporterV2.call(File(
-            path=os.path.join(data_dir, "toy.json")),
-            params={"add_biomass": True}
+            path=os.path.join(data_dir, "toy.json"))
         )
         ctx = ContextImporter.call(
             File(path=os.path.join(
@@ -59,9 +58,10 @@ class TestFBA(BaseTestCase):
                                      "twin": twin
                                  },
                                  params={
-                                     "solver": solver,
-                                     "relax_qssa": relax_qssa,
-                                     "parsimony_strength": parsimony_strength
+                                    "solver": solver,
+                                    "relax_qssa": relax_qssa,
+                                    "parsimony_strength": parsimony_strength,
+                                    "add_biomass": True
                                  })
 
         task_runner.run()

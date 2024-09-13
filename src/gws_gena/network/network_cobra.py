@@ -140,7 +140,7 @@ class NetworkCobra(Resource):
     def get_biomass_reaction(self) -> Optional[Reaction]:
         """ Get the biomass reaction """
         for reaction in self.get_reactions():
-            if "b" in reaction.compartments:
+            if self.network_dict["id"] + "_" + "b" in reaction.compartments: #TODO : voir si on met tester si name ou id
                 return reaction
 
         return None
@@ -172,7 +172,30 @@ class NetworkCobra(Resource):
 
         return reaction.notes.get(note_key, {})
 
+    def add_reactions(self, reaction_list: List) -> None:
+        self.get_cobra_model().reactions = reaction_list
+
         ############################################### OTHER ###############################################
+
+    def copy(self) -> 'NetworkCobra':
+        """ Returns a deep copy """
+        net = NetworkCobra()
+        net.name = self.name
+        net.network_dict= self.network_dict.copy()
+        return net
+
+    def get_compartments(self) -> List[Reaction]:
+        return self.get_cobra_model().compartments
+
+    def set_compartments(self, new_compartments: Dict) -> None:
+        self.get_cobra_model().compartments = new_compartments
+
+
+    def get_reactions_gpr_dict(self) -> Dict[Reaction, str]:
+        """ Return a dictionnary giving the gene reaction rule to the reaction """
+        reactions = self.get_cobra_model().reactions
+        dict_gpr_reactions = {reaction.gene_reaction_rule: reaction for reaction in reactions}
+        return {value: key for key,value in dict_gpr_reactions.items()}
 
     def create_stoichiometric_matrix(self) -> DataFrame:
         """

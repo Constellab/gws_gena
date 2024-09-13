@@ -3,7 +3,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
 from gws_gena import ContextImporter
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
 from gws_gena.proto.fba_proto_v2 import FBAProtoV2
 
 settings = Settings.get_instance()
@@ -20,8 +20,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             organism_dir = os.path.join(data_dir, organism)
             organism_result_dir = os.path.join(data_dir, 'fba', organism)
             net = NetworkImporterV2.call(
-                File(os.path.join(organism_dir, f"{organism}_v2.json")),
-                params={"add_biomass": True}
+                File(os.path.join(organism_dir, f"{organism}_v2.json"))
             )
             ctx = ContextImporter.call(File(
                 os.path.join(organism_dir, f"{organism}_context_2simus.json")
@@ -33,10 +32,11 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba.set_param('solver', solver)
             fba.set_param('relax_qssa', relax_qssa)
             fba.set_param('qssa_relaxation_strength', 1)
+            fba.set_param("add_biomass", True)
             if organism == 'ecoli':
                 fba.set_param('biomass_optimization', "maximize")
             else:
-                fba.set_param('fluxes_to_maximize', ["Biomass:1.0"])
+                fba.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
             experiment.run()
 
@@ -58,6 +58,5 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
         # pcys
         for relax in [True]:
             organism = "pcys"
-            self.print(
-                f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
+            self.print(f"Test FBAProto: Medium- or large-size network ({organism} + quad)")
             run_fba(organism=organism, solver="quad", relax_qssa=relax)

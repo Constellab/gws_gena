@@ -954,7 +954,7 @@
                 "kegg_id": null
             },
             {
-                "id": "N_4_alpha_D_Glc_1_2_alpha_D_Glc_1_3_alpha_D_Glc_1_3_alpha_D_Man_1_2_alpha_D_Man_1_2_alpha_D_Man_1_3_alpha_D_Man_1_2_alpha_D_Man_1_3_alpha_D_Man_1_2_alpha_D_Man_1_6_alpha_D_Man_1_6_beta_D_Man_1_4_beta_D_GlcNAc_1_4_alpha_D_GlcNAc_L_asparaginyl_residue_c",
+                "id": "reduced_L_asparaginyl_residue_c",
                 "name": "N(4)-(alpha-D-Glc-(1->2)-alpha-D-Glc-(1->3)-alpha-D-Glc-(1->3)-alpha-D-Man-(1->2)-alpha-D-Man-(1->2)-alpha-D-Man-(1->3)-[alpha-D-Man-(1->2)-alpha-D-Man-(1->3)-[alpha-D-Man-(1->2)-alpha-D-Man-(1->6)]-alpha-D-Man-(1->6)]-beta-D-Man-(1->4)-beta-D-GlcNAc-(1->4)-alpha-D-GlcNAc)-L-asparaginyl residue",
                 "charge": 0.0,
                 "mass": 2466.179,
@@ -18265,7 +18265,7 @@
                 "rhea_id": "",
                 "metabolites": {
                     "water_c": -1.0,
-                    "N_4_alpha_D_Glc_1_2_alpha_D_Glc_1_3_alpha_D_Glc_1_3_alpha_D_Man_1_2_alpha_D_Man_1_2_alpha_D_Man_1_3_alpha_D_Man_1_2_alpha_D_Man_1_3_alpha_D_Man_1_2_alpha_D_Man_1_6_alpha_D_Man_1_6_beta_D_Man_1_4_beta_D_GlcNAc_1_4_alpha_D_GlcNAc_L_asparaginyl_residue_c": -1.0,
+                    "reduced_L_asparaginyl_residue_c": -1.0,
                     "beta_D_glucose_c": 1.0,
                     "N_alpha_Glc_1_3_alpha_Glc_1_3_alpha_Man_1_2_alpha_Man_1_2_alpha_Man_1_3_alpha_Man_1_2_alpha_Man_1_3_alpha_Man_1_2_alpha_Man_1_6_alpha_Man_1_6_beta_Man_1_4_beta_GlcNAc_1_4_beta_GlcNAc_L_Asn_residue_c": 1.0
                 },
@@ -47630,7 +47630,7 @@
                     "L_asparagine_residue_c": -1.0,
                     "dolichyl_diphosphate_3_c": 1.0,
                     "hydron_c": 1.0,
-                    "N_4_alpha_D_Glc_1_2_alpha_D_Glc_1_3_alpha_D_Glc_1_3_alpha_D_Man_1_2_alpha_D_Man_1_2_alpha_D_Man_1_3_alpha_D_Man_1_2_alpha_D_Man_1_3_alpha_D_Man_1_2_alpha_D_Man_1_6_alpha_D_Man_1_6_beta_D_Man_1_4_beta_D_GlcNAc_1_4_alpha_D_GlcNAc_L_asparaginyl_residue_c": 1.0
+                    "reduced_L_asparaginyl_residue_c": 1.0
                 },
                 "lower_bound": -1000.0,
                 "upper_bound": 1000.0,

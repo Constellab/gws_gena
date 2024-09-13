@@ -5,7 +5,7 @@ import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
 from gws_gena import ContextImporter
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
 from gws_gena.proto.fba_proto_v2 import FBAProtoV2
 
 settings = Settings.get_instance()
@@ -22,8 +22,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             experiment = IExperiment(FBAProtoV2)
             proto = experiment.get_protocol()
             net = NetworkImporterV2.call(File(
-                path=os.path.join(data_dir, "toy.json")),
-                params = {"add_biomass" : True}
+                path=os.path.join(data_dir, "toy.json"))
             )
             ctx = ContextImporter.call(
                 File(path=os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json")))
@@ -34,6 +33,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
             fba.set_param("parsimony_strength", 1.0)
+            fba.set_param("add_biomass", True)
             experiment.run()
 
             # test results
