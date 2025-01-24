@@ -1,5 +1,6 @@
 import os
-from gws_core import (PipShellProxy, MessageDispatcher)
+
+from gws_core import MessageDispatcher, PipShellProxy
 
 
 class CobraEnvHelper():
@@ -11,4 +12,5 @@ class CobraEnvHelper():
 
     @classmethod
     def create_proxy(cls, message_dispatcher: MessageDispatcher = None):
-        return PipShellProxy(cls.ENV_DIR_NAME, cls.ENV_FILE_PATH, message_dispatcher=message_dispatcher)
+        return PipShellProxy(env_file_path=cls.ENV_FILE_PATH, env_name=cls.ENV_DIR_NAME,
+                             message_dispatcher=message_dispatcher)

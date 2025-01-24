@@ -2,10 +2,13 @@ import os
 import sys
 
 import pandas as pd
-from bioservices.kegg import KEGG
 from Bio import Entrez
-from gws_core import (File,Table,ResourceSet,OutputSpec, OutputSpecs, InputSpec, InputSpecs,task_decorator,TaskInputs,Task,
-                    StrParam, TaskOutputs,ConfigParams,ShellProxy, TableImporter, TypingStyle)
+from bioservices.kegg import KEGG
+from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
+                      OutputSpecs, ResourceSet, ShellProxy, StrParam, Table,
+                      TableImporter, Task, TaskInputs, TaskOutputs,
+                      TypingStyle, task_decorator)
+
 from .kegg_r_env_task import KeggREnvHelper
 
 
@@ -41,54 +44,54 @@ class KEGGVisualisation(Task):
     All commercial use of KEGG requires a license. Please ensure that you have licence to use KEGG database.
     """
 
-    input_specs = InputSpecs({
-        'list_genes': InputSpec([File,Table], human_name="Genes List ", short_description="The file or the Table with genes and fold changes."),
-    })
+    input_specs = InputSpecs({'list_genes': InputSpec(
+        [File, Table], human_name="Genes List ", short_description="The file or the Table with genes and fold changes."), })
     output_specs = OutputSpecs({
         'pathways': OutputSpec(ResourceSet, human_name='Pathways KEGG', short_description='Pathways KEGG colored.'),
         'list_pathway_error': OutputSpec(Table, human_name='list_pathway_error', short_description='List of pathways in error.')
     })
     config_specs = {
-            'genes_database': StrParam(
-            default_value="entrez", allowed_values=["entrez","ensembl"],
+        'genes_database': StrParam(
+            default_value="entrez", allowed_values=["entrez", "ensembl"],
             human_name="Genes Database", short_description="The database of the genes."),
-            'organism': StrParam(
-            human_name="Organism", optional = True, short_description="If genes are ensembl genes, please provide the organism studied (see documentation)"),
-            'specie': StrParam(
+        'organism': StrParam(
+            human_name="Organism", optional=True, short_description="If genes are ensembl genes, please provide the organism studied (see documentation)"),
+        'specie': StrParam(
             human_name="Specie", short_description="The specie studied."),
-            'email': StrParam(
-            default_value = "your email here", human_name="Email", short_description="Your email to use NCBI."),
-            "fold_change": StrParam(
-            default_value="No", allowed_values=["No","Yes"],
+        'email': StrParam(
+            default_value="your email here", human_name="Email", short_description="Your email to use NCBI."),
+        "fold_change": StrParam(
+            default_value="No", allowed_values=["No", "Yes"],
             human_name="Fold Change", short_description="Does the file contain the fold change of gene expression?")}
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        if isinstance(inputs['list_genes'],Table):
+        if isinstance(inputs['list_genes'], Table):
             list_genes: Table = inputs['list_genes']
             list_genes = list_genes.to_dataframe()
             list_genes_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "list_genes.csv")
             list_genes.to_csv(list_genes_path, index=False)
             list_genes = File(list_genes_path)
 
-        elif isinstance(inputs['list_genes'],File):
+        elif isinstance(inputs['list_genes'], File):
             list_genes: File = inputs['list_genes']
 
         genes_database = params['genes_database']
         fold_change = params['fold_change']
         specie = params['specie']
 
-        #Test if the specie provided is in the list of allowed organisms:
+        # Test if the specie provided is in the list of allowed organisms:
         allowed_organisms = pd.read_csv(os.path.join(
             os.path.abspath(os.path.dirname(__file__)), "list_organisms_pathview.txt"), header=0, index_col=0)
         if specie not in allowed_organisms["kegg.code"].values:
             raise Exception("The specie provided doesn't correspond to a kegg.code allowed. You can find the list of allowed values attached to this story: https://constellab.community/stories/e330483b-5b9e-452c-b5a4-f6b62506c9ad/how-to-visualise-a-kegg-pathway-using-constellab#introduction")
 
-
         ## Search all pathways where genes are evolved ##
         if genes_database == "ensembl":
             organism = params['organism']
-            #Run script R to translate gene ensembl to entrez genes names
-            path_script_translate_ensembl_to_entrez = os.path.join(os.path.abspath(os.path.dirname(__file__)), "translate_ensembl_to_entrez.R")
+            # Run script R to translate gene ensembl to entrez genes names
+            path_script_translate_ensembl_to_entrez = os.path.join(
+                os.path.abspath(os.path.dirname(__file__)),
+                "translate_ensembl_to_entrez.R")
 
             cmd = f"Rscript --vanilla {path_script_translate_ensembl_to_entrez} {list_genes.path} {organism}"
 
@@ -97,7 +100,8 @@ class KEGGVisualisation(Task):
             result = shell_proxy.run(cmd, shell_mode=True)
 
             if result != 0:
-                raise Exception("An error occured during the execution of the script to translate ensembl genes into entrez genes.")
+                raise Exception(
+                    "An error occured during the execution of the script to translate ensembl genes into entrez genes.")
 
             # Loop through the working directory and retrieve the list converted
             self.log_info_message('Retrieve list of genes translated')
@@ -107,52 +111,51 @@ class KEGGVisualisation(Task):
                     if filename.endswith("gene_entrez.csv"):
                         list_genes = File(file_path)
 
-
         data = pd.read_csv(list_genes.path, header=0, index_col=0)
-        #transform int data into str data
+        # transform int data into str data
         list_gene_entrez = list(map(str, data.index))
 
-
-
-        #We search the KEGG pathway in which the genes are evolved and we create a list of these pathways
-        self.log_info_message('Search the KEGG pathway in which the genes are evolved. This step can be long if there are many genes.')
+        # We search the KEGG pathway in which the genes are evolved and we create a list of these pathways
+        self.log_info_message(
+            'Search the KEGG pathway in which the genes are evolved. This step can be long if there are many genes.')
         k = KEGG()
         list_code_pathways = []
-        for gene in list_gene_entrez :
-            pathways = k.get_pathway_by_gene(gene=gene, organism = specie)
+        for gene in list_gene_entrez:
+            pathways = k.get_pathway_by_gene(gene=gene, organism=specie)
             if pathways is not None:
-                for code_pathway in pathways :
+                for code_pathway in pathways:
                     list_code_pathways.append(code_pathway)
-        #We keep only unique pathway
+        # We keep only unique pathway
         pathway_kegg = list(set(list_code_pathways))
 
-        if not pathway_kegg :
+        if not pathway_kegg:
             # *Always* tell NCBI who you are
             Entrez.email = params['email']
 
-            #We use the function to convert gene id to gene names
+            # We use the function to convert gene id to gene names
             ret = self.retrieve_annotation(list_gene_entrez)
 
-            #We create a list with the names
+            # We create a list with the names
             name = []
-            for i in range (0, len(ret["DocumentSummarySet"]["DocumentSummary"])):
+            for i in range(0, len(ret["DocumentSummarySet"]["DocumentSummary"])):
                 name.append(ret["DocumentSummarySet"]["DocumentSummary"][i]["Name"])
 
-            #We search the KEGG pathway in which the genes are evolved and we create a list of these pathways
-            self.log_info_message('Search the KEGG pathway in which the genes are evolved. This step can be long if there are many genes.')
+            # We search the KEGG pathway in which the genes are evolved and we create a list of these pathways
+            self.log_info_message(
+                'Search the KEGG pathway in which the genes are evolved. This step can be long if there are many genes.')
             k = KEGG()
             list_code_pathways = []
-            for gene in name :
-                pathways = k.get_pathway_by_gene(gene=gene, organism = specie)
+            for gene in name:
+                pathways = k.get_pathway_by_gene(gene=gene, organism=specie)
                 if pathways is not None:
-                    for code_pathway in pathways :
+                    for code_pathway in pathways:
                         list_code_pathways.append(code_pathway)
-            #We keep only unique pathway
+            # We keep only unique pathway
             pathway_kegg = list(set(list_code_pathways))
-            if not pathway_kegg :
+            if not pathway_kegg:
                 raise Exception("No mapped pathway was found for the genes provided. Check or improve your list.")
 
-        #We save these pathways in a file
+        # We save these pathways in a file
         pathway_kegg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "pathway_kegg.csv")
 
         with open(pathway_kegg_path, "w") as opfile:
@@ -174,7 +177,7 @@ class KEGGVisualisation(Task):
         # Loop through the working directory and add files to the resource set
         self.log_info_message('Prepare output')
 
-        #retrieve the list of pathways with error
+        # retrieve the list of pathways with error
         list_pathway_error = os.path.join(shell_proxy.working_dir, "list_pathway_error.csv")
         list_pathway_error = TableImporter.call(File(path=list_pathway_error), params={"index_column": -1})
         dataframe_pathway_error = list_pathway_error.to_dataframe()
@@ -185,14 +188,13 @@ class KEGGVisualisation(Task):
             file_path = os.path.join(shell_proxy.working_dir, filename)
             if os.path.isfile(file_path):
                 if filename.endswith("pathview.png") or filename.endswith("pathview.multi.png"):
-                    if filename.split(".pathview")[0] not in dataframe_pathway_error.values :
+                    if filename.split(".pathview")[0] not in dataframe_pathway_error.values:
                         resource_set_pathways.add_resource(File(file_path), filename)
-
 
         return {'pathways': resource_set_pathways, 'list_pathway_error': list_pathway_error}
 
-    #Function to convert gene id to gene names
-    def retrieve_annotation(self,id_list):
+    # Function to convert gene id to gene names
+    def retrieve_annotation(self, id_list):
         request = Entrez.epost("gene", id=",".join(id_list))
         try:
             result = Entrez.read(request)
