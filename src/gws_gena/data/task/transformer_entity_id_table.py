@@ -3,9 +3,10 @@ from gws_core import (ConfigParams, ConfigSpecs, Task,
                       StrParam, Table, TypingStyle,
                       task_decorator, InputSpecs, InputSpec, OutputSpec, OutputSpecs, TaskInputs, TaskOutputs)
 
+
 @task_decorator("TransformerEntityIDTable", human_name="Transformer Entity ID Table",
-                    short_description="Task to transform table into Entity ID",
-                    style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"))
+                short_description="Task to transform table into Entity ID",
+                style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"))
 class TransformerEntityIDTable(Task):
     """
     TransformerEntityIDTable class
@@ -32,11 +33,11 @@ class TransformerEntityIDTable(Task):
     input_specs = InputSpecs({
         'table': InputSpec(Table, human_name="Initial table", is_optional=False)})
     output_specs = OutputSpecs({'transformed_table': OutputSpec(Table)})
-    config_specs: ConfigSpecs = {
+    config_specs: ConfigSpecs = ConfigSpecs({
         'id_column_name':
         StrParam(
             default_value=id_column, human_name="Entity ID column name",
-            short_description="The name of the Entity ID column")}
+            short_description="The name of the Entity ID column")})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         table = inputs["table"]
@@ -44,21 +45,25 @@ class TransformerEntityIDTable(Task):
         name_entity_id_column = params["id_column_name"]
 
         if not table.column_exists(name_entity_id_column):
-            raise Exception(f"Cannot import Table. No entity ID found (no column with name '{name_entity_id_column}')")
+            raise Exception(
+                f"Cannot import Table. No entity ID found (no column with name '{name_entity_id_column}')")
 
-        #If the column names are incorrect, rename them.
+        # If the column names are incorrect, rename them.
         if name_entity_id_column != self.id_column:
-            table.set_column_name(current_name = name_entity_id_column,new_name = self.id_column)
+            table.set_column_name(
+                current_name=name_entity_id_column, new_name=self.id_column)
 
-        #Test if the list is not empty
+        # Test if the list is not empty
         ids = table.get_column_data(self.id_column)
         if len(ids) == 0:
-            raise Exception("Cannot import the table. The list of ids is empty.")
+            raise Exception(
+                "Cannot import the table. The list of ids is empty.")
 
-        #Test if there is no duplicates
+        # Test if there is no duplicates
         unique_ids = list(set(ids))
         if len(ids) > len(unique_ids):
             duplicates = [elt for elt in ids if elt not in unique_ids]
-            raise Exception(f"Cannot import the table. The ids in the table must be unique. Duplicates are {duplicates}.")
+            raise Exception(
+                f"Cannot import the table. The ids in the table must be unique. Duplicates are {duplicates}.")
 
         return {"transformed_table": table}

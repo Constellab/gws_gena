@@ -1,6 +1,6 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, StrParam, Table, Task, TaskInputs,
+                      OutputSpecs, StrParam, Table, Task, TaskInputs, ConfigSpecs,
                       TaskOutputs, TypingStyle, task_decorator)
 
 from ...network import Network
@@ -24,14 +24,14 @@ class ReactionAdder(Task):
         'network': OutputSpec(Network, human_name="Network", short_description="The network after completion"),
     })
 
-    config_specs = {
+    config_specs = ConfigSpecs({
         'tax_id': StrParam(
             default_value='', human_name="Taxonomy ID", short_description="The NCBI taxonomy id"),
         'tax_search_method':
         StrParam(
             default_value='bottom_up', human_name="Taxonomy search method",
             short_description="If 'bottom_up', the algorithm will to traverse the taxonomy tree to search in the higher taxonomy levels until a reaction is found. If 'none', the algorithm will only search at the given taxonomy level given by `tax_id`")
-    }
+    })
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]
@@ -41,6 +41,7 @@ class ReactionAdder(Task):
 
         helper = ReactionAdderHelper()
         helper.attach_message_dispatcher(self.message_dispatcher)
-        helper.add_reactions(network, reaction_table, tax_id, tax_search_method=tax_search_method)
+        helper.add_reactions(network, reaction_table, tax_id,
+                             tax_search_method=tax_search_method)
 
         return {"network": network}

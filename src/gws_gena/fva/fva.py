@@ -4,10 +4,10 @@ from copy import deepcopy
 
 import cvxpy as cp
 import numpy as np
-from gws_core import (BadRequestException, ConfigParams, FloatParam, InputSpec,
-                      InputSpecs, Logger, OutputSpec, OutputSpecs, StrParam,
-                      Task, TaskInputs, TaskOutputs, TypingStyle,
-                      task_decorator)
+from gws_core import (BadRequestException, ConfigParams, ConfigSpecs,
+                      FloatParam, InputSpec, InputSpecs, Logger, OutputSpec,
+                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
+                      TypingStyle, task_decorator)
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -114,11 +114,10 @@ class FVA(Task):
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
         'fva_result': OutputSpec(FVAResult, human_name="FVA result table", short_description="The FVA result tables")
     })
-    config_specs = {
-        **FBA.config_specs,
+    config_specs = ConfigSpecs({
         'gamma': FloatParam(default_value=1.0, human_name="γ", min_value=0.0, max_value=1.0, visibility=StrParam.PROTECTED_VISIBILITY,
                             short_description="γ determines whether the analysis is conducted with respect to suboptimal network states (where 0 ≤ γ < 1) or to the optimal state (where γ = 1). A value of 0.9 implies that the objective must be at least 90% of its maximum.")
-    }
+    }).merge_specs(FBA.config_specs)
     __CVXPY_MAX_ITER = 100000
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
@@ -134,7 +133,8 @@ class FVA(Task):
         gamma = params["gamma"]
 
         if relax_qssa and solver != "quad":
-            self.log_info_message(message=f"Change solver to '{solver}' for constrain relaxation.")
+            self.log_info_message(
+                message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
 
         # we run only one FBA
@@ -153,7 +153,8 @@ class FVA(Task):
             fluxes_to_minimize=fluxes_to_minimize
         )
 
-        self.log_info_message(message=f"Starting optimization with solver '{solver}' ...")
+        self.log_info_message(
+            message=f"Starting optimization with solver '{solver}' ...")
         if solver == "quad":
             res, warm_solver = FBAHelper.solve_cvxpy(
                 c, A_eq, b_eq, bounds, c_out,
@@ -169,7 +170,8 @@ class FVA(Task):
             )
         self.log_info_message(message=res.message)
         if not res.success:
-            raise BadRequestException(f"Convergence error. Optimization message: '{res.message}'")
+            raise BadRequestException(
+                f"Convergence error. Optimization message: '{res.message}'")
 
         self.log_info_message(
             message=f"Performing variability analysis around the optimal value using solver '{solver}' ...")
@@ -178,8 +180,10 @@ class FVA(Task):
         step = max(1, int(m/10))  # plot only 10 iterations on screen
 
         flat_net: Network = flat_twin.get_flat_network()
-        fluxes_to_minimize = FBAHelper._expand_fluxes_by_names(fluxes_to_minimize, flat_net)
-        fluxes_to_maximize = FBAHelper._expand_fluxes_by_names(fluxes_to_maximize, flat_net)
+        fluxes_to_minimize = FBAHelper._expand_fluxes_by_names(
+            fluxes_to_minimize, flat_net)
+        fluxes_to_maximize = FBAHelper._expand_fluxes_by_names(
+            fluxes_to_maximize, flat_net)
 
         if solver == "quad":
             xmin, xmax = self.__solve_with_cvxpy_using_warm_solver(warm_solver,
@@ -196,7 +200,8 @@ class FVA(Task):
         res.xmax = xmax
         fva_result = FVAResult()
         fva_result = fva_result.from_optimized_result(res)
-        fva_result = FVAResult(fva_result.get_fluxes_dataframe(), fva_result.get_sv_dataframe())
+        fva_result = FVAResult(fva_result.get_fluxes_dataframe(),
+                               fva_result.get_sv_dataframe())
         # annotate twin
         helper = TwinAnnotatorHelper()
         helper.attach_message_dispatcher(self.message_dispatcher)
@@ -213,8 +218,10 @@ class FVA(Task):
                              fluxes_to_minimize,
                              step, m, solver, relax_qssa, qssa_relaxation_strength, parsimony_strength, gamma):
 
-        max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
-        min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
+        max_idx = [c.index.get_loc(name.split(":")[0])
+                   for name in fluxes_to_maximize]
+        min_idx = [c.index.get_loc(name.split(":")[0])
+                   for name in fluxes_to_minimize]
         # run parallel optimization
         Logger.progress("Open parallel pool for each flux.")
         pool = multiprocessing.Pool()
@@ -258,8 +265,10 @@ class FVA(Task):
                                              fluxes_to_maximize,
                                              fluxes_to_minimize,
                                              step, m, gamma):
-        max_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_maximize]
-        min_idx = [c.index.get_loc(name.split(":")[0]) for name in fluxes_to_minimize]
+        max_idx = [c.index.get_loc(name.split(":")[0])
+                   for name in fluxes_to_maximize]
+        min_idx = [c.index.get_loc(name.split(":")[0])
+                   for name in fluxes_to_minimize]
         lb = warm_solver["lb_par"]
         ub = warm_solver["ub_par"]
         for k in max_idx:
@@ -288,10 +297,12 @@ class FVA(Task):
                 c_update.shape = c_par.shape
                 c_par.value = c_update
                 try:
-                    prob.solve(solver=cp.OSQP, max_iter=FVA.__CVXPY_MAX_ITER, verbose=False)
+                    prob.solve(solver=cp.OSQP,
+                               max_iter=FVA.__CVXPY_MAX_ITER, verbose=False)
                 except:
                     Logger.progress("OSQP failed. Switch to ECOS solver")
-                    prob.solve(solver=cp.ECOS, max_iters=FVA.__CVXPY_MAX_ITER, verbose=False)
+                    prob.solve(solver=cp.ECOS,
+                               max_iters=FVA.__CVXPY_MAX_ITER, verbose=False)
                 xmin[i] = x.value[i]
 
                 # max
@@ -300,9 +311,11 @@ class FVA(Task):
                 c_update.shape = c_par.shape
                 c_par.value = c_update
                 try:
-                    prob.solve(solver=cp.OSQP, max_iter=FVA.__CVXPY_MAX_ITER, verbose=False)
+                    prob.solve(solver=cp.OSQP,
+                               max_iter=FVA.__CVXPY_MAX_ITER, verbose=False)
                 except:
                     Logger.progress("OSQP failed. Switch to ECOS solver")
-                    prob.solve(solver=cp.ECOS, max_iters=FVA.__CVXPY_MAX_ITER, verbose=False)
+                    prob.solve(solver=cp.ECOS,
+                               max_iters=FVA.__CVXPY_MAX_ITER, verbose=False)
                 xmax[i] = x.value[i]
         return xmin, xmax

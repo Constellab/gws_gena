@@ -1,6 +1,6 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
+                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs, ConfigSpecs,
                       TypingStyle, task_decorator)
 
 from ...network.network import Network
@@ -25,12 +25,12 @@ class GapFiller(Task):
         'network': OutputSpec(Network, human_name="Network", short_description="The gap-filled network")
     })
 
-    config_specs = {
+    config_specs = ConfigSpecs({
         'tax_id':
         StrParam(
             default_value=None, human_name="Taxonomy ID",
             short_description="The taxonomy id used to fill gaps (Warning: Not active)")
-    }
+    })
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]

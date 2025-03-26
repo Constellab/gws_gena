@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, StrParam, Table, Task, TaskInputs,
-                      TaskOutputs, task_decorator, TaskRunner,TypingStyle)
+                      OutputSpecs, StrParam, Table, Task, TaskInputs, ConfigSpecs,
+                      TaskOutputs, task_decorator, TaskRunner, TypingStyle)
 from .create_database_task import TransformMetabolitesFile, TransformReactionsFile
 
 from ..cobra_env import CobraEnvHelper
@@ -27,7 +27,7 @@ class ConvertAnnotation(Task):
     output_specs = OutputSpecs({
         'output_model_annotated': OutputSpec(File, human_name="Model annotated", short_description="The model completed"),
         'output_results': OutputSpec(Table, human_name="Results Annotation", short_description="The annotation result table")})
-    config_specs = {
+    config_specs = ConfigSpecs({
         "metabolites_id":
         StrParam(
             allowed_values=["", "BiGG", "Literal_name", "Other"],
@@ -47,7 +47,7 @@ class ConvertAnnotation(Task):
         StrParam(
             allowed_values=["", "BiGG", "Other"],
             default_value=None, optional=False, human_name="Reaction name",
-            short_description="What is the type of reaction 'name'?")}
+            short_description="What is the type of reaction 'name'?")})
 
     script_conversion_annotation = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                                 "_conversion_annotation.py")
@@ -60,32 +60,36 @@ class ConvertAnnotation(Task):
         reaction_id = params["reaction_id"]
         reaction_name = params["reaction_name"]
 
-        #TransformMetabolitesFile
-        runner_transform_metabolites_file = TaskRunner(task_type=TransformMetabolitesFile)
-        #execute the TaskRunner
+        # TransformMetabolitesFile
+        runner_transform_metabolites_file = TaskRunner(
+            task_type=TransformMetabolitesFile)
+        # execute the TaskRunner
         outputs_transform_metabolites_file = runner_transform_metabolites_file.run()
-        #check if we retrieve the output
-        path_metabolites = outputs_transform_metabolites_file['output'].list_dir_path()
+        # check if we retrieve the output
+        path_metabolites = outputs_transform_metabolites_file['output'].list_dir_path(
+        )
         for path in path_metabolites:
             if path.endswith('restructured_metabolites_file.txt'):
                 db_metabolites_path = path
                 break
 
-        #TransformReactionsFile
-        runner_transform_reactions_file = TaskRunner(task_type=TransformReactionsFile)
-        #execute the TaskRunner
+        # TransformReactionsFile
+        runner_transform_reactions_file = TaskRunner(
+            task_type=TransformReactionsFile)
+        # execute the TaskRunner
         outputs_transform_reactions_file = runner_transform_reactions_file.run()
-        #check if we retrieve the output
-        path_reactions = outputs_transform_reactions_file['output'].list_dir_path()
+        # check if we retrieve the output
+        path_reactions = outputs_transform_reactions_file['output'].list_dir_path(
+        )
         for path in path_reactions:
             if path.endswith('restructured_reactions_file.txt'):
                 db_reactions_path = path
                 break
 
-
         shell_proxy = CobraEnvHelper.create_proxy(self.message_dispatcher)
 
-        output_path = os.path.join(shell_proxy.working_dir, "model_annotated.json")
+        output_path = os.path.join(
+            shell_proxy.working_dir, "model_annotated.json")
         results_path = os.path.join(shell_proxy.working_dir, "results.csv")
 
         shell_proxy.run(

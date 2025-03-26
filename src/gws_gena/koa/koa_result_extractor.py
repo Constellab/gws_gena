@@ -3,7 +3,7 @@ from typing import List
 
 import pandas
 from gws_core import (ConfigParams, InputSpec, InputSpecs, ListParam,
-                      OutputSpec, OutputSpecs, Table, Task, TaskInputs,
+                      OutputSpec, OutputSpecs, Table, Task, TaskInputs, ConfigSpecs,
                       TaskOutputs, task_decorator, TypingStyle)
 
 from .koa_result import KOAResult
@@ -11,7 +11,7 @@ from .koa_result import KOAResult
 
 @task_decorator("KOAResultExtractor", human_name="KOA result extractor",
                 short_description="Extract a list of fluxes as a table",
-                    style=TypingStyle.material_icon(material_icon_name="output", background_color="#d9d9d9"))
+                style=TypingStyle.material_icon(material_icon_name="output", background_color="#d9d9d9"))
 class KOAResultExtractor(Task):
     """
     Knock-out analysis result extractor.
@@ -25,11 +25,11 @@ class KOAResultExtractor(Task):
     output_specs = OutputSpecs({
         'table': OutputSpec(Table, human_name="Extracted table", short_description="The extracted table")
     })
-    config_specs = {
+    config_specs = ConfigSpecs({
         'fluxes_to_extract':
         ListParam(
             default_value=[], human_name="Fluxes to extract",
-            short_description="The list of fluxes to extract")}
+            short_description="The list of fluxes to extract")})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         koa_result = inputs["koa_result"]
@@ -41,7 +41,8 @@ class KOAResultExtractor(Task):
                 df = koa_result.get_flux_dataframe(ko_id).loc[[flux_name], :]
                 df["ko_id"] = ko_id
                 df["reaction_id"] = df.index
-                df = df[["ko_id", "reaction_id", "value", "lower_bound", "upper_bound"]]
+                df = df[["ko_id", "reaction_id", "value",
+                         "lower_bound", "upper_bound"]]
                 data.append(df)
 
         data = pandas.concat(data, axis=0)

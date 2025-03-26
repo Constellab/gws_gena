@@ -3,9 +3,9 @@
 from typing import List, Tuple
 
 from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
-                      InputSpecs, IntParam, ListParam, OutputSpec, OutputSpecs,
+                      InputSpecs, IntParam, ListParam, OutputSpec, OutputSpecs, ConfigSpecs,
                       StrParam, Table, TableConcatHelper, Task, TaskInputs,
-                      TaskOutputs, TypingStyle, task_decorator, TypingIconColor)
+                      TaskOutputs, TypingStyle, task_decorator)
 
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.helper.twin_helper import TwinHelper
@@ -16,7 +16,6 @@ from .fba_result import FBAResult
 
 @task_decorator("FBA", human_name="FBA", short_description="Flux balance analysis",
                 style=TypingStyle.community_icon(icon_technical_name="cone", background_color="#d9d9d9"))
-
 class FBA(Task):
     """
     FBA task class
@@ -39,7 +38,7 @@ class FBA(Task):
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
         'fba_result': OutputSpec(FBAResult, human_name="FBA result tables", short_description="The FBA result tables")
     })
-    config_specs = {
+    config_specs = ConfigSpecs({
         "biomass_optimization":
         StrParam(
             allowed_values=["", "maximize", "minimize"],
@@ -56,7 +55,8 @@ class FBA(Task):
         "solver":
         StrParam(
             default_value="quad", visibility=StrParam.PROTECTED_VISIBILITY,
-            allowed_values=["quad", "highs-ds", "highs-ipm", "highs", "interior-point"],
+            allowed_values=["quad", "highs-ds",
+                            "highs-ipm", "highs", "interior-point"],
             human_name="Solver", short_description="The optimization solver. It is recommended to use `quad`. Other solvers are in `beta` versions."),
         "relax_qssa":
         BoolParam(
@@ -83,7 +83,7 @@ class FBA(Task):
         #    default_value=2, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY,
         #    human_name="Number of processes",
         #    short_description="Set the number of processes to use to parallelise the execution of FBA.")
-    }
+    })
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
@@ -95,7 +95,8 @@ class FBA(Task):
         number_of_simulations = params["number_of_simulations"]
         # If number_of_simulations is not provided, keep all the simulations
         if number_of_simulations is None:
-            number_of_simulations = next((len(measure.target) for _, measure in context.reaction_data.items()), None)
+            number_of_simulations = next(
+                (len(measure.target) for _, measure in context.reaction_data.items()), None)
 
         # check the length of the values
         for name_measure, measure in context.reaction_data.items():
@@ -147,8 +148,10 @@ class FBA(Task):
 
         # If number of simulations is not None, there is a context with simulations
         if (number_of_simulations):
-            for i in range(0, number_of_simulations):  # run through the number of simulations
-                new_twin = TwinHelper.build_twin_from_sub_context(self, twin, i)
+            # run through the number of simulations
+            for i in range(0, number_of_simulations):
+                new_twin = TwinHelper.build_twin_from_sub_context(
+                    self, twin, i)
                 fba_results.append(self.call_fba((i, new_twin, params)))
                 self.update_progress_value(((i+1) / number_of_simulations) * 100,
                                            message="Running FBA for all simulations")
@@ -160,7 +163,8 @@ class FBA(Task):
         self.log_info_message('Annotating the twin')
         annotator_helper = TwinAnnotatorHelper()
         annotator_helper.attach_message_dispatcher(self.message_dispatcher)
-        result_twin = annotator_helper.annotate_from_fba_results(twin, fba_results)
+        result_twin = annotator_helper.annotate_from_fba_results(
+            twin, fba_results)
         self.log_info_message('Merging all fba results')
         # merge all fba results
         self.log_info_message('Creating lists')
@@ -170,11 +174,13 @@ class FBA(Task):
             flux_tables.append(fba_result.get_flux_table())
             sv_tables.append(fba_result.get_sv_table())
         self.log_info_message('Concat flux table')
-        merged_flux_table: Table = TableConcatHelper.concat_table_rows(flux_tables)
+        merged_flux_table: Table = TableConcatHelper.concat_table_rows(
+            flux_tables)
         self.log_info_message('Concat sv table')
         merged_sv_table: Table = TableConcatHelper.concat_table_rows(sv_tables)
         self.log_info_message('Create FBAResult')
-        merged_fba_result = FBAResult(merged_flux_table.get_data(), merged_sv_table.get_data())
+        merged_fba_result = FBAResult(
+            merged_flux_table.get_data(), merged_sv_table.get_data())
 
         return {
             "fba_result": merged_fba_result,

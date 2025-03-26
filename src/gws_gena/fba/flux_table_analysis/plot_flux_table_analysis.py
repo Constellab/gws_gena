@@ -1,12 +1,13 @@
 import re
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from gws_core import (BoolParam, ConfigParams, File, FloatParam, InputSpec,
-                      InputSpecs, OutputSpec, OutputSpecs, PlotlyResource,
-                      StrParam, Table, Task, TaskInputs, TaskOutputs,
-                      task_decorator,TypingStyle)
+from gws_core import (BoolParam, ConfigParams, ConfigSpecs, File, FloatParam,
+                      InputSpec, InputSpecs, OutputSpec, OutputSpecs,
+                      PlotlyResource, StrParam, Table, Task, TaskInputs,
+                      TaskOutputs, TypingStyle, task_decorator)
 
 
 @task_decorator("PlotFluxTableAnalysis", human_name="Flux Table Analysis",
@@ -34,17 +35,17 @@ class PlotFluxTableAnalysis(Task):
     output_specs = OutputSpecs({'plot': OutputSpec(PlotlyResource),
                                 'table_changes': OutputSpec(Table)})
 
-    config_specs = {'name_condition1': StrParam(short_description="Name of the condition 1"),
-                    'name_condition2': StrParam(short_description="Name of the condition 2"),
-                    'pattern': StrParam(short_description="Pattern before the reaction id in the flux table"),
-                    'column_reaction_id': StrParam(short_description="Name of the column containing the reactions"),
-                    'threshold': FloatParam(default_value=2, short_description="Threshold for the log2(Fold Change)"),
-                    'log_x': BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Axis x in log",
-                                       short_description="True to consider the x axis as logarithmic. False otherwise."),
-                    'log_y': BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Axis y in log",
-                                       short_description="True to consider the y axis as logarithmic. False otherwise."),
-                    'column_reaction_tag_modified': StrParam(default_value="", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Column tag reaction modified",
-                                       short_description="Name of the column containing the tag of the reaction modified (up or down regulated).", optional = True)}
+    config_specs = ConfigSpecs({'name_condition1': StrParam(short_description="Name of the condition 1"),
+                                'name_condition2': StrParam(short_description="Name of the condition 2"),
+                                'pattern': StrParam(short_description="Pattern before the reaction id in the flux table"),
+                                'column_reaction_id': StrParam(short_description="Name of the column containing the reactions"),
+                                'threshold': FloatParam(default_value=2, short_description="Threshold for the log2(Fold Change)"),
+                                'log_x': BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Axis x in log",
+                                                   short_description="True to consider the x axis as logarithmic. False otherwise."),
+                                'log_y': BoolParam(default_value=False, visibility=StrParam.PROTECTED_VISIBILITY, human_name="Axis y in log",
+                                                   short_description="True to consider the y axis as logarithmic. False otherwise."),
+                                'column_reaction_tag_modified': StrParam(default_value="", visibility=StrParam.PROTECTED_VISIBILITY, human_name="Column tag reaction modified",
+                                                                         short_description="Name of the column containing the tag of the reaction modified (up or down regulated).", optional=True)})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         flux_table_condition1: Table = inputs["flux_table_condition1"]
@@ -63,20 +64,26 @@ class PlotFluxTableAnalysis(Task):
         # We load the flux tables and the reactions modified
         flux_condition1 = flux_table_condition1.get_data()
         flux_condition1.reset_index(level=0, inplace=True)
-        flux_condition1.columns = ["reaction", "value", "lower_bound", "upper_bound"]
+        flux_condition1.columns = ["reaction",
+                                   "value", "lower_bound", "upper_bound"]
 
         flux_condition2 = flux_table_condition2.get_data()
         flux_condition2.reset_index(level=0, inplace=True)
-        flux_condition2.columns = ["reaction", "value", "lower_bound", "upper_bound"]
+        flux_condition2.columns = ["reaction",
+                                   "value", "lower_bound", "upper_bound"]
 
-        list_reactions_modified = pd.read_csv(file_modified_reactions.path, sep=',')
+        list_reactions_modified = pd.read_csv(
+            file_modified_reactions.path, sep=',')
 
         # We remove the pattern added by the FBA task
-        flux_condition1['reaction'] = flux_condition1['reaction'].str.replace(re.escape(pattern), '')
-        flux_condition2['reaction'] = flux_condition2['reaction'].str.replace(re.escape(pattern), '')
+        flux_condition1['reaction'] = flux_condition1['reaction'].str.replace(
+            re.escape(pattern), '')
+        flux_condition2['reaction'] = flux_condition2['reaction'].str.replace(
+            re.escape(pattern), '')
 
         # We create the dataframe
-        columns_changes = ("Tag", "Reaction", "flux_" + name_condition1, "flux_" + name_condition2)
+        columns_changes = ("Tag", "Reaction", "flux_" +
+                           name_condition1, "flux_" + name_condition2)
         table_changes = pd.DataFrame(columns=columns_changes)
 
         # for i in range (0, len(flux_condition1["value"])-1):
@@ -94,9 +101,10 @@ class PlotFluxTableAnalysis(Task):
             # We tag each reaction depending the fluxes values
             if reaction_id in list_reactions_modified[column_reaction_id].values:
                 if column_reaction_tag_modified:
-                    index = list_reactions_modified.index[(list_reactions_modified[column_reaction_id] == reaction_id)].tolist()[0]
+                    index = list_reactions_modified.index[(
+                        list_reactions_modified[column_reaction_id] == reaction_id)].tolist()[0]
                     tag = "Modified flux " + list_reactions_modified[column_reaction_tag_modified][index]
-                else :
+                else:
                     tag = "Modified flux"
             # If the reaction was created by the FBA, it's also tagged with "Modified flux"
             elif reaction_id.startswith('measure'):
@@ -136,8 +144,10 @@ class PlotFluxTableAnalysis(Task):
                             color='Tag', log_x=log_x, log_y=log_y)
 
         # Add bisector line
-        min_val = min(source["flux_" + name_condition1].min(), source["flux_" + name_condition2].min())
-        max_val = max(source["flux_" + name_condition1].max(), source["flux_" + name_condition2].max())
+        min_val = min(source["flux_" + name_condition1].min(),
+                      source["flux_" + name_condition2].min())
+        max_val = max(source["flux_" + name_condition1].max(),
+                      source["flux_" + name_condition2].max())
         target.add_shape(
             type='line',
             x0=min_val,

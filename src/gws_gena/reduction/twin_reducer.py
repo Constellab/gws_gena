@@ -1,7 +1,7 @@
 
 import copy
 
-from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs,
+from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs, ConfigSpecs,
                       ListParam, OutputSpec, OutputSpecs, Task, TaskInputs,
                       TaskOutputs, task_decorator, TypingStyle)
 
@@ -13,8 +13,7 @@ from .twin_efm_table import TwinEFMTable
 from .twin_reduction_table import TwinReductionTable
 
 
-
-@task_decorator("TwinReducer",human_name="Twin reducer", short_description="Perform model reduction based on a digital twin",
+@task_decorator("TwinReducer", human_name="Twin reducer", short_description="Perform model reduction based on a digital twin",
                 style=TypingStyle.material_icon(material_icon_name="device_hub", background_color="#d9d9d9"))
 class TwinReducer(Task):
     """
@@ -29,7 +28,7 @@ class TwinReducer(Task):
         'efm_table': OutputSpec(TwinEFMTable, human_name="EFM table", short_description="The table of elementary flux modes"),
         'reduction_table': OutputSpec(TwinReductionTable, human_name="Reduction table", short_description="The reduction table"),
     })
-    config_specs = {
+    config_specs = ConfigSpecs({
         "ignore_cofactors":
         BoolParam(
             default_value=False, human_name="Ignore cofactors",
@@ -37,7 +36,7 @@ class TwinReducer(Task):
         "reversible_reactions":
         ListParam(
             default_value=None, optional=True, human_name="List of reversible reaction",
-            short_description="The list of reversible reactions (EC numbers, Reaction IDs). By default all the reactions are considered irreversible."), }
+            short_description="The list of reversible reactions (EC numbers, Reaction IDs). By default all the reactions are considered irreversible."), })
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]

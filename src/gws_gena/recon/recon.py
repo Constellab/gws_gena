@@ -1,7 +1,7 @@
 
 from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
                       OutputSpec, OutputSpecs, StringHelper, StrParam, Table,
-                      Task, TaskInputs, TaskOutputs, TypingStyle,
+                      Task, TaskInputs, TaskOutputs, TypingStyle, ConfigSpecs,
                       task_decorator)
 
 from ..data.task.transformer_biomass_reaction_table import \
@@ -29,7 +29,7 @@ class DraftRecon(Task):
         'biomass_table': InputSpec(Table, is_optional=True),
     })
     output_specs = OutputSpecs({'network': OutputSpec(Network)})
-    config_specs = {
+    config_specs = ConfigSpecs({
         'unique_name': StrParam(
             default_value=StringHelper.generate_random_chars(4), human_name="Network name", short_description="The unique name of the network. Required to uniquely identify taxa in microbial communities"),
         'tax_id': StrParam(
@@ -37,7 +37,7 @@ class DraftRecon(Task):
         'tax_search_method':
         StrParam(
             default_value='bottom_up', allowed_values=['none', 'bottom_up'], human_name="Taxonomy search method",
-            short_description="If 'bottom_up', the algorithm will to traverse the taxonomy tree to search at higher taxonomy levels until a reaction is found. If `none`, the algorithm will only search at the given taxonomy level given by `tax_id`")}
+            short_description="If 'bottom_up', the algorithm will to traverse the taxonomy tree to search at higher taxonomy levels until a reaction is found. If `none`, the algorithm will only search at the given taxonomy level given by `tax_id`")})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = self._create_network(params, inputs)
@@ -81,4 +81,5 @@ class DraftRecon(Task):
                 tax_search_method=tax_search_method
             )
         else:
-            raise BadRequestException("A list of ec_numbers or a taxonomy_id is required")
+            raise BadRequestException(
+                "A list of ec_numbers or a taxonomy_id is required")

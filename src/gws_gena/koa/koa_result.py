@@ -1,9 +1,11 @@
 
-from gws_core import (BadRequestException, BarPlotView, ConfigParams,
-                      ListParam, ListRField, ResourceSet,
-                      StringHelper, Table, TechnicalInfo, resource_decorator, view, TypingStyle)
-from pandas import DataFrame
 from typing import List
+
+from gws_core import (BadRequestException, BarPlotView, ConfigParams,
+                      ConfigSpecs, ListParam, ListRField, ResourceSet,
+                      StringHelper, Table, TechnicalInfo, TypingStyle,
+                      resource_decorator, view)
+from pandas import DataFrame
 
 
 @resource_decorator("KOAResult", human_name="KOA result",
@@ -82,11 +84,11 @@ class KOAResult(ResourceSet):
         pass
 
     @view(view_type=BarPlotView, human_name='KO Barplots', short_description='View KOA results as 2D-bar plots',
-          specs={
+          specs=ConfigSpecs({
               "flux_names":
               ListParam(
                   human_name="Flux names",
-                  short_description="List of fluxes to plot. Set 'biomass' to plot biomass reaction flux.")})
+                  short_description="List of fluxes to plot. Set 'biomass' to plot biomass reaction flux.")}))
     def view_as_bar_plot(self, params: ConfigParams) -> BarPlotView:
         """
         View one or several columns as 2D-bar plots

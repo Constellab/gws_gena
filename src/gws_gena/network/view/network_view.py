@@ -3,7 +3,7 @@ from typing import Dict
 
 import networkx as nx
 from gws_core import (BadRequestException, BoolParam, ConfigParams, StrParam,
-                      View, ViewSpecs, ViewType)
+                      View, ViewType)
 
 from ..graph.graph import BipartiteGraph
 
@@ -12,7 +12,6 @@ class NetworkView(View):
 
     _type: ViewType = ViewType.NETWORK
     _data: "Network"
-    _specs: ViewSpecs = {}
 
     def __init__(self, data):
         super().__init__()

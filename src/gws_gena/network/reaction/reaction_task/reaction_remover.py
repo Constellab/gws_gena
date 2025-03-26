@@ -1,6 +1,6 @@
 
 from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs,
-                      OutputSpec, OutputSpecs, Table, Task, TaskInputs,
+                      OutputSpec, OutputSpecs, Table, Task, TaskInputs, ConfigSpecs,
                       TaskOutputs, TypingStyle, task_decorator)
 
 from ...network import Network
@@ -19,11 +19,11 @@ class ReactionRemover(Task):
     output_specs = OutputSpecs({
         'network': OutputSpec(Network, human_name="Network", short_description="The network after trimming")
     })
-    config_specs = {
+    config_specs = ConfigSpecs({
         "reverse_remove":
         BoolParam(
             default_value=False, visibility="protected",
-            short_description="Set True to remove the reactions not given in the input list. By default, False. ")}
+            short_description="Set True to remove the reactions not given in the input list. By default, False. ")})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]

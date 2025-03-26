@@ -3,9 +3,10 @@ from gws_core import (ConfigParams, ConfigSpecs, Task,
                       StrParam, Table, TypingStyle,
                       task_decorator, InputSpecs, InputSpec, OutputSpec, OutputSpecs, TaskInputs, TaskOutputs)
 
+
 @task_decorator("TransformerFluxTable", human_name="Transformer Flux Table",
-                    short_description="Task to transform table into Flux table",
-                    style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"))
+                short_description="Task to transform table into Flux table",
+                style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"))
 class TransformerFluxTable(Task):
     """
     TransformerFluxTable class
@@ -44,7 +45,7 @@ class TransformerFluxTable(Task):
     input_specs = InputSpecs({
         'table': InputSpec(Table, human_name="Initial table", is_optional=False)})
     output_specs = OutputSpecs({'transformed_table': OutputSpec(Table)})
-    config_specs: ConfigSpecs = {
+    config_specs: ConfigSpecs = ConfigSpecs({
         'entity_id_column':
         StrParam(
             default_value=entity_id_column_name, human_name="Entity column name",
@@ -64,7 +65,7 @@ class TransformerFluxTable(Task):
         'confidence_score_column':
         StrParam(
             default_value=confidence_score_column, human_name="Confidence score column name",
-            short_description="The name of the confidence score column")}
+            short_description="The name of the confidence score column")})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         table = inputs["table"]
@@ -75,17 +76,22 @@ class TransformerFluxTable(Task):
         name_upper_bound_column = params["upper_bound_column"]
         name_confidence_score_column = params["confidence_score_column"]
 
-        #If the column names are incorrect, rename them.
+        # If the column names are incorrect, rename them.
         if name_entity_id_column != self.entity_id_column_name:
-            #rename column
-            table.set_column_name(current_name = name_entity_id_column,new_name = self.entity_id_column_name)
+            # rename column
+            table.set_column_name(
+                current_name=name_entity_id_column, new_name=self.entity_id_column_name)
         if name_target_column != self.target_column_name:
-            table.set_column_name(current_name = name_target_column,new_name = self.target_column_name)
-        if name_lower_bound_column!= self.lower_bound_column_name:
-            table.set_column_name(current_name = name_lower_bound_column,new_name = self.lower_bound_column_name)
+            table.set_column_name(
+                current_name=name_target_column, new_name=self.target_column_name)
+        if name_lower_bound_column != self.lower_bound_column_name:
+            table.set_column_name(
+                current_name=name_lower_bound_column, new_name=self.lower_bound_column_name)
         if name_upper_bound_column != self.upper_bound_column_name:
-            table.set_column_name(current_name = name_upper_bound_column,new_name = self.upper_bound_column_name)
+            table.set_column_name(
+                current_name=name_upper_bound_column, new_name=self.upper_bound_column_name)
         if name_confidence_score_column != self.confidence_score_column:
-            table.set_column_name(current_name = name_confidence_score_column,new_name = self.confidence_score_column)
+            table.set_column_name(
+                current_name=name_confidence_score_column, new_name=self.confidence_score_column)
 
         return {"transformed_table": table}

@@ -1,6 +1,6 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs, ConfigSpecs,
                       task_decorator, TypingStyle)
 
 from ..context.context import Context
@@ -31,7 +31,7 @@ class TwinBuilder(Task):
         'twin': OutputSpec(Twin, human_name="Digital twin", short_description="The digital twin"),
     })
 
-    config_specs = {}
+    config_specs = ConfigSpecs({})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         net = inputs["network"]

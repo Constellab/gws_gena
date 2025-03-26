@@ -1,6 +1,6 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs, TypingStyle,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs, TypingStyle, ConfigSpecs,
                       task_decorator)
 
 from ...network.network import Network
@@ -20,7 +20,7 @@ class IsolateFinder(Task):
 
     input_specs = InputSpecs({'network': InputSpec(Network)})
     output_specs = OutputSpecs({'result': OutputSpec(IsolateFinderResult)})
-    config_specs = {}
+    config_specs = ConfigSpecs({})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         network: Network = inputs["network"]

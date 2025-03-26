@@ -1,7 +1,7 @@
 import os
 
 from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs, ConfigSpecs,
                       task_decorator, TypingStyle)
 
 from ..cobra_env import CobraEnvHelper
@@ -13,7 +13,7 @@ from ..cobra_env import CobraEnvHelper
 class ConvertXmlToJson(Task):
     input_specs = InputSpecs({'input_file':  InputSpec(File)})
     output_specs = OutputSpecs({'output_json_file': OutputSpec(File)})
-    config_specs = {}
+    config_specs = ConfigSpecs({})
 
     script_convert = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
@@ -26,7 +26,8 @@ class ConvertXmlToJson(Task):
         shell_proxy = CobraEnvHelper.create_proxy(self.message_dispatcher)
 
         output_path = os.path.join(shell_proxy.working_dir, "model.json")
-        shell_proxy.run(f"python3 {self.script_convert} {file_path} {output_path}", shell_mode=True)
+        shell_proxy.run(
+            f"python3 {self.script_convert} {file_path} {output_path}", shell_mode=True)
 
         json_file = File(output_path)
 

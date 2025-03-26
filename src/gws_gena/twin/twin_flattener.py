@@ -1,6 +1,6 @@
 
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
+                      OutputSpecs, Task, TaskInputs, TaskOutputs, ConfigSpecs,
                       task_decorator)
 
 from .flat_twin import FlatTwin
@@ -8,7 +8,7 @@ from .twin import Twin
 
 
 @task_decorator("TwinFlattener", human_name="Twin flattener",
-                short_description="Flatten a digital twin of cell metabolism", hide = True)
+                short_description="Flatten a digital twin of cell metabolism", hide=True)
 class TwinFlattener(Task):
     """ TwinFlattener
 
@@ -21,7 +21,7 @@ class TwinFlattener(Task):
     output_specs = OutputSpecs({'flat_twin': OutputSpec(
         FlatTwin, human_name="Flat digital twin", short_description="The flat digital twin")})
 
-    config_specs = {}
+    config_specs = ConfigSpecs({})
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
