@@ -1,12 +1,13 @@
 id,name
-ecoli_PGK,First_KO
-ecoli_glu_L_c,Second KO
-ecoli_o2_c
-ecoli_PPC
-ecoli_BIOMASS_Ecoli_core_w_GAM
+e_coli_core_PFK
+e_coli_core_PGK,First_KO
+e_coli_core_glu_L_c,Second KO
+e_coli_core_o2_c
+e_coli_core_PPC
+e_coli_core_BIOMASS_Ecoli_core_w_GAM
 CHEBI:4167
-ecoli_NADH16
-ecoli_PGM
-ecoli_PYK
-ecoli_GLNS
-ecoli_invalid,Invalid_ko
+e_coli_core_NADH16
+e_coli_core_PGM
+e_coli_core_PYK
+e_coli_core_GLNS
+e_coli_core_invalid,Invalid_ko

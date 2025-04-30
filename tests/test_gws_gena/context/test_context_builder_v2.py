@@ -4,7 +4,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, Settings, TaskRunner, TableImporter
 from gws_gena import TransformerFluxTable
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
 from gws_gena.context.context_builder_v2 import ContextBuilderV2
 
 settings = Settings.get_instance()
@@ -36,7 +36,7 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
 
         # network
         file_path = os.path.join(data_dir, "toy.json")
-        net = NetworkImporterV2.call(File(path=file_path), params={"add_biomass" : True})
+        net = NetworkImporterV2.call(File(path=file_path))
 
         # experiment
         tester = TaskRunner(

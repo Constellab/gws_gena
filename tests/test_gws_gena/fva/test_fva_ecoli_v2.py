@@ -3,7 +3,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
 from gws_gena import ContextImporter
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
 from gws_gena.proto.fva_proto_v2 import FVAProtoV2
 
 settings = Settings.get_instance()
@@ -21,8 +21,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             organism_dir = os.path.join(data_dir, organism)
             organism_result_dir = os.path.join(data_dir, 'fva', organism)
             net = NetworkImporterV2.call(
-                File(path=os.path.join(organism_dir, f"{organism}.json")),
-                params={"add_biomass": True}
+                File(path=os.path.join(organism_dir, f"{organism}.json"))
             )
             ctx = ContextImporter.call(File(
                 path=os.path.join(organism_dir, f"{organism}_context.json")
@@ -34,10 +33,11 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             fva.set_param('solver', solver)
             fva.set_param('relax_qssa', relax_qssa)
             fva.set_param('qssa_relaxation_strength', 1)
+            fva.set_param("add_biomass", True)
             if organism == 'ecoli':
-                fva.set_param('fluxes_to_maximize', ["BIOMASS_Ecoli_core_w_GAM:1.0"])
+                fva.set_param('fluxes_to_maximize', ["e_coli_core_BIOMASS_Ecoli_core_w_GAM:1.0"])
             else:
-                fva.set_param('fluxes_to_maximize', ["Biomass:1.0"])
+                fva.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
 
             experiment.run()
 

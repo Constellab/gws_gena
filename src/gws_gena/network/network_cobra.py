@@ -8,7 +8,7 @@ from cobra.io import model_from_dict, model_to_dict
 from gws_biota import Compartment as BiotaCompartment
 from gws_core import (ConfigParams, DictRField, JSONView, Resource, Table,
                       TableView, TypingStyle, resource_decorator, view)
-from gws_gena.network.view.network_view import NetworkView
+from gws_gena.network.view.network_view_v2 import NetworkViewV2
 from ..sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
 
 
@@ -222,15 +222,73 @@ class NetworkCobra(Resource):
 
         return stoich_df
 
+    def create_steady_stoichiometric_matrix(self, ignore_cofactors=False) -> DataFrame:
+        """
+        Create the steady stoichiometric matrix of the network
+
+        We define by steady stoichiometric matrix, the submatrix of the stoichimetric matrix
+        involving the steady metabolites (e.g. intra-cellular metabolites)
+        """
+        S = self.create_stoichiometric_matrix()
+        names = list(self.get_steady_metabolites(ignore_cofactors=ignore_cofactors).keys())
+        return S.loc[names, :]
+
+    def create_non_steady_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+        """
+        Create the non-steady stoichiometric matrix of the network
+
+        We define by non-steady stoichiometric matrix, the submatrix of the stoichimetric matrix
+        involving the non-steady compounds (e.g. extra-cellular, biomass compounds)
+        """
+
+        S = self.create_stoichiometric_matrix()
+        names = list(self.get_non_steady_metabolites(ignore_cofactors=ignore_cofactors).keys())
+        return S.loc[names, :]
+
+    def get_steady_metabolites(self, ignore_cofactors=False) -> Dict[str, Metabolite]:
+        """
+        Get the steady metabolites
+
+        :returns: The list of steady metabolites
+        :rtype: List[Metabolite]
+        """
+        metabolites = {}
+        for metabolite_id, metabolite in self.get_metabolites_dict().items():
+            compartment = BiotaCompartment.get_by_bigg_id_or_go_id_or_none(metabolite.compartment)
+            if compartment.is_steady:
+                if ignore_cofactors and metabolite.is_cofactor():
+                    continue
+                else:
+                    metabolites[metabolite_id] = metabolite
+        return metabolites
+
+    def get_non_steady_metabolites(self, ignore_cofactors=False) -> Dict[str, Metabolite]:
+        """
+        Get the non-steady metabolites
+
+        :returns: The list of non-steady metabolites
+        :rtype: List[Metabolite]
+        """
+
+        metabolites = {}
+        for metabolite_id, metabolite in self.get_metabolites_dict().items():
+            compartment = BiotaCompartment.get_by_bigg_id_or_go_id_or_none(metabolite.compartment)
+            if not compartment.is_steady:
+                if ignore_cofactors and metabolite.is_cofactor():
+                    continue
+                else:
+                    metabolites[metabolite_id] = metabolite
+        return metabolites
+
     @classmethod
     def from_cobra_json(cls, data: dict) -> 'NetworkCobra':
         network = cls()
         network.network_dict = data
         return network
 
-    @view(view_type=NetworkView, default_view=True, human_name="Network")
-    def view_as_network(self, _: ConfigParams) -> NetworkView:
-        return NetworkView(data=self)
+    @view(view_type=NetworkViewV2, default_view=True, human_name="Network")
+    def view_as_network(self, _: ConfigParams) -> NetworkViewV2:
+        return NetworkViewV2(data=self)
 
     @view(view_type=JSONView, human_name="Summary")
     def view_as_summary(self, _: ConfigParams) -> JSONView:
@@ -247,12 +305,12 @@ class NetworkCobra(Resource):
         t_view = TableView(table)
         return t_view
 
-    @view(view_type=JSONView, human_name="JSON view")
-    def view_as_json(self, params: ConfigParams) -> JSONView:
-        """ View as json """
-        json_view: JSONView = super().view_as_json(params)
-        json_view.set_data(self.dumps())
-        return json_view
+    #@view(view_type=JSONView, human_name="JSON view")
+    #def view_as_json(self, params: ConfigParams) -> JSONView:
+    #    """ View as json """
+    #    json_view: JSONView = super().view_as_json(params)
+    #    json_view.set_data(self.dumps())
+    #    return json_view
 
     @view(view_type=TableView, human_name="Reaction gaps")
     def view_gaps_as_table(self, _: ConfigParams) -> TableView:

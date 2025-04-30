@@ -1,7 +1,7 @@
 
 from gws_core import ProcessSpec, Protocol, protocol_decorator
 
-from gws_gena.network_v2.fva_v2 import FVAV2
+from gws_gena.fva.fva_v2 import FVAV2
 from gws_gena.twin.twin_builder_v2 import TwinBuilderV2
 
 

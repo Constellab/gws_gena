@@ -5,9 +5,9 @@ import pandas
 from gws_core import File, Settings, TaskRunner, BaseTestCase
 from gws_gena import ContextImporter
 from gws_gena.fva.fva_result import FVAResult
-from gws_gena.network_v2.fva_v2 import FVAV2
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
-from gws_gena.network_v2.twin_v2 import TwinV2
+from gws_gena.fva.fva_v2 import FVAV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
+from gws_gena.twin.twin_v2 import TwinV2
 
 
 settings = Settings.get_instance()
@@ -23,8 +23,7 @@ class TestFVA(BaseTestCase):
 
         def run_fva(solver="highs", relax_qssa=False):
             net = NetworkImporterV2.call(File(
-            path=os.path.join(data_dir, "toy.json")),
-            params={"add_biomass": True}
+            path=os.path.join(data_dir, "toy.json"))
             )
             ctx = ContextImporter.call(
                 File(path=os.path.join(
@@ -41,8 +40,9 @@ class TestFVA(BaseTestCase):
                                      "twin": twin
                                  },
                                  params={
-                                     "solver": solver,
-                                     "relax_qssa": relax_qssa
+                                    "solver": solver,
+                                    "relax_qssa": relax_qssa,
+                                    "add_biomass": True
                                  })
 
             task_runner.run()

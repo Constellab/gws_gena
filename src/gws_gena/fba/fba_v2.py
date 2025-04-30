@@ -100,7 +100,6 @@ class FBAV2(Task):
 
         twin: TwinV2 = inputs["twin"]
 
-        ####TODO : en cours
         #Act on the network to add environnement compartment
         def add_environnement_compartment(network : NetworkCobra):
             model = network.get_cobra_model()

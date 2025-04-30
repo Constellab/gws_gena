@@ -41,7 +41,9 @@
           {
             "name": "ecos",
             "version" : "2.0.14"
-          }
+          }, 
+          {"name": "cobra", 
+          "version" : "0.29.1"}
 
         ]
       }

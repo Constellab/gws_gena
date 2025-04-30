@@ -4,7 +4,7 @@ import os
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
 from gws_gena import ContextImporter
-from gws_gena.network_v2.network_importer_v2 import NetworkImporterV2
+from gws_gena.network.network_task.network_importer_v2 import NetworkImporterV2
 from gws_gena.proto.fva_proto_v2 import FVAProtoV2
 
 settings = Settings.get_instance()
@@ -13,7 +13,7 @@ settings = Settings.get_instance()
 class TestFVA(BaseTestCaseUsingFullBiotaDB):
 
     def test_large_pcys(self):
-        self.print("Test FBAProto: Medium or large metwork (typically Ecoli)")
+        self.print("Test FBAProto: Medium or large network (typically Ecoli)")
         data_dir = settings.get_variable("gws_gena:testdata_dir")
 
         def run_fva(organism, solver="highs", relax_qssa=False):
@@ -35,10 +35,9 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             fva.set_param('relax_qssa', relax_qssa)
             fva.set_param('qssa_relaxation_strength', 1)
             if organism == 'ecoli':
-                fva.set_param('fluxes_to_maximize', [
-                              "ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+                fva.set_param("biomass_optimization", "maximize")
             else:
-                fva.set_param('fluxes_to_maximize', ["Biomass:1.0"])
+                fva.set_param("biomass_optimization", "maximize")
 
             experiment.run()
 
