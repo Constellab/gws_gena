@@ -1,184 +1,274 @@
 import os
 import json
 import streamlit as st
+from typing import Optional, Tuple
+
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core import ResourceOrigin, File, Settings, ResourceSet, Scenario, ScenarioProxy, ProtocolProxy, InputTask, ProcessProxy, ResourceModel, Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
+from gws_core import (
+    ResourceOrigin, File, Settings, ResourceSet, Scenario, ScenarioProxy,
+    ProtocolProxy, InputTask, ProcessProxy, ResourceModel, ScenarioStatus
+)
 from gws_gena import ContextImporter, ContextBuilder
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import create_base_scenario_with_tags, search_updated_network
-from gws_core.streamlit import StreamlitResourceSelect, StreamlitTaskRunner
+from gws_core.streamlit import StreamlitResourceSelect
 
-def render_context_step(selected_scenario: Scenario, gena_state: State) -> None:
-    if not selected_scenario:
-        # If a network has been saved, allow running Context Importer
-        # Check if there's an updated network first
-        file_network = search_updated_network(gena_state)
-        if not file_network:
-            st.info("Please save a network to proceed.")
-            return
+def _create_empty_context_resource(gena_state: State) -> ResourceModel:
+    """Create an empty context resource file."""
+    path_temp = os.path.join(os.path.abspath(os.path.dirname(__file__)), Settings.make_temp_dir())
+    full_path = os.path.join(path_temp, f"{gena_state.get_current_analysis_name()}_empty_context.json")
 
-        if gena_state.get_is_standalone():
-            return
+    content = {"name": "empty_context", 'measures': []}
 
-        st.selectbox("Would you like to add a context?", options=["Yes", "No"], index=None, key=gena_state.CONTEXT_BOOL_KEY)
-        if gena_state.get_context_bool() == "No":
-            st.info("You can directly run context importer. Context will be empty.")
-        elif gena_state.get_context_bool() == "Yes":
-            st.selectbox("How would you like to provide context data?", options=["Select existing context resource", "Build a new context"], index=None, key=gena_state.CONTEXT_OPTION_KEY)
-            if gena_state.get_context_option() == "Select existing context resource":
-                # select context data
-                resource_select = StreamlitResourceSelect()
-                resource_select.select_resource(
-                    placeholder='Search for context resource', key=gena_state.RESOURCE_SELECTOR_CONTEXT_KEY, defaut_resource=None)
+    with open(full_path, 'w') as f:
+        json.dump(content, f, indent=4)
 
-            elif gena_state.get_context_option() == "Build a new context":
-                st.info("In order to contextualise the network, you must select either a phenotype or a flux table.")
-                # The user can select a phenotype table and/or a flux table to build a context
-                # select phenotype table
-                resource_select_phenotype = StreamlitResourceSelect()
-                resource_select_phenotype.select_resource(
-                    placeholder='Search for phenotype table resource', key=gena_state.RESOURCE_SELECTOR_PHENOTYPE_KEY, defaut_resource=None)
+    context_file = File(full_path)
+    return ResourceModel.save_from_resource(context_file, origin=ResourceOrigin.UPLOADED, flagged=True)
 
-                # select flux table
-                resource_select_flux = StreamlitResourceSelect()
-                resource_select_flux.select_resource(
-                    placeholder='Search for flux table resource', key=gena_state.RESOURCE_SELECTOR_FLUX_KEY, defaut_resource=None)
-            else:
-                st.info("Please select an option.")
-                return
+
+def _handle_context_builder(protocol: ProtocolProxy, gena_state: State) -> None:
+    """Handle context builder workflow with phenotype and/or flux tables."""
+    selected_phenotype = None
+    selected_flux = None
+
+    if gena_state.get_resource_selector_phenotype():
+        selected_phenotype_id = gena_state.get_resource_selector_phenotype()["resourceId"]
+        selected_phenotype = ResourceModel.get_by_id(selected_phenotype_id)
+
+    if gena_state.get_resource_selector_flux():
+        selected_flux_id = gena_state.get_resource_selector_flux()["resourceId"]
+        selected_flux = ResourceModel.get_by_id(selected_flux_id)
+
+    # Add network resource
+    network_resource = protocol.add_process(
+        InputTask, 'network_resource',
+        {InputTask.config_name: gena_state.get_resource_id_network()}
+    )
+
+    # Add context builder process
+    context_process = protocol.add_process(ContextBuilder, 'context_builder_process')
+    protocol.add_connector(network_resource >> 'resource', context_process << 'network')
+
+    # Add phenotype resource if selected
+    if selected_phenotype:
+        phenotype_resource = protocol.add_process(
+            InputTask, 'phenotype_resource',
+            {InputTask.config_name: selected_phenotype.get_resource().get_model_id()}
+        )
+        protocol.add_connector(phenotype_resource >> 'resource', context_process << 'pheno_table')
+
+    # Add flux resource if selected
+    if selected_flux:
+        flux_resource = protocol.add_process(
+            InputTask, 'flux_resource',
+            {InputTask.config_name: selected_flux.get_resource().get_model_id()}
+        )
+        protocol.add_connector(flux_resource >> 'resource', context_process << 'flux_table')
+
+    # Add output
+    protocol.add_output('context_process_output', context_process >> 'context', flag_resource=False)
+
+
+def _handle_existing_context(protocol: ProtocolProxy, gena_state: State) -> bool:
+    """Handle existing context resource selection. Returns True if context is already processed."""
+    selected_context_id = gena_state.get_resource_selector_context()["resourceId"]
+    selected_context = ResourceModel.get_by_id(selected_context_id)
+
+    if selected_context.resource_typing_name == 'RESOURCE.gws_gena.Context':
+        # Context is already processed, just add as input
+        protocol.add_process(
+            InputTask, 'selected_context',
+            {InputTask.config_name: selected_context.get_resource().get_model_id()}
+        )
+        return True
+
+    # Context needs to be imported
+    _add_context_importer(protocol, selected_context)
+    return False
+
+
+def _add_context_importer(protocol: ProtocolProxy, context_resource_model: ResourceModel) -> None:
+    """Add context importer process to the protocol."""
+    context_resource = protocol.add_process(
+        InputTask, 'selected_context',
+        {InputTask.config_name: context_resource_model.get_resource().get_model_id()}
+    )
+
+    context_process = protocol.add_process(ContextImporter, 'context_importer_process')
+    protocol.add_connector(context_resource >> 'resource', context_process << 'source')
+    protocol.add_output('context_process_output', context_process >> 'target', flag_resource=False)
+
+
+def _render_context_setup_ui(gena_state: State) -> bool:
+    """Render the context setup UI and return True if ready to proceed."""
+    st.selectbox(
+        "Would you like to add a context?",
+        options=["Yes", "No"],
+        index=None,
+        key=gena_state.CONTEXT_BOOL_KEY
+    )
+
+    context_choice = gena_state.get_context_bool()
+
+    if context_choice == "No":
+        st.info("You can directly run context importer. Context will be empty.")
+        return True
+
+    elif context_choice == "Yes":
+        st.selectbox(
+            "How would you like to provide context data?",
+            options=["Select existing context resource", "Build a new context"],
+            index=None,
+            key=gena_state.CONTEXT_OPTION_KEY
+        )
+
+        context_option = gena_state.get_context_option()
+
+        if context_option == "Select existing context resource":
+            resource_select = StreamlitResourceSelect()
+            resource_select.select_resource(
+                placeholder='Search for context resource',
+                key=gena_state.RESOURCE_SELECTOR_CONTEXT_KEY,
+                defaut_resource=None
+            )
+            return bool(gena_state.get_resource_selector_context())
+
+        elif context_option == "Build a new context":
+            st.info("In order to contextualise the network, you must select either a phenotype or a flux table.")
+
+            # Phenotype table selector
+            resource_select_phenotype = StreamlitResourceSelect()
+            resource_select_phenotype.select_resource(
+                placeholder='Search for phenotype table resource',
+                key=gena_state.RESOURCE_SELECTOR_PHENOTYPE_KEY,
+                defaut_resource=None
+            )
+
+            # Flux table selector
+            resource_select_flux = StreamlitResourceSelect()
+            resource_select_flux.select_resource(
+                placeholder='Search for flux table resource',
+                key=gena_state.RESOURCE_SELECTOR_FLUX_KEY,
+                defaut_resource=None
+            )
+
+            return (gena_state.get_resource_selector_phenotype() or
+                    gena_state.get_resource_selector_flux())
         else:
             st.info("Please select an option.")
-            return
-        if st.button("Run context importer", icon=":material/play_arrow:", use_container_width=False):
-            if gena_state.get_context_bool() == "No":
-                # Get the empty context and create a resource
-                # Create a new file with the updated content
-                path_temp = os.path.join(os.path.abspath(os.path.dirname(__file__)), Settings.make_temp_dir())
-                full_path = os.path.join(path_temp, f"{gena_state.get_current_analysis_name()}_empty_context.json")
+            return False
+    else:
+        st.info("Please select an option.")
+        return False
 
-                # Prepare content to save
-                content_to_save = {
-                    "name": "empty_context",
-                    'measures': []
-                }
 
-                json_str = json.dumps(content_to_save, indent=4)
-                # Write content to file
-                with open(full_path, 'w') as f:
-                    f.write(json_str)
+def _get_context_output(protocol_proxy: ProtocolProxy) -> Optional[ResourceSet]:
+    """Retrieve context output from various possible processes."""
+    # Try context importer first
+    try:
+        if protocol_proxy.get_process('context_importer_process'):
+            return protocol_proxy.get_process('context_importer_process').get_output('target')
+    except:
+        pass
 
-                # Create File resource and save it properly using save_from_resource
-                context_file = File(full_path)
+    # Try context builder
+    try:
+        if protocol_proxy.get_process('context_builder_process'):
+            return protocol_proxy.get_process('context_builder_process').get_output('context')
+    except:
+        pass
 
-                # Use save_from_resource
-                selected_context = ResourceModel.save_from_resource(
-                    context_file,
-                    origin=ResourceOrigin.UPLOADED,
-                    flagged=True
-                )
-                # Create a new scenario in the lab
-                scenario = create_base_scenario_with_tags(gena_state, gena_state.TAG_CONTEXT, f"{gena_state.get_current_analysis_name()} - Context")
-                protocol: ProtocolProxy = scenario.get_protocol()
+    # Try selected context as input
+    try:
+        if protocol_proxy.get_process('selected_context'):
+            return protocol_proxy.get_process('selected_context').get_output('resource')
+    except:
+        pass
 
-            else:
-                if not gena_state.get_resource_selector_phenotype() and not gena_state.get_resource_selector_flux() and not gena_state.get_resource_selector_context():
-                    st.warning("Please select at least one resource.")
-                    return
+    return None
 
-                # Create a new scenario in the lab
-                scenario = create_base_scenario_with_tags(gena_state, gena_state.TAG_CONTEXT, f"{gena_state.get_current_analysis_name()} - Context")
-                protocol: ProtocolProxy = scenario.get_protocol()
 
-                if gena_state.get_context_option() == "Build a new context":
-                    selected_phenotype = None
-                    selected_flux = None
-                    if gena_state.get_resource_selector_phenotype():
-                        selected_phenotype_id = gena_state.get_resource_selector_phenotype()["resourceId"]
-                        selected_phenotype = ResourceModel.get_by_id(selected_phenotype_id)
-                    if gena_state.get_resource_selector_flux():
-                        selected_flux_id = gena_state.get_resource_selector_flux()["resourceId"]
-                        selected_flux = ResourceModel.get_by_id(selected_flux_id)
+def render_context_step(selected_scenario: Optional[Scenario], gena_state: State) -> None:
+    """Main function to render the context step."""
+    if not selected_scenario:
+        _render_context_creation_ui(gena_state)
+    else:
+        _render_context_results(selected_scenario)
 
-                    # Network resource
-                    network_resource = protocol.add_process(InputTask, 'network_resource', {InputTask.config_name: gena_state.get_resource_id_network()})
 
-                    # Context builder task
-                    context_process : ProcessProxy = protocol.add_process(ContextBuilder, 'context_builder_process')
+def _render_context_creation_ui(gena_state: State) -> None:
+    """Render UI for creating a new context scenario."""
+    # Check if network is available
+    file_network = search_updated_network(gena_state)
+    if not file_network:
+        st.info("Please save a network to proceed.")
+        return
 
-                    protocol.add_connector(out_port=network_resource >> 'resource',
-                                           in_port=context_process << 'network')
+    if gena_state.get_is_standalone():
+        return
 
-                    if selected_phenotype:
-                        phenotype_resource = protocol.add_process(
-                            InputTask, 'phenotype_resource',
-                            {InputTask.config_name: selected_phenotype.get_resource().get_model_id()})
-                        protocol.add_connector(out_port=phenotype_resource >> 'resource',
-                                               in_port=context_process << 'pheno_table')
+    # Render setup UI
+    if not _render_context_setup_ui(gena_state):
+        return
 
-                    if selected_flux:
-                        flux_resource = protocol.add_process(
-                            InputTask, 'flux_resource',
-                            {InputTask.config_name: selected_flux.get_resource().get_model_id()})
-                        protocol.add_connector(out_port=flux_resource >> 'resource',
-                                               in_port=context_process << 'flux_table')
+    # Run context importer button
+    if st.button("Run context importer", icon=":material/play_arrow:", use_container_width=False):
+        context_choice = gena_state.get_context_bool()
 
-                    # Add output
-                    protocol.add_output('context_process_output', context_process >> 'context', flag_resource=False)
-                    scenario.add_to_queue()
+        if context_choice == "No":
+            # Create empty context scenario
+            selected_context = _create_empty_context_resource(gena_state)
+            scenario = create_base_scenario_with_tags(
+                gena_state, gena_state.TAG_CONTEXT,
+                f"{gena_state.get_current_analysis_name()} - Context"
+            )
+            protocol = scenario.get_protocol()
+            _add_context_importer(protocol, selected_context)
 
-                    gena_state.reset_tree_analysis()
-                    gena_state.set_tree_default_item(scenario.get_model_id())
-                    st.rerun()
-                    return
-                else:
-                    selected_context_id = gena_state.get_resource_selector_context()["resourceId"]
-                    selected_context = ResourceModel.get_by_id(selected_context_id)
-                    if selected_context.resource_typing_name == 'RESOURCE.gws_gena.Context':
-                        # We don't need to import the context, it's already a context
-                        protocol.add_process(InputTask, 'selected_context', {InputTask.config_name: selected_context.get_resource().get_model_id()})
-                        scenario.add_to_queue()
-                        gena_state.reset_tree_analysis()
-                        gena_state.set_tree_default_item(scenario.get_model_id())
-                        st.rerun()
-                        return
+        else:
+            # Validate resource selection
+            if not any([
+                gena_state.get_resource_selector_phenotype(),
+                gena_state.get_resource_selector_flux(),
+                gena_state.get_resource_selector_context()
+            ]):
+                st.warning("Please select at least one resource.")
+                return
 
-            context_resource = protocol.add_process(
-                InputTask, 'selected_context',
-                {InputTask.config_name: selected_context.get_resource().get_model_id()})
+            # Create scenario
+            scenario = create_base_scenario_with_tags(
+                gena_state, gena_state.TAG_CONTEXT,
+                f"{gena_state.get_current_analysis_name()} - Context"
+            )
+            protocol = scenario.get_protocol()
 
-            # Step 2 : Context task
-            context_process : ProcessProxy = protocol.add_process(ContextImporter, 'context_importer_process')
-            protocol.add_connector(out_port=context_resource >> 'resource',
-                                   in_port=context_process << 'source')
-            # Add output
-            protocol.add_output('context_process_output', context_process >> 'target', flag_resource=False)
-            scenario.add_to_queue()
+            context_option = gena_state.get_context_option()
 
-            gena_state.reset_tree_analysis()
-            gena_state.set_tree_default_item(scenario.get_model_id())
-            st.rerun()
+            if context_option == "Build a new context":
+                _handle_context_builder(protocol, gena_state)
+            else:  # Select existing context resource
+                if _handle_existing_context(protocol, gena_state):
+                    # Context is already processed, no need for importer
+                    pass
 
-    else :
-        # Visualize Context results
-        st.markdown("##### Context Results")
-        if selected_scenario.status != ScenarioStatus.SUCCESS:
-            return
+        # Queue scenario and refresh UI
+        scenario.add_to_queue()
+        gena_state.reset_tree_analysis()
+        gena_state.set_tree_default_item(scenario.get_model_id())
+        st.rerun()
 
-        scenario_proxy = ScenarioProxy.from_existing_scenario(selected_scenario.id)
-        protocol_proxy: ProtocolProxy = scenario_proxy.get_protocol()
 
-        # Retrieve outputs
-        # Context importer
-        try :
-            if protocol_proxy.get_process('context_importer_process'):
-                context_output : ResourceSet = protocol_proxy.get_process('context_importer_process').get_output('target')
-        except:
-            try:
-                # Context builder
-                if protocol_proxy.get_process('context_builder_process'):
-                    context_output : ResourceSet = protocol_proxy.get_process('context_builder_process').get_output('context')
-            except:
-                # Context already selected as input
-                if protocol_proxy.get_process('selected_context'):
-                    context_output : ResourceSet = protocol_proxy.get_process('selected_context').get_output('resource')
+def _render_context_results(selected_scenario: Scenario) -> None:
+    """Render context results for a completed scenario."""
+    st.markdown("##### Context Results")
 
+    if selected_scenario.status != ScenarioStatus.SUCCESS:
+        return
+
+    scenario_proxy = ScenarioProxy.from_existing_scenario(selected_scenario.id)
+    protocol_proxy = scenario_proxy.get_protocol()
+
+    context_output = _get_context_output(protocol_proxy)
+
+    if context_output:
         st.json(context_output.dumps())
