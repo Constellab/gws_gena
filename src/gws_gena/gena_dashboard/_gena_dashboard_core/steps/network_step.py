@@ -2,8 +2,8 @@ import streamlit as st
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser
 from gws_core import Scenario, ScenarioProxy, ProtocolProxy, File, TableImporter, Scenario, ScenarioProxy, ProtocolProxy
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_updated_network, save_network
-
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, search_updated_network, save_network
+from gws_gena import Network
 def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
     # Check if there's an updated network first
     file_network = search_updated_network(gena_state)
@@ -12,18 +12,22 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
     if file_network is None:
         scenario_proxy = ScenarioProxy.from_existing_scenario(selected_scenario.id)
         protocol_proxy: ProtocolProxy = scenario_proxy.get_protocol()
-        file_network: File = protocol_proxy.get_process('network_importer_process').get_output('target')
+        file_network: Network = protocol_proxy.get_process('network_importer_process').get_output('target')
 
 
-    if not gena_state.get_scenario_step_qc():
+    if not gena_state.get_scenario_step_context():
         if not gena_state.get_is_standalone():
             st.markdown("### Edit network")
+            gena_state.set_edited_network(file_network)
+            display_network(file_network.get_model_id())
 
 
         else:
             st.markdown("### View network")
+            display_network(file_network.get_model_id())
     else:
         st.markdown("### View network")
+        display_network(file_network.get_model_id())
 
     # Save button only appear if Context task have not been created
     if not gena_state.get_scenario_step_context():

@@ -51,31 +51,10 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         tag_step_name = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA)[0].to_simple_tag()
         step_name = tag_step_name.value
 
-        if step_name in [gena_state.TAG_NETWORK, gena_state.TAG_CONTEXT, gena_state.TAG_TWIN_BUILDER]:
-            # These steps don't have parent dependencies
-            if step_name not in scenarios_by_step:
-                scenarios_by_step[step_name] = []
-            scenarios_by_step[step_name].append(scenario)
-        elif step_name in [gena_state.TAG_RAREFACTION, gena_state.TAG_TAXONOMY, gena_state.TAG_16S, gena_state.TAG_16S_VISU]:
-            # These steps depend on twin inference
-            twin_id_tags = entity_tag_list.get_tags_by_key(gena_state.TAG_TWIN_BUILDER_ID)
-            if twin_id_tags:
-                parent_id = twin_id_tags[0].to_simple_tag().value
-                if step_name not in scenarios_by_step:
-                    scenarios_by_step[step_name] = {}
-                if parent_id not in scenarios_by_step[step_name]:
-                    scenarios_by_step[step_name][parent_id] = []
-                scenarios_by_step[step_name][parent_id].append(scenario)
-        elif step_name in [gena_state.TAG_PCOA_DIVERSITY, gena_state.TAG_ANCOM, gena_state.TAG_DB_ANNOTATOR]:
-            # These steps depend on taxonomy
-            taxonomy_id_tags = entity_tag_list.get_tags_by_key(gena_state.TAG_TAXONOMY_ID)
-            if taxonomy_id_tags:
-                parent_id = taxonomy_id_tags[0].to_simple_tag().value
-                if step_name not in scenarios_by_step:
-                    scenarios_by_step[step_name] = {}
-                if parent_id not in scenarios_by_step[step_name]:
-                    scenarios_by_step[step_name][parent_id] = []
-                scenarios_by_step[step_name][parent_id].append(scenario)
+        # These steps don't have parent dependencies
+        if step_name not in scenarios_by_step:
+            scenarios_by_step[step_name] = []
+        scenarios_by_step[step_name].append(scenario)
 
     gena_state.set_scenarios_by_step_dict(scenarios_by_step)
 
@@ -104,90 +83,91 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
 
     # 2) CONTEXT - only if network is successful
     if has_successful_scenario(gena_state.TAG_NETWORK, scenarios_by_step) or gena_state.TAG_CONTEXT in scenarios_by_step:
-        scenario_qc = None
+        scenario_context = None
         if gena_state.TAG_CONTEXT in scenarios_by_step:
-            scenario_qc = gena_state.get_scenario_step_qc()
+            scenario_context = gena_state.get_scenario_step_context()
             # Use the first CONTEXT scenario's ID
-            key_qc = scenario_qc[0].id
+            key_context = scenario_context[0].id
         else:
-            key_qc = gena_state.TAG_CONTEXT
-        qc_item = StreamlitTreeMenuItem(
-            label="Quality check",
-            key=key_qc,
-            material_icon=get_step_icon(gena_state.TAG_CONTEXT, scenarios_by_step, scenario_qc)
+            key_context = gena_state.TAG_CONTEXT
+        context_item = StreamlitTreeMenuItem(
+            label="Context",
+            key=key_context,
+            material_icon=get_step_icon(gena_state.TAG_CONTEXT, scenarios_by_step, scenario_context)
         )
 
-        button_menu.add_item(qc_item)
+        button_menu.add_item(context_item)
 
     # 3) Twin builder - only if CONTEXT is successful
     if has_successful_scenario(gena_state.TAG_CONTEXT, scenarios_by_step) or gena_state.TAG_TWIN_BUILDER in scenarios_by_step:
-        scenario_twin_builder = gena_state.get_scenario_step_twin_builder()
+        scenario_twin_builder = None
+        if gena_state.TAG_TWIN_BUILDER in scenarios_by_step:
+            scenario_twin_builder = gena_state.get_scenario_step_twin_builder()
+            # Use the first Twin Builder scenario's ID
+            key_twin_builder = scenario_twin_builder[0].id
+        else:
+            key_twin_builder = gena_state.TAG_TWIN_BUILDER
         twin_builder_item = StreamlitTreeMenuItem(
             label="Twin builder",
-            key=gena_state.TAG_TWIN_BUILDER,
+            key=key_twin_builder,
             material_icon=get_step_icon(gena_state.TAG_TWIN_BUILDER, scenarios_by_step, scenario_twin_builder)
         )
-
-        if gena_state.TAG_TWIN_BUILDER in scenarios_by_step:
-            for scenario in scenarios_by_step[gena_state.TAG_TWIN_BUILDER]:
-                scenario_item = StreamlitTreeMenuItem(
-                    label=scenario.get_short_name(),
-                    key=scenario.id,
-                    material_icon='description'
-                )
-                if scenario.status == ScenarioStatus.SUCCESS:
-                    # Get parent scenario ID for filtering sub-steps
-                    scenario_twin_id_tags = EntityTagList.find_by_entity(TagEntityType.SCENARIO, scenario.id).get_tags_by_key(gena_state.TAG_TWIN_BUILDER_ID)
-                    parent_twin_id = scenario_twin_id_tags[0].to_simple_tag().value if scenario_twin_id_tags else scenario.id
-
-                    # 4) FBA sub-step
-                    fba_scenarios = scenarios_by_step.get(gena_state.TAG_FBA, {}).get(parent_twin_id, [])
-                    fba_item = StreamlitTreeMenuItem(
-                        label="FBA",
-                        key=f"{gena_state.TAG_FBA}_{scenario.id}",
-                        material_icon=get_step_icon(gena_state.TAG_FBA, scenarios_by_step, fba_scenarios)
-                    )
-                    for fba_scenario in fba_scenarios:
-                        fba_item = StreamlitTreeMenuItem(
-                            label=fba_scenario.get_short_name(),
-                            key=fba_scenario.id,
-                            material_icon='description'
-                        )
-                        fba_item.add_children([fba_item])
-
-                    # 4) FVA sub-step
-                    fva_scenarios = scenarios_by_step.get(gena_state.TAG_FVA, {}).get(parent_twin_id, [])
-                    fva_item = StreamlitTreeMenuItem(
-                        label="FVA",
-                        key=f"{gena_state.TAG_FVA}_{scenario.id}",
-                        material_icon=get_step_icon(gena_state.TAG_FVA, scenarios_by_step, fva_scenarios)
-                    )
-                    for fva_scenario in fva_scenarios:
-                        fva_scenario_item = StreamlitTreeMenuItem(
-                            label=fva_scenario.get_short_name(),
-                            key=fva_scenario.id,
-                            material_icon='description'
-                        )
-                        fva_item.add_children([fva_scenario_item])
-
-                    # 4) KOA sub-step
-                    koa_scenarios = scenarios_by_step.get(gena_state.TAG_KOA, {}).get(parent_twin_id, [])
-                    koa_item = StreamlitTreeMenuItem(
-                        label="KOA",
-                        key=f"{gena_state.TAG_KOA}_{scenario.id}",
-                        material_icon=get_step_icon(gena_state.TAG_KOA, scenarios_by_step, koa_scenarios)
-                    )
-                    for koa_scenario in koa_scenarios:
-                        koa_scenario_item = StreamlitTreeMenuItem(
-                            label=koa_scenario.get_short_name(),
-                            key=koa_scenario.id,
-                            material_icon='description'
-                        )
-
-                    scenario_item.add_children([fba_item, fva_item, koa_item])
-                twin_builder_item.add_children([scenario_item])
-
         button_menu.add_item(twin_builder_item)
+
+
+    if has_successful_scenario(gena_state.TAG_TWIN_BUILDER, scenarios_by_step) or gena_state.TAG_FBA in scenarios_by_step:
+
+        # Get parent scenario ID for filtering sub-steps
+        scenario_twin_id_tags = EntityTagList.find_by_entity(TagEntityType.SCENARIO, scenario.id).get_tags_by_key(gena_state.TAG_TWIN_BUILDER_ID)
+        parent_twin_id = scenario_twin_id_tags[0].to_simple_tag().value if scenario_twin_id_tags else scenario.id
+
+        # 4) FBA step
+        fba_scenarios = scenarios_by_step.get(gena_state.TAG_FBA, [])
+        fba_item = StreamlitTreeMenuItem(
+            label="FBA",
+            key=f"{gena_state.TAG_FBA}",
+            material_icon=get_step_icon(gena_state.TAG_FBA, scenarios_by_step, fba_scenarios)
+        )
+        for fba_scenario in fba_scenarios:
+            fba_scenario_item = StreamlitTreeMenuItem(
+                label=fba_scenario.get_short_name(),
+                key=fba_scenario.id,
+                material_icon='description'
+            )
+            fba_item.add_children([fba_scenario_item])
+        button_menu.add_item(fba_item)
+
+        # 4) FVA step
+        fva_scenarios = scenarios_by_step.get(gena_state.TAG_FVA, [])
+        fva_item = StreamlitTreeMenuItem(
+            label="FVA",
+            key=f"{gena_state.TAG_FVA}",
+            material_icon=get_step_icon(gena_state.TAG_FVA, scenarios_by_step, fva_scenarios)
+        )
+        for fva_scenario in fva_scenarios:
+            fva_scenario_item = StreamlitTreeMenuItem(
+                label=fva_scenario.get_short_name(),
+                key=fva_scenario.id,
+                material_icon='description'
+            )
+            fva_item.add_children([fva_scenario_item])
+        button_menu.add_item(fva_item)
+
+        # 4) KOA step
+        koa_scenarios = scenarios_by_step.get(gena_state.TAG_KOA, [])
+        koa_item = StreamlitTreeMenuItem(
+            label="KOA",
+            key=f"{gena_state.TAG_KOA}",
+            material_icon=get_step_icon(gena_state.TAG_KOA, scenarios_by_step, koa_scenarios)
+        )
+        for koa_scenario in koa_scenarios:
+            koa_scenario_item = StreamlitTreeMenuItem(
+                label=koa_scenario.get_short_name(),
+                key=koa_scenario.id,
+                material_icon='description'
+            )
+            koa_item.add_children([koa_scenario_item])
+        button_menu.add_item(koa_item)
 
     return button_menu, key_default_item
 

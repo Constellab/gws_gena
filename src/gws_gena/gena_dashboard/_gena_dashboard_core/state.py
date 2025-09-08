@@ -26,9 +26,6 @@ class State:
     # Tags unique ids
     TAG_GENA_PIPELINE_ID = "gena_pipeline_id"
     TAG_TWIN_BUILDER_ID = "twin_builder_id"
-    TAG_FBA_ID = "fba_id"
-    TAG_FVA_ID = "fva_id"
-    TAG_KOA_ID = "koa_id"
 
     # Scenario names
     TWIN_SCENARIO_NAME_INPUT_KEY = "twin_scenario_name_input"
@@ -44,7 +41,8 @@ class State:
     TAG_NETWORK_UPDATED = "network_updated"
     SCENARIOS_BY_STEP_KEY = "scenarios_by_step"
     SELECTED_ANNOTATION_TABLE_KEY = "selected_annotation_table"
-    NEW_COLUMN_INPUT_KEY = "new_column_input"
+    CONTEXT_BOOL_KEY = "context_bool"
+    CONTEXT_OPTION_KEY = "context_option"
 
     TREE_DEFAULT_ITEM_KEY = "tree_default_item"
 
@@ -54,6 +52,10 @@ class State:
     ASSOCIATE_FOLDER_KEY = "associate_folder"
 
     RESOURCE_SELECTOR_NETWORK_KEY = "resource_selector_network"
+    RESOURCE_SELECTOR_CONTEXT_KEY = "resource_selector_context"
+    RESOURCE_SELECTOR_KO_TABLE_KEY = "resource_selector_ko_table"
+    RESOURCE_SELECTOR_PHENOTYPE_KEY = "resource_selector_phenotype"
+    RESOURCE_SELECTOR_FLUX_KEY = "resource_selector_flux"
     ANALYSIS_NAME_USER = "analysis_name_user"
 
     # Tree
@@ -105,19 +107,39 @@ class State:
 
     @classmethod
     def get_edited_network(cls)-> str:
-        return st.session_state.get(cls.EDITED_DF_NETWORK, None)
+        return st.session_state.get(cls.EDITED_NETWORK, None)
 
     @classmethod
     def set_edited_network(cls, df_network : pd.DataFrame) -> None:
-        st.session_state[cls.EDITED_DF_NETWORK] = df_network
+        st.session_state[cls.EDITED_NETWORK] = df_network
 
     @classmethod
-    def get_new_column_name(cls) -> str:
-        return st.session_state.get(cls.NEW_COLUMN_INPUT_KEY, None)
+    def get_context_bool(cls) -> str:
+        return st.session_state.get(cls.CONTEXT_BOOL_KEY, None)
+
+    @classmethod
+    def get_context_option(cls) -> str:
+        return st.session_state.get(cls.CONTEXT_OPTION_KEY, None)
 
     @classmethod
     def get_resource_selector_network(cls) -> ResourceModel:
         return st.session_state.get(cls.RESOURCE_SELECTOR_NETWORK_KEY, None)
+
+    @classmethod
+    def get_resource_selector_context(cls) -> ResourceModel:
+        return st.session_state.get(cls.RESOURCE_SELECTOR_CONTEXT_KEY, None)
+
+    @classmethod
+    def get_resource_selector_ko_table(cls) -> ResourceModel:
+        return st.session_state.get(cls.RESOURCE_SELECTOR_KO_TABLE_KEY, None)
+
+    @classmethod
+    def get_resource_selector_phenotype(cls) -> ResourceModel:
+        return st.session_state.get(cls.RESOURCE_SELECTOR_PHENOTYPE_KEY, None)
+
+    @classmethod
+    def get_resource_selector_flux(cls) -> ResourceModel:
+        return st.session_state.get(cls.RESOURCE_SELECTOR_FLUX_KEY, None)
 
     @classmethod
     def get_analysis_name_user(cls) -> str:
@@ -160,30 +182,6 @@ class State:
     @classmethod
     def get_current_analysis_name(cls) -> str:
         return cls.get_current_tag_value_by_key(cls.TAG_ANALYSIS_NAME)
-
-    @classmethod
-    def set_current_twin_builder_id_parent(cls, scenario_id: str) -> None:
-        st.session_state[cls.TAG_TWIN_BUILDER_ID] = scenario_id
-
-    @classmethod
-    def get_current_twin_builder_id_parent(cls) -> str:
-        return st.session_state.get(cls.TAG_TWIN_BUILDER_ID)
-
-    @classmethod
-    def set_current_fva_scenario_id_parent(cls, scenario_id: str):
-        st.session_state[cls.TAG_TAXONOMY_ID] = scenario_id
-
-    @classmethod
-    def get_current_fva_scenario_id_parent(cls) -> str:
-        return st.session_state.get(cls.TAG_FVA_ID)
-
-    @classmethod
-    def get_current_koa_scenario_id_parent(cls) -> str:
-        return st.session_state.get(cls.TAG_KOA_ID)
-
-    @classmethod
-    def set_current_koa_scenario_id_parent(cls, scenario_id: str):
-        st.session_state[cls.TAG_KOA_ID] = scenario_id
 
     @classmethod
     def get_resource_id_network(cls) -> str:
@@ -259,21 +257,15 @@ class State:
 
     @classmethod
     def get_scenario_step_fba(cls) -> List[Scenario]:
-        scenarios_dict = cls.get_scenarios_by_step_dict().get(cls.TAG_FBA, {})
-        current_twin_id = cls.get_current_twin_builder_id_parent()
-        return scenarios_dict.get((current_twin_id), [])
+        return cls.get_scenarios_by_step_dict().get(cls.TAG_FBA, [])
 
     @classmethod
     def get_scenario_step_fva(cls) -> List[Scenario]:
-        scenarios_dict = cls.get_scenarios_by_step_dict().get(cls.TAG_FVA, {})
-        current_twin_id = cls.get_current_twin_builder_id_parent()
-        return scenarios_dict.get(current_twin_id, [])
+        return cls.get_scenarios_by_step_dict().get(cls.TAG_FVA, [])
 
     @classmethod
     def get_scenario_step_koa(cls) -> List[Scenario]:
-        scenarios_dict = cls.get_scenarios_by_step_dict().get(cls.TAG_KOA, {})
-        current_twin_id = cls.get_current_twin_builder_id_parent()
-        return scenarios_dict.get(current_twin_id, [])
+        return cls.get_scenarios_by_step_dict().get(cls.TAG_KOA, [])
 
     @classmethod
     def get_tree_menu_object(cls):
@@ -290,50 +282,3 @@ class State:
         tree_menu = cls.get_tree_menu_object()
         if tree_menu:
             tree_menu.set_selected_item(item_key)
-
-    ### Get parent id
-    # Retrieve twin inference
-    @classmethod
-    def get_parent_twin_builder_scenario_id_from_step(cls) -> str:
-        """Extract the parent twin inference scenario ID from the current step pipeline."""
-        step = cls.get_step_pipeline()
-        if step and step.startswith(cls.TAG_FBA + "_"):
-            # Extract the scenario ID from the step name like "fba_scenario_id"
-            return step.replace(cls.TAG_FBA + "_", "")
-        if step and step.startswith(cls.TAG_TAXONOMY + "_"):
-            return step.replace(cls.TAG_TAXONOMY + "_", "")
-        if step and step.startswith(cls.TAG_16S + "_"):
-            return step.replace(cls.TAG_16S + "_", "")
-        return None
-
-    @classmethod
-    def get_parent_twin_builder_scenario_from_step(cls) -> 'Scenario':
-        """Get the parent twin inference scenario from the current step pipeline."""
-        scenario_id = cls.get_parent_twin_builder_scenario_id_from_step()
-        if scenario_id:
-            return Scenario.get_by_id(scenario_id)
-        return None
-
-    @classmethod
-    def get_parent_fva_scenario_from_step(cls) -> 'Scenario':
-        """Get the parent fva scenario from the current step pipeline."""
-        scenario_id = cls.get_parent_fva_scenario_id_from_step()
-        if scenario_id:
-            return Scenario.get_by_id(scenario_id)
-        return None
-
-    @classmethod
-    def get_twin_builder_id_from_fva_scenario(cls, fva_scenario_id: str) -> str:
-        """Get the twin inference ID from a fva scenario ID."""
-        fva_scenario = Scenario.get_by_id(fva_scenario_id)
-        entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, fva_scenario.id)
-        twin_builder_id_tag = entity_tag_list.get_tags_by_key(cls.TAG_TWIN_BUILDER_ID)[0].to_simple_tag()
-        return twin_builder_id_tag.value
-
-    @classmethod
-    def get_twin_builder_id_from_koa_scenario(cls, koa_scenario_id: str) -> str:
-        """Get the twin inference ID from a KOA scenario ID."""
-        koa_scenario = Scenario.get_by_id(koa_scenario_id)
-        entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, koa_scenario.id)
-        twin_builder_id_tag = entity_tag_list.get_tags_by_key(cls.TAG_TWIN_BUILDER_ID)[0].to_simple_tag()
-        return twin_builder_id_tag.value

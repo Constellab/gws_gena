@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -9,8 +9,9 @@ from streamlit_slickgrid import (
     ExportServices,
 )
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+from gws_gena import Network, NetworkImporter, Context
 from gws_core.streamlit import StreamlitAuthenticateUser
-from gws_core import Settings, ResourceModel, ResourceOrigin, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType
+from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, Settings, ResourceModel, ResourceOrigin, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
 from gws_core.tag.entity_tag import EntityTag
@@ -189,7 +190,6 @@ def create_base_scenario_with_tags(gena_state: State, step_tag: str, title: str)
     )
 
     # Add base tags
-    scenario.add_tag(Tag(gena_state.TAG_FASTQ, gena_state.get_current_fastq_name(), is_propagable=False, auto_parse=True))
     scenario.add_tag(Tag(gena_state.TAG_BRICK, gena_state.TAG_GENA, is_propagable=False, auto_parse=True))
     scenario.add_tag(Tag(gena_state.TAG_GENA, step_tag, is_propagable=False))
     scenario.add_tag(Tag(gena_state.TAG_ANALYSIS_NAME, gena_state.get_current_analysis_name(), is_propagable=False, auto_parse=True))
@@ -197,7 +197,7 @@ def create_base_scenario_with_tags(gena_state: State, step_tag: str, title: str)
 
     return scenario
 
-def save_network(edited_df: pd.DataFrame, header_lines: List[str], gena_state: State) -> None:
+def save_network(edited_network: Network, gena_state: State) -> None:
     """
     Helper function to save network to resource.
     """
@@ -209,26 +209,9 @@ def save_network(edited_df: pd.DataFrame, header_lines: List[str], gena_state: S
     if existing_resource:
         ResourceModel.get_by_id(existing_resource.get_model_id()).delete_instance()
 
-    # Create a new file with the updated content
-    path_temp = os.path.join(os.path.abspath(os.path.dirname(__file__)), Settings.make_temp_dir())
-    full_path = os.path.join(path_temp, f"{gena_state.get_current_analysis_name()}_Network_updated.json")
-
-    # Prepare content to save
-    content_to_save = ""
-    if header_lines:
-        content_to_save = '\n'.join(header_lines) + '\n'
-    content_to_save += edited_df.to_csv(index=False, sep='\t')
-
-    # Write content to file
-    with open(full_path, 'w') as f:
-        f.write(content_to_save)
-
-    # Create File resource and save it properly using save_from_resource
-    network_file = File(full_path)
-
     # Use save_from_resource which properly handles fs_node creation
     resource_model = ResourceModel.save_from_resource(
-        network_file,
+        edited_network,
         origin=ResourceOrigin.UPLOADED,
         flagged=True
     )
@@ -270,7 +253,7 @@ def search_updated_network(gena_state: State) -> File | None:
         if common_entity_ids:
             network_resource_search = ResourceModel.select().where(
                 (ResourceModel.id.in_(common_entity_ids)) &
-                (ResourceModel.resource_typing_name.contains('File'))
+                (ResourceModel.resource_typing_name.contains('Network'))
             )
             updated_resource = network_resource_search.first()
 
@@ -281,3 +264,26 @@ def search_updated_network(gena_state: State) -> File | None:
         pass
 
     return None
+
+
+def display_network(network_model_id : str) -> None:
+    # Generate a public share link for the network resource
+    generate_link_dto = GenerateShareLinkDTO.get_1_hour_validity(
+        entity_id=network_model_id,
+        entity_type=ShareLinkEntityType.RESOURCE
+    )
+
+    share_link = ShareLinkService.get_or_create_valid_public_share_link(generate_link_dto)
+    # Display html
+    st.components.v1.iframe(share_link.get_public_link(), scrolling=True, height=500)
+
+def extract_network_and_context_from_twin(twin_resource_set_dict : dict) -> Tuple[Network, Context]:
+    # Navigate though the results and display them
+    # If the typing is network, display the network
+    # If the typing is context, display the json
+    for key, value in twin_resource_set_dict.items():
+        if value.get_typing_name() == "RESOURCE.gws_gena.Network":
+            network_resource = twin_resource_set_dict.get(key)
+        if value.get_typing_name() == "RESOURCE.gws_gena.Context":
+            context_resource = twin_resource_set_dict.get(key)
+    return network_resource, context_resource

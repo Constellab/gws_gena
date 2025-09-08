@@ -3,7 +3,7 @@ from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner
 from gws_core import Scenario, ScenarioProxy, Tag, InputTask, Scenario, ScenarioStatus, ScenarioProxy
 from gws_gena import FBA
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, extract_network_and_context_from_twin, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
 
 @st.dialog("FBA parameters")
 def dialog_fba_params(gena_state: State):
@@ -22,25 +22,24 @@ def dialog_fba_params(gena_state: State):
 
         with StreamlitAuthenticateUser():
             scenario = create_base_scenario_with_tags(gena_state, gena_state.TAG_FBA, gena_state.get_scenario_user_name(gena_state.FBA_SCENARIO_NAME_INPUT_KEY))
-            feature_scenario_id = gena_state.get_current_feature_scenario_id_parent()
-            scenario.add_tag(Tag(gena_state.TAG_TWIN_BUILDER_ID, feature_scenario_id, is_propagable=False, auto_parse=True))
+            twin_builder_id = gena_state.get_scenario_step_twin_builder()[0].id
             protocol = scenario.get_protocol()
 
             # Add fba process
             fba_process = protocol.add_process(FBA, 'fba_process',
                                                      config_params=gena_state.get_fba_config()["config"])
 
-            # Retrieve feature inference output and connect
-            scenario_proxy_fi = ScenarioProxy.from_existing_scenario(feature_scenario_id)
-            protocol_proxy_fi = scenario_proxy_fi.get_protocol()
-            feature_output = protocol_proxy_fi.get_process('feature_process').get_output('result_folder')
+            # Retrieve twin builder output and connect
+            scenario_proxy_twin = ScenarioProxy.from_existing_scenario(twin_builder_id)
+            protocol_proxy_twin = scenario_proxy_twin.get_protocol()
+            twin_output = protocol_proxy_twin.get_process('twin_process').get_output('twin')
 
-            feature_resource = protocol.add_process(InputTask, 'feature_resource', {InputTask.config_name: feature_output.get_model_id()})
-            protocol.add_connector(out_port=feature_resource >> 'resource', in_port=fba_process << 'feature_frequency_folder')
+            twin_resource = protocol.add_process(InputTask, 'twin_resource', {InputTask.config_name: twin_output.get_model_id()})
+            protocol.add_connector(out_port=twin_resource >> 'resource', in_port=fba_process << 'twin')
 
             # Add outputs
-            protocol.add_output('fba_table_output', fba_process >> 'fba_table', flag_resource=False)
-            protocol.add_output('fba_folder_output', fba_process >> 'result_folder', flag_resource=False)
+            protocol.add_output('fba_twin_output', fba_process >> 'twin', flag_resource=False)
+            protocol.add_output('fba_result_output', fba_process >> 'fba_result', flag_resource=False)
 
             scenario.add_to_queue()
             gena_state.reset_tree_analysis()
@@ -48,13 +47,6 @@ def dialog_fba_params(gena_state: State):
             st.rerun()
 
 def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
-    # Get the selected tree menu item to determine which feature inference scenario is selected
-    tree_menu = gena_state.get_tree_menu_object()
-    selected_item = tree_menu.get_selected_item()
-    if selected_item.key.startswith(gena_state.TAG_RAREFACTION):
-        feature_scenario_parent_id = gena_state.get_parent_feature_inference_scenario_from_step()
-        # save in session state
-        gena_state.set_current_feature_scenario_id_parent(feature_scenario_parent_id.id)
 
     if not selected_scenario:
         if not gena_state.get_is_standalone():
@@ -79,4 +71,17 @@ def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
         scenario_proxy = ScenarioProxy.from_existing_scenario(selected_scenario.id)
         protocol_proxy = scenario_proxy.get_protocol()
         # Display fba table
-        fba_resource = protocol_proxy.get_process('fba_process').get_output('fba_table')
+        fba_result = protocol_proxy.get_process('fba_process').get_output('fba_result').get_resources()
+
+        twin_resource_set_dict = protocol_proxy.get_process('fba_process').get_output('twin').get_resources()
+        network_resource, context_resource = extract_network_and_context_from_twin(twin_resource_set_dict)
+
+        tab_flux, tab_sv, tab_network, tab_context = st.tabs(["Flux table", "SV table", "Network", "Context"])
+        with tab_flux:
+            st.dataframe(fba_result.get("Flux table").get_data())
+        with tab_sv:
+            st.dataframe(fba_result.get("SV table").get_data())
+        with tab_network:
+            display_network(network_resource.get_model_id())
+        with tab_context:
+            st.json(context_resource.dumps())
