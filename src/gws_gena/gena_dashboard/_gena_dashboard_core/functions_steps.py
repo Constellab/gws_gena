@@ -287,3 +287,33 @@ def extract_network_and_context_from_twin(twin_resource_set_dict : dict) -> Tupl
         if value.get_typing_name() == "RESOURCE.gws_gena.Context":
             context_resource = twin_resource_set_dict.get(key)
     return network_resource, context_resource
+
+def search_context(gena_state: State):
+    """Retrieve context output from various possible processes."""
+    selected_scenario = gena_state.get_scenario_step_context()
+    if not selected_scenario:
+        return None
+    protocol_proxy = ScenarioProxy.from_existing_scenario(selected_scenario[0].id).get_protocol()
+
+    # Try context importer first
+    try:
+        if protocol_proxy.get_process('context_importer_process'):
+            return protocol_proxy.get_process('context_importer_process').get_output('target')
+    except:
+        pass
+
+    # Try context builder
+    try:
+        if protocol_proxy.get_process('context_builder_process'):
+            return protocol_proxy.get_process('context_builder_process').get_output('context')
+    except:
+        pass
+
+    # Try selected context as input
+    try:
+        if protocol_proxy.get_process('selected_context'):
+            return protocol_proxy.get_process('selected_context').get_output('resource')
+    except:
+        pass
+
+    return None

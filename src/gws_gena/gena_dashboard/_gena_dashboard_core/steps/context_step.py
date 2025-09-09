@@ -9,7 +9,7 @@ from gws_core import (
     ProtocolProxy, InputTask, ProcessProxy, ResourceModel, ScenarioStatus
 )
 from gws_gena import ContextImporter, ContextBuilder
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import create_base_scenario_with_tags, search_updated_network
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, create_base_scenario_with_tags, search_updated_network
 from gws_core.streamlit import StreamlitResourceSelect
 
 def _create_empty_context_resource(gena_state: State) -> ResourceModel:
@@ -162,38 +162,12 @@ def _render_context_setup_ui(gena_state: State) -> bool:
         return False
 
 
-def _get_context_output(protocol_proxy: ProtocolProxy) -> Optional[ResourceSet]:
-    """Retrieve context output from various possible processes."""
-    # Try context importer first
-    try:
-        if protocol_proxy.get_process('context_importer_process'):
-            return protocol_proxy.get_process('context_importer_process').get_output('target')
-    except:
-        pass
-
-    # Try context builder
-    try:
-        if protocol_proxy.get_process('context_builder_process'):
-            return protocol_proxy.get_process('context_builder_process').get_output('context')
-    except:
-        pass
-
-    # Try selected context as input
-    try:
-        if protocol_proxy.get_process('selected_context'):
-            return protocol_proxy.get_process('selected_context').get_output('resource')
-    except:
-        pass
-
-    return None
-
-
 def render_context_step(selected_scenario: Optional[Scenario], gena_state: State) -> None:
     """Main function to render the context step."""
     if not selected_scenario:
         _render_context_creation_ui(gena_state)
     else:
-        _render_context_results(selected_scenario)
+        _render_context_results(selected_scenario, gena_state)
 
 
 def _render_context_creation_ui(gena_state: State) -> None:
@@ -210,6 +184,8 @@ def _render_context_creation_ui(gena_state: State) -> None:
     # Render setup UI
     if not _render_context_setup_ui(gena_state):
         return
+
+    st.info("Please note that once you have run the context importer, you will not be able to modify the network.")
 
     # Run context importer button
     if st.button("Run context importer", icon=":material/play_arrow:", use_container_width=False):
@@ -258,17 +234,14 @@ def _render_context_creation_ui(gena_state: State) -> None:
         st.rerun()
 
 
-def _render_context_results(selected_scenario: Scenario) -> None:
+def _render_context_results(selected_scenario: Scenario, gena_state: State) -> None:
     """Render context results for a completed scenario."""
     st.markdown("##### Context Results")
 
     if selected_scenario.status != ScenarioStatus.SUCCESS:
         return
 
-    scenario_proxy = ScenarioProxy.from_existing_scenario(selected_scenario.id)
-    protocol_proxy = scenario_proxy.get_protocol()
-
-    context_output = _get_context_output(protocol_proxy)
+    context_output = search_context(gena_state)
 
     if context_output:
         st.json(context_output.dumps())

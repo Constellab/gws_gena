@@ -19,12 +19,8 @@ def dialog_twin_builder_params(gena_state: State):
             twin_process = protocol.add_process(TwinBuilder, 'twin_process')
 
             # Retrieve context output and connect
-            scenario_context_id = gena_state.get_scenario_step_context()[0].id
-            scenario_proxy_context = ScenarioProxy.from_existing_scenario(scenario_context_id)
-            protocol_proxy_context = scenario_proxy_context.get_protocol()
-            context_output = protocol_proxy_context.get_process('context_process').get_output('target')
 
-            context_resource = protocol.add_process(InputTask, 'context_resource', {InputTask.config_name: context_output.get_model_id()})
+            context_resource = protocol.add_process(InputTask, 'context_resource', {InputTask.config_name: gena_state.get_resource_id_context()})
             protocol.add_connector(out_port=context_resource >> 'resource', in_port=twin_process << 'context')
 
             network_resource = protocol.add_process(InputTask, 'network_resource', {InputTask.config_name: gena_state.get_resource_id_network()})

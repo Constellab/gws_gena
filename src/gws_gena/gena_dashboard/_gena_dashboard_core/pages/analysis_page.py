@@ -2,7 +2,7 @@ import streamlit as st
 from typing import List, Dict
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core import Tag, File, Folder, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_updated_network, get_status_emoji, get_status_prettify
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, search_updated_network, get_status_emoji, get_status_prettify
 from gws_core.streamlit import StreamlitContainers, StreamlitRouter, StreamlitTreeMenu, StreamlitTreeMenuItem
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
@@ -108,7 +108,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         else:
             key_twin_builder = gena_state.TAG_TWIN_BUILDER
         twin_builder_item = StreamlitTreeMenuItem(
-            label="Twin builder",
+            label="Twin",
             key=key_twin_builder,
             material_icon=get_step_icon(gena_state.TAG_TWIN_BUILDER, scenarios_by_step, scenario_twin_builder)
         )
@@ -116,10 +116,6 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
 
 
     if has_successful_scenario(gena_state.TAG_TWIN_BUILDER, scenarios_by_step) or gena_state.TAG_FBA in scenarios_by_step:
-
-        # Get parent scenario ID for filtering sub-steps
-        scenario_twin_id_tags = EntityTagList.find_by_entity(TagEntityType.SCENARIO, scenario.id).get_tags_by_key(gena_state.TAG_TWIN_BUILDER_ID)
-        parent_twin_id = scenario_twin_id_tags[0].to_simple_tag().value if scenario_twin_id_tags else scenario.id
 
         # 4) FBA step
         fba_scenarios = scenarios_by_step.get(gena_state.TAG_FBA, [])
@@ -256,6 +252,11 @@ def render_analysis_page(gena_state : State):
 
     # Right column - Analysis details
     with right_col:
+        #### Context
+        context_file = search_context(gena_state)
+        if context_file:
+            gena_state.set_resource_id_context(context_file.get_model_id())
+
         # Add vertical line to separate the two columns
         style = """
         [CLASS_NAME] {

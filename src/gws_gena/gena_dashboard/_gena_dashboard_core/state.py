@@ -38,6 +38,7 @@ class State:
     STEP_PIPELINE_KEY = "step_pipeline"
     SELECTED_FOLDER_ID_KEY = "selected_folder_id"
     RESOURCE_ID_NETWORK_KEY = "resource_id_network"
+    RESOURCE_ID_CONTEXT_KEY = "resource_id_context"
     TAG_NETWORK_UPDATED = "network_updated"
     SCENARIOS_BY_STEP_KEY = "scenarios_by_step"
     SELECTED_ANNOTATION_TABLE_KEY = "selected_annotation_table"
@@ -190,6 +191,14 @@ class State:
     @classmethod
     def set_resource_id_network(cls, resource_id: str):
         st.session_state[cls.RESOURCE_ID_NETWORK_KEY] = resource_id
+
+    @classmethod
+    def get_resource_id_context(cls) -> str:
+        return st.session_state.get(cls.RESOURCE_ID_CONTEXT_KEY)
+
+    @classmethod
+    def set_resource_id_context(cls, resource_id: str):
+        st.session_state[cls.RESOURCE_ID_CONTEXT_KEY] = resource_id
 
     @classmethod
     def set_step_pipeline(cls, step_name: str):
