@@ -213,7 +213,7 @@ def render_analysis_page(gena_state : State):
     if network_updated:
         gena_state.set_resource_id_network(network_updated.get_model_id())
     else : # Get the table from initial scenario
-        network_output : File = protocol_proxy.get_process('network_importer_process').get_output('target')
+        network_output : File = protocol_proxy.get_process('network_process_output').get_input('resource')
         gena_state.set_resource_id_network(network_output.get_model_id())
 
     # Left column - Analysis workflow tree

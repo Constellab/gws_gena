@@ -44,6 +44,7 @@ from .network.network_file import NetworkFile
 from .network.network_task.network_exporter import NetworkExporter
 from .network.network_task.network_importer import NetworkImporter
 from .network.network_task.network_merger import NetworkMerger
+from .network.network_task.network_loader import LoadBiGGModels
 from .network.reaction.helper.reaction_adder_helper import ReactionAdderHelper
 from .network.reaction.helper.reaction_remover_helper import \
     ReactionRemoverHelper

@@ -44,6 +44,7 @@ class State:
     SELECTED_ANNOTATION_TABLE_KEY = "selected_annotation_table"
     CONTEXT_BOOL_KEY = "context_bool"
     CONTEXT_OPTION_KEY = "context_option"
+    NETWORK_OPTION_KEY = "network_option"
 
     TREE_DEFAULT_ITEM_KEY = "tree_default_item"
 
@@ -65,6 +66,9 @@ class State:
 
     # Config keys
     NETWORK_IMPORTER_CONFIG_KEY = "network_importer_config"
+    LOAD_BIGG_MODEL_CONFIG_KEY = "load_bigg_model_config"
+    GAP_FILLER_CONFIG_KEY = "gap_filler_config"
+    ISOLATE_FINDER_CONFIG_KEY = "isolate_finder_config"
     TWIN_BUILDER_CONFIG_KEY = "twin_builder_config"
     FBA_CONFIG_KEY = "fba_config"
     FVA_CONFIG_KEY = "fva_config"
@@ -121,6 +125,10 @@ class State:
     @classmethod
     def get_context_option(cls) -> str:
         return st.session_state.get(cls.CONTEXT_OPTION_KEY, None)
+
+    @classmethod
+    def get_network_option(cls) -> str:
+        return st.session_state.get(cls.NETWORK_OPTION_KEY, None)
 
     @classmethod
     def get_resource_selector_network(cls) -> ResourceModel:
@@ -225,6 +233,18 @@ class State:
     @classmethod
     def get_network_importer_config(cls) -> Dict:
         return st.session_state.get(cls.NETWORK_IMPORTER_CONFIG_KEY, {})
+
+    @classmethod
+    def get_load_bigg_model_config(cls) -> Dict:
+        return st.session_state.get(cls.LOAD_BIGG_MODEL_CONFIG_KEY, {})
+
+    @classmethod
+    def get_gap_filler_config(cls) -> Dict:
+        return st.session_state.get(cls.GAP_FILLER_CONFIG_KEY, {})
+
+    @classmethod
+    def get_isolate_finder_config(cls) -> Dict:
+        return st.session_state.get(cls.ISOLATE_FINDER_CONFIG_KEY, {})
 
     @classmethod
     def get_twin_builder_config(cls) -> Dict:

@@ -1,33 +1,169 @@
 import streamlit as st
+from typing import Type
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core.streamlit import StreamlitAuthenticateUser
-from gws_core import Scenario, ScenarioProxy, ProtocolProxy, File, TableImporter, Scenario, ScenarioProxy, ProtocolProxy
+from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitMenuButton, StreamlitMenuButtonItem, StreamlitContainers
+from gws_core import Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, search_updated_network, save_network
-from gws_gena import Network
+from gws_gena import Network, GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, IsolateFinder, NetworkMergem, TransporterAdder
+from gws_core.task.task import Task
+
+
+def _run_network_editing_task(
+    task_class: Type[Task],
+    task_name: str,
+    gena_state: State,
+    config_session_key: str,
+    config_getter_method: str
+) -> None:
+    """Generic function to run network editing tasks."""
+    form_config = StreamlitTaskRunner(task_class)
+    form_config.generate_config_form_without_run(
+        session_state_key=config_session_key,
+        default_config_values=task_class.config_specs.get_default_values(),
+        is_default_config_valid=task_class.config_specs.mandatory_values_are_set(
+            task_class.config_specs.get_default_values()))
+
+    if st.button(f"Run {task_name}", use_container_width=True, icon=":material/play_arrow:", key=f"button_{task_name.lower().replace(' ', '_')}"):
+        # Get config using the provided getter method
+        config_data = getattr(gena_state, config_getter_method)()
+
+        if not config_data["is_valid"]:
+            st.warning("Please fill all the mandatory fields.")
+            return
+
+        with st.spinner(f"Running {task_name} ..."):
+            with StreamlitAuthenticateUser():
+                # Add the task to the scenario "Network"
+                scenario = ScenarioProxy.from_existing_scenario(gena_state.get_scenario_step_network()[0].id)
+                protocol = scenario.get_protocol()
+                number_processes = len(protocol.get_model().processes)
+                instance_name = f"{task_name.lower().replace(' ', '_')}_process_{number_processes}"
+
+                process = protocol.add_process(task_class, instance_name, config_params=config_data["config"])
+
+                # Retrieve the last output network and connect
+                network_inport = protocol.get_process('network_process_output').get_first_inport()
+                process_instance_name = network_inport.process_instance_name
+
+                # Find the connector to the output
+                protocol_model = protocol.get_model()
+                connector = None
+                for cnt in protocol_model.connectors:
+                    if cnt.right_process.instance_name == process_instance_name:
+                        connector = cnt
+                        break
+
+                # Delete the output process
+                protocol.delete_process(process_instance_name)
+
+                # Connect the previous process to the new task
+                protocol.add_connector(
+                    out_port=protocol.get_process(connector.left_process.instance_name) >> connector.left_port_name,
+                    in_port=process << 'network'
+                )
+
+                # Add new output
+                protocol.add_output('network_process_output', process >> 'network', flag_resource=False)
+                scenario.add_to_queue()
+
+                # Wait for the task to be completed
+                ScenarioWaiterBasic(scenario.get_model_id()).wait_until_finished(refresh_interval=10, refresh_interval_max_count=100)
+                protocol.refresh()
+
+                # Get the updated network and save it
+                new_network = protocol.get_process('network_process_output').get_input('resource')
+                gena_state.set_edited_network(new_network)
+                save_network(gena_state.get_edited_network(), gena_state)
+
+        st.rerun()
+
+
+@st.dialog("Run Gap Filler")
+def run_gap_filler(gena_state: State):
+    """Dialog for running Gap Filler task."""
+    _run_network_editing_task(
+        task_class=GapFiller,
+        task_name="Gap Filler",
+        gena_state=gena_state,
+        config_session_key=gena_state.GAP_FILLER_CONFIG_KEY,
+        config_getter_method="get_gap_filler_config"
+    )
+
+
+@st.dialog("Run Isolate Finder")
+def run_isolate_finder(gena_state: State):
+    """Dialog for running Isolate Finder task."""
+    _run_network_editing_task(
+        task_class=IsolateFinder,
+        task_name="Isolate Finder",
+        gena_state=gena_state,
+        config_session_key=gena_state.ISOLATE_FINDER_CONFIG_KEY,
+        config_getter_method="get_isolate_finder_config"
+    )
+
 def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
-    # Check if there's an updated network first
-    file_network = search_updated_network(gena_state)
-
-    # If no updated network found, use the original scenario output
-    if file_network is None:
-        scenario_proxy = ScenarioProxy.from_existing_scenario(selected_scenario.id)
-        protocol_proxy: ProtocolProxy = scenario_proxy.get_protocol()
-        file_network: Network = protocol_proxy.get_process('network_importer_process').get_output('target')
-
+    file_network_id = gena_state.get_resource_id_network()
 
     if not gena_state.get_scenario_step_context():
         if not gena_state.get_is_standalone():
-            st.markdown("### Edit network")
-            gena_state.set_edited_network(file_network)
-            display_network(file_network.get_model_id())
+            title_col, button_col = StreamlitContainers.columns_with_fit_content('container-column', cols=[1, 'fit-content'],
+                vertical_align_items='center')
+            with title_col:
+                st.markdown("### Edit network")
+            with button_col:
+
+                # Add a button menu to edit the network
+                button_menu = StreamlitMenuButton()
+
+                # Adder
+                buttons_adder = StreamlitMenuButtonItem(label='Adder', material_icon='add')
+                add_reaction_button = StreamlitMenuButtonItem(label='Add reaction', material_icon='add',
+                                                    on_click=lambda: st.success('Button 1 clicked'))
+                add_transporter_button = StreamlitMenuButtonItem(label='Add transporter', material_icon='add',
+                                                    on_click=lambda: st.success('Button 2 clicked'))
+                buttons_adder.add_children([add_reaction_button, add_transporter_button])
+                button_menu.add_button_item(buttons_adder)
+
+                # Remover
+                buttons_remover = StreamlitMenuButtonItem(label='Remover', material_icon='remove')
+                remove_reaction_button = StreamlitMenuButtonItem(label='Remove reaction', material_icon='remove',
+                                                                  on_click=lambda: st.success('Button 2 clicked'))
+                remove_orphan_button = StreamlitMenuButtonItem(label='Remove orphan', material_icon='remove',
+                                                                  on_click=lambda: st.success('Button 2 clicked'))
+                buttons_remover.add_children([remove_reaction_button, remove_orphan_button])
+                button_menu.add_button_item(buttons_remover)
+
+                # Merge
+                buttons_merge = StreamlitMenuButtonItem(label='Merge')
+                child_merge_merger= StreamlitMenuButtonItem(
+                    label='Network merger', material_icon='check', on_click=lambda: st.success('Child 1 clicked'))
+                child_merge_mergem = StreamlitMenuButtonItem(
+                    label='Network mergem', material_icon='delete', on_click=lambda: st.error('Child 2 clicked'))
+                buttons_merge.add_children([child_merge_merger, child_merge_mergem])
+                button_menu.add_button_item(buttons_merge)
+
+                # Gap filler
+                buttons_gap_filler = StreamlitMenuButtonItem(label='Gap filler', material_icon='auto_fix_high', on_click=lambda state=gena_state: run_gap_filler(state))
+                button_menu.add_button_item(buttons_gap_filler)
+
+                # Isolate finder
+                buttons_isolate_finder = StreamlitMenuButtonItem(label='Isolate finder', material_icon='search', on_click=lambda state=gena_state: run_isolate_finder(state))
+                button_menu.add_button_item(buttons_isolate_finder)
+
+                button_menu.render()
+
+            st.info("ℹ️ You can edit the network before running Context. Once Context is run, the network will be locked.")
+
+            gena_state.set_edited_network(ResourceModel.get_by_id(file_network_id).get_resource())
+            display_network(file_network_id)
 
 
         else:
             st.markdown("### View network")
-            display_network(file_network.get_model_id())
+            display_network(file_network_id)
     else:
         st.markdown("### View network")
-        display_network(file_network.get_model_id())
+        display_network(file_network_id)
 
     # Save button only appear if Context task have not been created
     if not gena_state.get_scenario_step_context():
