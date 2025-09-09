@@ -69,6 +69,12 @@ class State:
     LOAD_BIGG_MODEL_CONFIG_KEY = "load_bigg_model_config"
     GAP_FILLER_CONFIG_KEY = "gap_filler_config"
     ISOLATE_FINDER_CONFIG_KEY = "isolate_finder_config"
+    NETWORK_MERGER_CONFIG_KEY = "network_merger_config"
+    REACTION_ADDER_CONFIG_KEY = "reaction_adder_config"
+    TRANSPORTER_ADDER_CONFIG_KEY = "transporter_adder_config"
+    REACTION_REMOVER_CONFIG_KEY = "reaction_remover_config"
+    ORPHAN_REMOVER_CONFIG_KEY = "orphan_remover_config"
+    NETWORK_MERGEM_CONFIG_KEY = "network_mergem_config"
     TWIN_BUILDER_CONFIG_KEY = "twin_builder_config"
     FBA_CONFIG_KEY = "fba_config"
     FVA_CONFIG_KEY = "fva_config"
@@ -241,6 +247,30 @@ class State:
     @classmethod
     def get_gap_filler_config(cls) -> Dict:
         return st.session_state.get(cls.GAP_FILLER_CONFIG_KEY, {})
+
+    @classmethod
+    def get_network_merger_config(cls) -> Dict:
+        return st.session_state.get(cls.NETWORK_MERGER_CONFIG_KEY, {})
+
+    @classmethod
+    def get_network_mergem_config(cls) -> Dict:
+        return st.session_state.get(cls.NETWORK_MERGEM_CONFIG_KEY, {})
+
+    @classmethod
+    def get_reaction_adder_config(cls) -> Dict:
+        return st.session_state.get(cls.REACTION_ADDER_CONFIG_KEY, {})
+
+    @classmethod
+    def get_transporter_adder_config(cls) -> Dict:
+        return st.session_state.get(cls.TRANSPORTER_ADDER_CONFIG_KEY, {})
+
+    @classmethod
+    def get_reaction_remover_config(cls) -> Dict:
+        return st.session_state.get(cls.REACTION_REMOVER_CONFIG_KEY, {})
+
+    @classmethod
+    def get_orphan_remover_config(cls) -> Dict:
+        return st.session_state.get(cls.ORPHAN_REMOVER_CONFIG_KEY, {})
 
     @classmethod
     def get_isolate_finder_config(cls) -> Dict:

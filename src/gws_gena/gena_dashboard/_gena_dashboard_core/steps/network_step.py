@@ -77,6 +77,71 @@ def _run_network_editing_task(
 
         st.rerun()
 
+@st.dialog("Run Reaction Adder")
+def run_reaction_adder(gena_state: State):
+    """Dialog for running Reaction Adder task."""
+    _run_network_editing_task(
+        task_class=ReactionAdder,
+        task_name="Reaction Adder",
+        gena_state=gena_state,
+        config_session_key=gena_state.REACTION_ADDER_CONFIG_KEY,
+        config_getter_method="get_reaction_adder_config"
+    )
+
+@st.dialog("Run Transporter Adder")
+def run_transporter_adder(gena_state: State):
+    """Dialog for running Transporter Adder task."""
+    _run_network_editing_task(
+        task_class=TransporterAdder,
+        task_name="Transporter Adder",
+        gena_state=gena_state,
+        config_session_key=gena_state.TRANSPORTER_ADDER_CONFIG_KEY,
+        config_getter_method="get_transporter_adder_config"
+    )
+
+@st.dialog("Run Reaction Remover")
+def run_reaction_remover(gena_state: State):
+    """Dialog for running Reaction Remover task."""
+    _run_network_editing_task(
+        task_class=ReactionRemover,
+        task_name="Reaction Remover",
+        gena_state=gena_state,
+        config_session_key=gena_state.REACTION_REMOVER_CONFIG_KEY,
+        config_getter_method="get_reaction_remover_config"
+    )
+
+@st.dialog("Run Orphan Remover")
+def run_orphan_remover(gena_state: State):
+    """Dialog for running Orphan Remover task."""
+    _run_network_editing_task(
+        task_class=OrphanRemover,
+        task_name="Orphan Remover",
+        gena_state=gena_state,
+        config_session_key=gena_state.ORPHAN_REMOVER_CONFIG_KEY,
+        config_getter_method="get_orphan_remover_config"
+    )
+
+@st.dialog("Run Network Mergem")
+def run_network_mergem(gena_state: State):
+    """Dialog for running Network Mergem task."""
+    _run_network_editing_task(
+        task_class=NetworkMergem,
+        task_name="Network Mergem",
+        gena_state=gena_state,
+        config_session_key=gena_state.NETWORK_MERGEM_CONFIG_KEY,
+        config_getter_method="get_network_mergem_config"
+    )
+
+@st.dialog("Run Network Merger")
+def run_network_merger(gena_state: State):
+    """Dialog for running Network Merger task."""
+    _run_network_editing_task(
+        task_class=NetworkMerger,
+        task_name="Network Merger",
+        gena_state=gena_state,
+        config_session_key=gena_state.NETWORK_MERGER_CONFIG_KEY,
+        config_getter_method="get_network_merger_config"
+    )
 
 @st.dialog("Run Gap Filler")
 def run_gap_filler(gena_state: State):
@@ -118,27 +183,27 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
                 # Adder
                 buttons_adder = StreamlitMenuButtonItem(label='Adder', material_icon='add')
                 add_reaction_button = StreamlitMenuButtonItem(label='Add reaction', material_icon='add',
-                                                    on_click=lambda: st.success('Button 1 clicked'))
+                                                    on_click=lambda state=gena_state: run_reaction_adder(state))
                 add_transporter_button = StreamlitMenuButtonItem(label='Add transporter', material_icon='add',
-                                                    on_click=lambda: st.success('Button 2 clicked'))
+                                                    on_click=lambda state=gena_state: run_transporter_adder(state))
                 buttons_adder.add_children([add_reaction_button, add_transporter_button])
                 button_menu.add_button_item(buttons_adder)
 
                 # Remover
                 buttons_remover = StreamlitMenuButtonItem(label='Remover', material_icon='remove')
                 remove_reaction_button = StreamlitMenuButtonItem(label='Remove reaction', material_icon='remove',
-                                                                  on_click=lambda: st.success('Button 2 clicked'))
+                                                                  on_click=lambda state=gena_state: run_reaction_remover(state))
                 remove_orphan_button = StreamlitMenuButtonItem(label='Remove orphan', material_icon='remove',
-                                                                  on_click=lambda: st.success('Button 2 clicked'))
+                                                                  on_click=lambda state=gena_state: run_orphan_remover(state))
                 buttons_remover.add_children([remove_reaction_button, remove_orphan_button])
                 button_menu.add_button_item(buttons_remover)
 
                 # Merge
-                buttons_merge = StreamlitMenuButtonItem(label='Merge')
+                buttons_merge = StreamlitMenuButtonItem(label='Merge', material_icon='merge')
                 child_merge_merger= StreamlitMenuButtonItem(
-                    label='Network merger', material_icon='check', on_click=lambda: st.success('Child 1 clicked'))
+                    label='Network merger', material_icon='merge', on_click=lambda state=gena_state: run_network_merger(state))
                 child_merge_mergem = StreamlitMenuButtonItem(
-                    label='Network mergem', material_icon='delete', on_click=lambda: st.error('Child 2 clicked'))
+                    label='Network mergem', material_icon='merge', on_click=lambda state=gena_state: run_network_mergem(state))
                 buttons_merge.add_children([child_merge_merger, child_merge_mergem])
                 button_menu.add_button_item(buttons_merge)
 
