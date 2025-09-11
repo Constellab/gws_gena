@@ -37,7 +37,6 @@ def dialog_twin_builder_params(gena_state: State):
 def render_twin_builder_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
-            st.info("ℹ️ Once Twin Builder is run, the context will be locked.")
 
             # On click, open a dialog to allow the user to select params of twin builder
             st.button("Run new Twin Builder", icon=":material/play_arrow:", use_container_width=False,
