@@ -1,7 +1,5 @@
-import os
 from typing import List, Dict, Tuple
 import streamlit as st
-import numpy as np
 import pandas as pd
 from streamlit_slickgrid import (
     slickgrid,
@@ -9,9 +7,8 @@ from streamlit_slickgrid import (
     ExportServices,
 )
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_gena import Network, NetworkImporter, Context
-from gws_core.streamlit import StreamlitAuthenticateUser
-from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, Settings, ResourceModel, ResourceOrigin, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType
+from gws_gena import Network, Context
+from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, ResourceModel, ResourceOrigin, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
 from gws_core.tag.entity_tag import EntityTag

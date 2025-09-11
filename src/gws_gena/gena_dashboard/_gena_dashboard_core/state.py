@@ -44,7 +44,6 @@ class State:
     RESOURCE_ID_CONTEXT_KEY = "resource_id_context"
     TAG_NETWORK_UPDATED = "network_updated"
     SCENARIOS_BY_STEP_KEY = "scenarios_by_step"
-    SELECTED_ANNOTATION_TABLE_KEY = "selected_annotation_table"
     CONTEXT_BOOL_KEY = "context_bool"
     CONTEXT_OPTION_KEY = "context_option"
     NETWORK_OPTION_KEY = "network_option"
@@ -205,12 +204,7 @@ class State:
     def get_selected_analysis(cls) -> Scenario:
         return st.session_state.get(cls.SELECTED_ANALYSIS_KEY)
 
-    @classmethod
-    def get_selected_annotation_table(cls) -> ResourceModel:
-        return st.session_state.get(cls.SELECTED_ANNOTATION_TABLE_KEY)
-
     # Infos of the network scenario
-
     @classmethod
     def get_current_tag_value_by_key(cls, key: str) -> str:
         network_scenario : Scenario = cls.get_selected_analysis()
@@ -315,7 +309,6 @@ class State:
     @classmethod
     def get_fva_config(cls) -> Dict:
         return st.session_state.get(cls.FVA_CONFIG_KEY, {})
-
 
     @classmethod
     def get_koa_config(cls) -> Dict:

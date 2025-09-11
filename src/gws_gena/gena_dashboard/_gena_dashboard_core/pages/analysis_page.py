@@ -1,7 +1,7 @@
 import streamlit as st
 from typing import List, Dict
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core import Tag, File, Folder, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
+from gws_core import Tag, File, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, search_updated_network, get_status_emoji, get_status_prettify
 from gws_core.streamlit import StreamlitContainers, StreamlitRouter, StreamlitTreeMenu, StreamlitTreeMenuItem
 from gws_core.tag.tag_entity_type import TagEntityType

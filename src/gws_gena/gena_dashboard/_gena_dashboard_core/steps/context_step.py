@@ -1,12 +1,11 @@
 import os
 import json
 import streamlit as st
-from typing import Optional, Tuple
-
+from typing import Optional
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core import (
-    ResourceOrigin, File, Settings, ResourceSet, Scenario, ScenarioProxy,
-    ProtocolProxy, InputTask, ProcessProxy, ResourceModel, ScenarioStatus
+    ResourceOrigin, File, Settings, Scenario,
+    ProtocolProxy, InputTask, ResourceModel, ScenarioStatus
 )
 from gws_gena import ContextImporter, ContextBuilder
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, create_base_scenario_with_tags, search_updated_network

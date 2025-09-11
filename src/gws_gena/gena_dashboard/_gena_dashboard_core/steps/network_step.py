@@ -1,10 +1,10 @@
 import streamlit as st
-from typing import Type, Dict, Optional, List
+from typing import Type, Dict, Optional
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitMenuButton, StreamlitMenuButtonItem, StreamlitContainers, StreamlitResourceSelect
 from gws_core import ScenarioStatus, Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, search_updated_network, save_network
-from gws_gena import Network, GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, IsolateFinder, NetworkMergem, TransporterAdder
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, save_network
+from gws_gena import GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, NetworkMergem, TransporterAdder
 from gws_core.task.task import Task
 
 

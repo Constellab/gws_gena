@@ -1,7 +1,7 @@
 import streamlit as st
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner
-from gws_core import Scenario, ScenarioProxy, Tag, InputTask, Scenario, ScenarioStatus, ScenarioProxy
+from gws_core import Scenario, ScenarioProxy, InputTask, Scenario, ScenarioStatus, ScenarioProxy
 from gws_gena import FBA
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, extract_network_and_context_from_twin, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
 
