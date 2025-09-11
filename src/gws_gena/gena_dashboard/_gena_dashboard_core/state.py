@@ -33,6 +33,7 @@ class State:
     FVA_SCENARIO_NAME_INPUT_KEY = "fva_scenario_name_input"
     KOA_SCENARIO_NAME_INPUT_KEY = "koa_scenario_name_input"
 
+
     SELECTED_SCENARIO_KEY = "selected_scenario"
     SELECTED_ANALYSIS_KEY = "selected_analysis"
     STEP_PIPELINE_KEY = "step_pipeline"
@@ -58,6 +59,11 @@ class State:
     RESOURCE_SELECTOR_KO_TABLE_KEY = "resource_selector_ko_table"
     RESOURCE_SELECTOR_PHENOTYPE_KEY = "resource_selector_phenotype"
     RESOURCE_SELECTOR_FLUX_KEY = "resource_selector_flux"
+    REACTION_ADDER_TABLE_SELECTOR_KEY = "reaction_adder_table_selector"
+    REACTION_REMOVER_TABLE_SELECTOR_KEY = "reaction_remover_table_selector"
+    TRANSPORTER_TABLE_SELECTOR_KEY = "transporter_table_selector"
+    NETWORK_MERGEM_SELECTOR_KEY = "network_mergem_selector"
+    NETWORK_MERGER_SELECTOR_KEY = "network_merger_selector"
     ANALYSIS_NAME_USER = "analysis_name_user"
 
     # Tree
@@ -68,7 +74,6 @@ class State:
     NETWORK_IMPORTER_CONFIG_KEY = "network_importer_config"
     LOAD_BIGG_MODEL_CONFIG_KEY = "load_bigg_model_config"
     GAP_FILLER_CONFIG_KEY = "gap_filler_config"
-    ISOLATE_FINDER_CONFIG_KEY = "isolate_finder_config"
     NETWORK_MERGER_CONFIG_KEY = "network_merger_config"
     REACTION_ADDER_CONFIG_KEY = "reaction_adder_config"
     TRANSPORTER_ADDER_CONFIG_KEY = "transporter_adder_config"
@@ -155,6 +160,26 @@ class State:
     @classmethod
     def get_resource_selector_flux(cls) -> ResourceModel:
         return st.session_state.get(cls.RESOURCE_SELECTOR_FLUX_KEY, None)
+
+    @classmethod
+    def get_reaction_adder_table_selector(cls) -> ResourceModel:
+        return st.session_state.get(cls.REACTION_ADDER_TABLE_SELECTOR_KEY, None)
+
+    @classmethod
+    def get_reaction_remover_table_selector(cls) -> ResourceModel:
+        return st.session_state.get(cls.REACTION_REMOVER_TABLE_SELECTOR_KEY, None)
+
+    @classmethod
+    def get_transporter_table_selector(cls) -> ResourceModel:
+        return st.session_state.get(cls.TRANSPORTER_TABLE_SELECTOR_KEY, None)
+
+    @classmethod
+    def get_network_mergem_selector(cls) -> ResourceModel:
+        return st.session_state.get(cls.NETWORK_MERGEM_SELECTOR_KEY, None)
+
+    @classmethod
+    def get_network_merger_selector(cls) -> ResourceModel:
+        return st.session_state.get(cls.NETWORK_MERGER_SELECTOR_KEY, None)
 
     @classmethod
     def get_analysis_name_user(cls) -> str:
@@ -271,10 +296,6 @@ class State:
     @classmethod
     def get_orphan_remover_config(cls) -> Dict:
         return st.session_state.get(cls.ORPHAN_REMOVER_CONFIG_KEY, {})
-
-    @classmethod
-    def get_isolate_finder_config(cls) -> Dict:
-        return st.session_state.get(cls.ISOLATE_FINDER_CONFIG_KEY, {})
 
     @classmethod
     def get_twin_builder_config(cls) -> Dict:
