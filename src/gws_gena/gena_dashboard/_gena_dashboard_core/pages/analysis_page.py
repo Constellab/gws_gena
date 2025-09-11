@@ -14,6 +14,7 @@ from gws_gena.gena_dashboard._gena_dashboard_core.steps.twin_builder_step import
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.fba_step import render_fba_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.fva_step import render_fva_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.koa_step import render_koa_step
+from gws_gena.gena_dashboard._gena_dashboard_core.steps.twin_reducer_step import render_twin_reducer_step
 
 
 # Check if steps are completed (have successful scenarios)
@@ -114,9 +115,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         )
         button_menu.add_item(twin_builder_item)
 
-
-    if has_successful_scenario(gena_state.TAG_TWIN_BUILDER, scenarios_by_step) or gena_state.TAG_FBA in scenarios_by_step:
-
+    if has_successful_scenario(gena_state.TAG_TWIN_BUILDER, scenarios_by_step):
         # 4) FBA step
         fba_scenarios = scenarios_by_step.get(gena_state.TAG_FBA, [])
         fba_item = StreamlitTreeMenuItem(
@@ -164,6 +163,22 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
             )
             koa_item.add_children([koa_scenario_item])
         button_menu.add_item(koa_item)
+
+        # 4) Twin Reducer - only if Twin Builder is successful
+        twin_reducer_scenarios = scenarios_by_step.get(gena_state.TAG_TWIN_REDUCER, [])
+        twin_reducer_item = StreamlitTreeMenuItem(
+            label="Twin Reducer",
+            key=f"{gena_state.TAG_TWIN_REDUCER}",
+            material_icon=get_step_icon(gena_state.TAG_TWIN_REDUCER, scenarios_by_step, twin_reducer_scenarios)
+        )
+        for twin_reducer_scenario in twin_reducer_scenarios:
+            twin_reducer_scenario_item = StreamlitTreeMenuItem(
+                label=twin_reducer_scenario.get_short_name(),
+                key=twin_reducer_scenario.id,
+                material_icon='description'
+            )
+            twin_reducer_item.add_children([twin_reducer_scenario_item])
+        button_menu.add_item(twin_reducer_item)
 
     return button_menu, key_default_item
 
@@ -297,6 +312,8 @@ def render_analysis_page(gena_state : State):
                 render_context_step(selected_scenario, gena_state)
             elif gena_state.get_step_pipeline() == gena_state.TAG_TWIN_BUILDER:
                 render_twin_builder_step(selected_scenario, gena_state)
+            elif gena_state.get_step_pipeline().startswith(gena_state.TAG_TWIN_REDUCER):
+                render_twin_reducer_step(selected_scenario, gena_state)
             elif gena_state.get_step_pipeline().startswith(gena_state.TAG_FBA):
                 render_fba_step(selected_scenario, gena_state)
             elif gena_state.get_step_pipeline().startswith(gena_state.TAG_FVA):

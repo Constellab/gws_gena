@@ -72,6 +72,7 @@ def render_first_page(gena_state : State):
                 (gena_state.TAG_FBA, "fba"),
                 (gena_state.TAG_FVA, "fva"),
                 (gena_state.TAG_KOA, "koa"),
+                (gena_state.TAG_TWIN_REDUCER, "twin_reducer"),
             ]
 
             for tag_value, field_name in step_types:
@@ -88,7 +89,7 @@ def render_first_page(gena_state : State):
                     row_data[field_name] = ""
         else:
             # Initialize empty status for other steps when no pipeline ID
-            step_fields = ["context", "twin_builder", "fba", "fva", "koa"]
+            step_fields = ["context", "twin_builder", "fba", "fva", "koa", "twin_reducer"]
             for field in step_fields:
                 row_data[field] = ""
 
@@ -168,6 +169,15 @@ def render_first_page(gena_state : State):
                 "filterable": True,
                 "width": 60,
             },
+            {
+                "id": "twin_reducer",
+                "name": "Twin Reducer",
+                "field": "twin_reducer",
+                "sortable": True,
+                "type": FieldType.string,
+                "filterable": True,
+                "width": 80,
+            }
         ]
 
         options = {
