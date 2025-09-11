@@ -2,7 +2,7 @@ import streamlit as st
 from typing import List, Dict
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core import Tag, File, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, search_updated_network, get_status_emoji, get_status_prettify
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, search_updated_network, get_status_emoji, get_status_prettify, build_scenarios_by_step_dict
 from gws_core.streamlit import StreamlitContainers, StreamlitRouter, StreamlitTreeMenu, StreamlitTreeMenuItem
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
@@ -36,27 +36,8 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
     """Build the tree menu for analysis workflow steps"""
     button_menu = StreamlitTreeMenu(key=gena_state.TREE_ANALYSIS_KEY)
 
-    gena_pipeline_id_parsed = Tag.parse_tag(gena_pipeline_id)
-
-    # Get all scenarios for this analysis, we retrieve all the other thanks to the id gena pipeline id
-    search_scenario_builder = ScenarioSearchBuilder() \
-        .add_tag_filter(Tag(key=gena_state.TAG_GENA_PIPELINE_ID, value=gena_pipeline_id_parsed, auto_parse=True)) \
-        .add_is_archived_filter(False)
-
-    all_scenarios: List[Scenario] = search_scenario_builder.search_all()
-
-    # Group scenarios by step type with parent relationships
-    scenarios_by_step = {}
-    for scenario in all_scenarios:
-        entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, scenario.id)
-        tag_step_name = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA)[0].to_simple_tag()
-        step_name = tag_step_name.value
-
-        # These steps don't have parent dependencies
-        if step_name not in scenarios_by_step:
-            scenarios_by_step[step_name] = []
-        scenarios_by_step[step_name].append(scenario)
-
+    # Build scenarios_by_step dictionary using helper function
+    scenarios_by_step = build_scenarios_by_step_dict(gena_pipeline_id, gena_state)
     gena_state.set_scenarios_by_step_dict(scenarios_by_step)
 
     # 1) Network

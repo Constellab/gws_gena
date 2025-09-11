@@ -8,7 +8,7 @@ from streamlit_slickgrid import (
 )
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_gena import Network, Context
-from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, ResourceModel, ResourceOrigin, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType
+from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, ResourceModel, ResourceOrigin, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType, ScenarioSearchBuilder
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
 from gws_core.tag.entity_tag import EntityTag
@@ -314,3 +314,36 @@ def search_context(gena_state: State):
         pass
 
     return None
+
+def build_scenarios_by_step_dict(gena_pipeline_id: str, gena_state: State) -> Dict[str, List[Scenario]]:
+    """
+    Build scenarios_by_step dictionary for a given gena_pipeline_id.
+    
+    Args:
+        gena_pipeline_id: The pipeline ID to search for scenarios
+        gena_state: State object containing tag constants
+        
+    Returns:
+        Dictionary mapping step names to lists of scenarios
+    """
+    gena_pipeline_id_parsed = Tag.parse_tag(gena_pipeline_id)
+
+    # Get all scenarios for this analysis
+    search_scenario_builder = ScenarioSearchBuilder() \
+        .add_tag_filter(Tag(key=gena_state.TAG_GENA_PIPELINE_ID, value=gena_pipeline_id_parsed, auto_parse=True)) \
+        .add_is_archived_filter(False)
+
+    all_scenarios: List[Scenario] = search_scenario_builder.search_all()
+
+    # Group scenarios by step type
+    scenarios_by_step = {}
+    for scenario in all_scenarios:
+        entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, scenario.id)
+        tag_step_name = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA)[0].to_simple_tag()
+        step_name = tag_step_name.value
+
+        if step_name not in scenarios_by_step:
+            scenarios_by_step[step_name] = []
+        scenarios_by_step[step_name].append(scenario)
+
+    return scenarios_by_step
