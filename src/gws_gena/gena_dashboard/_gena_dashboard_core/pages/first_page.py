@@ -199,6 +199,50 @@ def render_first_page(gena_state : State):
 
         if out is not None:
             row_id, col = out
+            # Parse the table_data to find the scenario with the matching id
+            dict_id = next((entry for entry in table_data if entry["id"] == row_id), None)
+            # Parse the dict_id and keep the n key where n is the number given by the col variable
+            n = 0
+            for key, value in dict_id.items():
+                if n == col+1:# because first column is the id (not displayed)
+                    if value != "":
+                        selected_scenario = next((s for s in list_scenario_user if s.id == row_id), None)
+                        gena_state.set_selected_analysis(selected_scenario)
+                        # Get analysis name from scenario tag
+                        entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, selected_scenario.id)
+                        tag_analysis_name = entity_tag_list.get_tags_by_key(gena_state.TAG_ANALYSIS_NAME)[0].to_simple_tag()
+
+                        # Get gena pipeline id from scenario tag
+                        tag_gena_pipeline_id = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA_PIPELINE_ID)[0].to_simple_tag()
+                        gena_pipeline_id = tag_gena_pipeline_id.value
+                        gena_pipeline_id_parsed = Tag.parse_tag(gena_pipeline_id)
+
+                        # Get all scenarios for this analysis, we retrieve all the other thanks to the id gena pipeline id
+                        search_scenario_builder = ScenarioSearchBuilder() \
+                            .add_tag_filter(Tag(key=gena_state.TAG_GENA_PIPELINE_ID, value=gena_pipeline_id_parsed, auto_parse=True)) \
+                            .add_is_archived_filter(False)
+
+                        all_scenarios: List[Scenario] = search_scenario_builder.search_all()
+
+                        # Group scenarios by step type with parent relationships
+                        scenarios_by_step = {}
+                        for scenario in all_scenarios:
+                            entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, scenario.id)
+                            tag_step_name = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA)[0].to_simple_tag()
+                            step_name = tag_step_name.value
+
+                            # These steps don't have parent dependencies
+                            if step_name not in scenarios_by_step:
+                                scenarios_by_step[step_name] = []
+                            scenarios_by_step[step_name].append(scenario)
+
+                        gena_state.set_scenarios_by_step_dict(scenarios_by_step)
+                        gena_state.set_tree_default_item(gena_state.get_scenarios_by_step_dict().get(key)[-1].id)
+                        router = StreamlitRouter.load_from_session()
+                        router.navigate("analysis")
+                    break
+                n +=1
+
             # Handle row click
             selected_scenario = next((s for s in list_scenario_user if s.id == row_id), None)
             if selected_scenario:
