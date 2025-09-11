@@ -11,6 +11,7 @@ from ..twin.helper.twin_helper import TwinHelper
 from ..twin.twin import Twin
 from .twin_efm_table import TwinEFMTable
 from .twin_reduction_table import TwinReductionTable
+from .twin_reducer_helper import TwinReducerHelper
 
 
 @task_decorator("TwinReducer", human_name="Twin reducer", short_description="Perform model reduction based on a digital twin",
@@ -39,6 +40,18 @@ class TwinReducer(Task):
             short_description="The list of reversible reactions (EC numbers, Reaction IDs). By default all the reactions are considered irreversible."), })
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
+        # At the begginning of the task, we install Java because it is mandatory to use the task Twin Reducer.
+        # Java is mandatory to use the task Twin Reducer because this Task uses the package efmtool which is a Java software.
+        # Commands are the following:
+        # apt update
+        # apt -y install default-jdk
+        shell_proxy = TwinReducerHelper.create_proxy(self.message_dispatcher)
+        java_installed = TwinReducerHelper.install_java(shell_proxy)
+
+        if not java_installed:
+            raise Exception("Failed to install Java JDK. Java is required for the efmtool package.")
+
+
         twin = inputs["twin"]
         if isinstance(twin, FlatTwin):
             flat_twin: FlatTwin = twin
