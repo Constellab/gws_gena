@@ -5,42 +5,37 @@ from gws_core import Scenario, ScenarioProxy, Tag, InputTask, Scenario, Scenario
 from gws_gena import TwinBuilder
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import extract_network_and_context_from_twin, create_base_scenario_with_tags, display_scenario_parameters, display_network
 
-@st.dialog("Twin builder parameters")
-def dialog_twin_builder_params(gena_state: State):
+def twin_builder_run(gena_state: State):
+    with StreamlitAuthenticateUser():
+        scenario = create_base_scenario_with_tags(gena_state, gena_state.TAG_TWIN_BUILDER, f"{gena_state.get_current_analysis_name()} - Twin Builder")
+        scenario.add_tag(Tag(gena_state.TAG_TWIN_BUILDER_ID, scenario.get_model_id(), is_propagable=False, auto_parse=True))
+        protocol = scenario.get_protocol()
 
-    if st.button("Run Twin Builder", use_container_width=True, icon=":material/play_arrow:", key="button_twin_builder_run"):
+        # Add twin builder process
+        twin_process = protocol.add_process(TwinBuilder, 'twin_process')
 
-        with StreamlitAuthenticateUser():
-            scenario = create_base_scenario_with_tags(gena_state, gena_state.TAG_TWIN_BUILDER, f"{gena_state.get_current_analysis_name()} - Twin Builder")
-            scenario.add_tag(Tag(gena_state.TAG_TWIN_BUILDER_ID, scenario.get_model_id(), is_propagable=False, auto_parse=True))
-            protocol = scenario.get_protocol()
+        # Retrieve context output and connect
 
-            # Add twin builder process
-            twin_process = protocol.add_process(TwinBuilder, 'twin_process')
+        context_resource = protocol.add_process(InputTask, 'context_resource', {InputTask.config_name: gena_state.get_resource_id_context()})
+        protocol.add_connector(out_port=context_resource >> 'resource', in_port=twin_process << 'context')
 
-            # Retrieve context output and connect
+        network_resource = protocol.add_process(InputTask, 'network_resource', {InputTask.config_name: gena_state.get_resource_id_network()})
+        protocol.add_connector(out_port=network_resource >> 'resource', in_port=twin_process << 'network')
 
-            context_resource = protocol.add_process(InputTask, 'context_resource', {InputTask.config_name: gena_state.get_resource_id_context()})
-            protocol.add_connector(out_port=context_resource >> 'resource', in_port=twin_process << 'context')
+        # Add outputs
+        protocol.add_output('twin_output', twin_process >> 'twin', flag_resource=False)
 
-            network_resource = protocol.add_process(InputTask, 'network_resource', {InputTask.config_name: gena_state.get_resource_id_network()})
-            protocol.add_connector(out_port=network_resource >> 'resource', in_port=twin_process << 'network')
-
-            # Add outputs
-            protocol.add_output('twin_output', twin_process >> 'twin', flag_resource=False)
-
-            scenario.add_to_queue()
-            gena_state.reset_tree_analysis()
-            gena_state.set_tree_default_item(scenario.get_model_id())
-            st.rerun()
+        scenario.add_to_queue()
+        gena_state.reset_tree_analysis()
+        gena_state.set_tree_default_item(scenario.get_model_id())
 
 def render_twin_builder_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
 
             # On click, open a dialog to allow the user to select params of twin builder
-            st.button("Run new Twin Builder", icon=":material/play_arrow:", use_container_width=False,
-                    on_click=lambda state=gena_state: dialog_twin_builder_params(state))
+            st.button("Run Twin Builder", icon=":material/play_arrow:", use_container_width=False,
+                    on_click=lambda state=gena_state: twin_builder_run(state))
     else:
         # Display details about scenario twin builder
         st.markdown("##### Twin Builder Scenario Results")
