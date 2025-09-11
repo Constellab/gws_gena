@@ -71,8 +71,8 @@ def render_twin_reducer_step(selected_scenario: Scenario, gena_state: State) -> 
         scenario_proxy = ScenarioProxy.from_existing_scenario(selected_scenario.id)
         protocol_proxy = scenario_proxy.get_protocol()
         # Display twin reducer tables
-        efm_table = protocol_proxy.get_process('twin_reducer_process').get_output('efm_table').get_resources()
-        reduction_table = protocol_proxy.get_process('twin_reducer_process').get_output('reduction_table').get_resources()
+        efm_table = protocol_proxy.get_process('twin_reducer_process').get_output('efm_table')
+        reduction_table = protocol_proxy.get_process('twin_reducer_process').get_output('reduction_table')
 
         tab_efm, tab_reduction = st.tabs(["EFM table", "Reduction table"])
         with tab_efm:
