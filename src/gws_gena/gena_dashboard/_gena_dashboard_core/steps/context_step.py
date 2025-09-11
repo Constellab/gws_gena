@@ -185,7 +185,7 @@ def _render_context_creation_ui(gena_state: State) -> None:
     if not _render_context_setup_ui(gena_state):
         return
 
-    st.info("Please note that once you have run the context importer, you will not be able to modify the network.")
+    st.info("ℹ️ Please note that once you have run the context importer, you will not be able to modify the network.")
 
     # Run context importer button
     if st.button("Run context importer", icon=":material/play_arrow:", use_container_width=False):
