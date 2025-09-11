@@ -2,7 +2,7 @@ import streamlit as st
 from typing import Type, Dict, Optional, List
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitMenuButton, StreamlitMenuButtonItem, StreamlitContainers, StreamlitResourceSelect
-from gws_core import Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask
+from gws_core import ScenarioStatus, Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, search_updated_network, save_network
 from gws_gena import Network, GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, IsolateFinder, NetworkMergem, TransporterAdder
 from gws_core.task.task import Task
@@ -73,7 +73,7 @@ def _run_network_editing_task(
             st.warning("Please select all required resources.")
             return
 
-        with st.spinner(f"Running {task_name} ..."):
+        with st.spinner(f"Running {task_name}..."):
             with StreamlitAuthenticateUser():
                 # Add the task to the scenario "Network"
                 scenario = ScenarioProxy.from_existing_scenario(gena_state.get_scenario_step_network()[0].id)
@@ -124,11 +124,15 @@ def _run_network_editing_task(
                 # Wait for the task to be completed
                 ScenarioWaiterBasic(scenario.get_model_id()).wait_until_finished(refresh_interval=10, refresh_interval_max_count=100)
                 protocol.refresh()
+                scenario.refresh()
 
                 # Get the updated network and save it
-                new_network = protocol.get_process('network_process_output').get_input('resource')
-                gena_state.set_edited_network(new_network)
-                save_network(gena_state.get_edited_network(), gena_state)
+                if scenario.is_success():
+                    new_network = protocol.get_process('network_process_output').get_input('resource')
+                    gena_state.set_edited_network(new_network)
+                    save_network(gena_state.get_edited_network(), gena_state)
+                else:
+                    st.error(f"{task_name} task failed. Please check the scenario details in your lab.")
 
         st.rerun()
 
@@ -243,6 +247,9 @@ def run_gap_filler(gena_state: State):
 
 
 def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
+    if selected_scenario.status == ScenarioStatus.ERROR:
+        st.warning("⚠️ Selected scenario is not successful. Check the scenario details in your lab.")
+        return
     file_network_id = gena_state.get_resource_id_network()
 
     if not gena_state.get_scenario_step_context():
