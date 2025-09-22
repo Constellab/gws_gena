@@ -8,7 +8,7 @@ from gws_core import (
     ProtocolProxy, InputTask, ResourceModel, ScenarioStatus
 )
 from gws_gena import ContextImporter, ContextBuilder
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, create_base_scenario_with_tags, search_updated_network
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, create_base_scenario_with_tags, search_updated_network, get_context_process_name, display_scenario_parameters
 from gws_core.streamlit import StreamlitResourceSelect
 
 def _create_empty_context_resource(gena_state: State) -> ResourceModel:
@@ -236,6 +236,10 @@ def _render_context_creation_ui(gena_state: State) -> None:
 def _render_context_results(selected_scenario: Scenario, gena_state: State) -> None:
     """Render context results for a completed scenario."""
     st.markdown("##### Context Results")
+    
+    # Display parameters reminder
+    process_name = get_context_process_name(selected_scenario)
+    display_scenario_parameters(selected_scenario, process_name)
 
     if selected_scenario.status != ScenarioStatus.SUCCESS:
         return

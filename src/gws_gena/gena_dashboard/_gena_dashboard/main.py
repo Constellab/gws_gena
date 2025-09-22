@@ -10,14 +10,6 @@ associate_scenario_with_folder = params.get('associate_scenario_with_folder')
 gena_state = State()
 gena_state.set_associate_scenario_with_folder(associate_scenario_with_folder)
 
-# Hide sidebar completely
-st.markdown("""
-<style>
-.stSidebar, [data-testid="stSidebarCollapsedControl"]{
-    display: none;
-}
-</style>
-""", unsafe_allow_html=True)
 
 def display_first_page(gena_state : State):
     first_page.render_first_page(gena_state)
@@ -25,10 +17,10 @@ def display_first_page(gena_state : State):
 def add_first_page(router: StreamlitRouter, gena_state: State):
     router.add_page(
         lambda: display_first_page(gena_state),
-        title='First page',
+        title='Recipes',
         url_path='first-page',
         icon='📦',
-        hide_from_sidebar=True
+        hide_from_sidebar=False
     )
 
 def display_new_analysis_page(gena_state : State):

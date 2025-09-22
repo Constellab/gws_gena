@@ -157,6 +157,28 @@ def render_scenario_table(scenarios: List[Scenario], process_name: str, grid_key
     else:
         st.info(f"No {process_name.replace('_', ' ').title()} analyses found.")
 
+def get_context_process_name(scenario: Scenario) -> str:
+    """Get the process name used in a context scenario."""
+    scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
+    protocol_proxy = scenario_proxy.get_protocol()
+
+    # Try context importer first
+    try:
+        if protocol_proxy.get_process('context_importer_process'):
+            return 'context_importer_process'
+    except:
+        pass
+
+    # Try context builder
+    try:
+        if protocol_proxy.get_process('context_builder_process'):
+            return 'context_builder_process'
+    except:
+        pass
+
+    # Default fallback
+    return 'context_process'
+
 def display_scenario_parameters(scenario: Scenario, process_name: str) -> None:
     """Generic function to display scenario parameters in an expander."""
     scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
@@ -164,8 +186,18 @@ def display_scenario_parameters(scenario: Scenario, process_name: str) -> None:
     process = protocol_proxy.get_process(process_name)
     config_params = process._process_model.config.to_simple_dto().values
 
-    with st.expander("Parameters - Reminder"):
+    # Add task name to parameters
+    readable_task_name = process._process_model.name
+
+    with st.expander(f"Parameters - {readable_task_name}"):
         param_data = []
+
+        # Add task name as first parameter
+        param_data.append({
+            "Parameter": "Task",
+            "Value": readable_task_name
+        })
+
         for key, value in config_params.items():
             readable_key = key.replace("_", " ").replace("-", " ").title()
             param_data.append({
@@ -318,11 +350,11 @@ def search_context(gena_state: State):
 def build_scenarios_by_step_dict(gena_pipeline_id: str, gena_state: State) -> Dict[str, List[Scenario]]:
     """
     Build scenarios_by_step dictionary for a given gena_pipeline_id.
-    
+
     Args:
         gena_pipeline_id: The pipeline ID to search for scenarios
         gena_state: State object containing tag constants
-        
+
     Returns:
         Dictionary mapping step names to lists of scenarios
     """

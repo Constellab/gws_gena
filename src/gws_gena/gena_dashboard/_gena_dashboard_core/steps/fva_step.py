@@ -51,11 +51,11 @@ def render_fva_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of fva
-            st.button("Run new FVA", icon=":material/play_arrow:", use_container_width=False,
+            st.button("Configure new FVA scenario", icon=":material/edit:", use_container_width=False,
                         on_click=lambda state=gena_state: dialog_fva_params(state))
 
         # Display table of existing FVA scenarios
-        st.markdown("### Previous FVA Analyses")
+        st.markdown("### List of scenarios")
 
         list_scenario_fva = gena_state.get_scenario_step_fva()
         render_scenario_table(list_scenario_fva, 'fva_process', 'fva_grid', gena_state)

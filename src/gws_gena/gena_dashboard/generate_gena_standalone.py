@@ -43,7 +43,7 @@ class GenaStandaloneDashboard(Task):
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         streamlit_app = StreamlitResource()
         streamlit_app.set_app_config(GenaStandaloneDashboardClass())
-        streamlit_app.name = "Gena Standalone Dashboard"
+        streamlit_app.name = "Digital Twin Standalone Dashboard"
 
         streamlit_app.set_requires_authentication(False)
         return {'streamlit_app': streamlit_app}

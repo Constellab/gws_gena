@@ -21,12 +21,12 @@ def render_first_page(gena_state : State):
             cols=[1, 'fit-content'], vertical_align_items='center')
 
     with col_title:
-        st.markdown("## Retrieve analysis")
+        st.markdown("## Retrieve recipes")
 
     with col_button_new:
         if not gena_state.get_is_standalone():
-            if st.button("Create new analysis", icon=":material/add:", use_container_width=False, type = "primary"):
-                # On click, navigate to a hidden page 'run new analysis'
+            if st.button("Create new recipe", icon=":material/add:", use_container_width=False, type = "primary"):
+                # On click, navigate to a hidden page 'run new recipe'
                 router = StreamlitRouter.load_from_session()
                 router.navigate("new-analysis")
 
@@ -99,7 +99,7 @@ def render_first_page(gena_state : State):
         columns = [
             {
                 "id": "Name given",
-                "name": "Analysis name",
+                "name": "Recipe name",
                 "field": "Name given",
                 "sortable": True,
                 "type": FieldType.string,

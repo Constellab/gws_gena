@@ -19,10 +19,10 @@ def render_new_analysis_page(gena_state : State):
     # Add a return button
     router = StreamlitRouter.load_from_session()
 
-    if st.button("Return Home", icon=":material/arrow_back:", use_container_width=False):
+    if st.button("Return recipes", icon=":material/arrow_back:", use_container_width=False):
         router.navigate("first-page")
 
-    st.markdown("## New Analysis")
+    st.markdown("## New recipe")
 
     st.selectbox("How would you like to provide network data?",
         options=["Select existing network resource", "Load from BiGG Models"],
@@ -57,7 +57,7 @@ def render_new_analysis_page(gena_state : State):
 
     cols = st.columns(2)
     with cols[0]:
-        st.text_input("Insert your analysis name", key = gena_state.ANALYSIS_NAME_USER)
+        st.text_input("Insert your recipe name", key = gena_state.ANALYSIS_NAME_USER)
 
     with cols[1]:
         space_service = SpaceService.get_instance()

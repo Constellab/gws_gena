@@ -170,7 +170,7 @@ def render_analysis_page(gena_state : State):
 
     with left_col:
         # Button to go home
-        if st.button("Home", use_container_width=True, icon=":material/home:", type="primary"):
+        if st.button("Recipes", use_container_width=True, icon=":material/home:", type="primary"):
             # Reset the state of selected tree default item
             gena_state.set_tree_default_item(None)
             router = StreamlitRouter.load_from_session()
@@ -193,8 +193,12 @@ def render_analysis_page(gena_state : State):
     gena_state.set_selected_folder_id(selected_analysis.folder.id if selected_analysis.folder else None)
 
     if selected_analysis.status != ScenarioStatus.SUCCESS:
+        if selected_analysis.status in [ScenarioStatus.RUNNING, ScenarioStatus.DRAFT, ScenarioStatus.WAITING_FOR_CLI_PROCESS, ScenarioStatus.IN_QUEUE, ScenarioStatus.PARTIALLY_RUN]:
+            message = "The first step for this analysis is still running. Please check back later."
+        else:
+            message = "The first step for this analysis is not completed successfully."
         with right_col:
-            st.info("The first step for this analysis is not completed successfully. Please check back later.")
+            st.info(message)
         return
 
     scenario_proxy = ScenarioProxy.from_existing_scenario(selected_analysis.id)
@@ -215,7 +219,7 @@ def render_analysis_page(gena_state : State):
     # Left column - Analysis workflow tree
     with left_col:
 
-        st.write(f"**Analysis:** {analysis_name}")
+        st.write(f"**Recipe:** {analysis_name}")
 
         # Build and render the analysis tree menu, and keep the key of the first element
         tree_menu, key_default_item = build_analysis_tree_menu(gena_state, gena_pipeline_id)

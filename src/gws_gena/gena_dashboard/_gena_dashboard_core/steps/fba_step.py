@@ -51,11 +51,11 @@ def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of fba
-            st.button("Run new FBA", icon=":material/play_arrow:", use_container_width=False,
+            st.button("Configure new FBA scenario", icon=":material/edit:", use_container_width=False,
                         on_click=lambda state=gena_state: dialog_fba_params(state))
 
         # Display table of existing FBA scenarios
-        st.markdown("### Previous FBA Analyses")
+        st.markdown("### List of scenarios")
 
         list_scenario_fba = gena_state.get_scenario_step_fba()
         render_scenario_table(list_scenario_fba, 'fba_process', 'fba_grid', gena_state)

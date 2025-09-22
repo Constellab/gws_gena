@@ -51,11 +51,11 @@ def render_twin_reducer_step(selected_scenario: Scenario, gena_state: State) -> 
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of twin reducer
-            st.button("Run new Twin Reducer", icon=":material/play_arrow:", use_container_width=False,
+            st.button("Configure new Twin Reducer scenario", icon=":material/edit:", use_container_width=False,
                         on_click=lambda state=gena_state: dialog_twin_reducer_params(state))
 
         # Display table of existing Twin Reducer scenarios
-        st.markdown("### Previous Twin Reducer Analyses")
+        st.markdown("### List of scenarios")
 
         list_scenario_twin_reducer = gena_state.get_scenario_step_twin_reducer()
         render_scenario_table(list_scenario_twin_reducer, 'twin_reducer_process', 'twin_reducer_grid', gena_state)

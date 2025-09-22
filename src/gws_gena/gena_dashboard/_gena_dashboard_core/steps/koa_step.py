@@ -22,7 +22,7 @@ def dialog_koa_params(gena_state: State):
             KOA.config_specs.get_default_values()))
 
     if st.button("Run KOA Analysis", use_container_width=True, icon=":material/play_arrow:", key="button_koa"):
-        if not gena_state.get_koa_config()["is_valid"]:
+        if not gena_state.get_koa_config()["is_valid"] or not gena_state.get_resource_selector_ko_table():
             st.warning("Please fill all the mandatory fields.")
             return
 
@@ -67,11 +67,11 @@ def render_koa_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of KOA analysis
-            st.button("Run new KOA Analysis", icon=":material/play_arrow:", use_container_width=False,
+            st.button("Configure new KOA scenario", icon=":material/edit:", use_container_width=False,
                     on_click=lambda state=gena_state: dialog_koa_params(state))
 
         # Display table of existing KOA Analysis scenarios
-        st.markdown("### Previous KOA Analysis")
+        st.markdown("### List of scenarios")
 
         list_scenario_koa = gena_state.get_scenario_step_koa()
         render_scenario_table(list_scenario_koa, 'koa_process', 'koa_grid', gena_state)

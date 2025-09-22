@@ -54,7 +54,7 @@ class GenerateGenaDashboard(Task):
         streamlit_app = StreamlitResource()
 
         streamlit_app.set_app_config(GenaDashboardAppConfig())
-        streamlit_app.name = "Gena Dashboard"
+        streamlit_app.name = "Digital Twin Dashboard"
 
         # Add param
         associate_scenario_with_folder: bool = params.get_value(
