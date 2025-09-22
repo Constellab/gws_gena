@@ -219,7 +219,10 @@ def render_first_page(gena_state : State):
                             # Build scenarios_by_step dictionary using helper function
                             scenarios_by_step = build_scenarios_by_step_dict(gena_pipeline_id, gena_state)
                             gena_state.set_scenarios_by_step_dict(scenarios_by_step)
-                            gena_state.set_tree_default_item(gena_state.get_scenarios_by_step_dict().get(key)[-1].id)
+                            list_scenario = gena_state.get_scenarios_by_step_dict().get(key)
+                            # Get the most recent scenario for this step
+                            latest_scenario = max(list_scenario, key=lambda x: x.created_at)
+                            gena_state.set_tree_default_item(latest_scenario.id)
                             router = StreamlitRouter.load_from_session()
                             router.navigate("analysis")
                         break
@@ -233,4 +236,4 @@ def render_first_page(gena_state : State):
                 router.navigate("analysis")
 
     else:
-        st.info("No analysis found. Please click on 'Create new analysis' to create one.")
+        st.info("No recipe found. Please click on 'Create new recipe' to create one.")
