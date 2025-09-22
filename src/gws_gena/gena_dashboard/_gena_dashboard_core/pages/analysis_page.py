@@ -1,7 +1,7 @@
 import streamlit as st
 from typing import List, Dict
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core import Tag, File, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
+from gws_core import Tag, Settings, File, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, search_updated_network, get_status_emoji, get_status_prettify, build_scenarios_by_step_dict
 from gws_core.streamlit import StreamlitContainers, StreamlitRouter, StreamlitTreeMenu, StreamlitTreeMenuItem
 from gws_core.tag.tag_entity_type import TagEntityType
@@ -281,12 +281,21 @@ def render_analysis_page(gena_state : State):
                 with col_status:
                     status_emoji = get_status_emoji(selected_scenario.status)
                     st.markdown(f"#### **Status:** {status_emoji} {get_status_prettify(selected_scenario.status)}")
+                    # Add a button to redirect to the scenario page
+                    virtual_host = Settings.get_instance().get_virtual_host()
+                    if Settings.get_instance().is_prod_mode():
+                        lab_mode = "lab"
+                    else:
+                        lab_mode = "dev-lab"
+
+                    st.link_button("View scenario", f"https://{lab_mode}.{virtual_host}/app/scenario/{selected_scenario.id}", icon=":material/open_in_new:")
                 with col_refresh:
                     # If the scenario status is running or in queue, add a refresh button to refresh the page
                     if selected_scenario.status in [ScenarioStatus.RUNNING, ScenarioStatus.WAITING_FOR_CLI_PROCESS, ScenarioStatus.IN_QUEUE]:
                         if st.button("Refresh", icon=":material/refresh:", use_container_width=False):
                             gena_state.set_tree_default_item(selected_scenario.id)
                             st.rerun()
+
             else :
                 selected_scenario = None
 
