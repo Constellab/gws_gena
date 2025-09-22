@@ -7,7 +7,6 @@ sources: list
 params: dict
 
 associate_scenario_with_folder = params.get('associate_scenario_with_folder')
-credentials_data = params.get('credentials_lab_large', None)
 gena_state = State()
 gena_state.set_associate_scenario_with_folder(associate_scenario_with_folder)
 
