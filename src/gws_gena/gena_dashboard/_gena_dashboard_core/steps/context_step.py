@@ -9,7 +9,7 @@ from gws_core import (
 )
 from gws_gena import ContextImporter, ContextBuilder
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, create_base_scenario_with_tags, search_updated_network, get_context_process_name, display_scenario_parameters
-from gws_core.streamlit import StreamlitResourceSelect
+from gws_core.streamlit import StreamlitResourceSelect, StreamlitContainers
 
 def _create_empty_context_resource(gena_state: State) -> ResourceModel:
     """Create an empty context resource file."""
@@ -100,12 +100,22 @@ def _add_context_importer(protocol: ProtocolProxy, context_resource_model: Resou
 
 def _render_context_setup_ui(gena_state: State) -> bool:
     """Render the context setup UI and return True if ready to proceed."""
-    st.selectbox(
-        "Would you like to add a context?",
-        options=["Yes", "No"],
-        index=None,
-        key=gena_state.CONTEXT_BOOL_KEY
-    )
+
+    url_doc_context = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/resource/Context"
+    url_doc_context_importer = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/task/ContextImporter"
+    url_doc_context_builder = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/task/ContextBuilder"
+
+    col_question, col_help = StreamlitContainers.columns_with_fit_content('container-column_context', cols=[1, 'fit-content'],
+        vertical_align_items='center')
+    with col_question:
+        st.selectbox(
+            "Would you like to add a context?",
+            options=["Yes", "No"],
+            index=None,
+            key=gena_state.CONTEXT_BOOL_KEY
+        )
+    with col_help:
+        st.link_button("**?**", url_doc_context)
 
     context_choice = gena_state.get_context_bool()
 
@@ -124,17 +134,26 @@ def _render_context_setup_ui(gena_state: State) -> bool:
         context_option = gena_state.get_context_option()
 
         if context_option == "Select existing context resource":
-            resource_select = StreamlitResourceSelect()
-            resource_select.select_resource(
-                placeholder='Search for context resource',
-                key=gena_state.RESOURCE_SELECTOR_CONTEXT_KEY,
-                defaut_resource=None
-            )
+            col_select, col_help = StreamlitContainers.columns_with_fit_content('container-column_context_importer', cols=[1, 'fit-content'],
+                vertical_align_items='center')
+            with col_select:
+                resource_select = StreamlitResourceSelect()
+                resource_select.select_resource(
+                    placeholder='Search for context resource',
+                    key=gena_state.RESOURCE_SELECTOR_CONTEXT_KEY,
+                    defaut_resource=None
+                )
+            with col_help:
+                st.link_button("**?**", url_doc_context_importer)
             return bool(gena_state.get_resource_selector_context())
 
         elif context_option == "Build a new context":
-            st.info("In order to contextualise the network, you must select either a phenotype or a flux table.")
-
+            col_info, col_help = StreamlitContainers.columns_with_fit_content('container-column_context_builder', cols=[1, 'fit-content'],
+                vertical_align_items='center')
+            with col_info:
+                st.info("In order to contextualise the network, you must select either a phenotype or a flux table.")
+            with col_help:
+                st.link_button("**?**", url_doc_context_builder)
             # Phenotype table selector
             resource_select_phenotype = StreamlitResourceSelect()
             resource_select_phenotype.select_resource(
@@ -236,7 +255,7 @@ def _render_context_creation_ui(gena_state: State) -> None:
 def _render_context_results(selected_scenario: Scenario, gena_state: State) -> None:
     """Render context results for a completed scenario."""
     st.markdown("##### Context Results")
-    
+
     # Display parameters reminder
     process_name = get_context_process_name(selected_scenario)
     display_scenario_parameters(selected_scenario, process_name)

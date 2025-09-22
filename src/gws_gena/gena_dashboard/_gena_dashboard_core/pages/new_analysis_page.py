@@ -1,6 +1,6 @@
 import streamlit as st
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core.streamlit import StreamlitResourceSelect, StreamlitRouter, StreamlitTaskRunner, StreamlitAuthenticateUser
+from gws_core.streamlit import StreamlitResourceSelect, StreamlitRouter, StreamlitTaskRunner, StreamlitAuthenticateUser, StreamlitContainers
 from gws_core import ResourceModel, SpaceFolder, StringHelper, Tag, InputTask, SpaceService, ProcessProxy, ScenarioProxy, ProtocolProxy, ScenarioCreationType
 from gws_gena import NetworkImporter, LoadBiGGModels
 
@@ -23,12 +23,18 @@ def render_new_analysis_page(gena_state : State):
         router.navigate("first-page")
 
     st.markdown("## New recipe")
+    url_doc_network = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/resource/Network"
 
-    st.selectbox("How would you like to provide network data?",
-        options=["Select existing network resource", "Load from BiGG Models"],
-        index=None,
-        key=gena_state.NETWORK_OPTION_KEY
-    )
+    col_question, col_help = StreamlitContainers.columns_with_fit_content('container-column_network', cols=[1, 'fit-content'],
+        vertical_align_items='center')
+    with col_question:
+        st.selectbox("How would you like to provide network data?",
+            options=["Select existing network resource", "Load from BiGG Models"],
+            index=None,
+            key=gena_state.NETWORK_OPTION_KEY
+        )
+    with col_help:
+        st.link_button("**?**", url_doc_network)
     network_selected_is_network = False
     if gena_state.get_network_option() == "Load from BiGG Models":
         form_config = StreamlitTaskRunner(LoadBiGGModels)
