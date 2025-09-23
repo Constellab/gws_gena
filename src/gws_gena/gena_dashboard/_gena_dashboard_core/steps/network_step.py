@@ -1,11 +1,74 @@
 import streamlit as st
+import pandas as pd
 from typing import Type, Dict, Optional
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitMenuButton, StreamlitMenuButtonItem, StreamlitContainers, StreamlitResourceSelect
 from gws_core import ScenarioStatus, Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, add_tags_on_network
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, add_tags_on_network, get_status_prettify, get_status_emoji
 from gws_gena import GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, NetworkMergem, TransporterAdder
 from gws_core.task.task import Task
+
+def display_process_history(processes_list):
+    """Display a nice timeline view of all processes in the protocol"""
+
+    st.markdown("### Process History")
+
+    # Create a DataFrame for better display
+    history_data = []
+
+    for i, process in enumerate(processes_list):
+        # Get timing information
+        started_at = process.started_at if hasattr(process, 'started_at') and process.started_at else None
+        ended_at = process.ended_at if hasattr(process, 'ended_at') and process.ended_at else None
+
+        # Calculate duration
+        duration = ""
+        if started_at and ended_at:
+            duration_seconds = (ended_at - started_at).total_seconds()
+            if duration_seconds < 60:
+                duration = f"{duration_seconds:.1f}s"
+            elif duration_seconds < 3600:
+                duration = f"{duration_seconds/60:.1f}min"
+            else:
+                duration = f"{duration_seconds/3600:.1f}h"
+
+
+        history_data.append({
+            'Step': i + 1,
+            'Process Name': process.name,
+            'Started': started_at.strftime("%Y-%m-%d %H:%M:%S") if started_at else "Not started",
+            'Ended': ended_at.strftime("%Y-%m-%d %H:%M:%S") if ended_at else "Not finished",
+            'Duration': duration
+        })
+
+    # Display timeline cards
+    for i, data in enumerate(history_data):
+        # Create a card-like container for each process
+        with st.container():
+            # Create columns
+            col_step, col_info, col_timing = st.columns([1, 3, 3])
+
+            with col_step:
+                st.markdown(f"**#{data['Step']}**")
+
+            with col_info:
+                st.markdown(f"**{data['Process Name']}**")
+
+            with col_timing:
+                if data['Started'] != "Not started":
+                    st.markdown(f"**Started:** {data['Started']}")
+                    if data['Ended'] != "Not finished":
+                        st.markdown(f"**Ended:** {data['Ended']}")
+                        st.markdown(f"**Duration:** {data['Duration']}")
+                    else:
+                        st.markdown("**Still running...**")
+                else:
+                    st.markdown("**Not started yet**")
+
+
+        # Add a separator between processes (except for the last one)
+        if i < len(history_data) - 1:
+            st.divider()
 
 
 def _run_network_editing_task(
@@ -252,6 +315,9 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
         return
     file_network_id = gena_state.get_resource_id_network()
 
+    # Create 2 tabs : one to display the network, the other to have the history of the network
+    tab_network, tab_history = st.tabs(["Network", "History"])
+
     if not gena_state.get_scenario_step_context():
         if not gena_state.get_is_standalone():
             title_col, button_col = StreamlitContainers.columns_with_fit_content('container-column', cols=[1, 'fit-content'],
@@ -299,14 +365,16 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
             st.info("ℹ️ You can edit the network before running Context. Once Context is run, the network will be locked.")
 
             gena_state.set_edited_network(ResourceModel.get_by_id(file_network_id).get_resource())
-            display_network(file_network_id)
 
+    with tab_history:
+        # Display the history of all processes in the protocol
+        # Thus the user can see what has been done to the network
+        scenario = ScenarioProxy.from_existing_scenario(gena_state.get_scenario_step_network()[0].id)
+        protocol = scenario.get_protocol()
+        all_processes = protocol.get_model().get_all_processes_flatten_sort_by_start_date()
+        display_process_history(all_processes)
 
-        else:
-            st.markdown("### View network")
-            display_network(file_network_id)
-    else:
-        st.markdown("### View network")
+    with tab_network:
         display_network(file_network_id)
 
     # Save button only appear if Context task have not been created
