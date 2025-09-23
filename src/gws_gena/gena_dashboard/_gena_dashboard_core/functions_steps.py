@@ -226,35 +226,21 @@ def create_base_scenario_with_tags(gena_state: State, step_tag: str, title: str)
 
     return scenario
 
-def save_network(edited_network: Network, gena_state: State) -> None:
+def add_tags_on_network(edited_network: Network, gena_state: State) -> None:
     """
-    Helper function to save network to resource.
+    Helper function to add tags on network resource.
     """
-
-    # Search for existing updated network resource
-    existing_resource = search_updated_network(gena_state)
-
-    # If there's an existing resource, delete it first
-    if existing_resource:
-        ResourceModel.get_by_id(existing_resource.get_model_id()).delete_instance()
-
-    # Use save_from_resource which properly handles fs_node creation
-    resource_model = ResourceModel.save_from_resource(
-        edited_network,
-        origin=ResourceOrigin.UPLOADED,
-        flagged=True
-    )
+    network_model_id = edited_network.get_model_id()
 
     # Add tags using EntityTagList
     user_origin = TagOrigin.current_user_origin()
-    entity_tags = EntityTagList(TagEntityType.RESOURCE, resource_model.id, default_origin=user_origin)
+    entity_tags = EntityTagList(TagEntityType.RESOURCE, network_model_id, default_origin=user_origin)
 
     # Add the required tags
     entity_tags.add_tag(Tag(gena_state.TAG_GENA, gena_state.TAG_NETWORK_UPDATED, is_propagable=False))
     entity_tags.add_tag(Tag(gena_state.TAG_GENA_PIPELINE_ID, gena_state.get_current_gena_pipeline_id(), is_propagable=False))
 
-    gena_state.set_resource_id_network(resource_model.id)
-
+    gena_state.set_resource_id_network(network_model_id)
 
 def search_updated_network(gena_state: State) -> File | None:
     """

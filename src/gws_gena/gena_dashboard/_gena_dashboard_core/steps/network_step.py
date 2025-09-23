@@ -3,7 +3,7 @@ from typing import Type, Dict, Optional
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitMenuButton, StreamlitMenuButtonItem, StreamlitContainers, StreamlitResourceSelect
 from gws_core import ScenarioStatus, Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, save_network
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, add_tags_on_network
 from gws_gena import GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, NetworkMergem, TransporterAdder
 from gws_core.task.task import Task
 
@@ -130,7 +130,7 @@ def _run_network_editing_task(
                 if scenario.is_success():
                     new_network = protocol.get_process('network_process_output').get_input('resource')
                     gena_state.set_edited_network(new_network)
-                    save_network(gena_state.get_edited_network(), gena_state)
+                    add_tags_on_network(gena_state.get_edited_network(), gena_state)
                 else:
                     st.error(f"{task_name} task failed. Please check the scenario details in your lab.")
 
@@ -316,7 +316,7 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
             if st.button("Save", use_container_width=True):
                 with StreamlitAuthenticateUser():
                     # Use the helper function to save
-                    save_network(gena_state.get_edited_network(), gena_state)
+                    add_tags_on_network(gena_state.get_edited_network(), gena_state)
                     st.rerun()
         else:
             st.info("ℹ️ You are in standalone mode. Network cannot be edited.")
