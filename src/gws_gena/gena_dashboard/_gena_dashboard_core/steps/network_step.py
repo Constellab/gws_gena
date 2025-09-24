@@ -320,51 +320,52 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
 
     if not gena_state.get_scenario_step_context():
         if not gena_state.get_is_standalone():
-            title_col, button_col = StreamlitContainers.columns_with_fit_content('container-column', cols=[1, 'fit-content'],
-                vertical_align_items='center')
-            with title_col:
-                st.markdown("### Edit network")
-            with button_col:
+            with tab_network:
+                title_col, button_col = StreamlitContainers.columns_with_fit_content('container-column', cols=[1, 'fit-content'],
+                    vertical_align_items='center')
+                with title_col:
+                    st.markdown("### Edit network")
+                with button_col:
 
-                # Add a button menu to edit the network
-                button_menu = StreamlitMenuButton()
+                    # Add a button menu to edit the network
+                    button_menu = StreamlitMenuButton()
 
-                # Adder
-                buttons_adder = StreamlitMenuButtonItem(label='Adder', material_icon='add')
-                add_reaction_button = StreamlitMenuButtonItem(label='Add reaction', material_icon='add',
-                                                    on_click=lambda state=gena_state: run_reaction_adder(state))
-                add_transporter_button = StreamlitMenuButtonItem(label='Add transporter', material_icon='add',
-                                                    on_click=lambda state=gena_state: run_transporter_adder(state))
-                buttons_adder.add_children([add_reaction_button, add_transporter_button])
-                button_menu.add_button_item(buttons_adder)
+                    # Adder
+                    buttons_adder = StreamlitMenuButtonItem(label='Adder', material_icon='add')
+                    add_reaction_button = StreamlitMenuButtonItem(label='Add reaction', material_icon='add',
+                                                        on_click=lambda state=gena_state: run_reaction_adder(state))
+                    add_transporter_button = StreamlitMenuButtonItem(label='Add transporter', material_icon='add',
+                                                        on_click=lambda state=gena_state: run_transporter_adder(state))
+                    buttons_adder.add_children([add_reaction_button, add_transporter_button])
+                    button_menu.add_button_item(buttons_adder)
 
-                # Remover
-                buttons_remover = StreamlitMenuButtonItem(label='Remover', material_icon='remove')
-                remove_reaction_button = StreamlitMenuButtonItem(label='Remove reaction', material_icon='remove',
-                                                                  on_click=lambda state=gena_state: run_reaction_remover(state))
-                remove_orphan_button = StreamlitMenuButtonItem(label='Remove orphan', material_icon='remove',
-                                                                  on_click=lambda state=gena_state: run_orphan_remover(state))
-                buttons_remover.add_children([remove_reaction_button, remove_orphan_button])
-                button_menu.add_button_item(buttons_remover)
+                    # Remover
+                    buttons_remover = StreamlitMenuButtonItem(label='Remover', material_icon='remove')
+                    remove_reaction_button = StreamlitMenuButtonItem(label='Remove reaction', material_icon='remove',
+                                                                    on_click=lambda state=gena_state: run_reaction_remover(state))
+                    remove_orphan_button = StreamlitMenuButtonItem(label='Remove orphan', material_icon='remove',
+                                                                    on_click=lambda state=gena_state: run_orphan_remover(state))
+                    buttons_remover.add_children([remove_reaction_button, remove_orphan_button])
+                    button_menu.add_button_item(buttons_remover)
 
-                # Merge
-                buttons_merge = StreamlitMenuButtonItem(label='Merge', material_icon='merge')
-                child_merge_merger= StreamlitMenuButtonItem(
-                    label='Network merger', material_icon='merge', on_click=lambda state=gena_state: run_network_merger(state))
-                child_merge_mergem = StreamlitMenuButtonItem(
-                    label='Network mergem', material_icon='merge', on_click=lambda state=gena_state: run_network_mergem(state))
-                buttons_merge.add_children([child_merge_merger, child_merge_mergem])
-                button_menu.add_button_item(buttons_merge)
+                    # Merge
+                    buttons_merge = StreamlitMenuButtonItem(label='Merge', material_icon='merge')
+                    child_merge_merger= StreamlitMenuButtonItem(
+                        label='Network merger', material_icon='merge', on_click=lambda state=gena_state: run_network_merger(state))
+                    child_merge_mergem = StreamlitMenuButtonItem(
+                        label='Network mergem', material_icon='merge', on_click=lambda state=gena_state: run_network_mergem(state))
+                    buttons_merge.add_children([child_merge_merger, child_merge_mergem])
+                    button_menu.add_button_item(buttons_merge)
 
-                # Gap filler
-                buttons_gap_filler = StreamlitMenuButtonItem(label='Gap filler', material_icon='auto_fix_high', on_click=lambda state=gena_state: run_gap_filler(state))
-                button_menu.add_button_item(buttons_gap_filler)
+                    # Gap filler
+                    buttons_gap_filler = StreamlitMenuButtonItem(label='Gap filler', material_icon='auto_fix_high', on_click=lambda state=gena_state: run_gap_filler(state))
+                    button_menu.add_button_item(buttons_gap_filler)
 
-                button_menu.render()
+                    button_menu.render()
 
-            st.info("ℹ️ You can edit the network before running Context. Once Context is run, the network will be locked.")
+                st.info("ℹ️ You can edit the network before running Context. Once Context is run, the network will be locked.")
 
-            gena_state.set_edited_network(ResourceModel.get_by_id(file_network_id).get_resource())
+                gena_state.set_edited_network(ResourceModel.get_by_id(file_network_id).get_resource())
 
     with tab_history:
         # Display the history of all processes in the protocol

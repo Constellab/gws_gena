@@ -3,6 +3,7 @@ from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitResourceSelect, StreamlitRouter, StreamlitTaskRunner, StreamlitAuthenticateUser, StreamlitContainers
 from gws_core import ResourceModel, SpaceFolder, StringHelper, Tag, InputTask, SpaceService, ProcessProxy, ScenarioProxy, ProtocolProxy, ScenarioCreationType
 from gws_gena import NetworkImporter, LoadBiGGModels
+from gws_gena import ConvertXmlToJson
 
 def _flatten_folders_recursive(folders, folder_dict, folder_display_names, prefix="-"):
     """Recursively flatten folder hierarchy for display"""
@@ -42,7 +43,7 @@ def render_new_analysis_page(gena_state : State):
             session_state_key=gena_state.LOAD_BIGG_MODEL_CONFIG_KEY, default_config_values=LoadBiGGModels.config_specs.get_default_values())
 
     elif gena_state.get_network_option() == "Select existing network resource":
-        # select network data
+        # select network data : the user can select network resource, file json or file xml or file matlab
         resource_select = StreamlitResourceSelect()
         resource_select.select_resource(
             placeholder='Search for network resource', key=gena_state.RESOURCE_SELECTOR_NETWORK_KEY)
@@ -130,13 +131,33 @@ def render_new_analysis_page(gena_state : State):
 
             # Step 1 : Network task
             if not network_selected_is_network:
-                network_importer_process : ProcessProxy = protocol.add_process(NetworkImporter, 'network_importer_process', config_params=gena_state.get_network_importer_config()["config"])
+                network_importer_process: ProcessProxy = protocol.add_process(NetworkImporter, 'network_importer_process', config_params=gena_state.get_network_importer_config()["config"])
+                
                 if gena_state.get_network_option() == "Load from BiGG Models":
+                    # BiGG Models already provides JSON format, connect directly to NetworkImporter
                     protocol.add_connector(out_port=load_bigg_models_process >> 'output',
                                         in_port=network_importer_process << 'source')
                 else:
-                    protocol.add_connector(out_port=network_resource >> 'resource',
-                                        in_port=network_importer_process << 'source')
+                    # Handle existing resource selection
+                    selected_network_id = gena_state.get_resource_selector_network()["resourceId"]
+                    selected_network = ResourceModel.get_by_id(selected_network_id)
+
+                    # Check if the file is XML or Matlab (needs conversion)
+                    is_xml_or_matlab = (selected_network.resource_typing_name == 'RESOURCE.gws_core.File'
+                                        and selected_network.get_resource().extension in ['xml', 'mat'])
+
+                    if is_xml_or_matlab:
+                        # Add conversion step for XML/Matlab files
+                        convert_xml_process: ProcessProxy = protocol.add_process(ConvertXmlToJson, 'convert_xml_to_json_process')
+                        protocol.add_connector(out_port=network_resource >> 'resource',
+                                            in_port=convert_xml_process << 'input_file')
+                        protocol.add_connector(out_port=convert_xml_process >> 'output_json_file',
+                                            in_port=network_importer_process << 'source')
+                    else:
+                        # Direct import for JSON files
+                        protocol.add_connector(out_port=network_resource >> 'resource',
+                                            in_port=network_importer_process << 'source')
+
                 # Add output
                 protocol.add_output('network_process_output', network_importer_process >> 'target', flag_resource=False)
             else:
