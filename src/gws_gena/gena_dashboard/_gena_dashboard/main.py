@@ -1,13 +1,16 @@
+import os
 import streamlit as st
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_gena.gena_dashboard._gena_dashboard_core.pages import first_page, new_analysis_page, analysis_page
-from gws_core.streamlit import StreamlitRouter
+from gws_gena.gena_dashboard._gena_dashboard_core.pages import first_page, new_analysis_page, analysis_page, settings
+from gws_core.streamlit import StreamlitRouter, StreamlitTranslateLang, StreamlitTranslateService
 
 sources: list
 params: dict
 
 associate_scenario_with_folder = params.get('associate_scenario_with_folder')
-gena_state = State()
+# Path of the folder containing the translation files that you created ("en.json" and "fr.json" by default)
+lang_translation_folder_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../_gena_dashboard_core')
+gena_state = State(lang_translation_folder_path)
 gena_state.set_associate_scenario_with_folder(associate_scenario_with_folder)
 
 
@@ -47,11 +50,25 @@ def add_analysis_page(router: StreamlitRouter, gena_state: State):
         hide_from_sidebar=True
     )
 
+def display_settings_page(gena_state : State):
+    settings.render_settings_page(gena_state)
+
+def add_settings_page(router: StreamlitRouter, gena_state: State):
+    router.add_page(
+        lambda: display_settings_page(gena_state),
+        title='Settings',
+        url_path='settings',
+        icon=":material/settings:",
+        hide_from_sidebar=False
+    )
+
+
 router = StreamlitRouter.load_from_session()
 # Add pages
 add_first_page(router, gena_state)
 add_new_analysis_page(router, gena_state)
 add_analysis_page(router, gena_state)
+add_settings_page(router, gena_state)
 
 
 router.run()

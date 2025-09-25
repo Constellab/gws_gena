@@ -13,6 +13,7 @@ from streamlit_slickgrid import (
 )
 
 def render_first_page(gena_state : State):
+    translate_service = gena_state.get_translate_service()
 
     # Add a button create new analysis using config
     # Create a container for the header with project title and action buttons
@@ -21,7 +22,7 @@ def render_first_page(gena_state : State):
             cols=[1, 'fit-content'], vertical_align_items='center')
 
     with col_title:
-        st.markdown("## Retrieve recipes")
+        st.markdown(f"## {translate_service.translate('retrieve_recipes')}")
 
     with col_button_new:
         if not gena_state.get_is_standalone():

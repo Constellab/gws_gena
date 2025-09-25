@@ -5,6 +5,7 @@ import pandas as pd
 from gws_core import Scenario, ResourceModel
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
+from gws_core.streamlit import StreamlitTranslateLang, StreamlitTranslateService
 
 class State:
     """Class to manage the state of the app.
@@ -87,6 +88,13 @@ class State:
     FVA_CONFIG_KEY = "fva_config"
     KOA_CONFIG_KEY = "koa_config"
 
+    LANG_KEY = "lang_select"
+    TRANSLATE_SERVICE = "translate_service"
+
+    def __init__(cls, file_lang: str):
+        translate_service = StreamlitTranslateService(file_lang)
+        st.session_state[cls.TRANSLATE_SERVICE] = translate_service
+
     @classmethod
     def get_is_standalone(cls) -> bool:
         return st.session_state.get(cls.STANDALONE_KEY, False)
@@ -94,6 +102,30 @@ class State:
     @classmethod
     def set_is_standalone(cls, value: bool) -> None:
         st.session_state[cls.STANDALONE_KEY] = value
+
+    @classmethod
+    def get_lang(cls) -> StreamlitTranslateLang:
+        # Get language from translate service instead of session state
+        translate_service = cls.get_translate_service()
+        if translate_service:
+            return translate_service.get_lang()
+        return StreamlitTranslateLang.EN  # Default to English
+
+    @classmethod
+    def set_lang(cls, value: StreamlitTranslateLang) -> None:
+        # Update the translate service language instead of storing separately
+        translate_service = cls.get_translate_service()
+        if translate_service:
+            translate_service.change_lang(value)
+            cls.set_translate_service(translate_service)
+
+    @classmethod
+    def get_translate_service(cls):
+        return st.session_state.get(cls.TRANSLATE_SERVICE, None)
+
+    @classmethod
+    def set_translate_service(cls, value : StreamlitTranslateService) -> None:
+        st.session_state[cls.TRANSLATE_SERVICE] = value
 
     @classmethod
     def get_tree_default_item(cls) -> str:

@@ -1,0 +1,42 @@
+import streamlit as st
+from gws_core.streamlit import StreamlitTranslateLang, StreamlitTranslateService
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+
+def render_settings_page(gena_state : State):
+    translate_service = gena_state.get_translate_service()
+
+    # Get current language from translate service, not from session state string
+    current_lang = translate_service.get_lang()
+
+    # Map enum to display strings and indices
+    lang_options = ["English", "Français"]
+    lang_enum_map = {
+        "English": StreamlitTranslateLang.EN,
+        "Français": StreamlitTranslateLang.FR
+    }
+
+    # Convert current enum to index
+    if current_lang == StreamlitTranslateLang.EN:
+        current_index = 0
+    elif current_lang == StreamlitTranslateLang.FR:
+        current_index = 1
+    else:
+        current_index = 0  # Default to English
+
+    selected_lang_str = st.selectbox(
+        "Select Language",
+        options=lang_options,
+        index=current_index,
+        key=gena_state.LANG_KEY
+    )
+
+    # Convert selected string back to enum
+    selected_lang_enum = lang_enum_map[selected_lang_str]
+
+    # Check if language actually changed
+    if current_lang != selected_lang_enum:
+        # Change the language in the translate service
+        translate_service.change_lang(selected_lang_enum)
+        # Update the state
+        gena_state.set_translate_service(translate_service)
+        st.rerun()
