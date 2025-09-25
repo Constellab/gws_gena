@@ -132,7 +132,7 @@ def render_new_analysis_page(gena_state : State):
             # Step 1 : Network task
             if not network_selected_is_network:
                 network_importer_process: ProcessProxy = protocol.add_process(NetworkImporter, 'network_importer_process', config_params=gena_state.get_network_importer_config()["config"])
-                
+
                 if gena_state.get_network_option() == "Load from BiGG Models":
                     # BiGG Models already provides JSON format, connect directly to NetworkImporter
                     protocol.add_connector(out_port=load_bigg_models_process >> 'output',

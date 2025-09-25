@@ -3,7 +3,7 @@ from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitResourceSelect
 from gws_core import ResourceModel, Scenario, ScenarioProxy, InputTask, Scenario, ScenarioStatus, ScenarioProxy
 from gws_gena import KOA
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import extract_network_and_context_from_twin, display_network, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_saved_scenario_actions, extract_network_and_context_from_twin, display_network, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
 
 @st.dialog("KOA parameters")
 def dialog_koa_params(gena_state: State):
@@ -21,7 +21,16 @@ def dialog_koa_params(gena_state: State):
         is_default_config_valid=KOA.config_specs.mandatory_values_are_set(
             KOA.config_specs.get_default_values()))
 
-    if st.button("Run KOA Analysis", use_container_width=True, icon=":material/play_arrow:", key="button_koa"):
+    # Add both Save and Run buttons
+    col1, col2 = st.columns(2)
+
+    with col1:
+        save_clicked = st.button("Save KOA", use_container_width=True, icon=":material/save:", key="button_koa_save")
+
+    with col2:
+        run_clicked = st.button("Run KOA", use_container_width=True, icon=":material/play_arrow:", key="button_koa_run")
+
+    if save_clicked or run_clicked:
         if not gena_state.get_koa_config()["is_valid"] or not gena_state.get_resource_selector_ko_table():
             st.warning("Please fill all the mandatory fields.")
             return
@@ -56,10 +65,12 @@ def dialog_koa_params(gena_state: State):
             protocol.add_output('koa_result_output', koa_process >> 'koa_result', flag_resource=False)
             protocol.add_output('koa_table_summary_output', koa_process >> 'table_summary', flag_resource=False)
 
+            # Only add to queue if Run was clicked
+            if run_clicked:
+                scenario.add_to_queue()
+                gena_state.reset_tree_analysis()
+                gena_state.set_tree_default_item(scenario.get_model_id())
 
-            scenario.add_to_queue()
-            gena_state.reset_tree_analysis()
-            gena_state.set_tree_default_item(scenario.get_model_id())
             st.rerun()
 
 def render_koa_step(selected_scenario: Scenario, gena_state: State) -> None:
@@ -79,6 +90,9 @@ def render_koa_step(selected_scenario: Scenario, gena_state: State) -> None:
         # Display details about scenario KOA analysis
         st.markdown("##### KOA Analysis Scenario Results")
         display_scenario_parameters(selected_scenario, 'koa_process')
+
+        if selected_scenario.status == ScenarioStatus.DRAFT:
+            display_saved_scenario_actions(selected_scenario, gena_state)
 
         if gena_state.get_is_standalone():
             return

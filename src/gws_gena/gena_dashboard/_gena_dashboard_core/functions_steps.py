@@ -7,12 +7,13 @@ from streamlit_slickgrid import (
     ExportServices,
 )
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_gena import Network, Context
-from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, ResourceModel, ResourceOrigin, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType, ScenarioSearchBuilder
+from gws_gena import Network, Context, FBA, FVA, KOA, TwinReducer
+from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, ResourceModel, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType, ScenarioSearchBuilder
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
 from gws_core.tag.entity_tag import EntityTag
 from gws_core.tag.tag import TagOrigin
+from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner
 
 def get_status_emoji(status: ScenarioStatus) -> str:
     """Return appropriate emoji for scenario status"""
@@ -365,3 +366,90 @@ def build_scenarios_by_step_dict(gena_pipeline_id: str, gena_state: State) -> Di
         scenarios_by_step[step_name].append(scenario)
 
     return scenarios_by_step
+
+def display_saved_scenario_actions(scenario: Scenario, gena_state: State) -> None:
+    """Display Run and Edit actions for saved scenarios."""
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button(f"Run", icon=":material/play_arrow:", key=f"run_{scenario.id}", use_container_width=True):
+            scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
+            scenario_proxy.add_to_queue()
+            gena_state.reset_tree_analysis()
+            gena_state.set_tree_default_item(scenario.id)
+            st.rerun()
+
+    with col2:
+        if st.button(f"Edit", icon=":material/edit:", key=f"edit_{scenario.id}", use_container_width=True):
+            dialog_edit_scenario_params(scenario, gena_state)
+
+@st.dialog("Edit Scenario Parameters")
+def dialog_edit_scenario_params(scenario: Scenario, gena_state: State):
+    """Dialog to edit scenario parameters with Save and Run options."""
+    scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
+    protocol_proxy = scenario_proxy.get_protocol()
+
+    # Detect the process type based on scenario tags
+    entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, scenario.id)
+    step_tag = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA)[0].to_simple_tag().value
+
+    # Map step tags to process names and task classes
+    step_mapping = {
+        gena_state.TAG_FBA: ('fba_process', FBA),
+        gena_state.TAG_FVA: ('fva_process', FVA),
+        gena_state.TAG_KOA: ('koa_process', KOA),
+        gena_state.TAG_TWIN_REDUCER: ('twin_reducer_process', TwinReducer)
+    }
+
+    process_name, task_class = step_mapping[step_tag]
+
+    try:
+        process = protocol_proxy.get_process(process_name)
+        current_config = process._process_model.config.to_simple_dto().values
+    except Exception as e:
+        st.error(f"Could not retrieve process configuration: {str(e)}")
+        return
+
+    # Create a unique session state key for this edit dialog
+    edit_config_key = f"edit_config_{scenario.id}"
+
+    # Initialize the form with current configuration
+    form_config = StreamlitTaskRunner(task_class)
+    form_config.generate_config_form_without_run(
+        session_state_key=edit_config_key,
+        default_config_values=current_config,
+        is_default_config_valid=True
+    )
+
+    # Add Save and Run buttons
+    col1, col2 = st.columns(2)
+
+    with col1:
+        save_clicked = st.button("Save Changes", icon=":material/save:", use_container_width=True, key=f"save_edit_{scenario.id}")
+
+    with col2:
+        run_clicked = st.button("Save & Run", icon=":material/play_arrow:", use_container_width=True, key=f"run_edit_{scenario.id}")
+
+    if save_clicked or run_clicked:
+        # Get the updated configuration from session state
+        updated_config = st.session_state.get(edit_config_key, {}).get("config", {})
+
+        if not st.session_state.get(edit_config_key, {}).get("is_valid", False):
+            st.warning("Please fill all the mandatory fields.")
+            return
+
+        with StreamlitAuthenticateUser():
+            # Update the process configuration
+            process.set_config_params(updated_config)
+
+            if run_clicked:
+                # If run is clicked, also add to queue
+                scenario_proxy.add_to_queue()
+                gena_state.reset_tree_analysis()
+                gena_state.set_tree_default_item(scenario.id)
+
+            # Clear the edit session state
+            if edit_config_key in st.session_state:
+                del st.session_state[edit_config_key]
+
+            st.rerun()

@@ -3,7 +3,7 @@ from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner
 from gws_core import Scenario, ScenarioProxy, InputTask, Scenario, ScenarioStatus, ScenarioProxy
 from gws_gena import TwinReducer
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_saved_scenario_actions, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
 
 @st.dialog("Twin Reducer parameters")
 def dialog_twin_reducer_params(gena_state: State):
@@ -15,7 +15,16 @@ def dialog_twin_reducer_params(gena_state: State):
         is_default_config_valid=TwinReducer.config_specs.mandatory_values_are_set(
             TwinReducer.config_specs.get_default_values()))
 
-    if st.button("Run Twin Reducer", use_container_width=True, icon=":material/play_arrow:", key="button_twin_reducer"):
+    # Add both Save and Run buttons
+    col1, col2 = st.columns(2)
+
+    with col1:
+        save_clicked = st.button("Save Twin Reducer", use_container_width=True, icon=":material/save:", key="button_twin_reducer_save")
+
+    with col2:
+        run_clicked = st.button("Run Twin Reducer", use_container_width=True, icon=":material/play_arrow:", key="button_twin_reducer_run")
+
+    if save_clicked or run_clicked:
         if not gena_state.get_twin_reducer_config()["is_valid"]:
             st.warning("Please fill all the mandatory fields.")
             return
@@ -41,9 +50,11 @@ def dialog_twin_reducer_params(gena_state: State):
             protocol.add_output('efm_table_output', twin_reducer_process >> 'efm_table', flag_resource=False)
             protocol.add_output('reduction_table_output', twin_reducer_process >> 'reduction_table', flag_resource=False)
 
-            scenario.add_to_queue()
-            gena_state.reset_tree_analysis()
-            gena_state.set_tree_default_item(scenario.get_model_id())
+            # Only add to queue if Run was clicked
+            if run_clicked:
+                scenario.add_to_queue()
+                gena_state.reset_tree_analysis()
+                gena_state.set_tree_default_item(scenario.get_model_id())
             st.rerun()
 
 def render_twin_reducer_step(selected_scenario: Scenario, gena_state: State) -> None:
@@ -63,6 +74,9 @@ def render_twin_reducer_step(selected_scenario: Scenario, gena_state: State) -> 
         # Display details about scenario twin reducer
         st.markdown("##### Twin Reducer Scenario Results")
         display_scenario_parameters(selected_scenario, 'twin_reducer_process')
+
+        if selected_scenario.status == ScenarioStatus.DRAFT:
+            display_saved_scenario_actions(selected_scenario, gena_state)
 
         if selected_scenario.status != ScenarioStatus.SUCCESS:
             return
