@@ -287,8 +287,8 @@ def render_analysis_page(gena_state : State):
                         lab_mode = "lab"
                     else:
                         lab_mode = "dev-lab"
-
-                    st.link_button("View scenario", f"https://{lab_mode}.{virtual_host}/app/scenario/{selected_scenario.id}", icon=":material/open_in_new:")
+                    if not gena_state.get_is_standalone():
+                        st.link_button("View scenario", f"https://{lab_mode}.{virtual_host}/app/scenario/{selected_scenario.id}", icon=":material/open_in_new:")
                 with col_refresh:
                     # If the scenario status is running or in queue, add a refresh button to refresh the page
                     if selected_scenario.status in [ScenarioStatus.RUNNING, ScenarioStatus.WAITING_FOR_CLI_PROCESS, ScenarioStatus.IN_QUEUE]:

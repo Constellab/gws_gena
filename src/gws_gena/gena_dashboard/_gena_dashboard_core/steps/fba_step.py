@@ -76,7 +76,7 @@ def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
         st.markdown("##### FBA Scenario Results")
         display_scenario_parameters(selected_scenario, 'fba_process')
 
-        if selected_scenario.status == ScenarioStatus.DRAFT:
+        if selected_scenario.status == ScenarioStatus.DRAFT and not gena_state.get_is_standalone():
             display_saved_scenario_actions(selected_scenario, gena_state)
 
         if selected_scenario.status != ScenarioStatus.SUCCESS:
