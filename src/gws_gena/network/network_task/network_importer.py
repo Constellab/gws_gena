@@ -39,9 +39,8 @@ class NetworkImporter(ResourceImporter):
             short_description="The id of the Biomass metabolite", optional=True),
         "add_biomass":
         BoolParam(
-            human_name="Add biomass metabolite", default_value=False,
-            visibility=BoolParam.PROTECTED_VISIBILITY,
-            short_description="Add biomass metabolite in a compartment biomass."),
+            human_name="Add biomass metabolite", default_value=True,
+            short_description="Add biomass metabolite in a compartment biomass. Set True if there is no biomass metabolite in your network"),
         "replace_unknown_compartments":
         BoolParam(
             human_name="Set default compartment as others", default_value=False,
