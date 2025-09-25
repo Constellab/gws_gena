@@ -7,7 +7,7 @@ from streamlit_slickgrid import (
     ExportServices,
 )
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_gena import Network, Context, FBA, FVA, KOA, TwinReducer
+from gws_gena import Network, Context
 from gws_core import GenerateShareLinkDTO, ShareLinkEntityType, ShareLinkService, ResourceModel, Scenario, ScenarioProxy, File, SpaceFolder, Tag, Scenario, ScenarioStatus, ScenarioProxy, ScenarioCreationType, ScenarioSearchBuilder
 from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
@@ -395,16 +395,18 @@ def dialog_edit_scenario_params(scenario: Scenario, gena_state: State):
 
     # Map step tags to process names and task classes
     step_mapping = {
-        gena_state.TAG_FBA: ('fba_process', FBA),
-        gena_state.TAG_FVA: ('fva_process', FVA),
-        gena_state.TAG_KOA: ('koa_process', KOA),
-        gena_state.TAG_TWIN_REDUCER: ('twin_reducer_process', TwinReducer)
+        gena_state.TAG_FBA: 'fba_process',
+        gena_state.TAG_FVA: 'fva_process',
+        gena_state.TAG_KOA: 'koa_process',
+        gena_state.TAG_TWIN_REDUCER: 'twin_reducer_process'
     }
 
     process_name, task_class = step_mapping[step_tag]
+    task_class = None
 
     try:
         process = protocol_proxy.get_process(process_name)
+        task_class = process.get_process_type()
         current_config = process._process_model.config.to_simple_dto().values
     except Exception as e:
         st.error(f"Could not retrieve process configuration: {str(e)}")
