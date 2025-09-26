@@ -30,6 +30,7 @@ def twin_builder_run(gena_state: State):
         gena_state.set_tree_default_item(scenario.get_model_id())
 
 def render_twin_builder_step(selected_scenario: Scenario, gena_state: State) -> None:
+    translate_service = gena_state.get_translate_service()
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             col_run, col_help = StreamlitContainers.columns_with_fit_content('container-column_twin_builder', cols=[1, 'fit-content'],
@@ -40,12 +41,12 @@ def render_twin_builder_step(selected_scenario: Scenario, gena_state: State) -> 
                 st.link_button("**?**", url_doc_twin_builder)
             with col_run:
                 # On click, open a dialog to allow the user to select params of twin builder
-                st.button("Run Twin Builder", icon=":material/play_arrow:", use_container_width=False,
+                st.button(translate_service.translate("run_twin_builder"), icon=":material/play_arrow:", use_container_width=False,
                         on_click=lambda state=gena_state: twin_builder_run(state))
     else:
         # Display details about scenario twin builder
-        st.markdown("##### Twin Builder Scenario Results")
-        display_scenario_parameters(selected_scenario, 'twin_process')
+        st.markdown(f"##### {translate_service.translate('twin_builder_scenario_results')}")
+        display_scenario_parameters(selected_scenario, 'twin_process', gena_state)
         if selected_scenario.status != ScenarioStatus.SUCCESS:
             return
 
@@ -56,7 +57,7 @@ def render_twin_builder_step(selected_scenario: Scenario, gena_state: State) -> 
         twin_resource_set_dict = protocol_proxy.get_process('twin_process').get_output('twin').get_resources()
         network_resource, context_resource =  extract_network_and_context_from_twin(twin_resource_set_dict)
 
-        tab_network, tab_context = st.tabs(["Network", "Context"])
+        tab_network, tab_context = st.tabs([translate_service.translate("network"), translate_service.translate("context")])
         with tab_network:
             display_network(network_resource.get_model_id())
         with tab_context:

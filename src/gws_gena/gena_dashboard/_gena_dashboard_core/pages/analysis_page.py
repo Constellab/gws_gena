@@ -34,6 +34,7 @@ def get_step_icon(step_name: str, scenarios_by_step: Dict, list_scenarios: List[
 
 def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
     """Build the tree menu for analysis workflow steps"""
+    translate_service = gena_state.get_translate_service()
     button_menu = StreamlitTreeMenu(key=gena_state.TREE_ANALYSIS_KEY)
 
     # Build scenarios_by_step dictionary using helper function
@@ -56,7 +57,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         key_default_item = key_network
 
     network_item = StreamlitTreeMenuItem(
-        label="Network",
+        label=translate_service.translate("network"),
         key=key_network,
         material_icon=get_step_icon(gena_state.TAG_NETWORK, scenarios_by_step, scenario_network)
     )
@@ -73,7 +74,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         else:
             key_context = gena_state.TAG_CONTEXT
         context_item = StreamlitTreeMenuItem(
-            label="Context",
+            label=translate_service.translate("context"),
             key=key_context,
             material_icon=get_step_icon(gena_state.TAG_CONTEXT, scenarios_by_step, scenario_context)
         )
@@ -90,7 +91,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         else:
             key_twin_builder = gena_state.TAG_TWIN_BUILDER
         twin_builder_item = StreamlitTreeMenuItem(
-            label="Twin",
+            label=translate_service.translate("twin"),
             key=key_twin_builder,
             material_icon=get_step_icon(gena_state.TAG_TWIN_BUILDER, scenarios_by_step, scenario_twin_builder)
         )
@@ -100,7 +101,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         # 4) FBA step
         fba_scenarios = scenarios_by_step.get(gena_state.TAG_FBA, [])
         fba_item = StreamlitTreeMenuItem(
-            label="FBA",
+            label=translate_service.translate("fba"),
             key=f"{gena_state.TAG_FBA}",
             material_icon=get_step_icon(gena_state.TAG_FBA, scenarios_by_step, fba_scenarios)
         )
@@ -116,7 +117,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         # 4) FVA step
         fva_scenarios = scenarios_by_step.get(gena_state.TAG_FVA, [])
         fva_item = StreamlitTreeMenuItem(
-            label="FVA",
+            label=translate_service.translate("fva"),
             key=f"{gena_state.TAG_FVA}",
             material_icon=get_step_icon(gena_state.TAG_FVA, scenarios_by_step, fva_scenarios)
         )
@@ -132,7 +133,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         # 4) KOA step
         koa_scenarios = scenarios_by_step.get(gena_state.TAG_KOA, [])
         koa_item = StreamlitTreeMenuItem(
-            label="KOA",
+            label=translate_service.translate("koa"),
             key=f"{gena_state.TAG_KOA}",
             material_icon=get_step_icon(gena_state.TAG_KOA, scenarios_by_step, koa_scenarios)
         )
@@ -148,7 +149,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         # 4) Twin Reducer - only if Twin Builder is successful
         twin_reducer_scenarios = scenarios_by_step.get(gena_state.TAG_TWIN_REDUCER, [])
         twin_reducer_item = StreamlitTreeMenuItem(
-            label="Twin Reducer",
+            label=translate_service.translate("twin_reducer"),
             key=f"{gena_state.TAG_TWIN_REDUCER}",
             material_icon=get_step_icon(gena_state.TAG_TWIN_REDUCER, scenarios_by_step, twin_reducer_scenarios)
         )
@@ -164,13 +165,14 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
     return button_menu, key_default_item
 
 def render_analysis_page(gena_state : State):
+    translate_service = gena_state.get_translate_service()
     router = StreamlitRouter.load_from_session()
     # Create two columns
     left_col, right_col = st.columns([1, 4])
 
     with left_col:
         # Button to go home
-        if st.button("Recipes", use_container_width=True, icon=":material/home:", type="primary"):
+        if st.button(translate_service.translate("recipes"), use_container_width=True, icon=":material/home:", type="primary"):
             # Reset the state of selected tree default item
             gena_state.set_tree_default_item(None)
             router = StreamlitRouter.load_from_session()
@@ -178,7 +180,7 @@ def render_analysis_page(gena_state : State):
 
     selected_analysis = gena_state.get_selected_analysis()
     if not selected_analysis:
-        return st.error("No analysis selected. Please select an analysis from the first page.")
+        return st.error(translate_service.translate("no_analysis_selected"))
 
     # Get analysis name from scenario tag
     entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, selected_analysis.id)
@@ -194,9 +196,9 @@ def render_analysis_page(gena_state : State):
 
     if selected_analysis.status != ScenarioStatus.SUCCESS:
         if selected_analysis.status in [ScenarioStatus.RUNNING, ScenarioStatus.DRAFT, ScenarioStatus.WAITING_FOR_CLI_PROCESS, ScenarioStatus.IN_QUEUE, ScenarioStatus.PARTIALLY_RUN]:
-            message = "The first step for this analysis is still running. Please check back later."
+            message = translate_service.translate("analysis_still_running")
         else:
-            message = "The first step for this analysis is not completed successfully."
+            message = translate_service.translate("analysis_not_completed")
         with right_col:
             st.info(message)
         return
@@ -219,7 +221,7 @@ def render_analysis_page(gena_state : State):
     # Left column - Analysis workflow tree
     with left_col:
 
-        st.write(f"**Recipe:** {analysis_name}")
+        st.write(f"**{translate_service.translate('recipe')}:** {analysis_name}")
 
         # Build and render the analysis tree menu, and keep the key of the first element
         tree_menu, key_default_item = build_analysis_tree_menu(gena_state, gena_pipeline_id)
@@ -280,7 +282,7 @@ def render_analysis_page(gena_state : State):
                     st.markdown(f"#### {selected_scenario.get_short_name()}")
                 with col_status:
                     status_emoji = get_status_emoji(selected_scenario.status)
-                    st.markdown(f"#### **Status:** {status_emoji} {get_status_prettify(selected_scenario.status)}")
+                    st.markdown(f"#### **{translate_service.translate('status')}:** {status_emoji} {get_status_prettify(selected_scenario.status)}")
                     # Add a button to redirect to the scenario page
                     virtual_host = Settings.get_instance().get_virtual_host()
                     if Settings.get_instance().is_prod_mode():
@@ -288,11 +290,11 @@ def render_analysis_page(gena_state : State):
                     else:
                         lab_mode = "dev-lab"
                     if not gena_state.get_is_standalone():
-                        st.link_button("View scenario", f"https://{lab_mode}.{virtual_host}/app/scenario/{selected_scenario.id}", icon=":material/open_in_new:")
+                        st.link_button(translate_service.translate("view_scenario"), f"https://{lab_mode}.{virtual_host}/app/scenario/{selected_scenario.id}", icon=":material/open_in_new:")
                 with col_refresh:
                     # If the scenario status is running or in queue, add a refresh button to refresh the page
                     if selected_scenario.status in [ScenarioStatus.RUNNING, ScenarioStatus.WAITING_FOR_CLI_PROCESS, ScenarioStatus.IN_QUEUE]:
-                        if st.button("Refresh", icon=":material/refresh:", use_container_width=False):
+                        if st.button(translate_service.translate("refresh"), icon=":material/refresh:", use_container_width=False):
                             gena_state.set_tree_default_item(selected_scenario.id)
                             st.rerun()
 

@@ -24,7 +24,7 @@ def render_settings_page(gena_state : State):
         current_index = 0  # Default to English
 
     selected_lang_str = st.selectbox(
-        "Select Language",
+        translate_service.translate("select_language"),
         options=lang_options,
         index=current_index,
         key=gena_state.LANG_KEY

@@ -7,7 +7,8 @@ from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display
 
 @st.dialog("Twin Reducer parameters")
 def dialog_twin_reducer_params(gena_state: State):
-    st.text_input("Twin Reducer scenario name:", placeholder="Enter Twin Reducer scenario name", value=f"{gena_state.get_current_analysis_name()} - Twin Reducer", key=gena_state.TWIN_REDUCER_SCENARIO_NAME_INPUT_KEY)
+    translate_service = gena_state.get_translate_service()
+    st.text_input(translate_service.translate("twin_reducer_scenario_name"), placeholder=translate_service.translate("enter_twin_reducer_name"), value=f"{gena_state.get_current_analysis_name()} - Twin Reducer", key=gena_state.TWIN_REDUCER_SCENARIO_NAME_INPUT_KEY)
     form_config = StreamlitTaskRunner(TwinReducer)
     form_config.generate_config_form_without_run(
         session_state_key=gena_state.TWIN_REDUCER_CONFIG_KEY,
@@ -19,14 +20,14 @@ def dialog_twin_reducer_params(gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button("Save Twin Reducer", use_container_width=True, icon=":material/save:", key="button_twin_reducer_save")
+        save_clicked = st.button(translate_service.translate("save_twin_reducer"), use_container_width=True, icon=":material/save:", key="button_twin_reducer_save")
 
     with col2:
-        run_clicked = st.button("Run Twin Reducer", use_container_width=True, icon=":material/play_arrow:", key="button_twin_reducer_run")
+        run_clicked = st.button(translate_service.translate("run_twin_reducer"), use_container_width=True, icon=":material/play_arrow:", key="button_twin_reducer_run")
 
     if save_clicked or run_clicked:
         if not gena_state.get_twin_reducer_config()["is_valid"]:
-            st.warning("Please fill all the mandatory fields.")
+            st.warning(translate_service.translate("fill_mandatory_fields"))
             return
 
         with StreamlitAuthenticateUser():
@@ -58,22 +59,23 @@ def dialog_twin_reducer_params(gena_state: State):
             st.rerun()
 
 def render_twin_reducer_step(selected_scenario: Scenario, gena_state: State) -> None:
+    translate_service = gena_state.get_translate_service()
 
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of twin reducer
-            st.button("Configure new Twin Reducer scenario", icon=":material/edit:", use_container_width=False,
+            st.button(translate_service.translate("configure_new_twin_reducer"), icon=":material/edit:", use_container_width=False,
                         on_click=lambda state=gena_state: dialog_twin_reducer_params(state))
 
         # Display table of existing Twin Reducer scenarios
-        st.markdown("### List of scenarios")
+        st.markdown(f"### {translate_service.translate('list_scenarios')}")
 
         list_scenario_twin_reducer = gena_state.get_scenario_step_twin_reducer()
         render_scenario_table(list_scenario_twin_reducer, 'twin_reducer_process', 'twin_reducer_grid', gena_state)
     else:
         # Display details about scenario twin reducer
-        st.markdown("##### Twin Reducer Scenario Results")
-        display_scenario_parameters(selected_scenario, 'twin_reducer_process')
+        st.markdown(f"##### {translate_service.translate('twin_reducer_scenario_results')}")
+        display_scenario_parameters(selected_scenario, 'twin_reducer_process', gena_state)
 
         if selected_scenario.status == ScenarioStatus.DRAFT and not gena_state.get_is_standalone():
             display_saved_scenario_actions(selected_scenario, gena_state)
@@ -88,7 +90,7 @@ def render_twin_reducer_step(selected_scenario: Scenario, gena_state: State) -> 
         efm_table = protocol_proxy.get_process('twin_reducer_process').get_output('efm_table')
         reduction_table = protocol_proxy.get_process('twin_reducer_process').get_output('reduction_table')
 
-        tab_efm, tab_reduction = st.tabs(["EFM table", "Reduction table"])
+        tab_efm, tab_reduction = st.tabs([translate_service.translate("efm_table"), translate_service.translate("reduction_table")])
         with tab_efm:
             st.dataframe(efm_table.get_data())
         with tab_reduction:

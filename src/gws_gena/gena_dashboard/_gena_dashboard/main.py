@@ -18,9 +18,10 @@ def display_first_page(gena_state : State):
     first_page.render_first_page(gena_state)
 
 def add_first_page(router: StreamlitRouter, gena_state: State):
+    translate_service = gena_state.get_translate_service()
     router.add_page(
         lambda: display_first_page(gena_state),
-        title='Recipes',
+        title=translate_service.translate('page_recipes'),
         url_path='first-page',
         icon='📦',
         hide_from_sidebar=False
@@ -30,9 +31,10 @@ def display_new_analysis_page(gena_state : State):
     new_analysis_page.render_new_analysis_page(gena_state)
 
 def add_new_analysis_page(router: StreamlitRouter, gena_state: State):
+    translate_service = gena_state.get_translate_service()
     router.add_page(
         lambda: display_new_analysis_page(gena_state),
-        title='New Analysis',
+        title=translate_service.translate('page_new_analysis'),
         url_path='new-analysis',
         icon=":material/edit_note:",
         hide_from_sidebar=True
@@ -42,9 +44,10 @@ def display_analysis_page(gena_state : State):
     analysis_page.render_analysis_page(gena_state)
 
 def add_analysis_page(router: StreamlitRouter, gena_state: State):
+    translate_service = gena_state.get_translate_service()
     router.add_page(
         lambda: display_analysis_page(gena_state),
-        title='Analysis',
+        title=translate_service.translate('page_analysis'),
         url_path='analysis',
         icon=":material/analytics:",
         hide_from_sidebar=True
@@ -54,9 +57,10 @@ def display_settings_page(gena_state : State):
     settings.render_settings_page(gena_state)
 
 def add_settings_page(router: StreamlitRouter, gena_state: State):
+    translate_service = gena_state.get_translate_service()
     router.add_page(
         lambda: display_settings_page(gena_state),
-        title='Settings',
+        title=translate_service.translate('page_settings'),
         url_path='settings',
         icon=":material/settings:",
         hide_from_sidebar=False

@@ -7,12 +7,13 @@ from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display
 
 @st.dialog("KOA parameters")
 def dialog_koa_params(gena_state: State):
-    st.text_input("KOA Analysis scenario name:", placeholder="Enter KOA analysis scenario name", value=f"{gena_state.get_current_analysis_name()} - KOA Analysis", key=gena_state.KOA_SCENARIO_NAME_INPUT_KEY)
+    translate_service = gena_state.get_translate_service()
+    st.text_input(translate_service.translate("koa_analysis_scenario_name"), placeholder=translate_service.translate("enter_koa_name"), value=f"{gena_state.get_current_analysis_name()} - KOA Analysis", key=gena_state.KOA_SCENARIO_NAME_INPUT_KEY)
 
     # select ko table data
     resource_select = StreamlitResourceSelect()
     resource_select.select_resource(
-        placeholder='Search for ko table resource', key=gena_state.RESOURCE_SELECTOR_KO_TABLE_KEY, defaut_resource=None)
+        placeholder=translate_service.translate('search_ko_table'), key=gena_state.RESOURCE_SELECTOR_KO_TABLE_KEY, defaut_resource=None)
 
     form_config = StreamlitTaskRunner(KOA)
     form_config.generate_config_form_without_run(
@@ -25,14 +26,14 @@ def dialog_koa_params(gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button("Save KOA", use_container_width=True, icon=":material/save:", key="button_koa_save")
+        save_clicked = st.button(translate_service.translate("save_koa"), use_container_width=True, icon=":material/save:", key="button_koa_save")
 
     with col2:
-        run_clicked = st.button("Run KOA", use_container_width=True, icon=":material/play_arrow:", key="button_koa_run")
+        run_clicked = st.button(translate_service.translate("run_koa"), use_container_width=True, icon=":material/play_arrow:", key="button_koa_run")
 
     if save_clicked or run_clicked:
         if not gena_state.get_koa_config()["is_valid"] or not gena_state.get_resource_selector_ko_table():
-            st.warning("Please fill all the mandatory fields.")
+            st.warning(translate_service.translate("fill_mandatory_fields"))
             return
 
         with StreamlitAuthenticateUser():
@@ -74,22 +75,23 @@ def dialog_koa_params(gena_state: State):
             st.rerun()
 
 def render_koa_step(selected_scenario: Scenario, gena_state: State) -> None:
+    translate_service = gena_state.get_translate_service()
 
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of KOA analysis
-            st.button("Configure new KOA scenario", icon=":material/edit:", use_container_width=False,
+            st.button(translate_service.translate("configure_new_koa"), icon=":material/edit:", use_container_width=False,
                     on_click=lambda state=gena_state: dialog_koa_params(state))
 
         # Display table of existing KOA Analysis scenarios
-        st.markdown("### List of scenarios")
+        st.markdown(f"### {translate_service.translate('list_scenarios')}")
 
         list_scenario_koa = gena_state.get_scenario_step_koa()
         render_scenario_table(list_scenario_koa, 'koa_process', 'koa_grid', gena_state)
     else:
         # Display details about scenario KOA analysis
-        st.markdown("##### KOA Analysis Scenario Results")
-        display_scenario_parameters(selected_scenario, 'koa_process')
+        st.markdown(f"##### {translate_service.translate('koa_scenario_results')}")
+        display_scenario_parameters(selected_scenario, 'koa_process', gena_state)
 
         if selected_scenario.status == ScenarioStatus.DRAFT and not gena_state.get_is_standalone():
             display_saved_scenario_actions(selected_scenario, gena_state)
@@ -111,11 +113,11 @@ def render_koa_step(selected_scenario: Scenario, gena_state: State) -> None:
         twin_resource_set_dict = protocol_proxy.get_process('koa_process').get_output('twin').get_resources()
         network_resource, context_resource = extract_network_and_context_from_twin(twin_resource_set_dict)
 
-        tab_flux, tab_summary, tab_network, tab_context = st.tabs(["Flux tables", "Summary", "Network", "Context"])
+        tab_flux, tab_summary, tab_network, tab_context = st.tabs([translate_service.translate("flux_tables"), translate_service.translate("summary"), translate_service.translate("network"), translate_service.translate("context")])
         with tab_flux:
             # Display flux tables
             resource_set_result_dict = koa_output.get_resources()
-            selected_result = st.selectbox("Select a flux table to display", options=resource_set_result_dict.keys(), key="flux_select")
+            selected_result = st.selectbox(translate_service.translate("select_flux_table"), options=resource_set_result_dict.keys(), key="flux_select")
             if selected_result:
                 selected_resource = resource_set_result_dict.get(selected_result)
                 st.dataframe(selected_resource.get_data())

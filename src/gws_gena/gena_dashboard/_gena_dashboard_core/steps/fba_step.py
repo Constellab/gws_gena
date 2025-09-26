@@ -7,7 +7,8 @@ from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display
 
 @st.dialog("FBA parameters")
 def dialog_fba_params(gena_state: State):
-    st.text_input("FBA scenario name:", placeholder="Enter FBA scenario name", value=f"{gena_state.get_current_analysis_name()} - FBA", key=gena_state.FBA_SCENARIO_NAME_INPUT_KEY)
+    translate_service = gena_state.get_translate_service()
+    st.text_input(translate_service.translate("fba_scenario_name"), placeholder=translate_service.translate("enter_fba_name"), value=f"{gena_state.get_current_analysis_name()} - FBA", key=gena_state.FBA_SCENARIO_NAME_INPUT_KEY)
     form_config = StreamlitTaskRunner(FBA)
     form_config.generate_config_form_without_run(
         session_state_key=gena_state.FBA_CONFIG_KEY,
@@ -19,14 +20,14 @@ def dialog_fba_params(gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button("Save FBA", use_container_width=True, icon=":material/save:", key="button_fba_save")
+        save_clicked = st.button(translate_service.translate("save_fba"), use_container_width=True, icon=":material/save:", key="button_fba_save")
 
     with col2:
-        run_clicked = st.button("Run FBA", use_container_width=True, icon=":material/play_arrow:", key="button_fba_run")
+        run_clicked = st.button(translate_service.translate("run_fba"), use_container_width=True, icon=":material/play_arrow:", key="button_fba_run")
 
     if save_clicked or run_clicked:
         if not gena_state.get_fba_config()["is_valid"]:
-            st.warning("Please fill all the mandatory fields.")
+            st.warning(translate_service.translate("fill_mandatory_fields"))
             return
 
         with StreamlitAuthenticateUser():
@@ -59,22 +60,23 @@ def dialog_fba_params(gena_state: State):
             st.rerun()
 
 def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
+    translate_service = gena_state.get_translate_service()
 
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of fba
-            st.button("Configure new FBA scenario", icon=":material/edit:", use_container_width=False,
+            st.button(translate_service.translate("configure_new_fba"), icon=":material/edit:", use_container_width=False,
                         on_click=lambda state=gena_state: dialog_fba_params(state))
 
         # Display table of existing FBA scenarios
-        st.markdown("### List of scenarios")
+        st.markdown(f"### {translate_service.translate('list_scenarios')}")
 
         list_scenario_fba = gena_state.get_scenario_step_fba()
         render_scenario_table(list_scenario_fba, 'fba_process', 'fba_grid', gena_state)
     else:
         # Display details about scenario fba
-        st.markdown("##### FBA Scenario Results")
-        display_scenario_parameters(selected_scenario, 'fba_process')
+        st.markdown(f"##### {translate_service.translate('fba_scenario_results')}")
+        display_scenario_parameters(selected_scenario, 'fba_process', gena_state)
 
         if selected_scenario.status == ScenarioStatus.DRAFT and not gena_state.get_is_standalone():
             display_saved_scenario_actions(selected_scenario, gena_state)
@@ -91,7 +93,7 @@ def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
         twin_resource_set_dict = protocol_proxy.get_process('fba_process').get_output('twin').get_resources()
         network_resource, context_resource = extract_network_and_context_from_twin(twin_resource_set_dict)
 
-        tab_flux, tab_sv, tab_network, tab_context = st.tabs(["Flux table", "SV table", "Network", "Context"])
+        tab_flux, tab_sv, tab_network, tab_context = st.tabs([translate_service.translate("flux_table"), translate_service.translate("sv_table"), translate_service.translate("network"), translate_service.translate("context")])
         with tab_flux:
             st.dataframe(fba_result.get("Flux table").get_data())
         with tab_sv:

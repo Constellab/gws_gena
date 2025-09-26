@@ -79,12 +79,13 @@ def create_scenario_table_data(scenarios: List[Scenario], process_name: str) -> 
 
     return table_data, all_param_keys
 
-def create_slickgrid_columns(param_keys: set) -> List[Dict]:
+def create_slickgrid_columns(param_keys: set, gena_state : State) -> List[Dict]:
     """Generic function to create SlickGrid columns."""
+    translate_service = gena_state.get_translate_service()
     columns = [
         {
             "id": "Scenario Name",
-            "name": "Scenario Name",
+            "name": translate_service.translate("scenario_name"),
             "field": "Scenario Name",
             "sortable": True,
             "type": FieldType.string,
@@ -93,7 +94,7 @@ def create_slickgrid_columns(param_keys: set) -> List[Dict]:
         },
         {
             "id": "Creation Date",
-            "name": "Creation Date",
+            "name": translate_service.translate("creation_date"),
             "field": "Creation Date",
             "sortable": True,
             "type": FieldType.string,
@@ -102,7 +103,7 @@ def create_slickgrid_columns(param_keys: set) -> List[Dict]:
         },
         {
             "id": "Status",
-            "name": "Status",
+            "name": translate_service.translate("status"),
             "field": "Status",
             "sortable": True,
             "type": FieldType.string,
@@ -128,9 +129,10 @@ def create_slickgrid_columns(param_keys: set) -> List[Dict]:
 
 def render_scenario_table(scenarios: List[Scenario], process_name: str, grid_key: str, gena_state: State) -> None:
     """Generic function to render a scenario table with parameters."""
+    translate_service = gena_state.get_translate_service()
     if scenarios:
         table_data, all_param_keys = create_scenario_table_data(scenarios, process_name)
-        columns = create_slickgrid_columns(all_param_keys)
+        columns = create_slickgrid_columns(all_param_keys, gena_state)
 
         options = {
             "enableFiltering": True,
@@ -156,7 +158,7 @@ def render_scenario_table(scenarios: List[Scenario], process_name: str, grid_key
                 gena_state.update_tree_menu_selection(selected_scenario.id)
                 st.rerun()
     else:
-        st.info(f"No {process_name.replace('_', ' ').title()} analyses found.")
+        st.info(f"{translate_service.translate('no_analyses_found_prefix')} {process_name.replace('_', ' ').title()} {translate_service.translate('no_analyses_found')}")
 
 def get_context_process_name(scenario: Scenario) -> str:
     """Get the process name used in a context scenario."""
@@ -180,8 +182,9 @@ def get_context_process_name(scenario: Scenario) -> str:
     # Default fallback
     return 'context_process'
 
-def display_scenario_parameters(scenario: Scenario, process_name: str) -> None:
+def display_scenario_parameters(scenario: Scenario, process_name: str, gena_state : State) -> None:
     """Generic function to display scenario parameters in an expander."""
+    translate_service = gena_state.get_translate_service()
     scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
     protocol_proxy = scenario_proxy.get_protocol()
     process = protocol_proxy.get_process(process_name)
@@ -190,20 +193,20 @@ def display_scenario_parameters(scenario: Scenario, process_name: str) -> None:
     # Add task name to parameters
     readable_task_name = process._process_model.name
 
-    with st.expander(f"Parameters - {readable_task_name}"):
+    with st.expander(f"{translate_service.translate('parameters')} - {readable_task_name}"):
         param_data = []
 
         # Add task name as first parameter
         param_data.append({
-            "Parameter": "Task",
-            "Value": readable_task_name
+            translate_service.translate("parameter"): "Task",
+            translate_service.translate("value"): readable_task_name
         })
 
         for key, value in config_params.items():
             readable_key = key.replace("_", " ").replace("-", " ").title()
             param_data.append({
-                "Parameter": readable_key,
-                "Value": str(value)
+                translate_service.translate("parameter"): readable_key,
+                translate_service.translate("value"): str(value)
             })
 
         if param_data:
@@ -245,8 +248,8 @@ def add_tags_on_network(edited_network: Network, gena_state: State) -> None:
 
 def search_updated_network(gena_state: State) -> File | None:
     """
-    Helper function to search for updated network resource.
-    Returns the File resource if found, None otherwise.
+    Helper function to search for updated network resource
+    Returns the File resource if found, None otherwise
     """
     try:
         # Search for existing updated network resource
@@ -369,10 +372,11 @@ def build_scenarios_by_step_dict(gena_pipeline_id: str, gena_state: State) -> Di
 
 def display_saved_scenario_actions(scenario: Scenario, gena_state: State) -> None:
     """Display Run and Edit actions for saved scenarios."""
+    translate_service = gena_state.get_translate_service()
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button(f"Run", icon=":material/play_arrow:", key=f"run_{scenario.id}", use_container_width=True):
+        if st.button(translate_service.translate("run"), icon=":material/play_arrow:", key=f"run_{scenario.id}", use_container_width=True):
             scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
             scenario_proxy.add_to_queue()
             gena_state.reset_tree_analysis()
@@ -380,12 +384,13 @@ def display_saved_scenario_actions(scenario: Scenario, gena_state: State) -> Non
             st.rerun()
 
     with col2:
-        if st.button(f"Edit", icon=":material/edit:", key=f"edit_{scenario.id}", use_container_width=True):
+        if st.button(translate_service.translate("edit"), icon=":material/edit:", key=f"edit_{scenario.id}", use_container_width=True):
             dialog_edit_scenario_params(scenario, gena_state)
 
 @st.dialog("Edit Scenario Parameters")
 def dialog_edit_scenario_params(scenario: Scenario, gena_state: State):
     """Dialog to edit scenario parameters with Save and Run options."""
+    translate_service = gena_state.get_translate_service()
     scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
     protocol_proxy = scenario_proxy.get_protocol()
 
@@ -427,17 +432,17 @@ def dialog_edit_scenario_params(scenario: Scenario, gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button("Save Changes", icon=":material/save:", use_container_width=True, key=f"save_edit_{scenario.id}")
+        save_clicked = st.button(translate_service.translate("save_changes"), icon=":material/save:", use_container_width=True, key=f"save_edit_{scenario.id}")
 
     with col2:
-        run_clicked = st.button("Save & Run", icon=":material/play_arrow:", use_container_width=True, key=f"run_edit_{scenario.id}")
+        run_clicked = st.button(translate_service.translate("save_and_run"), icon=":material/play_arrow:", use_container_width=True, key=f"run_edit_{scenario.id}")
 
     if save_clicked or run_clicked:
         # Get the updated configuration from session state
         updated_config = st.session_state.get(edit_config_key, {}).get("config", {})
 
         if not st.session_state.get(edit_config_key, {}).get("is_valid", False):
-            st.warning("Please fill all the mandatory fields.")
+            st.warning(translate_service.translate("fill_mandatory_fields"))
             return
 
         with StreamlitAuthenticateUser():

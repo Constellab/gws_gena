@@ -26,7 +26,7 @@ def render_first_page(gena_state : State):
 
     with col_button_new:
         if not gena_state.get_is_standalone():
-            if st.button("Create new recipe", icon=":material/add:", use_container_width=False, type = "primary"):
+            if st.button(translate_service.translate("create_new_recipe"), icon=":material/add:", use_container_width=False, type = "primary"):
                 # On click, navigate to a hidden page 'run new recipe'
                 router = StreamlitRouter.load_from_session()
                 router.navigate("new-analysis")
@@ -100,7 +100,7 @@ def render_first_page(gena_state : State):
         columns = [
             {
                 "id": "Name given",
-                "name": "Recipe name",
+                "name": translate_service.translate("recipe_name"),
                 "field": "Name given",
                 "sortable": True,
                 "type": FieldType.string,
@@ -109,7 +109,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "Folder",
-                "name": "Folder",
+                "name": translate_service.translate("folder"),
                 "field": "Folder",
                 "sortable": True,
                 "type": FieldType.string,
@@ -118,7 +118,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "network",
-                "name": "Network",
+                "name": translate_service.translate("network"),
                 "field": "network",
                 "sortable": True,
                 "type": FieldType.string,
@@ -127,7 +127,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "context",
-                "name": "Context",
+                "name": translate_service.translate("context"),
                 "field": "context",
                 "sortable": True,
                 "type": FieldType.string,
@@ -136,7 +136,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "twin_builder",
-                "name": "Twin Builder",
+                "name": translate_service.translate("twin_builder"),
                 "field": "twin_builder",
                 "sortable": True,
                 "type": FieldType.string,
@@ -145,7 +145,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "fba",
-                "name": "FBA",
+                "name": translate_service.translate("fba"),
                 "field": "fba",
                 "sortable": True,
                 "type": FieldType.string,
@@ -154,7 +154,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "fva",
-                "name": "FVA",
+                "name": translate_service.translate("fva"),
                 "field": "fva",
                 "sortable": True,
                 "type": FieldType.string,
@@ -163,7 +163,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "koa",
-                "name": "KOA",
+                "name": translate_service.translate("koa"),
                 "field": "koa",
                 "sortable": True,
                 "type": FieldType.string,
@@ -172,7 +172,7 @@ def render_first_page(gena_state : State):
             },
             {
                 "id": "twin_reducer",
-                "name": "Twin Reducer",
+                "name": translate_service.translate("twin_reducer"),
                 "field": "twin_reducer",
                 "sortable": True,
                 "type": FieldType.string,
@@ -237,4 +237,4 @@ def render_first_page(gena_state : State):
                 router.navigate("analysis")
 
     else:
-        st.info("No recipe found. Please click on 'Create new recipe' to create one.")
+        st.info(translate_service.translate("no_recipe_found"))

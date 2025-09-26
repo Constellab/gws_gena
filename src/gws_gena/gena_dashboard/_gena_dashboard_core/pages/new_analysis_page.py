@@ -17,36 +17,37 @@ def _flatten_folders_recursive(folders, folder_dict, folder_display_names, prefi
             _flatten_folders_recursive(folder.children, folder_dict, folder_display_names, prefix + "------")
 
 def render_new_analysis_page(gena_state : State):
+    translate_service = gena_state.get_translate_service()
     # Add a return button
     router = StreamlitRouter.load_from_session()
 
-    if st.button("Return recipes", icon=":material/arrow_back:", use_container_width=False):
+    if st.button(translate_service.translate("return_recipes"), icon=":material/arrow_back:", use_container_width=False):
         router.navigate("first-page")
 
-    st.markdown("## New recipe")
+    st.markdown(f"## {translate_service.translate('new_recipe')}")
     url_doc_network = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/resource/Network"
 
     col_question, col_help = StreamlitContainers.columns_with_fit_content('container-column_network', cols=[1, 'fit-content'],
         vertical_align_items='center')
     with col_question:
-        st.selectbox("How would you like to provide network data?",
-            options=["Select existing network resource", "Load from BiGG Models"],
+        st.selectbox(translate_service.translate("how_provide_network_data"),
+            options=[translate_service.translate("select_existing_network"), translate_service.translate("load_from_bigg")],
             index=None,
             key=gena_state.NETWORK_OPTION_KEY
         )
     with col_help:
         st.link_button("**?**", url_doc_network)
     network_selected_is_network = False
-    if gena_state.get_network_option() == "Load from BiGG Models":
+    if gena_state.get_network_option() == translate_service.translate("load_from_bigg"):
         form_config = StreamlitTaskRunner(LoadBiGGModels)
         form_config.generate_config_form_without_run(
             session_state_key=gena_state.LOAD_BIGG_MODEL_CONFIG_KEY, default_config_values=LoadBiGGModels.config_specs.get_default_values())
 
-    elif gena_state.get_network_option() == "Select existing network resource":
+    elif gena_state.get_network_option() == translate_service.translate("select_existing_network"):
         # select network data : the user can select network resource, file json or file xml or file matlab
         resource_select = StreamlitResourceSelect()
         resource_select.select_resource(
-            placeholder='Search for network resource', key=gena_state.RESOURCE_SELECTOR_NETWORK_KEY)
+            placeholder=translate_service.translate("search_network_resource"), key=gena_state.RESOURCE_SELECTOR_NETWORK_KEY)
         if gena_state.get_resource_selector_network():
             selected_network_id = gena_state.get_resource_selector_network()["resourceId"]
             selected_network = ResourceModel.get_by_id(selected_network_id)
@@ -54,7 +55,7 @@ def render_new_analysis_page(gena_state : State):
             if selected_network.resource_typing_name == 'RESOURCE.gws_gena.Network':
                 network_selected_is_network = True
     else:
-        st.info("Please select an option")
+        st.info(translate_service.translate("please_select_option"))
         return
 
     if not network_selected_is_network:
@@ -64,7 +65,7 @@ def render_new_analysis_page(gena_state : State):
 
     cols = st.columns(2)
     with cols[0]:
-        st.text_input("Insert your recipe name", key = gena_state.ANALYSIS_NAME_USER)
+        st.text_input(translate_service.translate("insert_recipe_name"), key = gena_state.ANALYSIS_NAME_USER)
 
     with cols[1]:
         space_service = SpaceService.get_instance()
@@ -77,14 +78,14 @@ def render_new_analysis_page(gena_state : State):
 
         # Give the user the possibility to choose from all folders (including children)
         folder_to_associate_with = st.selectbox(
-            "Select folder to associate with",
+            translate_service.translate("select_folder_associate"),
             options=list(folder_display_names.keys()),
             index=None
         )
         # Save in session state the id of the folder
         gena_state.set_selected_folder_id(folder_display_names.get(folder_to_associate_with))
 
-    if st.button("Run", icon=":material/play_arrow:", use_container_width=False):
+    if st.button(translate_service.translate("run"), icon=":material/play_arrow:", use_container_width=False):
         with StreamlitAuthenticateUser():
             list_required_fields_filled = []
             list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_analysis_name_user()))
@@ -98,14 +99,14 @@ def render_new_analysis_page(gena_state : State):
                 list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_selected_folder_id()))
             # Check if mandatory fields have been filled
             if False in list_required_fields_filled:
-                st.warning("Please fill all the mandatory fields.")
+                st.warning(translate_service.translate("fill_mandatory_fields"))
                 return
 
             analysis_name = gena_state.get_analysis_name_user()
             # Create a new scenario in the lab
             folder : SpaceFolder = SpaceFolder.get_by_id(gena_state.get_selected_folder_id())
             scenario: ScenarioProxy = ScenarioProxy(
-                None, folder=folder, title=f"{analysis_name} - Network",
+                None, folder=folder, title=f"{analysis_name} - {translate_service.translate('network_suffix')}",
                 creation_type=ScenarioCreationType.MANUAL,
             )
             protocol: ProtocolProxy = scenario.get_protocol()

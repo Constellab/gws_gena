@@ -104,13 +104,14 @@ def _render_context_setup_ui(gena_state: State) -> bool:
     url_doc_context = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/resource/Context"
     url_doc_context_importer = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/task/ContextImporter"
     url_doc_context_builder = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/task/ContextBuilder"
+    translate_service = gena_state.get_translate_service()
 
     col_question, col_help = StreamlitContainers.columns_with_fit_content('container-column_context', cols=[1, 'fit-content'],
         vertical_align_items='center')
     with col_question:
         st.selectbox(
-            "Would you like to add a context?",
-            options=["Yes", "No"],
+            translate_service.translate("would_like_add_context"),
+            options=[translate_service.translate("yes"), translate_service.translate("no")],
             index=None,
             key=gena_state.CONTEXT_BOOL_KEY
         )
@@ -119,27 +120,27 @@ def _render_context_setup_ui(gena_state: State) -> bool:
 
     context_choice = gena_state.get_context_bool()
 
-    if context_choice == "No":
-        st.info("You can directly run context importer. Context will be empty.")
+    if context_choice == translate_service.translate("no"):
+        st.info(translate_service.translate("run_context_importer_info"))
         return True
 
-    elif context_choice == "Yes":
+    elif context_choice == translate_service.translate("yes"):
         st.selectbox(
-            "How would you like to provide context data?",
-            options=["Select existing context resource", "Build a new context"],
+            translate_service.translate("how_provide_context_data"),
+            options=[translate_service.translate("select_existing_context"), translate_service.translate("build_new_context")],
             index=None,
             key=gena_state.CONTEXT_OPTION_KEY
         )
 
         context_option = gena_state.get_context_option()
 
-        if context_option == "Select existing context resource":
+        if context_option == translate_service.translate("select_existing_context"):
             col_select, col_help = StreamlitContainers.columns_with_fit_content('container-column_context_importer', cols=[1, 'fit-content'],
                 vertical_align_items='center')
             with col_select:
                 resource_select = StreamlitResourceSelect()
                 resource_select.select_resource(
-                    placeholder='Search for context resource',
+                    placeholder=translate_service.translate('search_context_resource'),
                     key=gena_state.RESOURCE_SELECTOR_CONTEXT_KEY,
                     defaut_resource=None
                 )
@@ -147,17 +148,17 @@ def _render_context_setup_ui(gena_state: State) -> bool:
                 st.link_button("**?**", url_doc_context_importer)
             return bool(gena_state.get_resource_selector_context())
 
-        elif context_option == "Build a new context":
+        elif context_option == translate_service.translate("build_new_context"):
             col_info, col_help = StreamlitContainers.columns_with_fit_content('container-column_context_builder', cols=[1, 'fit-content'],
                 vertical_align_items='center')
             with col_info:
-                st.info("In order to contextualise the network, you must select either a phenotype or a flux table.")
+                st.info(translate_service.translate("contextualise_network_info"))
             with col_help:
                 st.link_button("**?**", url_doc_context_builder)
             # Phenotype table selector
             resource_select_phenotype = StreamlitResourceSelect()
             resource_select_phenotype.select_resource(
-                placeholder='Search for phenotype table resource',
+                placeholder=translate_service.translate('search_phenotype_table'),
                 key=gena_state.RESOURCE_SELECTOR_PHENOTYPE_KEY,
                 defaut_resource=None
             )
@@ -165,7 +166,7 @@ def _render_context_setup_ui(gena_state: State) -> bool:
             # Flux table selector
             resource_select_flux = StreamlitResourceSelect()
             resource_select_flux.select_resource(
-                placeholder='Search for flux table resource',
+                placeholder=translate_service.translate('search_flux_table'),
                 key=gena_state.RESOURCE_SELECTOR_FLUX_KEY,
                 defaut_resource=None
             )
@@ -173,10 +174,10 @@ def _render_context_setup_ui(gena_state: State) -> bool:
             return (gena_state.get_resource_selector_phenotype() or
                     gena_state.get_resource_selector_flux())
         else:
-            st.info("Please select an option.")
+            st.info(translate_service.translate("please_select_option"))
             return False
     else:
-        st.info("Please select an option.")
+        st.info(translate_service.translate("please_select_option"))
         return False
 
 
@@ -190,10 +191,11 @@ def render_context_step(selected_scenario: Optional[Scenario], gena_state: State
 
 def _render_context_creation_ui(gena_state: State) -> None:
     """Render UI for creating a new context scenario."""
+    translate_service = gena_state.get_translate_service()
     # Check if network is available
     file_network = search_updated_network(gena_state)
     if not file_network:
-        st.info("Please save a network to proceed.")
+        st.info(translate_service.translate("save_network_proceed"))
         return
 
     if gena_state.get_is_standalone():
@@ -203,13 +205,13 @@ def _render_context_creation_ui(gena_state: State) -> None:
     if not _render_context_setup_ui(gena_state):
         return
 
-    st.info("ℹ️ Please note that once you have run the context importer, you will not be able to modify the network.")
+    st.info(f"ℹ️ {translate_service.translate('context_note')}")
 
     # Run context importer button
-    if st.button("Run context importer", icon=":material/play_arrow:", use_container_width=False):
+    if st.button(translate_service.translate("run_context_importer"), icon=":material/play_arrow:", use_container_width=False):
         context_choice = gena_state.get_context_bool()
 
-        if context_choice == "No":
+        if context_choice == translate_service.translate("no"):
             # Create empty context scenario
             selected_context = _create_empty_context_resource(gena_state)
             scenario = create_base_scenario_with_tags(
@@ -226,7 +228,7 @@ def _render_context_creation_ui(gena_state: State) -> None:
                 gena_state.get_resource_selector_flux(),
                 gena_state.get_resource_selector_context()
             ]):
-                st.warning("Please select at least one resource.")
+                st.warning(translate_service.translate("select_resource_warning"))
                 return
 
             # Create scenario
@@ -238,7 +240,7 @@ def _render_context_creation_ui(gena_state: State) -> None:
 
             context_option = gena_state.get_context_option()
 
-            if context_option == "Build a new context":
+            if context_option == translate_service.translate("build_new_context"):
                 _handle_context_builder(protocol, gena_state)
             else:  # Select existing context resource
                 if _handle_existing_context(protocol, gena_state):
@@ -254,11 +256,12 @@ def _render_context_creation_ui(gena_state: State) -> None:
 
 def _render_context_results(selected_scenario: Scenario, gena_state: State) -> None:
     """Render context results for a completed scenario."""
-    st.markdown("##### Context Results")
+    translate_service = gena_state.get_translate_service()
+    st.markdown(f"##### {translate_service.translate('context_results')}")
 
     # Display parameters reminder
     process_name = get_context_process_name(selected_scenario)
-    display_scenario_parameters(selected_scenario, process_name)
+    display_scenario_parameters(selected_scenario, process_name, gena_state)
 
     if selected_scenario.status != ScenarioStatus.SUCCESS:
         return
@@ -266,4 +269,5 @@ def _render_context_results(selected_scenario: Scenario, gena_state: State) -> N
     context_output = search_context(gena_state)
 
     if context_output:
+        st.json(context_output.dumps())
         st.json(context_output.dumps())

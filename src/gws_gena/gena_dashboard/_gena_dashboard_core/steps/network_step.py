@@ -8,10 +8,11 @@ from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display
 from gws_gena import GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, NetworkMergem, TransporterAdder
 from gws_core.task.task import Task
 
-def display_process_history(processes_list):
+def display_process_history(processes_list, gena_state : State):
     """Display a nice timeline view of all processes in the protocol"""
+    translate_service = gena_state.get_translate_service()  # Get translate service
 
-    st.markdown("### Process History")
+    st.markdown(f"### {translate_service.translate('process_history')}")
 
     # Create a DataFrame for better display
     history_data = []
@@ -34,11 +35,11 @@ def display_process_history(processes_list):
 
 
         history_data.append({
-            'Step': i + 1,
-            'Process Name': process.name,
-            'Started': started_at.strftime("%Y-%m-%d %H:%M:%S") if started_at else "Not started",
-            'Ended': ended_at.strftime("%Y-%m-%d %H:%M:%S") if ended_at else "Not finished",
-            'Duration': duration
+            translate_service.translate('step'): i + 1,
+            translate_service.translate('process_name'): process.name,
+            translate_service.translate('started'): started_at.strftime("%Y-%m-%d %H:%M:%S") if started_at else translate_service.translate("not_started"),
+            translate_service.translate('ended'): ended_at.strftime("%Y-%m-%d %H:%M:%S") if ended_at else translate_service.translate("not_finished"),
+            translate_service.translate('duration'): duration
         })
 
     # Display timeline cards
@@ -49,22 +50,21 @@ def display_process_history(processes_list):
             col_step, col_info, col_timing = st.columns([1, 3, 3])
 
             with col_step:
-                st.markdown(f"**#{data['Step']}**")
+                st.markdown(f"**#{data[translate_service.translate('step')]}**")
 
             with col_info:
-                st.markdown(f"**{data['Process Name']}**")
+                st.markdown(f"**{data[translate_service.translate('process_name')]}**")
 
             with col_timing:
-                if data['Started'] != "Not started":
-                    st.markdown(f"**Started:** {data['Started']}")
-                    if data['Ended'] != "Not finished":
-                        st.markdown(f"**Ended:** {data['Ended']}")
-                        st.markdown(f"**Duration:** {data['Duration']}")
+                if data[translate_service.translate('started')] != translate_service.translate("not_started"):
+                    st.markdown(f"**{translate_service.translate('started')}:** {data[translate_service.translate('started')]}")
+                    if data[translate_service.translate('ended')] != translate_service.translate("not_finished"):
+                        st.markdown(f"**{translate_service.translate('ended')}:** {data[translate_service.translate('ended')]}")
+                        st.markdown(f"**{translate_service.translate('duration')}:** {data[translate_service.translate('duration')]}")
                     else:
-                        st.markdown("**Still running...**")
+                        st.markdown(f"**{translate_service.translate('still_running')}**")
                 else:
-                    st.markdown("**Not started yet**")
-
+                    st.markdown(f"**{translate_service.translate('not_started_yet')}**")
 
         # Add a separator between processes (except for the last one)
         if i < len(history_data) - 1:
@@ -92,10 +92,11 @@ def _run_network_editing_task(
         additional_inputs: Dictionary of additional input specifications
                           Format: {'input_port_name': {'session_key': 'key', 'placeholder': 'text'}}
     """
+    translate_service = gena_state.get_translate_service()
     # Handle additional resource inputs
     selected_resources = {}
     if additional_inputs:
-        st.markdown("#### Select Additional Resources")
+        st.markdown(f"#### {translate_service.translate('select_additional_resources')}")
         for input_port, input_config in additional_inputs.items():
             resource_select = StreamlitResourceSelect()
             resource_select.select_resource(
@@ -129,11 +130,11 @@ def _run_network_editing_task(
         config_data = getattr(gena_state, config_getter_method)()
 
         if not config_data["is_valid"]:
-            st.warning("Please fill all the mandatory fields.")
+            st.warning(translate_service.translate("fill_mandatory_fields"))
             return
 
         if additional_inputs and not all_resources_selected:
-            st.warning("Please select all required resources.")
+            st.warning(translate_service.translate("select_resource_warning"))
             return
 
         with st.spinner(f"Running {task_name}..."):
@@ -195,23 +196,24 @@ def _run_network_editing_task(
                     gena_state.set_edited_network(new_network)
                     add_tags_on_network(gena_state.get_edited_network(), gena_state)
                 else:
-                    st.error(f"{task_name} task failed. Please check the scenario details in your lab.")
+                    st.error(f"{task_name} {translate_service.translate('task_failed')} ")
 
         st.rerun()
 
 @st.dialog("Run Reaction Adder")
 def run_reaction_adder(gena_state: State):
     """Dialog for running Reaction Adder task."""
+    translate_service = gena_state.get_translate_service()
     _run_network_editing_task(
         task_class=ReactionAdder,
-        task_name="Reaction Adder",
+        task_name=translate_service.translate("run_reaction_adder"),
         gena_state=gena_state,
         config_session_key=gena_state.REACTION_ADDER_CONFIG_KEY,
         config_getter_method="get_reaction_adder_config",
         additional_inputs={
             'reaction_table': {
                 'session_key': gena_state.REACTION_ADDER_TABLE_SELECTOR_KEY,
-                'placeholder': 'Search for reaction table resource'
+                'placeholder': translate_service.translate('search_reaction_table')
             }
         }
     )
@@ -219,16 +221,17 @@ def run_reaction_adder(gena_state: State):
 @st.dialog("Run Transporter Adder")
 def run_transporter_adder(gena_state: State):
     """Dialog for running Transporter Adder task."""
+    translate_service = gena_state.get_translate_service()
     _run_network_editing_task(
         task_class=TransporterAdder,
-        task_name="Transporter Adder",
+        task_name=translate_service.translate("run_transporter_adder"),
         gena_state=gena_state,
         config_session_key=gena_state.TRANSPORTER_ADDER_CONFIG_KEY,
         config_getter_method="get_transporter_adder_config",
         additional_inputs={
             'medium_table': {
                 'session_key': gena_state.TRANSPORTER_TABLE_SELECTOR_KEY,
-                'placeholder': 'Search for medium table resource'
+                'placeholder': translate_service.translate('search_medium_table')
             }
         }
     )
@@ -236,16 +239,17 @@ def run_transporter_adder(gena_state: State):
 @st.dialog("Run Reaction Remover")
 def run_reaction_remover(gena_state: State):
     """Dialog for running Reaction Remover task."""
+    translate_service = gena_state.get_translate_service()
     _run_network_editing_task(
         task_class=ReactionRemover,
-        task_name="Reaction Remover",
+        task_name=translate_service.translate("run_reaction_remover"),
         gena_state=gena_state,
         config_session_key=gena_state.REACTION_REMOVER_CONFIG_KEY,
         config_getter_method="get_reaction_remover_config",
         additional_inputs={
             'reaction_table': {
                 'session_key': gena_state.REACTION_REMOVER_TABLE_SELECTOR_KEY,
-                'placeholder': 'Search for medium table resource'
+                'placeholder': translate_service.translate('search_medium_table')
             }
         }
     )
@@ -253,9 +257,10 @@ def run_reaction_remover(gena_state: State):
 @st.dialog("Run Orphan Remover")
 def run_orphan_remover(gena_state: State):
     """Dialog for running Orphan Remover task."""
+    translate_service = gena_state.get_translate_service()
     _run_network_editing_task(
         task_class=OrphanRemover,
-        task_name="Orphan Remover",
+        task_name=translate_service.translate("run_orphan_remover"),
         gena_state=gena_state,
         config_session_key=gena_state.ORPHAN_REMOVER_CONFIG_KEY,
         config_getter_method="get_orphan_remover_config"
@@ -264,9 +269,10 @@ def run_orphan_remover(gena_state: State):
 @st.dialog("Run Network Mergem")
 def run_network_mergem(gena_state: State):
     """Dialog for running Network Mergem task."""
+    translate_service = gena_state.get_translate_service()
     _run_network_editing_task(
         task_class=NetworkMergem,
-        task_name="Network Mergem",
+        task_name=translate_service.translate("run_network_mergem"),
         gena_state=gena_state,
         config_session_key=gena_state.NETWORK_MERGEM_CONFIG_KEY,
         config_getter_method="get_network_mergem_config",
@@ -274,7 +280,7 @@ def run_network_mergem(gena_state: State):
         additional_inputs={
             'network_2': {
                 'session_key': gena_state.NETWORK_MERGEM_SELECTOR_KEY,
-                'placeholder': 'Search for network to merge resource'
+                'placeholder': translate_service.translate('search_network_merge')
             }
         }
     )
@@ -282,9 +288,10 @@ def run_network_mergem(gena_state: State):
 @st.dialog("Run Network Merger")
 def run_network_merger(gena_state: State):
     """Dialog for running Network Merger task."""
+    translate_service = gena_state.get_translate_service()
     _run_network_editing_task(
         task_class=NetworkMerger,
-        task_name="Network Merger",
+        task_name=translate_service.translate("run_network_merger"),
         gena_state=gena_state,
         config_session_key=gena_state.NETWORK_MERGER_CONFIG_KEY,
         config_getter_method="get_network_merger_config",
@@ -292,7 +299,7 @@ def run_network_merger(gena_state: State):
         additional_inputs={
             'network_2': {
                 'session_key': gena_state.NETWORK_MERGER_SELECTOR_KEY,
-                'placeholder': 'Search for network to merge resource'
+                'placeholder': translate_service.translate('search_network_merge')
             }
         }
     )
@@ -300,9 +307,10 @@ def run_network_merger(gena_state: State):
 @st.dialog("Run Gap Filler")
 def run_gap_filler(gena_state: State):
     """Dialog for running Gap Filler task."""
+    translate_service = gena_state.get_translate_service()
     _run_network_editing_task(
         task_class=GapFiller,
-        task_name="Gap Filler",
+        task_name=translate_service.translate("run_gap_filler"),
         gena_state=gena_state,
         config_session_key=gena_state.GAP_FILLER_CONFIG_KEY,
         config_getter_method="get_gap_filler_config"
@@ -310,13 +318,14 @@ def run_gap_filler(gena_state: State):
 
 
 def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
+    translate_service = gena_state.get_translate_service()
     if selected_scenario.status == ScenarioStatus.ERROR:
-        st.warning("⚠️ Selected scenario is not successful. Check the scenario details in your lab.")
+        st.warning(f"⚠️ {translate_service.translate('scenario_not_successful')}")
         return
     file_network_id = gena_state.get_resource_id_network()
 
     # Create 2 tabs : one to display the network, the other to have the history of the network
-    tab_network, tab_history = st.tabs(["Network", "History"])
+    tab_network, tab_history = st.tabs([translate_service.translate("network"), translate_service.translate("history")])
 
     if not gena_state.get_scenario_step_context():
         if not gena_state.get_is_standalone():
@@ -324,46 +333,46 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
                 title_col, button_col = StreamlitContainers.columns_with_fit_content('container-column', cols=[1, 'fit-content'],
                     vertical_align_items='center')
                 with title_col:
-                    st.markdown("### Edit network")
+                    st.markdown(f"### {translate_service.translate('edit_network')}")
                 with button_col:
 
                     # Add a button menu to edit the network
                     button_menu = StreamlitMenuButton()
 
                     # Adder
-                    buttons_adder = StreamlitMenuButtonItem(label='Adder', material_icon='add')
-                    add_reaction_button = StreamlitMenuButtonItem(label='Add reaction', material_icon='add',
+                    buttons_adder = StreamlitMenuButtonItem(label=translate_service.translate('adder'), material_icon='add')
+                    add_reaction_button = StreamlitMenuButtonItem(label=translate_service.translate('add_reaction'), material_icon='add',
                                                         on_click=lambda state=gena_state: run_reaction_adder(state))
-                    add_transporter_button = StreamlitMenuButtonItem(label='Add transporter', material_icon='add',
+                    add_transporter_button = StreamlitMenuButtonItem(label=translate_service.translate('add_transporter'), material_icon='add',
                                                         on_click=lambda state=gena_state: run_transporter_adder(state))
                     buttons_adder.add_children([add_reaction_button, add_transporter_button])
                     button_menu.add_button_item(buttons_adder)
 
                     # Remover
-                    buttons_remover = StreamlitMenuButtonItem(label='Remover', material_icon='remove')
-                    remove_reaction_button = StreamlitMenuButtonItem(label='Remove reaction', material_icon='remove',
+                    buttons_remover = StreamlitMenuButtonItem(label=translate_service.translate('remover'), material_icon='remove')
+                    remove_reaction_button = StreamlitMenuButtonItem(label=translate_service.translate('remove_reaction'), material_icon='remove',
                                                                     on_click=lambda state=gena_state: run_reaction_remover(state))
-                    remove_orphan_button = StreamlitMenuButtonItem(label='Remove orphan', material_icon='remove',
+                    remove_orphan_button = StreamlitMenuButtonItem(label=translate_service.translate('remove_orphan'), material_icon='remove',
                                                                     on_click=lambda state=gena_state: run_orphan_remover(state))
                     buttons_remover.add_children([remove_reaction_button, remove_orphan_button])
                     button_menu.add_button_item(buttons_remover)
 
                     # Merge
-                    buttons_merge = StreamlitMenuButtonItem(label='Merge', material_icon='merge')
+                    buttons_merge = StreamlitMenuButtonItem(label=translate_service.translate('merge'), material_icon='merge')
                     child_merge_merger= StreamlitMenuButtonItem(
-                        label='Network merger', material_icon='merge', on_click=lambda state=gena_state: run_network_merger(state))
+                        label=translate_service.translate('network_merger'), material_icon='merge', on_click=lambda state=gena_state: run_network_merger(state))
                     child_merge_mergem = StreamlitMenuButtonItem(
-                        label='Network mergem', material_icon='merge', on_click=lambda state=gena_state: run_network_mergem(state))
+                        label=translate_service.translate('network_mergem'), material_icon='merge', on_click=lambda state=gena_state: run_network_mergem(state))
                     buttons_merge.add_children([child_merge_merger, child_merge_mergem])
                     button_menu.add_button_item(buttons_merge)
 
                     # Gap filler
-                    buttons_gap_filler = StreamlitMenuButtonItem(label='Gap filler', material_icon='auto_fix_high', on_click=lambda state=gena_state: run_gap_filler(state))
+                    buttons_gap_filler = StreamlitMenuButtonItem(label=translate_service.translate('gap_filler'), material_icon='auto_fix_high', on_click=lambda state=gena_state: run_gap_filler(state))
                     button_menu.add_button_item(buttons_gap_filler)
 
                     button_menu.render()
 
-                st.info("ℹ️ You can edit the network before running Context. Once Context is run, the network will be locked.")
+                st.info(f"ℹ️ {translate_service.translate('network_edit_info')}")
 
                 gena_state.set_edited_network(ResourceModel.get_by_id(file_network_id).get_resource())
 
@@ -373,7 +382,7 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
         scenario = ScenarioProxy.from_existing_scenario(gena_state.get_scenario_step_network()[0].id)
         protocol = scenario.get_protocol()
         all_processes = protocol.get_model().get_all_processes_flatten_sort_by_start_date()
-        display_process_history(all_processes)
+        display_process_history(all_processes, gena_state)
 
     with tab_network:
         display_network(file_network_id)
@@ -382,12 +391,12 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not gena_state.get_scenario_step_context():
         if not gena_state.get_is_standalone():
 
-            if st.button("Save", use_container_width=True):
+            if st.button(translate_service.translate("save"), use_container_width=True):
                 with StreamlitAuthenticateUser():
                     # Use the helper function to save
                     add_tags_on_network(gena_state.get_edited_network(), gena_state)
                     st.rerun()
         else:
-            st.info("ℹ️ You are in standalone mode. Network cannot be edited.")
+            st.info(f"ℹ️ {translate_service.translate('standalone_network_info')}")
     else:
-        st.info("ℹ️ Network is locked because Context has already been run.")
+        st.info(f"ℹ️ {translate_service.translate('network_locked_info')}")
