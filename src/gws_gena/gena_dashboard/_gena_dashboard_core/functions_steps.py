@@ -238,7 +238,8 @@ def add_tags_on_network(edited_network: Network, gena_state: State) -> None:
 
     # Add tags using EntityTagList
     user_origin = TagOrigin.current_user_origin()
-    entity_tags = EntityTagList(TagEntityType.RESOURCE, network_model_id, default_origin=user_origin)
+    entity_tags = EntityTagList.find_by_entity(TagEntityType.RESOURCE, network_model_id)
+    entity_tags._default_origin = user_origin # TODO will be fixed in future releases of core to set the default origin in the constructor
 
     # Add the required tags
     entity_tags.add_tag(Tag(gena_state.TAG_GENA, gena_state.TAG_NETWORK_UPDATED, is_propagable=False))
