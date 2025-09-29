@@ -136,5 +136,21 @@
     "page_recipes": "Recettes",
     "page_new_analysis": "Nouvelle Analyse",
     "page_analysis": "Analyse",
-    "page_settings": "Paramètres"
+    "page_settings": "Paramètres",
+    "flux_histogram": "Histogramme des flux",
+    "flux_distribution": "Distribution des flux",
+    "flux_values": "Valeurs de flux",
+    "frequency": "Fréquence",
+    "sv_distribution": "Distribution SV",
+    "sv_values": "Valeurs SV",
+    "sv_distribution_histogram": "Histogramme de la distribution SV",
+    "flux_box_plot": "Graphique en boîte des flux",
+    "flux_box_plot_title": "Distribution des valeurs de flux en boîte à moustaches",
+    "flux_names": "Noms des flux",
+    "flux_range_plot_title": "Valeurs de flux avec bornes inférieures et supérieures",
+    "select_fluxes_to_display": "Sélectionner les flux à afficher",
+    "flux_bounds_table": "Tableau des bornes de flux",
+    "select_flux_to_display": "Veuillez sélectionner au moins un flux à afficher",
+    "reaction_names": "Noms des réactions",
+    "flux_range_summary": "Résumé des plages de flux"
 }

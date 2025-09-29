@@ -136,5 +136,21 @@
     "page_recipes": "Recipes",
     "page_new_analysis": "New Analysis",
     "page_analysis": "Analysis",
-    "page_settings": "Settings"
+    "page_settings": "Settings",
+    "flux_histogram": "Flux Histogram",
+    "flux_distribution": "Flux Distribution",
+    "flux_values": "Flux Values",
+    "frequency": "Frequency",
+    "sv_distribution": "SV Distribution",
+    "sv_values": "SV Values",
+    "sv_distribution_histogram": "SV Distribution Histogram",
+    "flux_box_plot": "Flux Box Plot",
+    "flux_box_plot_title": "Flux Values Box Plot Distribution",
+    "flux_names": "Flux Names",
+    "flux_range_plot_title": "Flux values with upper and lower bounds",
+    "select_fluxes_to_display": "Select fluxes to display",
+    "flux_bounds_table": "Flux Bounds Table",
+    "select_flux_to_display": "Please select at least one flux to display",
+    "reaction_names": "Reaction Names",
+    "flux_range_summary": "Flux Range Summary"
 }

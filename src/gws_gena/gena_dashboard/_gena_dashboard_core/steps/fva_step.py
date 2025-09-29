@@ -1,4 +1,6 @@
 import streamlit as st
+import plotly.express as px
+import pandas as pd
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner
 from gws_core import Scenario, ScenarioProxy, InputTask, Scenario, ScenarioStatus, ScenarioProxy
@@ -94,10 +96,81 @@ def render_fva_step(selected_scenario: Scenario, gena_state: State) -> None:
         network_resource, context_resource = extract_network_and_context_from_twin(twin_resource_set_dict)
 
         tab_flux, tab_sv, tab_network, tab_context = st.tabs([translate_service.translate("flux_table"), translate_service.translate("sv_table"), translate_service.translate("network"), translate_service.translate("context")])
+
         with tab_flux:
-            st.dataframe(fva_result.get("Flux table").get_data())
+            flux_data = fva_result.get("Flux table").get_data()
+            st.dataframe(flux_data)
+
+            # Create histogram of flux values
+            flux_values = flux_data.select_dtypes(include=['number']).values.flatten()
+
+            fig_flux = px.histogram(
+                x=flux_values,
+                title=translate_service.translate("flux_distribution"),
+                labels={'x': translate_service.translate("flux_values"), 'y': translate_service.translate("frequency")}
+            )
+            st.plotly_chart(fig_flux, use_container_width=True)
+
+            # Add flux range visualization with selection
+            # Get reaction names (assuming first column or index contains reaction names)
+            reaction_names = flux_data.index.tolist()
+
+            # Multi-select for choosing reactions
+            selected_reactions = st.multiselect(
+                translate_service.translate("select_fluxes_to_display"),
+                options=reaction_names,
+                default=reaction_names[:min(10, len(reaction_names))]  # Default to first 10 reactions
+            )
+
+            if selected_reactions:
+                # Filter data for selected reactions
+                filtered_data = flux_data.loc[selected_reactions]
+                flux_plot_data = []
+                for reaction in selected_reactions:
+                    row = filtered_data.loc[reaction]
+                    flux_plot_data.append({
+                        'Reaction': reaction,
+                        'Value': row['value'],
+                        'Lower_Bound': row['lower_bound'],
+                        'Upper_Bound': row['upper_bound'],
+                        'Range': row['upper_bound'] - row['lower_bound']
+                    })
+
+                plot_df = pd.DataFrame(flux_plot_data)
+
+                # Create error bar plot
+                fig_range = px.scatter(
+                    plot_df,
+                    x='Reaction',
+                    y='Value',
+                    error_y_minus=plot_df['Value'] - plot_df['Lower_Bound'],
+                    error_y=plot_df['Upper_Bound'] - plot_df['Value'],
+                    title=translate_service.translate("flux_range_plot_title"),
+                    labels={'Reaction': translate_service.translate("reaction_names"), 'Value': translate_service.translate("flux_values")},
+                    hover_data=['Lower_Bound', 'Upper_Bound', 'Range']
+                )
+                fig_range.update_traces(marker=dict(size=8))
+                fig_range.update_xaxes(tickangle=45)
+                st.plotly_chart(fig_range, use_container_width=True)
+
+            else:
+                st.info(translate_service.translate("select_flux_to_display"))
+
         with tab_sv:
-            st.dataframe(fva_result.get("SV table").get_data())
+            sv_data = fva_result.get("SV table").get_data()
+
+            st.dataframe(sv_data)
+            # Create distribution plot for SV values
+            sv_values = sv_data.select_dtypes(include=['number']).values.flatten()
+
+            # Create histogram for distribution
+            fig_sv_hist = px.histogram(
+                x=sv_values,
+                title=translate_service.translate("sv_distribution_histogram"),
+                labels={'x': translate_service.translate("sv_values"), 'y': translate_service.translate("frequency")}
+            )
+            st.plotly_chart(fig_sv_hist, use_container_width=True)
+
         with tab_network:
             display_network(network_resource.get_model_id())
         with tab_context:
