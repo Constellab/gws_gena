@@ -23,7 +23,6 @@ class State:
     TAG_FBA = "fba"
     TAG_FVA = "fva"
     TAG_KOA = "koa"
-    TAG_TWIN_REDUCER = "twin_reducer"
 
     # Tags unique ids
     TAG_GENA_PIPELINE_ID = "gena_pipeline_id"
@@ -34,7 +33,6 @@ class State:
     FBA_SCENARIO_NAME_INPUT_KEY = "fba_scenario_name_input"
     FVA_SCENARIO_NAME_INPUT_KEY = "fva_scenario_name_input"
     KOA_SCENARIO_NAME_INPUT_KEY = "koa_scenario_name_input"
-    TWIN_REDUCER_SCENARIO_NAME_INPUT_KEY = "twin_reducer_scenario_name_input"
 
 
     SELECTED_SCENARIO_KEY = "selected_scenario"
@@ -83,7 +81,6 @@ class State:
     ORPHAN_REMOVER_CONFIG_KEY = "orphan_remover_config"
     NETWORK_MERGEM_CONFIG_KEY = "network_mergem_config"
     TWIN_BUILDER_CONFIG_KEY = "twin_builder_config"
-    TWIN_REDUCER_CONFIG_KEY = "twin_reducer_config"
     FBA_CONFIG_KEY = "fba_config"
     FVA_CONFIG_KEY = "fva_config"
     KOA_CONFIG_KEY = "koa_config"
@@ -331,10 +328,6 @@ class State:
         return st.session_state.get(cls.TWIN_BUILDER_CONFIG_KEY, {})
 
     @classmethod
-    def get_twin_reducer_config(cls) -> Dict:
-        return st.session_state.get(cls.TWIN_REDUCER_CONFIG_KEY, {})
-
-    @classmethod
     def get_fba_config(cls) -> Dict:
         return st.session_state.get(cls.FBA_CONFIG_KEY, {})
 
@@ -378,10 +371,6 @@ class State:
     @classmethod
     def get_scenario_step_koa(cls) -> List[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_KOA, [])
-
-    @classmethod
-    def get_scenario_step_twin_reducer(cls) -> List[Scenario]:
-        return cls.get_scenarios_by_step_dict().get(cls.TAG_TWIN_REDUCER, [])
 
     @classmethod
     def get_tree_menu_object(cls):

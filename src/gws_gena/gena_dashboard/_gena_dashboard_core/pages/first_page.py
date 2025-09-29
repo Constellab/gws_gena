@@ -81,8 +81,7 @@ def render_first_page(gena_state : State):
                     (gena_state.TAG_TWIN_BUILDER, "twin_builder"),
                     (gena_state.TAG_FBA, "fba"),
                     (gena_state.TAG_FVA, "fva"),
-                    (gena_state.TAG_KOA, "koa"),
-                    (gena_state.TAG_TWIN_REDUCER, "twin_reducer"),
+                    (gena_state.TAG_KOA, "koa")
                 ]
 
                 for tag_value, field_name in step_types:
@@ -99,7 +98,7 @@ def render_first_page(gena_state : State):
                         row_data[field_name] = ""
             else:
                 # Initialize empty status for other steps when no pipeline ID
-                step_fields = ["context", "twin_builder", "fba", "fva", "koa", "twin_reducer"]
+                step_fields = ["context", "twin_builder", "fba", "fva", "koa"]
                 for field in step_fields:
                     row_data[field] = ""
 
@@ -114,7 +113,7 @@ def render_first_page(gena_state : State):
                     "sortable": True,
                     "type": FieldType.string,
                     "filterable": True,
-                    "width": 120,
+                    "width": 100,
                 },
                 {
                     "id": "Folder",
@@ -123,7 +122,7 @@ def render_first_page(gena_state : State):
                     "sortable": True,
                     "type": FieldType.string,
                     "filterable": True,
-                    "width": 100,
+                    "width": 60,
                 },
                 {
                     "id": "network",
@@ -132,7 +131,7 @@ def render_first_page(gena_state : State):
                     "sortable": True,
                     "type": FieldType.string,
                     "filterable": True,
-                    "width": 60,
+                    "width": 40,
                 },
                 {
                     "id": "context",
@@ -141,7 +140,7 @@ def render_first_page(gena_state : State):
                     "sortable": True,
                     "type": FieldType.string,
                     "filterable": True,
-                    "width": 40,
+                    "width": 80,
                 },
                 {
                     "id": "twin_builder",
@@ -178,15 +177,6 @@ def render_first_page(gena_state : State):
                     "type": FieldType.string,
                     "filterable": True,
                     "width": 60,
-                },
-                {
-                    "id": "twin_reducer",
-                    "name": translate_service.translate("twin_reducer"),
-                    "field": "twin_reducer",
-                    "sortable": True,
-                    "type": FieldType.string,
-                    "filterable": True,
-                    "width": 80,
                 }
             ]
 

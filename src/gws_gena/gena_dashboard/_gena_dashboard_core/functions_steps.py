@@ -402,8 +402,7 @@ def dialog_edit_scenario_params(scenario: Scenario, gena_state: State):
     step_mapping = {
         gena_state.TAG_FBA: 'fba_process',
         gena_state.TAG_FVA: 'fva_process',
-        gena_state.TAG_KOA: 'koa_process',
-        gena_state.TAG_TWIN_REDUCER: 'twin_reducer_process'
+        gena_state.TAG_KOA: 'koa_process'
     }
 
     process_name, task_class = step_mapping[step_tag]
