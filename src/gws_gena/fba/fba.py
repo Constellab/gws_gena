@@ -77,20 +77,12 @@ class FBA(Task):
             default_value=None, min_value=1, optional=True, visibility=StrParam.PROTECTED_VISIBILITY,
             human_name="Number of simulations",
             short_description="Set the number of simulations to perform. You must provide at least the same number of measures in the context. By default, keeps all simulations.")
-        # ,
-        # "number_of_processes":
-        # IntParam(
-        #    default_value=2, min_value=1, visibility=StrParam.PROTECTED_VISIBILITY,
-        #    human_name="Number of processes",
-        #    short_description="Set the number of processes to use to parallelise the execution of FBA.")
     })
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         twin = inputs["twin"]
         # retrieve the context of the twin
         context = next(iter(twin.contexts.values()))
-        # retrieve the network of the twin
-        network = next(iter(twin.networks.values()))
 
         number_of_simulations = params["number_of_simulations"]
         # If number_of_simulations is not provided, keep all the simulations
@@ -125,26 +117,6 @@ class FBA(Task):
                     str(number_of_simulations))
 
         fba_results: List[FBAResult] = []
-
-        # indexed_data_list = []
-        # for i in range(0, number_of_simulations):  # run through the number of simulations
-        #     new_twin = self.build_twin(twin, i)
-        #     indexed_data_list.append((i, new_twin, params))
-
-        # i = 0
-        # try:
-        #     with multiprocessing.Pool(processes=params["number_of_processes"]) as pool:
-        #         # chunksize to 1 because each FBA takes time so we can assign a sub process to only 1 FBA
-        #         for result in pool.imap_unordered(self.call_fba, indexed_data_list, chunksize=1):
-
-        #             if result is not None:
-        #                 fba_results.append(result)
-        #                 self.update_progress_value((i + 1) / number_of_simulations * 100,
-        #                                            'Running FBA for all simulations')
-        #                 i += 1
-        # except Exception as e:
-        #     Logger.log_exception_stack_trace(e)
-        #     raise e
 
         # If number of simulations is not None, there is a context with simulations
         if (number_of_simulations):
