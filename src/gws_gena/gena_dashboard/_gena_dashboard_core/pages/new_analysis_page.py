@@ -17,154 +17,162 @@ def _flatten_folders_recursive(folders, folder_dict, folder_display_names, prefi
             _flatten_folders_recursive(folder.children, folder_dict, folder_display_names, prefix + "------")
 
 def render_new_analysis_page(gena_state : State):
-    translate_service = gena_state.get_translate_service()
-    # Add a return button
-    router = StreamlitRouter.load_from_session()
+    style = """
+    [CLASS_NAME] {
+        padding: 40px;
+    }
+    """
 
-    if st.button(translate_service.translate("return_recipes"), icon=":material/arrow_back:", use_container_width=False):
-        router.navigate("first-page")
+    with StreamlitContainers.container_full_min_height('container-center_new_analysis_page',
+                additional_style=style):
+        translate_service = gena_state.get_translate_service()
+        # Add a return button
+        router = StreamlitRouter.load_from_session()
 
-    st.markdown(f"## {translate_service.translate('new_recipe')}")
-    url_doc_network = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/resource/Network"
+        if st.button(translate_service.translate("return_recipes"), icon=":material/arrow_back:", use_container_width=False):
+            router.navigate("first-page")
 
-    col_question, col_help = StreamlitContainers.columns_with_fit_content('container-column_network', cols=[1, 'fit-content'],
-        vertical_align_items='center')
-    with col_question:
-        st.selectbox(translate_service.translate("how_provide_network_data"),
-            options=[translate_service.translate("select_existing_network"), translate_service.translate("load_from_bigg")],
-            index=None,
-            key=gena_state.NETWORK_OPTION_KEY
-        )
-    with col_help:
-        st.link_button("**?**", url_doc_network)
-    network_selected_is_network = False
-    if gena_state.get_network_option() == translate_service.translate("load_from_bigg"):
-        form_config = StreamlitTaskRunner(LoadBiGGModels)
-        form_config.generate_config_form_without_run(
-            session_state_key=gena_state.LOAD_BIGG_MODEL_CONFIG_KEY, default_config_values=LoadBiGGModels.config_specs.get_default_values())
+        st.markdown(f"## {translate_service.translate('new_recipe')}")
+        url_doc_network = "https://constellab.community/bricks/gws_gena/latest/doc/technical-folder/resource/Network"
 
-    elif gena_state.get_network_option() == translate_service.translate("select_existing_network"):
-        # select network data : the user can select network resource, file json or file xml or file matlab
-        resource_select = StreamlitResourceSelect()
-        resource_select.select_resource(
-            placeholder=translate_service.translate("search_network_resource"), key=gena_state.RESOURCE_SELECTOR_NETWORK_KEY)
-        if gena_state.get_resource_selector_network():
-            selected_network_id = gena_state.get_resource_selector_network()["resourceId"]
-            selected_network = ResourceModel.get_by_id(selected_network_id)
-
-            if selected_network.resource_typing_name == 'RESOURCE.gws_gena.Network':
-                network_selected_is_network = True
-    else:
-        st.info(translate_service.translate("please_select_option"))
-        return
-
-    if not network_selected_is_network:
-        form_config = StreamlitTaskRunner(NetworkImporter)
-        form_config.generate_config_form_without_run(
-            session_state_key=gena_state.NETWORK_IMPORTER_CONFIG_KEY, default_config_values=NetworkImporter.config_specs.get_default_values(), key = "config_network_importer")
-
-    cols = st.columns(2)
-    with cols[0]:
-        st.text_input(translate_service.translate("insert_recipe_name"), key = gena_state.ANALYSIS_NAME_USER)
-
-    with cols[1]:
-        space_service = SpaceService.get_instance()
-        list_folders_in_lab = space_service.get_all_lab_root_folders().folders
-        folder_dict = {}
-        folder_display_names = {}
-
-        # Flatten the folder hierarchy recursively
-        _flatten_folders_recursive(list_folders_in_lab, folder_dict, folder_display_names)
-
-        # Give the user the possibility to choose from all folders (including children)
-        folder_to_associate_with = st.selectbox(
-            translate_service.translate("select_folder_associate"),
-            options=list(folder_display_names.keys()),
-            index=None
-        )
-        # Save in session state the id of the folder
-        gena_state.set_selected_folder_id(folder_display_names.get(folder_to_associate_with))
-
-    if st.button(translate_service.translate("run"), icon=":material/play_arrow:", use_container_width=False):
-        with StreamlitAuthenticateUser():
-            list_required_fields_filled = []
-            list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_analysis_name_user()))
-            if gena_state.get_network_option() == "Load from BiGG Models":
-                list_required_fields_filled.append(gena_state.get_load_bigg_model_config()["is_valid"])
-            else:
-                list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_resource_selector_network()))
-                if not network_selected_is_network:
-                    list_required_fields_filled.append(gena_state.get_network_importer_config()["is_valid"])
-            if gena_state.get_associate_scenario_with_folder():
-                list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_selected_folder_id()))
-            # Check if mandatory fields have been filled
-            if False in list_required_fields_filled:
-                st.warning(translate_service.translate("fill_mandatory_fields"))
-                return
-
-            analysis_name = gena_state.get_analysis_name_user()
-            # Create a new scenario in the lab
-            folder : SpaceFolder = SpaceFolder.get_by_id(gena_state.get_selected_folder_id())
-            scenario: ScenarioProxy = ScenarioProxy(
-                None, folder=folder, title=f"{analysis_name} - {translate_service.translate('network_suffix')}",
-                creation_type=ScenarioCreationType.MANUAL,
+        col_question, col_help = StreamlitContainers.columns_with_fit_content('container-column_network', cols=[1, 'fit-content'],
+            vertical_align_items='center')
+        with col_question:
+            st.selectbox(translate_service.translate("how_provide_network_data"),
+                options=[translate_service.translate("select_existing_network"), translate_service.translate("load_from_bigg")],
+                index=None,
+                key=gena_state.NETWORK_OPTION_KEY
             )
-            protocol: ProtocolProxy = scenario.get_protocol()
-            if gena_state.get_network_option() == "Load from BiGG Models":
-                # Step 1 : Load BiGG Models task
-                load_bigg_models_process : ProcessProxy = protocol.add_process(LoadBiGGModels, 'load_bigg_models_process', config_params=gena_state.get_load_bigg_model_config()["config"])
-            else:
+        with col_help:
+            st.link_button("**?**", url_doc_network)
+        network_selected_is_network = False
+        if gena_state.get_network_option() == translate_service.translate("load_from_bigg"):
+            form_config = StreamlitTaskRunner(LoadBiGGModels)
+            form_config.generate_config_form_without_run(
+                session_state_key=gena_state.LOAD_BIGG_MODEL_CONFIG_KEY, default_config_values=LoadBiGGModels.config_specs.get_default_values())
+
+        elif gena_state.get_network_option() == translate_service.translate("select_existing_network"):
+            # select network data : the user can select network resource, file json or file xml or file matlab
+            resource_select = StreamlitResourceSelect()
+            resource_select.select_resource(
+                placeholder=translate_service.translate("search_network_resource"), key=gena_state.RESOURCE_SELECTOR_NETWORK_KEY)
+            if gena_state.get_resource_selector_network():
                 selected_network_id = gena_state.get_resource_selector_network()["resourceId"]
                 selected_network = ResourceModel.get_by_id(selected_network_id)
-                network_resource = protocol.add_process(
-                    InputTask, 'selected_network',
-                    {InputTask.config_name: selected_network.get_resource().get_model_id()})
 
-            # We parse value to ensure it is a valid tag format because auto parse is not longer availaible
-            # for values in lab
-            analysis_name_parsed = Tag.parse_tag(analysis_name)
+                if selected_network.resource_typing_name == 'RESOURCE.gws_gena.Network':
+                    network_selected_is_network = True
+        else:
+            st.info(translate_service.translate("please_select_option"))
+            return
 
-            # Add tags to the scenario
-            scenario.add_tag(Tag(gena_state.TAG_BRICK, gena_state.TAG_GENA, is_propagable=False, auto_parse=True))
-            scenario.add_tag(Tag(gena_state.TAG_GENA, gena_state.TAG_NETWORK, is_propagable=False))
-            scenario.add_tag(Tag(gena_state.TAG_ANALYSIS_NAME, analysis_name_parsed, is_propagable=False, auto_parse=True))
-            scenario.add_tag(Tag(gena_state.TAG_GENA_PIPELINE_ID, StringHelper.generate_uuid(), is_propagable=False, auto_parse=True))
+        if not network_selected_is_network:
+            form_config = StreamlitTaskRunner(NetworkImporter)
+            form_config.generate_config_form_without_run(
+                session_state_key=gena_state.NETWORK_IMPORTER_CONFIG_KEY, default_config_values=NetworkImporter.config_specs.get_default_values(), key = "config_network_importer")
 
-            # Step 1 : Network task
-            if not network_selected_is_network:
-                network_importer_process: ProcessProxy = protocol.add_process(NetworkImporter, 'network_importer_process', config_params=gena_state.get_network_importer_config()["config"])
+        cols = st.columns(2)
+        with cols[0]:
+            st.text_input(translate_service.translate("insert_recipe_name"), key = gena_state.ANALYSIS_NAME_USER)
 
+        with cols[1]:
+            space_service = SpaceService.get_instance()
+            list_folders_in_lab = space_service.get_all_lab_root_folders().folders
+            folder_dict = {}
+            folder_display_names = {}
+
+            # Flatten the folder hierarchy recursively
+            _flatten_folders_recursive(list_folders_in_lab, folder_dict, folder_display_names)
+
+            # Give the user the possibility to choose from all folders (including children)
+            folder_to_associate_with = st.selectbox(
+                translate_service.translate("select_folder_associate"),
+                options=list(folder_display_names.keys()),
+                index=None
+            )
+            # Save in session state the id of the folder
+            gena_state.set_selected_folder_id(folder_display_names.get(folder_to_associate_with))
+
+        if st.button(translate_service.translate("run"), icon=":material/play_arrow:", use_container_width=False):
+            with StreamlitAuthenticateUser():
+                list_required_fields_filled = []
+                list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_analysis_name_user()))
                 if gena_state.get_network_option() == "Load from BiGG Models":
-                    # BiGG Models already provides JSON format, connect directly to NetworkImporter
-                    protocol.add_connector(out_port=load_bigg_models_process >> 'output',
-                                        in_port=network_importer_process << 'source')
+                    list_required_fields_filled.append(gena_state.get_load_bigg_model_config()["is_valid"])
                 else:
-                    # Handle existing resource selection
+                    list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_resource_selector_network()))
+                    if not network_selected_is_network:
+                        list_required_fields_filled.append(gena_state.get_network_importer_config()["is_valid"])
+                if gena_state.get_associate_scenario_with_folder():
+                    list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_selected_folder_id()))
+                # Check if mandatory fields have been filled
+                if False in list_required_fields_filled:
+                    st.warning(translate_service.translate("fill_mandatory_fields"))
+                    return
+
+                analysis_name = gena_state.get_analysis_name_user()
+                # Create a new scenario in the lab
+                folder : SpaceFolder = SpaceFolder.get_by_id(gena_state.get_selected_folder_id())
+                scenario: ScenarioProxy = ScenarioProxy(
+                    None, folder=folder, title=f"{analysis_name} - {translate_service.translate('network_suffix')}",
+                    creation_type=ScenarioCreationType.MANUAL,
+                )
+                protocol: ProtocolProxy = scenario.get_protocol()
+                if gena_state.get_network_option() == "Load from BiGG Models":
+                    # Step 1 : Load BiGG Models task
+                    load_bigg_models_process : ProcessProxy = protocol.add_process(LoadBiGGModels, 'load_bigg_models_process', config_params=gena_state.get_load_bigg_model_config()["config"])
+                else:
                     selected_network_id = gena_state.get_resource_selector_network()["resourceId"]
                     selected_network = ResourceModel.get_by_id(selected_network_id)
+                    network_resource = protocol.add_process(
+                        InputTask, 'selected_network',
+                        {InputTask.config_name: selected_network.get_resource().get_model_id()})
 
-                    # Check if the file is XML or Matlab (needs conversion)
-                    is_xml_or_matlab = (selected_network.resource_typing_name == 'RESOURCE.gws_core.File'
-                                        and selected_network.get_resource().extension in ['xml', 'mat'])
+                # We parse value to ensure it is a valid tag format because auto parse is not longer availaible
+                # for values in lab
+                analysis_name_parsed = Tag.parse_tag(analysis_name)
 
-                    if is_xml_or_matlab:
-                        # Add conversion step for XML/Matlab files
-                        convert_xml_process: ProcessProxy = protocol.add_process(ConvertXmlToJson, 'convert_xml_to_json_process')
-                        protocol.add_connector(out_port=network_resource >> 'resource',
-                                            in_port=convert_xml_process << 'input_file')
-                        protocol.add_connector(out_port=convert_xml_process >> 'output_json_file',
+                # Add tags to the scenario
+                scenario.add_tag(Tag(gena_state.TAG_BRICK, gena_state.TAG_GENA, is_propagable=False, auto_parse=True))
+                scenario.add_tag(Tag(gena_state.TAG_GENA, gena_state.TAG_NETWORK, is_propagable=False))
+                scenario.add_tag(Tag(gena_state.TAG_ANALYSIS_NAME, analysis_name_parsed, is_propagable=False, auto_parse=True))
+                scenario.add_tag(Tag(gena_state.TAG_GENA_PIPELINE_ID, StringHelper.generate_uuid(), is_propagable=False, auto_parse=True))
+
+                # Step 1 : Network task
+                if not network_selected_is_network:
+                    network_importer_process: ProcessProxy = protocol.add_process(NetworkImporter, 'network_importer_process', config_params=gena_state.get_network_importer_config()["config"])
+
+                    if gena_state.get_network_option() == "Load from BiGG Models":
+                        # BiGG Models already provides JSON format, connect directly to NetworkImporter
+                        protocol.add_connector(out_port=load_bigg_models_process >> 'output',
                                             in_port=network_importer_process << 'source')
                     else:
-                        # Direct import for JSON files
-                        protocol.add_connector(out_port=network_resource >> 'resource',
-                                            in_port=network_importer_process << 'source')
+                        # Handle existing resource selection
+                        selected_network_id = gena_state.get_resource_selector_network()["resourceId"]
+                        selected_network = ResourceModel.get_by_id(selected_network_id)
 
-                # Add output
-                protocol.add_output('network_process_output', network_importer_process >> 'target', flag_resource=False)
-            else:
-                protocol.add_output('network_process_output', network_resource >> 'resource', flag_resource=False)
-            scenario.add_to_queue()
+                        # Check if the file is XML or Matlab (needs conversion)
+                        is_xml_or_matlab = (selected_network.resource_typing_name == 'RESOURCE.gws_core.File'
+                                            and selected_network.get_resource().extension in ['xml', 'mat'])
+
+                        if is_xml_or_matlab:
+                            # Add conversion step for XML/Matlab files
+                            convert_xml_process: ProcessProxy = protocol.add_process(ConvertXmlToJson, 'convert_xml_to_json_process')
+                            protocol.add_connector(out_port=network_resource >> 'resource',
+                                                in_port=convert_xml_process << 'input_file')
+                            protocol.add_connector(out_port=convert_xml_process >> 'output_json_file',
+                                                in_port=network_importer_process << 'source')
+                        else:
+                            # Direct import for JSON files
+                            protocol.add_connector(out_port=network_resource >> 'resource',
+                                                in_port=network_importer_process << 'source')
+
+                    # Add output
+                    protocol.add_output('network_process_output', network_importer_process >> 'target', flag_resource=False)
+                else:
+                    protocol.add_output('network_process_output', network_resource >> 'resource', flag_resource=False)
+                scenario.add_to_queue()
 
 
-            router.navigate("first-page")
-            st.rerun()
+                router.navigate("first-page")
+                st.rerun()
