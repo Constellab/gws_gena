@@ -1,5 +1,5 @@
 import streamlit as st
-from gws_core.streamlit import StreamlitTranslateLang, StreamlitTranslateService
+from gws_core.streamlit import StreamlitTranslateLang
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 
 def render_settings_page(gena_state : State):
