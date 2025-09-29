@@ -75,14 +75,16 @@ def _handle_existing_context(protocol: ProtocolProxy, gena_state: State) -> bool
 
     if selected_context.resource_typing_name == 'RESOURCE.gws_gena.Context':
         # Context is already processed, just add as input
-        protocol.add_process(
+        context_process = protocol.add_process(
             InputTask, 'selected_context',
             {InputTask.config_name: selected_context.get_resource().get_model_id()}
         )
+        protocol.add_output('context_process_output', context_process >> 'resource', flag_resource=False)
         return True
 
     # Context needs to be imported
     _add_context_importer(protocol, selected_context)
+
     return False
 
 
