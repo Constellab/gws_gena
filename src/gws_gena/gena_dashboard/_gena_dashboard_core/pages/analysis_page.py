@@ -57,7 +57,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         key_default_item = key_network
 
     network_item = StreamlitTreeMenuItem(
-        label=translate_service.translate("network"),
+        label=translate_service.translate("model"),
         key=key_network,
         material_icon=get_step_icon(gena_state.TAG_NETWORK, scenarios_by_step, scenario_network)
     )
@@ -74,7 +74,7 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         else:
             key_context = gena_state.TAG_CONTEXT
         context_item = StreamlitTreeMenuItem(
-            label=translate_service.translate("context"),
+            label=translate_service.translate("contextualisation"),
             key=key_context,
             material_icon=get_step_icon(gena_state.TAG_CONTEXT, scenarios_by_step, scenario_context)
         )

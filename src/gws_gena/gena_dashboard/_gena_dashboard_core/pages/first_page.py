@@ -127,7 +127,7 @@ def render_first_page(gena_state : State):
                 },
                 {
                     "id": "network",
-                    "name": translate_service.translate("network"),
+                    "name": translate_service.translate("model"),
                     "field": "network",
                     "sortable": True,
                     "type": FieldType.string,
@@ -136,7 +136,7 @@ def render_first_page(gena_state : State):
                 },
                 {
                     "id": "context",
-                    "name": translate_service.translate("context"),
+                    "name": translate_service.translate("contextualisation"),
                     "field": "context",
                     "sortable": True,
                     "type": FieldType.string,
@@ -145,12 +145,12 @@ def render_first_page(gena_state : State):
                 },
                 {
                     "id": "twin_builder",
-                    "name": translate_service.translate("twin_builder"),
+                    "name": translate_service.translate("twin"),
                     "field": "twin_builder",
                     "sortable": True,
                     "type": FieldType.string,
                     "filterable": True,
-                    "width": 60,
+                    "width": 80,
                 },
                 {
                     "id": "fba",
