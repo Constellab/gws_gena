@@ -154,5 +154,14 @@
     "no_simulation_selected": "Aucune simulation sélectionnée. Veuillez sélectionner une simulation",
     "reaction_names": "Noms des réactions",
     "flux_range_summary": "Résumé des plages de flux",
-    "select_simulations": "Sélectionner les simulations"
+    "select_simulations": "Sélectionner les simulations",
+    "select_experimental_data_types": "Sélectionner les types de données expérimentales",
+    "experimental_data_metabolite": "Données métabolites",
+    "experimental_data_reaction": "Données réactions",
+    "select_data_type_info": "Veuillez sélectionner au moins un type de données expérimentales.",
+    "metabolite_experimental_data": "Données Expérimentales Métabolites",
+    "reaction_experimental_data": "Données Expérimentales Réactions",
+    "search_metabolite_experimental_data": "Rechercher des données expérimentales de métabolites",
+    "search_reaction_experimental_data": "Rechercher des données expérimentales de réactions",
+    "simulation_context_info": "Générez des simulations à partir de vos données expérimentales pour construire un contexte. Sélectionnez les types de données métabolites et/ou réactions et configurez les paramètres de simulation."
 }

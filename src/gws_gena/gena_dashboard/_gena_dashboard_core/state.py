@@ -59,6 +59,11 @@ class State:
     RESOURCE_SELECTOR_KO_TABLE_KEY = "resource_selector_ko_table"
     RESOURCE_SELECTOR_PHENOTYPE_KEY = "resource_selector_phenotype"
     RESOURCE_SELECTOR_FLUX_KEY = "resource_selector_flux"
+    SIMULATION_DATA_TYPES_KEY = "simulation_data_types"
+    RESOURCE_SELECTOR_METABOLITE_DATA_KEY = "resource_selector_metabolite_data"
+    RESOURCE_SELECTOR_REACTION_DATA_KEY = "resource_selector_reaction_data"
+    GENERATION_METABOLITE_CONFIG_KEY = "generation_metabolite_config"
+    GENERATION_REACTION_CONFIG_KEY = "generation_reaction_config"
     REACTION_ADDER_TABLE_SELECTOR_KEY = "reaction_adder_table_selector"
     REACTION_REMOVER_TABLE_SELECTOR_KEY = "reaction_remover_table_selector"
     TRANSPORTER_TABLE_SELECTOR_KEY = "transporter_table_selector"
@@ -84,6 +89,8 @@ class State:
     FBA_CONFIG_KEY = "fba_config"
     FVA_CONFIG_KEY = "fva_config"
     KOA_CONFIG_KEY = "koa_config"
+    GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY = "generation_multi_simulations_metabolite_config"
+    GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY = "generation_multi_simulations_reaction_config"
 
     LANG_KEY = "lang_select"
     TRANSLATE_SERVICE = "translate_service"
@@ -339,6 +346,14 @@ class State:
     def get_koa_config(cls) -> Dict:
         return st.session_state.get(cls.KOA_CONFIG_KEY, {})
 
+    @classmethod
+    def get_generation_multi_simulations_metabolite_config(cls) -> Dict:
+        return st.session_state.get(cls.GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY, {})
+
+    @classmethod
+    def get_generation_multi_simulations_reaction_config(cls) -> Dict:
+        return st.session_state.get(cls.GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY, {})
+
     # Get scenarios ids of each step
     @classmethod
     def get_scenarios_by_step_dict(cls) -> Dict:
@@ -387,3 +402,15 @@ class State:
         tree_menu = cls.get_tree_menu_object()
         if tree_menu:
             tree_menu.set_selected_item(item_key)
+
+    @classmethod
+    def get_simulation_data_types(cls) -> list:
+        return st.session_state.get(cls.SIMULATION_DATA_TYPES_KEY, [])
+
+    @classmethod
+    def get_resource_selector_metabolite_data(cls) -> ResourceModel:
+        return st.session_state.get(cls.RESOURCE_SELECTOR_METABOLITE_DATA_KEY, None)
+
+    @classmethod
+    def get_resource_selector_reaction_data(cls) -> ResourceModel:
+        return st.session_state.get(cls.RESOURCE_SELECTOR_REACTION_DATA_KEY, None)

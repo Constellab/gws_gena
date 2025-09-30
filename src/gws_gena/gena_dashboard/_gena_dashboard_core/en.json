@@ -110,6 +110,7 @@
     "how_provide_context_data": "How would you like to provide context data?",
     "select_existing_context": "Select existing context resource",
     "build_new_context": "Build a new context",
+    "build_new_context_simulation": "Build a new context and generate simulations",
     "search_context_resource": "Search for context resource",
     "contextualise_network_info": "In order to contextualise the network, you must select either a phenotype or a flux table.",
     "search_phenotype_table": "Search for phenotype table resource",
@@ -154,5 +155,14 @@
     "no_simulation_selected": "No simulation selected. Please select a simulation",
     "reaction_names": "Reaction Names",
     "flux_range_summary": "Flux Range Summary",
-    "select_simulations": "Select simulations"
+    "select_simulations": "Select simulations",
+    "select_experimental_data_types": "Select experimental data types",
+    "experimental_data_metabolite": "Metabolite data",
+    "experimental_data_reaction": "Reaction data",
+    "select_data_type_info": "Please select at least one experimental data type.",
+    "metabolite_experimental_data": "Metabolite Experimental Data",
+    "reaction_experimental_data": "Reaction Experimental Data",
+    "search_metabolite_experimental_data": "Search for metabolite experimental data",
+    "search_reaction_experimental_data": "Search for reaction experimental data",
+    "simulation_context_info": "Generate simulations from your experimental data to build a context. Select metabolite and/or reaction data types and configure the simulation parameters."
 }
