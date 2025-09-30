@@ -1,4 +1,3 @@
-
 # import multiprocessing
 from typing import List, Tuple
 
@@ -142,9 +141,30 @@ class FBA(Task):
         self.log_info_message('Creating lists')
         flux_tables: List[Table] = []
         sv_tables: List[Table] = []
-        for fba_result in fba_results:
-            flux_tables.append(fba_result.get_flux_table())
-            sv_tables.append(fba_result.get_sv_table())
+        if len(fba_results) > 1:
+            # If there are multiple simulations, add suffix to the index
+            # like this "simu0", "simu1"...
+            for i, fba_result in enumerate(fba_results):
+                flux_table = fba_result.get_flux_table()
+                sv_table = fba_result.get_sv_table()
+
+                # Add simulation suffix to index, starting from _0
+                flux_data = flux_table.get_data()
+                sv_data = sv_table.get_data()
+
+                # Add suffix to index names
+                flux_data.index = [f"{idx}_simu{i}" for idx in flux_data.index]
+                sv_data.index = [f"{idx}_simu{i}" for idx in sv_data.index]
+
+                # Create new tables with modified indices
+                flux_table_modified = Table(flux_data)
+                sv_table_modified = Table(sv_data)
+
+                flux_tables.append(flux_table_modified)
+                sv_tables.append(sv_table_modified)
+        else:
+            flux_tables.append(fba_results[0].get_flux_table())
+            sv_tables.append(fba_results[0].get_sv_table())
         self.log_info_message('Concat flux table')
         merged_flux_table: Table = TableConcatHelper.concat_table_rows(
             flux_tables)
