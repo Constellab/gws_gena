@@ -1,13 +1,13 @@
 
 import multiprocessing
 from copy import deepcopy
-
+from typing import List, Tuple
 import cvxpy as cp
 import numpy as np
 from gws_core import (BadRequestException, ConfigParams, ConfigSpecs,
                       FloatParam, InputSpec, InputSpecs, Logger, OutputSpec,
                       OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      TypingStyle, task_decorator)
+                      TypingStyle, task_decorator, TableConcatHelper, Table)
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -125,11 +125,6 @@ class FVA(Task):
         twin = inputs["twin"]
         solver = params["solver"]
         relax_qssa = params["relax_qssa"]
-        fluxes_to_maximize = params["fluxes_to_maximize"]
-        fluxes_to_minimize = params["fluxes_to_minimize"]
-        biomass_optimization = params["biomass_optimization"]
-        qssa_relaxation_strength = params["qssa_relaxation_strength"]
-        parsimony_strength = 0.0  # params["parsimony_strength"]
         gamma = params["gamma"]
 
         if relax_qssa and solver != "quad":
@@ -137,79 +132,106 @@ class FVA(Task):
                 message=f"Change solver to '{solver}' for constrain relaxation.")
             solver = "quad"
 
-        # we run only one FBA
-        self.log_info_message("Run a single FVA using the first context value")
-        twin = TwinHelper.build_twin_from_sub_context(self, twin, 0)
+        # retrieve the context of the twin
+        context = next(iter(twin.contexts.values()))
 
-        if isinstance(twin, FlatTwin):
-            flat_twin = twin
-        else:
-            flat_twin: FlatTwin = twin.flatten()
+        number_of_simulations = params["number_of_simulations"]
+        # If number_of_simulations is not provided, keep all the simulations
+        if number_of_simulations is None:
+            number_of_simulations = next(
+                (len(measure.target) for _, measure in context.reaction_data.items()), None)
 
-        c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize, fluxes_to_minimize = FBAHelper.build_problem(
-            flat_twin,
-            biomass_optimization=biomass_optimization,
-            fluxes_to_maximize=fluxes_to_maximize,
-            fluxes_to_minimize=fluxes_to_minimize
-        )
+        # check the length of the values
+        for name_measure, measure in context.reaction_data.items():
+            if (len(measure.target) < number_of_simulations):
+                raise Exception(
+                    "The number of target values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.target)) +
+                    " values of targets while the number of simulations is set to " + str(number_of_simulations))
+            if (len(measure.upper_bound) < number_of_simulations):
+                raise Exception(
+                    "The number of upper bound values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.upper_bound)) +
+                    " values of upper bound while the number of simulations is set to " +
+                    str(number_of_simulations))
+            if (len(measure.lower_bound) < number_of_simulations):
+                raise Exception(
+                    "The number of lower bound values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.lower_bound)) +
+                    " values of lower_bound while the number of simulations is set to " +
+                    str(number_of_simulations))
+            if (len(measure.confidence_score) < number_of_simulations):
+                raise Exception(
+                    "The number of confidence score values must be at least equal to the number of simulations. For " +
+                    name_measure + ", there are " + str(len(measure.confidence_score)) +
+                    " values of confidence score while the number of simulations is set to " +
+                    str(number_of_simulations))
 
-        self.log_info_message(
-            message=f"Starting optimization with solver '{solver}' ...")
-        if solver == "quad":
-            res, warm_solver = FBAHelper.solve_cvxpy(
-                c, A_eq, b_eq, bounds, c_out,
-                relax_qssa=relax_qssa,
-                qssa_relaxation_strength=qssa_relaxation_strength,
-                parsimony_strength=parsimony_strength,
-                verbose=False
-            )
-        else:
-            res: FBAOptimizeResult = FBAHelper.solve_scipy(
-                c, A_eq, b_eq, bounds, c_out,
-                solver=solver
-            )
-        self.log_info_message(message=res.message)
-        if not res.success:
-            raise BadRequestException(
-                f"Convergence error. Optimization message: '{res.message}'")
+        fva_results: List[FVAResult] = []
 
-        self.log_info_message(
-            message=f"Performing variability analysis around the optimal value using solver '{solver}' ...")
-        x0 = res.x
-        m = x0.shape[0]
-        step = max(1, int(m/10))  # plot only 10 iterations on screen
+        # If number of simulations is not None, there is a context with simulations
+        if (number_of_simulations):
+            # run through the number of simulations
+            for i in range(0, number_of_simulations):
+                new_twin = TwinHelper.build_twin_from_sub_context(
+                    self, twin, i)
+                fva_results.append(self.call_fva((i, new_twin, params)))
+                self.update_progress_value(((i+1) / number_of_simulations) * 100,
+                                           message="Running FVA for all simulations")
+        else:  # if number of simulations is None, there is no context provided, so we run only one FVA
+            new_twin = TwinHelper.build_twin_from_sub_context(self, twin, 0)
+            fva_results.append(self.call_fva((0, new_twin, params)))
+            self.update_progress_value(100, message="Running FVA")
 
-        flat_net: Network = flat_twin.get_flat_network()
-        fluxes_to_minimize = FBAHelper._expand_fluxes_by_names(
-            fluxes_to_minimize, flat_net)
-        fluxes_to_maximize = FBAHelper._expand_fluxes_by_names(
-            fluxes_to_maximize, flat_net)
 
-        if solver == "quad":
-            xmin, xmax = self.__solve_with_cvxpy_using_warm_solver(warm_solver,
-                                                                   c, x0,
-                                                                   fluxes_to_maximize,
-                                                                   fluxes_to_minimize,
-                                                                   step, m, gamma)
-        else:
-            xmin, xmax = self.__solve_with_parloop(
-                c, A_eq, b_eq, bounds, c_out, x0, fluxes_to_maximize,
-                fluxes_to_minimize, step, m, solver, relax_qssa,
-                qssa_relaxation_strength, parsimony_strength, gamma)
-        res.xmin = xmin
-        res.xmax = xmax
-        fva_result = FVAResult()
-        fva_result = fva_result.from_optimized_result(res)
-        fva_result = FVAResult(fva_result.get_fluxes_dataframe(),
-                               fva_result.get_sv_dataframe())
         # annotate twin
-        helper = TwinAnnotatorHelper()
-        helper.attach_message_dispatcher(self.message_dispatcher)
-        twin = helper.annotate_from_fva_results(twin, [fva_result])
+        self.log_info_message('Annotating the twin')
+        annotator_helper = TwinAnnotatorHelper()
+        annotator_helper.attach_message_dispatcher(self.message_dispatcher)
+        result_twin = annotator_helper.annotate_from_fva_results(
+            twin, fva_results)
+
+        self.log_info_message('Merging all fba results')
+        # merge all fba results
+        self.log_info_message('Creating lists')
+        flux_tables: List[Table] = []
+        sv_tables: List[Table] = []
+        if len(fva_results) > 1:
+            # If there are multiple simulations, add suffix to the index
+            # like this "simu0", "simu1"...
+            for i, fva_result in enumerate(fva_results):
+                flux_table = fva_result.get_flux_table()
+                sv_table = fva_result.get_sv_table()
+
+                # Add simulation suffix to index, starting from _0
+                flux_data = flux_table.get_data()
+                sv_data = sv_table.get_data()
+
+                # Add suffix to index names
+                flux_data.index = [f"{idx}_simu{i}" for idx in flux_data.index]
+                sv_data.index = [f"{idx}_simu{i}" for idx in sv_data.index]
+
+                # Create new tables with modified indices
+                flux_table_modified = Table(flux_data)
+                sv_table_modified = Table(sv_data)
+
+                flux_tables.append(flux_table_modified)
+                sv_tables.append(sv_table_modified)
+        else:
+            flux_tables.append(fva_results[0].get_flux_table())
+            sv_tables.append(fva_results[0].get_sv_table())
+        self.log_info_message('Concat flux table')
+        merged_flux_table: Table = TableConcatHelper.concat_table_rows(
+            flux_tables)
+        self.log_info_message('Concat sv table')
+        merged_sv_table: Table = TableConcatHelper.concat_table_rows(sv_tables)
+        self.log_info_message('Create FVAResult')
+        merged_fva_result = FVAResult(
+            merged_flux_table.get_data(), merged_sv_table.get_data())
 
         return {
-            "fva_result": fva_result,
-            "twin": twin
+            "fva_result": merged_fva_result,
+            "twin": result_twin
         }
 
     @staticmethod
@@ -319,3 +341,76 @@ class FVA(Task):
                                max_iters=FVA.__CVXPY_MAX_ITER, verbose=False)
                 xmax[i] = x.value[i]
         return xmin, xmax
+
+
+    def call_fva(self, data: Tuple[int, Twin, ConfigParams] ) -> FVAResult:
+        j, twin, params = data
+        solver = params["solver"]
+        gamma = params["gamma"]
+        parsimony_strength = 0  # params["parsimony_strength"]
+        qssa_relaxation_strength = params["qssa_relaxation_strength"]
+        relax_qssa = params["relax_qssa"]
+
+        if isinstance(twin, FlatTwin):
+            flat_twin = twin
+        else:
+            flat_twin: FlatTwin = twin.flatten()
+
+        c, A_eq, b_eq, bounds, c_out, fluxes_to_maximize, fluxes_to_minimize = FBAHelper.build_problem(
+            flat_twin,
+            biomass_optimization=params["biomass_optimization"],
+            fluxes_to_maximize=params["fluxes_to_maximize"],
+            fluxes_to_minimize=params["fluxes_to_minimize"]
+        )
+
+        self.log_info_message(
+            message=f"Starting optimization with solver '{solver}' ...")
+        if solver == "quad":
+            res, warm_solver = FBAHelper.solve_cvxpy(
+                c, A_eq, b_eq, bounds, c_out,
+                relax_qssa=relax_qssa,
+                qssa_relaxation_strength=qssa_relaxation_strength,
+                parsimony_strength=parsimony_strength,
+                verbose=False
+            )
+        else:
+            res: FBAOptimizeResult = FBAHelper.solve_scipy(
+                c, A_eq, b_eq, bounds, c_out,
+                solver=solver
+            )
+        self.log_info_message(message=res.message)
+        if not res.success:
+            raise BadRequestException(
+                f"Convergence error. Optimization message: '{res.message}'")
+
+        self.log_info_message(
+            message=f"Performing variability analysis around the optimal value using solver '{solver}' ...")
+        x0 = res.x
+        m = x0.shape[0]
+        step = max(1, int(m/10))  # plot only 10 iterations on screen
+
+        flat_net: Network = flat_twin.get_flat_network()
+        fluxes_to_minimize = FBAHelper._expand_fluxes_by_names(
+            fluxes_to_minimize, flat_net)
+        fluxes_to_maximize = FBAHelper._expand_fluxes_by_names(
+            fluxes_to_maximize, flat_net)
+
+        if solver == "quad":
+            xmin, xmax = self.__solve_with_cvxpy_using_warm_solver(warm_solver,
+                                                                    c, x0,
+                                                                    fluxes_to_maximize,
+                                                                    fluxes_to_minimize,
+                                                                    step, m, gamma)
+        else:
+            xmin, xmax = self.__solve_with_parloop(
+                c, A_eq, b_eq, bounds, c_out, x0, fluxes_to_maximize,
+                fluxes_to_minimize, step, m, solver, relax_qssa,
+                qssa_relaxation_strength, parsimony_strength, gamma)
+        res.xmin = xmin
+        res.xmax = xmax
+        fva_result = FVAResult()
+        fva_result = fva_result.from_optimized_result(res)
+        fva_result = FVAResult(fva_result.get_fluxes_dataframe(),
+                                fva_result.get_sv_dataframe())
+
+        return fva_result

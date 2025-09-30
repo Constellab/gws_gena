@@ -4,6 +4,8 @@ from gws_core import BadRequestException
 from gws_gena.network.typing.simulation_typing import SimulationDict
 
 from gws_gena.fba.fba_result import FBAResult
+from gws_gena.fva.fva_result import FVAResult
+from gws_gena.koa.koa_result import KOAResult
 from ...helper.base_helper import BaseHelper
 from ..flat_twin import FlatTwin
 from ..twin import Twin
@@ -57,7 +59,7 @@ class TwinAnnotatorHelper(BaseHelper):
 
         return annotated_twin
 
-    def annotate_from_fva_results(self, twin: Twin, fva_result: 'FVAResult'):
+    def annotate_from_fva_results(self, twin: Twin, fva_result: FVAResult):
         """
         Annotate a twin using from FVAResult
         """
@@ -108,7 +110,7 @@ class TwinAnnotatorHelper(BaseHelper):
 
         return annotated_twin
 
-    def annotate_from_fva_result(self, twin: Twin,simulation: SimulationDict, fva_result: 'FVAResult'):
+    def annotate_from_fva_result(self, twin: Twin, simulation: SimulationDict, fva_result: FVAResult):
         """
         Annotate a twin using from FVAResult
         """
@@ -121,7 +123,7 @@ class TwinAnnotatorHelper(BaseHelper):
 
         return self.annotate_from_fba_result(twin, simulation, fva_result)
 
-    def annotate_from_koa_result(self, twin: Twin, koa_result: 'KOAResult'):
+    def annotate_from_koa_result(self, twin: Twin, koa_result: KOAResult):
         """
         Annotate a twin using from KOAResult
         """
