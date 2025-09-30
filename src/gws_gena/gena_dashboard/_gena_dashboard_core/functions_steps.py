@@ -460,3 +460,18 @@ def dialog_edit_scenario_params(scenario: Scenario, gena_state: State):
                 del st.session_state[edit_config_key]
 
             st.rerun()
+
+
+# Create mask that preserves order
+def should_include_row(idx, selected_simulations):
+    """ Determine if a row should be included based on selected simulations.
+    Used to filter flux data while maintaining order.
+    In fba and fva steps"""
+    if not isinstance(idx, str):
+        return True
+
+    # Handle numbered simulations
+    parts = str(idx).split('_simu')
+    if len(parts) > 1 and parts[-1].isdigit():
+        return int(parts[-1]) in selected_simulations
+    return True

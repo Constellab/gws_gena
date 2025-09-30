@@ -4,7 +4,7 @@ from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner
 from gws_core import Scenario, ScenarioProxy, InputTask, Scenario, ScenarioStatus, ScenarioProxy
 from gws_gena import FBA
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_saved_scenario_actions, display_network, extract_network_and_context_from_twin, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_saved_scenario_actions, display_network, extract_network_and_context_from_twin, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters, should_include_row
 
 @st.dialog("FBA parameters")
 def dialog_fba_params(gena_state: State):
@@ -97,10 +97,41 @@ def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
         tab_flux, tab_sv, tab_network, tab_context = st.tabs([translate_service.translate("flux_table"), translate_service.translate("sv_table"), translate_service.translate("network"), translate_service.translate("context")])
         with tab_flux:
             flux_data = fba_result.get("Flux table").get_data()
-            st.dataframe(flux_data)
 
-            # Create histogram of flux values
-            flux_values = flux_data.select_dtypes(include=['number']).values.flatten()
+            # Check if index contains simulation suffixes
+            simulation_numbers = set()
+
+            for idx in flux_data.index:
+                if isinstance(idx, str):
+                    if '_simu' in idx:
+                        parts = idx.split('_simu')
+                        if len(parts) > 1 and parts[-1].isdigit():
+                            simulation_numbers.add(int(parts[-1]))
+
+            # If simulations are detected, add multiselect
+            filtered_flux_data = flux_data
+            if simulation_numbers:
+                simulation_numbers = sorted(list(simulation_numbers))
+
+                selected_simulations = st.multiselect(
+                    translate_service.translate("select_simulations"),
+                    options=simulation_numbers,
+                    default=simulation_numbers,
+                    key="flux_simulation_selector"
+                )
+
+                # Filter data based on selected simulations while maintaining order
+                if selected_simulations:
+                    mask = [should_include_row(idx, selected_simulations) for idx in flux_data.index]
+                    filtered_flux_data = flux_data.loc[mask]
+                else:
+                    st.info(translate_service.translate("no_simulation_selected"))
+                    return
+
+            st.dataframe(filtered_flux_data)
+
+            # Create histogram of filtered flux values
+            flux_values = filtered_flux_data.select_dtypes(include=['number']).values.flatten()
 
             fig_flux = px.histogram(
                 x=flux_values,
@@ -112,9 +143,39 @@ def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
         with tab_sv:
             sv_data = fba_result.get("SV table").get_data()
 
-            st.dataframe(sv_data)
+            # Check if index contains simulation suffixes
+            simulation_numbers = set()
+
+            for idx in sv_data.index:
+                if isinstance(idx, str):
+                    if '_simu' in idx:
+                        parts = idx.split('_simu')
+                        if len(parts) > 1 and parts[-1].isdigit():
+                            simulation_numbers.add(int(parts[-1]))
+
+            # If simulations are detected, add multiselect
+            filtered_sv_data = sv_data
+            if simulation_numbers:
+                simulation_numbers = sorted(list(simulation_numbers))
+
+                selected_simulations = st.multiselect(
+                    translate_service.translate("select_simulations"),
+                    options=simulation_numbers,
+                    default=simulation_numbers,
+                    key="sv_simulation_selector"
+                )
+
+                # Filter data based on selected simulations while maintaining order
+                if selected_simulations:
+                    mask = [should_include_row(idx, selected_simulations) for idx in sv_data.index]
+                    filtered_sv_data = sv_data.loc[mask]
+                else:
+                    st.info(translate_service.translate("no_simulation_selected"))
+                    return
+
+            st.dataframe(filtered_sv_data)
             # Create distribution plot for SV values
-            sv_values = sv_data.select_dtypes(include=['number']).values.flatten()
+            sv_values = filtered_sv_data.select_dtypes(include=['number']).values.flatten()
 
             # Create histogram for distribution
             fig_sv_hist = px.histogram(

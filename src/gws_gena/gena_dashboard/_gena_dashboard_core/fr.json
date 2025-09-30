@@ -151,6 +151,8 @@
     "select_fluxes_to_display": "Sélectionner les flux à afficher",
     "flux_bounds_table": "Tableau des bornes de flux",
     "select_flux_to_display": "Veuillez sélectionner au moins un flux à afficher",
+    "no_simulation_selected": "Aucune simulation sélectionnée. Veuillez sélectionner une simulation",
     "reaction_names": "Noms des réactions",
-    "flux_range_summary": "Résumé des plages de flux"
+    "flux_range_summary": "Résumé des plages de flux",
+    "select_simulations": "Sélectionner les simulations"
 }
