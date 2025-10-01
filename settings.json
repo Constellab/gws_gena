@@ -37,6 +37,10 @@
           {
             "name": "bioservices",
             "version": "1.11.2"
+          },
+          {
+            "name": "streamlit-slickgrid",
+            "version": "0.2.0"
           }
         ]
       }
