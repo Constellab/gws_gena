@@ -43,7 +43,7 @@ class TransformerFluxTable(Task):
     confidence_score_column: str = "confidence_score"
 
     input_specs = InputSpecs({
-        'table': InputSpec(Table, human_name="Initial table", is_optional=False)})
+        'table': InputSpec(Table, human_name="Initial table", optional=False)})
     output_specs = OutputSpecs({'transformed_table': OutputSpec(Table)})
     config_specs: ConfigSpecs = ConfigSpecs({
         'entity_id_column':

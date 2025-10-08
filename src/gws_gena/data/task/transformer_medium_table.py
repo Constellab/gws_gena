@@ -30,7 +30,7 @@ class TransformerMediumTable(Task):
     entity_column_name: str = "entity"
 
     input_specs = InputSpecs({
-        'table': InputSpec(Table, human_name="Initial table", is_optional=False)})
+        'table': InputSpec(Table, human_name="Initial table", optional=False)})
     output_specs = OutputSpecs({'transformed_table': OutputSpec(Table)})
     config_specs: ConfigSpecs = ConfigSpecs({
         'entity_column':

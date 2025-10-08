@@ -26,7 +26,7 @@ class TransformerECNumberTable(Task):
     ec_number_name: str = "ec_number"
 
     input_specs = InputSpecs({
-        'table': InputSpec(Table, human_name="Initial table", is_optional=False)})
+        'table': InputSpec(Table, human_name="Initial table", optional=False)})
     output_specs = OutputSpecs({'transformed_table': OutputSpec(Table)})
     config_specs: ConfigSpecs = ConfigSpecs({
         'ec_number_column':

@@ -25,8 +25,8 @@ class DraftRecon(Task):
     """
 
     input_specs = InputSpecs({
-        'ec_table': InputSpec(Table, human_name="Table of ec numbers", is_optional=True),
-        'biomass_table': InputSpec(Table, is_optional=True),
+        'ec_table': InputSpec(Table, human_name="Table of ec numbers", optional=True),
+        'biomass_table': InputSpec(Table, optional=True),
     })
     output_specs = OutputSpecs({'network': OutputSpec(Network)})
     config_specs = ConfigSpecs({

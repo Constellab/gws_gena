@@ -25,7 +25,7 @@ class TwinBuilder(Task):
 
     input_specs = InputSpecs({
         'network': InputSpec(Network, human_name="Network", short_description="The metabolic network"),
-        'context': InputSpec(Context, human_name="Context", short_description="The metabolic context", is_optional=True)
+        'context': InputSpec(Context, human_name="Context", short_description="The metabolic context", optional=True)
     })
     output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Digital twin", short_description="The digital twin"),

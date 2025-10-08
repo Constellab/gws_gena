@@ -30,8 +30,8 @@ class ContextBuilder(Task):
 
     input_specs = InputSpecs({
         'network': InputSpec(Network),
-        'flux_table': InputSpec(Table, human_name="Flux table", is_optional=True),
-        'pheno_table': InputSpec(Table, human_name="Phenotype table", is_optional=True)})
+        'flux_table': InputSpec(Table, human_name="Flux table", optional=True),
+        'pheno_table': InputSpec(Table, human_name="Phenotype table", optional=True)})
     output_specs = OutputSpecs({'context': OutputSpec(Context)})
 
     def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
