@@ -67,7 +67,7 @@ class ContextFromDEG(Task):
         df_deg[gene_id_column] = df_deg[gene_id_column].apply(self.convert_to_clean_string)
 
         # Create context
-        columns_context_flux_table = ("ID_reaction", "target", "lower_bound", "upper_bound", "confidence_score")
+        columns_context_flux_table = ("id", "target", "lower_bound", "upper_bound", "confidence_score")
         context_flux_table = pd.DataFrame(columns=columns_context_flux_table)
 
         list_reactions_modified = pd.DataFrame(columns=("Reaction", "Flux traceability"))
