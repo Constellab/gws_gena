@@ -9,7 +9,73 @@ from gws_gena import Network
 @task_decorator("ContextFromDEG", human_name="Context from DEG")
 class ContextFromDEG(Task):
     """
-    Context from DEG
+    Create a context flux table from differential expression gene (DEG) data and a metabolic network.
+
+    This task integrates gene expression data with metabolic network information to generate
+    context-specific flux constraints for metabolic modeling. It evaluates gene-reaction rules
+    in the network using fold change values from DEG analysis to determine appropriate flux
+    bounds for reactions.
+
+    ## Input Requirements
+
+    ### DEG Table
+    - Must contain gene identifiers and log2 fold change values
+    - Gene IDs should match those used in the metabolic network
+    - Default expected columns: 'gene_id' and 'avg_log2FC' (configurable)
+
+    ### Network
+    - Metabolic network in JSON format
+    - Must contain gene-reaction rules linking genes to reactions
+    - Reactions without gene rules are not modified
+
+    ## Algorithm
+
+    1. **Gene ID Validation**: Checks compatibility between DEG gene IDs and network gene IDs
+    2. **Boolean Expression Evaluation**: For each reaction's gene-reaction rule:
+       - Extracts gene IDs from the rule
+       - Retrieves corresponding fold change values from DEG data
+       - Evaluates boolean logic:
+         - OR operations: takes maximum fold change value
+         - AND operations: takes minimum fold change value
+         - Handles complex nested expressions with parentheses
+    3. **Flux Constraint Assignment**: Based on evaluated fold change:
+       - Values below -threshold: assigns "low" flux constraints (typically restrictive)
+       - Values above +threshold: assigns "high" flux constraints (typically permissive)
+       - Values within threshold: no constraints applied
+
+    ## Configuration Parameters
+
+    - **gene_id_column**: Column name containing gene identifiers in DEG table
+    - **log2_fold_change_column**: Column name containing fold change values
+    - **threshold**: Minimum absolute fold change to trigger constraint
+    - **target_high/low**: Target flux values for upregulated/downregulated genes
+    - **lower_bound_high/low**: Lower bounds for flux constraints
+    - **upper_bound_high/low**: Upper bounds for flux constraints
+    - **confidence**: Confidence score for all constraints
+
+    ## Outputs
+
+    ### Context Flux Table
+    Contains flux constraints with columns:
+    - id: Reaction identifier
+    - target: Target flux value
+    - lower_bound: Lower flux bound
+    - upper_bound: Upper flux bound
+    - confidence_score: Constraint confidence
+
+    ### List of Reactions Modified
+    Summary table showing which reactions were modified and their flux traceability ("high" or "low")
+
+    ## Gene-Reaction Rule Examples
+
+    - Simple OR: "gene1 or gene2" → max(fold_change_gene1, fold_change_gene2)
+    - Simple AND: "gene1 and gene2" → min(fold_change_gene1, fold_change_gene2)
+    - Complex: "(gene1 and gene2) or gene3" → max(min(fc1, fc2), fc3)
+
+    ## Notes
+
+    - Reactions without matching genes in DEG data are not constrained
+    - Boolean expressions support standard logical operators with proper precedence
 
     """
 
@@ -26,7 +92,7 @@ class ContextFromDEG(Task):
         "gene_id_column": StrParam(default_value="gene_id", human_name="Gene ID column name"),
         "log2_fold_change_column": StrParam(default_value="avg_log2FC", human_name="Log2 fold change column name"),
         "threshold": FloatParam(default_value=0.25, human_name="Threshold for log fold change", visibility=StrParam.PROTECTED_VISIBILITY),
-        "target_high": FloatParam(default_value=0.36, human_name="Target high", visibility=StrParam.PROTECTED_VISIBILITY), # TODO voir pour mettre dans la doc que ça devrait être la médiane de la condition normale -> à vérifier
+        "target_high": FloatParam(default_value=1, human_name="Target high", visibility=StrParam.PROTECTED_VISIBILITY),
         "lower_bound_high": FloatParam(default_value=0.5, human_name="Lower bound high", visibility=StrParam.PROTECTED_VISIBILITY),
         "upper_bound_high": FloatParam(default_value=1000, human_name="Upper bound high", visibility=StrParam.PROTECTED_VISIBILITY),
         "target_low": FloatParam(default_value=0, human_name="Target low", visibility=StrParam.PROTECTED_VISIBILITY),
@@ -65,6 +131,9 @@ class ContextFromDEG(Task):
 
         # Convert the gene_id column to string, handling float values properly
         df_deg[gene_id_column] = df_deg[gene_id_column].apply(self.convert_to_clean_string)
+
+        # Validate gene ID format compatibility between DEG and network
+        self.validate_gene_id_formats(df_deg, gene_id_column, network_dict)
 
         # Create context
         columns_context_flux_table = ("id", "target", "lower_bound", "upper_bound", "confidence_score")
@@ -208,3 +277,30 @@ class ContextFromDEG(Task):
 
 
         return None
+
+    def validate_gene_id_formats(self, df_deg, gene_id_column, network_dict):
+        """
+        Validate that gene IDs in DEG file match the format used in the network.
+        """
+        # Extract all unique gene IDs from the network
+        network_gene_ids = set()
+        for reaction in network_dict["reactions"]:
+            if reaction["gene_reaction_rule"]:
+                gene_ids = re.findall(r'\b[A-Za-z0-9_]+\b', reaction["gene_reaction_rule"])
+                gene_ids = [gene_id for gene_id in gene_ids if gene_id not in ["or", "and"]]
+                network_gene_ids.update(gene_ids)
+
+        # Get unique gene IDs from DEG file
+        deg_gene_ids = set(df_deg[gene_id_column].dropna().unique())
+
+        # Find matches
+        matching_genes = network_gene_ids.intersection(deg_gene_ids)
+
+        # Calculate match statistics
+        total_deg_genes = len(deg_gene_ids)
+        match_count = len(matching_genes)
+
+        match_percentage = (match_count / total_deg_genes * 100) if total_deg_genes > 0 else 0
+
+        if match_percentage == 0:
+            raise Exception(f"We can't find any matching gene IDs between the DEG file and the network. Please check that the gene IDs in the DEG file match those used in the network. You can use the Gene_ID_conversion task to convert gene IDs of your DEG file. Either the gene IDs are in a different format, or genes in the DEG file are not represented in the network.")
