@@ -30,7 +30,7 @@ class PlotFluxTableAnalysis(Task):
 
     input_specs = InputSpecs({'flux_table_condition1':  InputSpec(Table),
                               'flux_table_condition2':  InputSpec(Table),
-                              'file_modified_reactions':  InputSpec(File)})
+                              'file_modified_reactions':  InputSpec(Table)})
 
     output_specs = OutputSpecs({'plot': OutputSpec(PlotlyResource),
                                 'table_changes': OutputSpec(Table)})
@@ -50,7 +50,7 @@ class PlotFluxTableAnalysis(Task):
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         flux_table_condition1: Table = inputs["flux_table_condition1"]
         flux_table_condition2: Table = inputs["flux_table_condition2"]
-        file_modified_reactions: File = inputs["file_modified_reactions"]
+        file_modified_reactions: Table = inputs["file_modified_reactions"]
 
         name_condition1 = params["name_condition1"]
         name_condition2 = params["name_condition2"]
@@ -72,8 +72,7 @@ class PlotFluxTableAnalysis(Task):
         flux_condition2.columns = ["reaction",
                                    "value", "lower_bound", "upper_bound"]
 
-        list_reactions_modified = pd.read_csv(
-            file_modified_reactions.path, sep=',')
+        list_reactions_modified = file_modified_reactions.get_data()
 
         # We remove the pattern added by the FBA task
         flux_condition1['reaction'] = flux_condition1['reaction'].str.replace(
@@ -81,56 +80,81 @@ class PlotFluxTableAnalysis(Task):
         flux_condition2['reaction'] = flux_condition2['reaction'].str.replace(
             re.escape(pattern), '')
 
+        # Merge the two flux tables on reaction column to handle different lengths
+        merged_flux = pd.merge(flux_condition1, flux_condition2, on='reaction', how='outer', suffixes=('_c1', '_c2'))
+
         # We create the dataframe
         columns_changes = ("Tag", "Reaction", "flux_" +
                            name_condition1, "flux_" + name_condition2)
         table_changes = pd.DataFrame(columns=columns_changes)
 
-        # for i in range (0, len(flux_condition1["value"])-1):
-        for i in range(0, len(flux_condition1["value"])):
-            flux_condition1_value = flux_condition1["value"][i]
-            flux_condition2_value = flux_condition2["value"][i]
-            reaction_id = flux_condition1["reaction"][i]
-            # We compute the fold change
-            lin_fc = flux_condition2_value/flux_condition1_value
-            if lin_fc > 0:
-                fold_change = np.log2(lin_fc)
+        for i in range(len(merged_flux)):
+            flux_condition1_value = merged_flux["value_c1"].iloc[i]
+            flux_condition2_value = merged_flux["value_c2"].iloc[i]
+            reaction_id = merged_flux["reaction"].iloc[i]
+
+            # Check if reaction exists in both conditions
+            if pd.isna(flux_condition1_value) or pd.isna(flux_condition2_value):
+                if pd.isna(flux_condition1_value) and pd.isna(flux_condition2_value):
+                    tag = "Flux not present in both conditions"
+                elif pd.isna(flux_condition1_value):
+                    tag = f"Flux only present in {name_condition2}"
+                    flux_condition1_value = 0  # Set to 0 for plotting
+                else:
+                    tag = f"Flux only present in {name_condition1}"
+                    flux_condition2_value = 0  # Set to 0 for plotting
+
+                fold_change = np.NaN
             else:
-                fold_change = np.NAN
-
-            # We tag each reaction depending the fluxes values
-            if reaction_id in list_reactions_modified[column_reaction_id].values:
-                if column_reaction_tag_modified:
-                    index = list_reactions_modified.index[(
-                        list_reactions_modified[column_reaction_id] == reaction_id)].tolist()[0]
-                    tag = "Modified flux " + list_reactions_modified[column_reaction_tag_modified][index]
+                # We compute the fold change
+                if flux_condition1_value != 0:
+                    lin_fc = flux_condition2_value/flux_condition1_value
+                    if lin_fc > 0:
+                        fold_change = np.log2(lin_fc)
+                    else:
+                        fold_change = np.NAN
                 else:
+                    # Handle division by zero
+                    if flux_condition2_value > 0:
+                        fold_change = np.inf
+                    elif flux_condition2_value < 0:
+                        fold_change = -np.inf
+                    else:
+                        fold_change = np.NAN
+
+                # We tag each reaction depending the fluxes values
+                if reaction_id in list_reactions_modified[column_reaction_id].values:
+                    if column_reaction_tag_modified:
+                        index = list_reactions_modified.index[(
+                            list_reactions_modified[column_reaction_id] == reaction_id)].tolist()[0]
+                        tag = "Modified flux " + list_reactions_modified[column_reaction_tag_modified][index]
+                    else:
+                        tag = "Modified flux"
+                # If the reaction was created by the FBA, it's also tagged with "Modified flux"
+                elif reaction_id.startswith('measure'):
                     tag = "Modified flux"
-            # If the reaction was created by the FBA, it's also tagged with "Modified flux"
-            elif reaction_id.startswith('measure'):
-                tag = "Modified flux"
 
-            elif flux_condition2_value > 0 and flux_condition1_value > 0:
-                if fold_change > threshold:
-                    tag = name_condition2 + " superior"
-                elif fold_change < - threshold:
+                elif flux_condition2_value > 0 and flux_condition1_value > 0:
+                    if fold_change > threshold:
+                        tag = name_condition2 + " superior"
+                    elif fold_change < - threshold:
+                        tag = name_condition2 + " inferior"
+                    else:
+                        tag = "Equal fluxes"
+
+                elif flux_condition2_value < 0 and flux_condition1_value < 0:
+                    if fold_change > threshold:
+                        tag = name_condition2 + " inferior"
+                    elif fold_change < - threshold:
+                        tag = name_condition2 + " superior"
+                    else:
+                        tag = "Equal fluxes"
+
+                elif flux_condition2_value < 0 and flux_condition1_value > 0:
                     tag = name_condition2 + " inferior"
-                else:
-                    tag = "Equal fluxes"
 
-            elif flux_condition2_value < 0 and flux_condition1_value < 0:
-                if fold_change > threshold:
-                    tag = name_condition2 + " inferior"
-                elif fold_change < - threshold:
+                elif flux_condition2_value > 0 and flux_condition1_value < 0:
                     tag = name_condition2 + " superior"
-                else:
-                    tag = "Equal fluxes"
-
-            elif flux_condition2_value < 0 and flux_condition1_value > 0:
-                tag = name_condition2 + " inferior"
-
-            elif flux_condition2_value > 0 and flux_condition1_value < 0:
-                tag = name_condition2 + " superior"
 
             row = pd.DataFrame(
                 [[tag, reaction_id, flux_condition1_value, flux_condition2_value]],
