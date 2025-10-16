@@ -70,6 +70,9 @@ class State:
     NETWORK_MERGEM_SELECTOR_KEY = "network_mergem_selector"
     NETWORK_MERGER_SELECTOR_KEY = "network_merger_selector"
     ANALYSIS_NAME_USER = "analysis_name_user"
+    DEG_DATA_SELECTOR = "deg_data_selector"
+    GENE_TRANSLATION_SELECTOR = "gene_translation_selector"
+    RESOURCE_SELECTOR_DEG_DATA_KEY = "resource_selector_deg_data"
 
     # Tree
     TREE_ANALYSIS_OBJECT = "analysis_tree_menu_object"
@@ -91,6 +94,8 @@ class State:
     KOA_CONFIG_KEY = "koa_config"
     GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY = "generation_multi_simulations_metabolite_config"
     GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY = "generation_multi_simulations_reaction_config"
+    ID_CONVERT_CONFIG_KEY = "id_convert_config"
+    CONTEXT_FROM_DEG_CONFIG_KEY = "context_from_deg_config"
 
     LANG_KEY = "lang_select"
     TRANSLATE_SERVICE = "translate_service"
@@ -354,6 +359,14 @@ class State:
     def get_generation_multi_simulations_reaction_config(cls) -> Dict:
         return st.session_state.get(cls.GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY, {})
 
+    @classmethod
+    def get_id_convert_config(cls) -> Dict:
+        return st.session_state.get(cls.ID_CONVERT_CONFIG_KEY, {})
+
+    @classmethod
+    def get_context_from_deg_config(cls) -> Dict:
+        return st.session_state.get(cls.CONTEXT_FROM_DEG_CONFIG_KEY, {})
+
     # Get scenarios ids of each step
     @classmethod
     def get_scenarios_by_step_dict(cls) -> Dict:
@@ -406,6 +419,18 @@ class State:
     @classmethod
     def get_simulation_data_types(cls) -> list:
         return st.session_state.get(cls.SIMULATION_DATA_TYPES_KEY, [])
+
+    @classmethod
+    def get_deg_data_selector(cls) -> bool:
+        return st.session_state.get(cls.DEG_DATA_SELECTOR, False)
+
+    @classmethod
+    def get_gene_translation_selector(cls) -> bool:
+        return st.session_state.get(cls.GENE_TRANSLATION_SELECTOR, False)
+
+    @classmethod
+    def get_resource_selector_deg_data(cls) -> ResourceModel:
+        return st.session_state.get(cls.RESOURCE_SELECTOR_DEG_DATA_KEY, None)
 
     @classmethod
     def get_resource_selector_metabolite_data(cls) -> ResourceModel:

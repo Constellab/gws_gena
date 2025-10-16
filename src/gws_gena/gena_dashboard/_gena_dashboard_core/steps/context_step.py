@@ -7,9 +7,10 @@ from gws_core import (
     ResourceOrigin, File, Settings, Scenario,
     ProtocolProxy, InputTask, ResourceModel, ScenarioStatus
 )
-from gws_gena import ContextImporter, ContextBuilder, GenerationMultiSimulations
+from gws_gena import ContextImporter, ContextBuilder, GenerationMultiSimulations, ContextFromDEG
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, create_base_scenario_with_tags, search_updated_network, get_context_process_name, display_scenario_parameters
 from gws_core.streamlit import StreamlitResourceSelect, StreamlitContainers, StreamlitTaskRunner
+from gws_omix import IDConvertTask
 
 def _create_empty_context_resource(gena_state: State) -> ResourceModel:
     """Create an empty context resource file."""
@@ -144,6 +145,53 @@ def _handle_existing_context(protocol: ProtocolProxy, gena_state: State) -> bool
 
     return False
 
+def _handle_context_deg_builder(protocol: ProtocolProxy, gena_state: State) -> None:
+    """Handle context builder using DEG data."""
+    # Add network resource
+    network_resource = protocol.add_process(
+        InputTask, 'network_resource',
+        {InputTask.config_name: gena_state.get_resource_id_network()}
+    )
+
+    # Add context builder process
+    context_process = protocol.add_process(ContextBuilder, 'context_builder_process')
+    protocol.add_connector(network_resource >> 'resource', context_process << 'network')
+
+    # Add context from deg process
+    deg_config = gena_state.get_context_from_deg_config()["config"]
+    context_deg = protocol.add_process(
+        ContextFromDEG, 'context_deg_process',
+        deg_config
+    )
+
+    deg_data = gena_state.get_resource_selector_deg_data()
+
+    if deg_data:
+        deg_input = protocol.add_process(
+            InputTask, 'deg_data_resource',
+            {InputTask.config_name: deg_data["resourceId"]}
+        )
+        if gena_state.get_gene_translation_selector():
+            # Add conversion process
+            convert_config = gena_state.get_id_convert_config()["config"]
+            context_convert = protocol.add_process(
+                IDConvertTask, 'id_convert_process',
+                convert_config
+            )
+
+            protocol.add_connector(deg_input >> 'resource', context_convert << 'table_file')
+            protocol.add_connector(context_convert >> 'converted_table', context_deg << 'deg')
+
+        else:
+            protocol.add_connector(deg_input >> 'resource', context_deg << 'deg')
+        protocol.add_connector(network_resource >> 'resource', context_deg << 'network')
+
+        protocol.add_connector(context_deg >> 'context_flux_table', context_process << 'flux_table')
+
+
+    # Add output
+    protocol.add_output('context_process_output', context_process >> 'context', flag_resource=False)
+
 
 def _add_context_importer(protocol: ProtocolProxy, context_resource_model: ResourceModel) -> None:
     """Add context importer process to the protocol."""
@@ -188,7 +236,8 @@ def _render_context_setup_ui(gena_state: State) -> bool:
         st.selectbox(
             translate_service.translate("how_provide_context_data"),
             options=[translate_service.translate("select_existing_context"), translate_service.translate("build_new_context"),
-                     translate_service.translate("build_new_context_simulation")],
+                     translate_service.translate("build_new_context_simulation"),
+                     translate_service.translate("build_new_context_deg")],
             index=None,
             key=gena_state.CONTEXT_OPTION_KEY
         )
@@ -288,6 +337,56 @@ def _render_context_setup_ui(gena_state: State) -> bool:
 
             return all(all_widgets_valid) if all_widgets_valid else False
 
+        elif context_option == translate_service.translate("build_new_context_deg"):
+            all_widgets_valid = []
+
+            resource_select_deg = StreamlitResourceSelect()
+            resource_select_deg.select_resource(
+                placeholder=translate_service.translate('search_deg_experimental_data'),
+                key=gena_state.RESOURCE_SELECTOR_DEG_DATA_KEY,
+                defaut_resource=None
+            )
+
+            deg_resource_valid = gena_state.get_resource_selector_deg_data() is not None
+            all_widgets_valid.append(deg_resource_valid)
+
+            if deg_resource_valid:
+                # Does data genes need to be translated?
+                st.checkbox(
+                    label="Does your gene names need to be translated?", # TODO translate
+                    key = gena_state.GENE_TRANSLATION_SELECTOR)
+
+                # Task conversion id
+                if gena_state.get_gene_translation_selector():
+                    # Configure conversion id parameters
+                    form_config_convert = StreamlitTaskRunner(IDConvertTask)
+                    form_config_convert.generate_config_form_without_run(
+                        session_state_key=gena_state.ID_CONVERT_CONFIG_KEY,
+                        default_config_values=IDConvertTask.config_specs.get_default_values(),
+                        is_default_config_valid=IDConvertTask.config_specs.mandatory_values_are_set(
+                            IDConvertTask.config_specs.get_default_values()),
+                        key='id_convert_form'
+                    )
+                    metabolite_convert_config = gena_state.get_id_convert_config()
+                    metabolite_config_valid = metabolite_convert_config.get("is_valid", False) if metabolite_convert_config else False
+                    all_widgets_valid.append(metabolite_config_valid)
+
+
+                # Task context from DEG
+                form_config_deg = StreamlitTaskRunner(ContextFromDEG)
+                form_config_deg.generate_config_form_without_run(
+                    session_state_key=gena_state.CONTEXT_FROM_DEG_CONFIG_KEY,
+                    default_config_values=ContextFromDEG.config_specs.get_default_values(),
+                    is_default_config_valid=ContextFromDEG.config_specs.mandatory_values_are_set(
+                        ContextFromDEG.config_specs.get_default_values()),
+                    key='context_from_deg_form'
+                )
+                deg_config = gena_state.get_context_from_deg_config()
+                deg_config_valid = deg_config.get("is_valid", False) if deg_config else False
+                all_widgets_valid.append(deg_config_valid)
+
+            return all(all_widgets_valid) if all_widgets_valid else False
+
         elif context_option == translate_service.translate("build_new_context"):
             col_info, col_help = StreamlitContainers.columns_with_fit_content('container-column_context_builder', cols=[1, 'fit-content'],
                 vertical_align_items='center')
@@ -377,6 +476,14 @@ def _render_context_creation_ui(gena_state: State) -> None:
                 reaction_valid = (translate_service.translate("experimental_data_reaction") in selected_data_types and
                                 gena_state.get_resource_selector_reaction_data())
                 has_required_resources = metabolite_valid or reaction_valid
+            elif context_option == translate_service.translate("build_new_context_deg"):
+                if gena_state.get_gene_translation_selector():
+                    has_required_resources = bool(gena_state.get_resource_selector_deg_data() and
+                                                  gena_state.get_id_convert_config() and
+                                                  gena_state.get_context_from_deg_config())
+                else:
+                    has_required_resources = bool(gena_state.get_resource_selector_deg_data() and
+                                                  gena_state.get_context_from_deg_config())
             else:
                 has_required_resources = bool(gena_state.get_resource_selector_context())
 
@@ -395,6 +502,8 @@ def _render_context_creation_ui(gena_state: State) -> None:
                 _handle_context_builder(protocol, gena_state)
             elif context_option == translate_service.translate("build_new_context_simulation"):
                 _handle_context_simulation_builder(protocol, gena_state)
+            elif context_option == translate_service.translate("build_new_context_deg"):
+                _handle_context_deg_builder(protocol, gena_state)
             else:  # Select existing context resource
                 if _handle_existing_context(protocol, gena_state):
                     # Context is already processed, no need for importer

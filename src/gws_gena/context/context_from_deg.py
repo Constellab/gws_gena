@@ -3,7 +3,7 @@ import pandas as pd
 from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
                       OutputSpecs, Task, TaskInputs, TaskOutputs,
                       task_decorator, ConfigSpecs, Table, StrParam, FloatParam)
-from gws_gena import Network
+from ..network.network import Network
 
 
 @task_decorator("ContextFromDEG", human_name="Context from DEG")
@@ -89,7 +89,7 @@ class ContextFromDEG(Task):
     })
 
     config_specs = ConfigSpecs({
-        "gene_id_column": StrParam(default_value="gene_id", human_name="Gene ID column name"),
+        "gene_id_column": StrParam(default_value="converted", human_name="Gene ID column name"),
         "log2_fold_change_column": StrParam(default_value="avg_log2FC", human_name="Log2 fold change column name"),
         "threshold": FloatParam(default_value=0.25, human_name="Threshold for log fold change", visibility=StrParam.PROTECTED_VISIBILITY),
         "target_high": FloatParam(default_value=1, human_name="Target high", visibility=StrParam.PROTECTED_VISIBILITY),

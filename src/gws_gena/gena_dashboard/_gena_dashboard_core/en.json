@@ -111,6 +111,7 @@
     "select_existing_context": "Select existing context resource",
     "build_new_context": "Build a new context",
     "build_new_context_simulation": "Build a new context and generate simulations",
+    "build_new_context_deg": "Build a new context using DEG data",
     "search_context_resource": "Search for context resource",
     "contextualise_network_info": "In order to contextualise the network, you must select either a phenotype or a flux table.",
     "search_phenotype_table": "Search for phenotype table resource",
@@ -164,5 +165,6 @@
     "reaction_experimental_data": "Reaction Experimental Data",
     "search_metabolite_experimental_data": "Search for metabolite experimental data",
     "search_reaction_experimental_data": "Search for reaction experimental data",
+    "search_deg_experimental_data": "Search for DEG experimental data",
     "simulation_context_info": "Generate simulations from your experimental data to build a context. Select metabolite and/or reaction data types and configure the simulation parameters."
 }

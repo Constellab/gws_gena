@@ -9,6 +9,7 @@ from .context.context_builder import ContextBuilder
 from .context.helper.context_builder_helper import ContextBuilderHelper
 from .context.context_task import ContextExporter, ContextImporter
 from .context.generation_multi_simulations import GenerationMultiSimulations
+from .context.context_from_deg import ContextFromDEG
 # table
 from .data.task.transformer_phenotype_table import TransformerPhenotypeTable
 from .data.task.transformer_ec_number_table import TransformerECNumberTable
