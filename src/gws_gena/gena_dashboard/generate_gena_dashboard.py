@@ -5,10 +5,10 @@ from gws_core import (ConfigParams, AppConfig, AppType, OutputSpec,
 
 
 @app_decorator("GenaDashboardAppConfig", app_type=AppType.STREAMLIT,
-               human_name="Generate Gena Dashboard app")
+               human_name="Generate Constellab Digital Twin app")
 class GenaDashboardAppConfig(AppConfig):
     """
-    Configuration class for the Gena Dashboard Streamlit application.
+    Configuration class for the Constellab Digital Twin app Streamlit application.
 
     This class defines the configuration and setup for a Streamlit-based dashboard
     that provides visualization and analysis capabilities for digital twin.
@@ -20,13 +20,13 @@ class GenaDashboardAppConfig(AppConfig):
         return self.get_app_folder_from_relative_path(__file__, "_gena_dashboard")
 
 
-@task_decorator("GenerateGenaDashboard", human_name="Generate Gena Dashboard app",
+@task_decorator("GenerateGenaDashboard", human_name="Generate Constellab Digital Twin app",
                 style=StreamlitResource.copy_style())
 class GenerateGenaDashboard(Task):
     """
-    Task that generates the Gena Dashboard app.
+    Task that generates the Constellab Digital Twin app.
     This dashboard provides visualization and analysis capabilities for digital twin.
-    The Gena Dashboard is a Streamlit application designed for digital twin analysis and visualization. It provides an interactive interface for processing, analyzing, and interpreting digital twin data through various bioinformatics workflows.
+    The Constellab Digital Twin app is a Streamlit application designed for digital twin analysis and visualization. It provides an interactive interface for processing, analyzing, and interpreting digital twin data through various bioinformatics workflows.
 
     The aim is to simplify the use of the Gena Brick by providing an application that makes running the pipeline and retrieving results easier. Dependencies between scenarios are also maintained, allowing you to navigate more easily.
 
@@ -54,7 +54,7 @@ class GenerateGenaDashboard(Task):
         streamlit_app = StreamlitResource()
 
         streamlit_app.set_app_config(GenaDashboardAppConfig())
-        streamlit_app.name = "Digital Twin Dashboard"
+        streamlit_app.name = "Constellab Digital Twin"
 
         # Add param
         associate_scenario_with_folder: bool = params.get_value(

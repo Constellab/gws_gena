@@ -17,16 +17,16 @@ class GenaStandaloneDashboardClass(AppConfig):
 
 
 @task_decorator("GenaStandaloneDashboard",
-                human_name="Standalone Gena",
-                short_description="Standalone Streamlit dashboard for Gena",
+                human_name="Standalone Constellab Digital Twin",
+                short_description="Standalone Streamlit dashboard for Constellab Digital Twin",
                 style=TypingStyle.community_icon(icon_technical_name="dashboard", background_color="#178394"))
 class GenaStandaloneDashboard(Task):
     """
-    Standalone Gena dashboard. No data is stored.
+    Standalone Constellab Digital Twin. No data is stored.
 
     This dashboard provides visualization for digital twins.
 
-    The Gena Dashboard is a Streamlit application designed for digital twins visualization.
+    The Constellab Digital Twin app is a Streamlit application designed for digital twins visualization.
 
     The aim is to simplify the use of the Gena Brick by providing an application that makes retrieving results easier. Dependencies between scenarios are also maintained, allowing you to navigate more easily.
 
@@ -43,7 +43,7 @@ class GenaStandaloneDashboard(Task):
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         streamlit_app = StreamlitResource()
         streamlit_app.set_app_config(GenaStandaloneDashboardClass())
-        streamlit_app.name = "Digital Twin Standalone Dashboard"
+        streamlit_app.name = "Constellab Digital Twin Standalone"
 
         streamlit_app.set_requires_authentication(False)
         return {'streamlit_app': streamlit_app}
