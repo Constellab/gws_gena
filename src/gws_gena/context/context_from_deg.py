@@ -48,7 +48,7 @@ class ContextFromDEG(Task):
     - **gene_id_column**: Column name containing gene identifiers in DEG table
     - **log2_fold_change_column**: Column name containing fold change values
     - **threshold**: Minimum absolute fold change to trigger constraint
-    - **target_high/low**: Target flux values for upregulated/downregulated genes
+    - **target_high/low**: Target flux values for upregulated/downregulated genes. The target of high fluxes can be for example the mean of fluxes in control conditions.
     - **lower_bound_high/low**: Lower bounds for flux constraints
     - **upper_bound_high/low**: Upper bounds for flux constraints
     - **confidence**: Confidence score for all constraints
