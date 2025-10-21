@@ -3,8 +3,8 @@ from typing import List
 
 import pandas as pd
 from gws_core import (ConfigParams, ConfigSpecs, InputSpec, InputSpecs,
-                      OutputSpec, OutputSpecs, StrParam, Table, Task,
-                      TaskInputs, TaskOutputs, TypingStyle, task_decorator)
+                      OutputSpec, OutputSpecs, StrParam, Table, Task, File,
+                      TaskInputs, TaskOutputs, TypingStyle, task_decorator, TableImporter)
 
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
 from ..data.task.transformer_entity_id_table import TransformerEntityIDTable
@@ -41,7 +41,7 @@ class KOA(Task):
 
     input_specs = InputSpecs({
         'twin': InputSpec(Twin, human_name="Digital twin", short_description="The digital twin to analyze"),
-        'ko_table': InputSpec(Table, human_name="KO table", short_description="The table of KO hypotheses"),
+        'ko_table': InputSpec((Table, File), human_name="KO table", short_description="The table of KO hypotheses"),
     })
     output_specs = OutputSpecs({
         'twin': OutputSpec(Twin, human_name="Simulated digital twin", short_description="The simulated digital twin"),
@@ -59,7 +59,11 @@ class KOA(Task):
                  short_description="The type of elements provided to knock-out: reactions or genes")}).merge_specs(FBA.config_specs)
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        ko_table: Table = inputs["ko_table"]
+        ko_table = inputs['ko_table']
+        if isinstance(ko_table, File):
+            ko_table = TableImporter.call(
+            File(ko_table.path))
+
         twin: FlatTwin = inputs["twin"].flatten()
         solver = params["solver"]
         biomass_optimization = params["biomass_optimization"]
