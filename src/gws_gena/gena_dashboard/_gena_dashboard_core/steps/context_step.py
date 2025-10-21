@@ -532,4 +532,3 @@ def _render_context_results(selected_scenario: Scenario, gena_state: State) -> N
 
     if context_output:
         st.json(context_output.dumps())
-        st.json(context_output.dumps())
