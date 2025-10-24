@@ -1,7 +1,11 @@
+import os
 import streamlit as st
+import pandas as pd
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitResourceSelect
-from gws_core import ResourceModel, Scenario, ScenarioProxy, InputTask, Scenario, ScenarioStatus, ScenarioProxy
+from gws_core import (ResourceModel, Scenario, ScenarioProxy, InputTask, Scenario,
+                      ScenarioStatus, ScenarioProxy, ResourceOrigin, Settings, File,
+                      TableImporter)
 from gws_gena import KOA
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_saved_scenario_actions, extract_network_and_context_from_twin, display_network, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters
 
@@ -10,10 +14,27 @@ def dialog_koa_params(gena_state: State):
     translate_service = gena_state.get_translate_service()
     st.text_input(translate_service.translate("koa_analysis_scenario_name"), placeholder=translate_service.translate("enter_koa_name"), value=f"{gena_state.get_current_analysis_name()} - KOA Analysis", key=gena_state.KOA_SCENARIO_NAME_INPUT_KEY)
 
-    # select ko table data
-    resource_select = StreamlitResourceSelect()
-    resource_select.select_resource(
-        placeholder=translate_service.translate('search_ko_table'), key=gena_state.RESOURCE_SELECTOR_KO_TABLE_KEY, defaut_resource=None)
+    # Selectbox to choose an existing resource or create a new one
+    st.selectbox(label = translate_service.translate("please_select_option"), options=[translate_service.translate("select_resource"), translate_service.translate("create_new_resource")], index = 0, key = gena_state.KOA_RESOURCE_OPTION_KEY)
+
+    if gena_state.get_koa_resource_option() == translate_service.translate("create_new_resource"):
+        with st.expander(translate_service.translate("create_new_resource"), icon=":material/edit_note:", expanded=True):
+            choice_table_type = st.selectbox(label = translate_service.translate("please_select_option"),
+                options=[translate_service.translate("ec_table"),
+                         translate_service.translate("entity_id_table")])
+            koa_df = pd.DataFrame()
+            if choice_table_type == translate_service.translate("ec_table"):
+                koa_df = pd.DataFrame(columns=["ec_number"])
+            elif choice_table_type == translate_service.translate("entity_id_table"):
+                koa_df = pd.DataFrame(columns=["entity_id"])
+            edited_koa_df = st.data_editor(
+                koa_df, use_container_width=True, hide_index=True, num_rows="dynamic")
+
+    elif gena_state.get_koa_resource_option() == translate_service.translate("select_resource"):
+        # select ko table data
+        resource_select = StreamlitResourceSelect()
+        resource_select.select_resource(
+            placeholder=translate_service.translate('search_ko_table'), key=gena_state.RESOURCE_SELECTOR_KO_TABLE_KEY, defaut_resource=None)
 
     form_config = StreamlitTaskRunner(KOA)
     form_config.generate_config_form_without_run(
@@ -32,12 +53,23 @@ def dialog_koa_params(gena_state: State):
         run_clicked = st.button(translate_service.translate("run_koa"), use_container_width=True, icon=":material/play_arrow:", key="button_koa_run")
 
     if save_clicked or run_clicked:
-        if not gena_state.get_koa_config()["is_valid"] or not gena_state.get_resource_selector_ko_table():
+        if not gena_state.get_koa_config()["is_valid"] or (not gena_state.get_resource_selector_ko_table() if gena_state.get_koa_resource_option() == translate_service.translate("select_resource") else False):
             st.warning(translate_service.translate("fill_mandatory_fields"))
             return
-
         with StreamlitAuthenticateUser():
-            selected_ko_table_id = gena_state.get_resource_selector_ko_table()["resourceId"]
+            if gena_state.get_koa_resource_option() == translate_service.translate("create_new_resource"):
+                # Create new KO table resource
+                path_temp = os.path.join(os.path.abspath(os.path.dirname(__file__)), Settings.make_temp_dir())
+                full_path = os.path.join(path_temp, f"KOTable_{gena_state.get_current_analysis_name()}.csv")
+                ko_table_manually: File = File(full_path)
+                ko_table_manually.write(edited_koa_df.to_csv(index=False))
+                ko_table_manually = TableImporter.call(File(full_path))
+                selected_ko_table = ResourceModel.save_from_resource(
+                    ko_table_manually, ResourceOrigin.UPLOADED, flagged=True)
+                selected_ko_table_id = selected_ko_table.id
+            else:
+                selected_ko_table_id = gena_state.get_resource_selector_ko_table()["resourceId"]
+
             selected_ko_table = ResourceModel.get_by_id(selected_ko_table_id)
 
             scenario = create_base_scenario_with_tags(gena_state, gena_state.TAG_KOA, gena_state.get_scenario_user_name(gena_state.KOA_SCENARIO_NAME_INPUT_KEY))

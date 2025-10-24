@@ -74,6 +74,9 @@ class State:
     GENE_TRANSLATION_SELECTOR = "gene_translation_selector"
     RESOURCE_SELECTOR_DEG_DATA_KEY = "resource_selector_deg_data"
 
+    # Selector
+    KOA_RESOURCE_OPTION_KEY = "koa_resource_option"
+
     # Tree
     TREE_ANALYSIS_OBJECT = "analysis_tree_menu_object"
     TREE_ANALYSIS_KEY = "analysis_tree_menu"
@@ -439,3 +442,7 @@ class State:
     @classmethod
     def get_resource_selector_reaction_data(cls) -> ResourceModel:
         return st.session_state.get(cls.RESOURCE_SELECTOR_REACTION_DATA_KEY, None)
+
+    @classmethod
+    def get_koa_resource_option(cls) -> str:
+        return st.session_state.get(cls.KOA_RESOURCE_OPTION_KEY, None)

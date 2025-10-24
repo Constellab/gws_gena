@@ -1,9 +1,10 @@
+import os
 import streamlit as st
 import pandas as pd
 from typing import Type, Dict, Optional
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitMenuButton, StreamlitMenuButtonItem, StreamlitContainers, StreamlitResourceSelect
-from gws_core import ScenarioStatus, Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask
+from gws_core import Settings, ScenarioStatus, Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask, File, TableImporter, ResourceOrigin
 from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, add_tags_on_network, get_status_prettify, get_status_emoji
 from gws_gena import GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, NetworkMergem, TransporterAdder
 from gws_core.task.task import Task
@@ -78,7 +79,8 @@ def _run_network_editing_task(
     config_session_key: str,
     config_getter_method: str,
     task_input_name_for_network: str = 'network',
-    additional_inputs: Optional[Dict[str, Dict[str, str]]] = None
+    additional_inputs: Optional[Dict[str, Dict[str, str]]] = None,
+    table_type_options: Optional[Dict[str, list]] = None
 ) -> None:
     """
     Generic function to run network editing tasks.
@@ -91,32 +93,90 @@ def _run_network_editing_task(
         config_getter_method: Method name to get configuration from state
         additional_inputs: Dictionary of additional input specifications
                           Format: {'input_port_name': {'session_key': 'key', 'placeholder': 'text'}}
+        table_type_options: Dictionary mapping input ports to their table column options
+                           Format: {'input_port_name': ['column1', 'column2']}
     """
     translate_service = gena_state.get_translate_service()
     # Handle additional resource inputs
     selected_resources = {}
+    created_tables = {}
     if additional_inputs:
-        st.markdown(f"#### {translate_service.translate('select_additional_resources')}")
-        for input_port, input_config in additional_inputs.items():
-            resource_select = StreamlitResourceSelect()
-            resource_select.select_resource(
-                placeholder=input_config['placeholder'],
-                key=input_config['session_key'],
-                defaut_resource=None
-            )
+        # Selectbox to choose an existing resource or create a new one
+        type_resource_selection = st.selectbox(
+            label=translate_service.translate("please_select_option"),
+            options=[translate_service.translate("select_resource"), translate_service.translate("create_new_resource")],
+            index=0
+        )
 
-            # Get the selected resource from session state
-            selected_resource = getattr(gena_state, f"get_{input_config['session_key'].replace('_KEY', '').lower()}")()
-            if selected_resource:
-                selected_resources[input_port] = selected_resource["resourceId"]
+        if type_resource_selection == translate_service.translate("select_resource"):
+            st.markdown(f"#### {translate_service.translate('select_additional_resources')}")
 
-    # Check if all required resources are selected
-    all_resources_selected = True
+            for input_port, input_config in additional_inputs.items():
+                resource_select = StreamlitResourceSelect()
+                resource_select.select_resource(
+                    placeholder=input_config['placeholder'],
+                    key=input_config['session_key'],
+                    defaut_resource=None
+                )
+
+                # Get the selected resource from session state
+                selected_resource = getattr(gena_state, f"get_{input_config['session_key'].replace('_KEY', '').lower()}")()
+                if selected_resource:
+                    selected_resources[input_port] = selected_resource["resourceId"]
+
+        elif type_resource_selection == translate_service.translate("create_new_resource"):
+            with st.expander(translate_service.translate("create_new_resource"), icon=":material/edit_note:", expanded=True):
+
+                for input_port, input_config in additional_inputs.items():
+
+                    # Get table type options for this input port
+                    if table_type_options and input_port in table_type_options:
+                        table_columns = table_type_options[input_port]
+                    else:
+                        # Default options
+                        table_columns = ["entity", "chebi_id"]
+
+                    # Create appropriate column names based on table type
+                    if len(table_columns) == 1:
+                        # Only one option, it's medium table
+                        table_columns = ["entity", "chebi_id"]
+                        step_df = pd.DataFrame(columns=table_columns)
+
+                    else:
+                        # Multiple options, let user choose
+                        choice_table_type = st.selectbox(
+                            label=translate_service.translate("please_select_option"),
+                            options=[col.replace('_', ' ').title() + " Table" for col in table_columns],
+                            key=f"table_type_{input_port}"
+                        )
+
+                        # Map back to column name
+                        if "ec" in choice_table_type.lower():
+                            step_df = pd.DataFrame(columns=["ec_number"])
+                        elif "entity" in choice_table_type.lower():
+                            step_df = pd.DataFrame(columns=["id"])
+                        else:
+                            step_df = pd.DataFrame(columns=[table_columns[0]])
+
+                    edited_step_df = st.data_editor(
+                        step_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        num_rows="dynamic",
+                        key=f"editor_{input_port}"
+                    )
+
+                    created_tables[input_port] = edited_step_df
+
+    # Check if all required resources are selected or created
+    all_resources_ready = True
     if additional_inputs:
-        for input_port in additional_inputs.keys():
-            if input_port not in selected_resources:
-                all_resources_selected = False
-                break
+        if type_resource_selection == translate_service.translate("select_resource"):
+            for input_port in additional_inputs.keys():
+                if input_port not in selected_resources:
+                    all_resources_ready = False
+                    break
+        # For created tables, they're always ready (even if empty)
 
     form_config = StreamlitTaskRunner(task_class)
     form_config.generate_config_form_without_run(
@@ -125,7 +185,7 @@ def _run_network_editing_task(
         is_default_config_valid=task_class.config_specs.mandatory_values_are_set(
             task_class.config_specs.get_default_values()))
 
-    if st.button(f"Run {task_name}", use_container_width=True, icon=":material/play_arrow:", key=f"button_{task_name.lower().replace(' ', '_')}"):
+    if st.button(f"{task_name}", use_container_width=True, icon=":material/play_arrow:", key=f"button_{task_name.lower().replace(' ', '_')}"):
         # Get config using the provided getter method
         config_data = getattr(gena_state, config_getter_method)()
 
@@ -133,7 +193,7 @@ def _run_network_editing_task(
             st.warning(translate_service.translate("fill_mandatory_fields"))
             return
 
-        if additional_inputs and not all_resources_selected:
+        if additional_inputs and not all_resources_ready:
             st.warning(translate_service.translate("select_resource_warning"))
             return
 
@@ -170,11 +230,26 @@ def _run_network_editing_task(
 
                 # Add additional resource inputs if any
                 if additional_inputs:
-                    for input_port, resource_id in selected_resources.items():
+                    for input_port, input_config in additional_inputs.items():
+                        if type_resource_selection == translate_service.translate("create_new_resource"):
+                            # Create new table resource
+                            table_data = created_tables[input_port]
+                            path_temp = os.path.join(os.path.abspath(os.path.dirname(__file__)), Settings.make_temp_dir())
+                            full_path = os.path.join(path_temp, f"Table_{input_port}_{task_name}.csv")
+                            table_file: File = File(full_path)
+                            table_file.write(table_data.to_csv(index=False))
+                            table_resource = TableImporter.call(File(full_path))
+                            saved_table = ResourceModel.save_from_resource(
+                                table_resource, ResourceOrigin.UPLOADED, flagged=True)
+                            selected_table_id = saved_table.id
+                        else:
+                            selected_table_id = selected_resources[input_port]
+
+                        # Add input task for the table
                         resource_input_name = f"{input_port}_input_{number_processes}"
                         resource_process = protocol.add_process(
                             InputTask, resource_input_name,
-                            {InputTask.config_name: resource_id}
+                            {InputTask.config_name: selected_table_id}
                         )
                         protocol.add_connector(
                             out_port=resource_process >> 'resource',
@@ -215,6 +290,9 @@ def run_reaction_adder(gena_state: State):
                 'session_key': gena_state.REACTION_ADDER_TABLE_SELECTOR_KEY,
                 'placeholder': translate_service.translate('search_reaction_table')
             }
+        },
+        table_type_options={
+            'reaction_table': ['ec_number', 'entity_id']
         }
     )
 
@@ -233,6 +311,9 @@ def run_transporter_adder(gena_state: State):
                 'session_key': gena_state.TRANSPORTER_TABLE_SELECTOR_KEY,
                 'placeholder': translate_service.translate('search_medium_table')
             }
+        },
+        table_type_options={
+            'medium_table': ['Medium table']
         }
     )
 
@@ -251,6 +332,9 @@ def run_reaction_remover(gena_state: State):
                 'session_key': gena_state.REACTION_REMOVER_TABLE_SELECTOR_KEY,
                 'placeholder': translate_service.translate('search_medium_table')
             }
+        },
+        table_type_options={
+            'reaction_table': ['ec_number', 'entity_id']
         }
     )
 

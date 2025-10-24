@@ -166,5 +166,9 @@
     "search_metabolite_experimental_data": "Search for metabolite experimental data",
     "search_reaction_experimental_data": "Search for reaction experimental data",
     "search_deg_experimental_data": "Search for DEG experimental data",
-    "simulation_context_info": "Generate simulations from your experimental data to build a context. Select metabolite and/or reaction data types and configure the simulation parameters."
+    "simulation_context_info": "Generate simulations from your experimental data to build a context. Select metabolite and/or reaction data types and configure the simulation parameters.",
+    "select_resource": "Select a resource",
+    "create_new_resource": "Create new resource",
+    "ec_table": "EC Table",
+    "entity_id_table": "Entity ID Table"
 }

@@ -166,5 +166,9 @@
     "search_deg_experimental_data": "Rechercher des données expérimentales de DEG",
     "simulation_context_info": "Générez des simulations à partir de vos données expérimentales pour construire un contexte. Sélectionnez les types de données métabolites et/ou réactions et configurez les paramètres de simulation.",
     "build_new_context_simulation": "Construire un nouveau contexte et générer des simulations",
-    "build_new_context_deg": "Construire un nouveau contexte en utilisant des données DEG"
+    "build_new_context_deg": "Construire un nouveau contexte en utilisant des données DEG",
+    "select_resource": "Sélectionner une ressource",
+    "create_new_resource": "Créer une nouvelle ressource",
+    "ec_table": "Table EC",
+    "entity_id_table": "Table des ID d'entité"
 }
