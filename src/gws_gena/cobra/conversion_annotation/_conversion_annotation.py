@@ -1,5 +1,4 @@
 import sys
-import os
 import pandas as pd
 import re
 from cobra.io import save_json_model, load_json_model
@@ -87,6 +86,11 @@ results_path = sys.argv[7]
 db_metabolites_path = sys.argv[8]
 db_reactions_path = sys.argv[9]
 
+index_reactions = 0
+index_metabolite = 0
+chebi_filled_db = 0
+rhea_filled_db = 0
+ecnumber_filled_db = 0
 
 # Load metabolic model
 model = load_json_model(input_model)
