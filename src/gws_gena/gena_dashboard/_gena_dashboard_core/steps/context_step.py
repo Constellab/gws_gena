@@ -180,7 +180,7 @@ def _handle_context_deg_builder(protocol: ProtocolProxy, gena_state: State) -> N
             )
 
             protocol.add_connector(deg_input >> 'resource', context_convert << 'table_file')
-            protocol.add_connector(context_convert >> 'converted_table', context_deg << 'deg')
+            protocol.add_connector(context_convert >> 'annotated_file', context_deg << 'deg')
 
         else:
             protocol.add_connector(deg_input >> 'resource', context_deg << 'deg')
