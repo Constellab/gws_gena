@@ -29,7 +29,7 @@ def render_new_analysis_page(gena_state : State):
         # Add a return button
         router = StreamlitRouter.load_from_session()
 
-        if st.button(translate_service.translate("return_recipes"), icon=":material/arrow_back:", use_container_width=False):
+        if st.button(translate_service.translate("return_recipes"), icon=":material/arrow_back:", width="stretch"):
             router.navigate("first-page")
 
         st.markdown(f"## {translate_service.translate('new_recipe')}")
@@ -93,7 +93,7 @@ def render_new_analysis_page(gena_state : State):
             # Save in session state the id of the folder
             gena_state.set_selected_folder_id(folder_display_names.get(folder_to_associate_with))
 
-        if st.button(translate_service.translate("run"), icon=":material/play_arrow:", use_container_width=False):
+        if st.button(translate_service.translate("run"), icon=":material/play_arrow:", width="stretch"):
             with StreamlitAuthenticateUser():
                 list_required_fields_filled = []
                 list_required_fields_filled.append(gena_state.check_if_required_is_filled(gena_state.get_analysis_name_user()))

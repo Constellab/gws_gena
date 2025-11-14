@@ -160,7 +160,7 @@ def _run_network_editing_task(
 
                     edited_step_df = st.data_editor(
                         step_df,
-                        use_container_width=True,
+                        width="stretch",
                         hide_index=True,
                         num_rows="dynamic",
                         key=f"editor_{input_port}"
@@ -185,7 +185,7 @@ def _run_network_editing_task(
         is_default_config_valid=task_class.config_specs.mandatory_values_are_set(
             task_class.config_specs.get_default_values()))
 
-    if st.button(f"{task_name}", use_container_width=True, icon=":material/play_arrow:", key=f"button_{task_name.lower().replace(' ', '_')}"):
+    if st.button(f"{task_name}", width="stretch", icon=":material/play_arrow:", key=f"button_{task_name.lower().replace(' ', '_')}"):
         # Get config using the provided getter method
         config_data = getattr(gena_state, config_getter_method)()
 
@@ -475,7 +475,7 @@ def render_network_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not gena_state.get_scenario_step_context():
         if not gena_state.get_is_standalone():
 
-            if st.button(translate_service.translate("save"), use_container_width=True):
+            if st.button(translate_service.translate("save"), width="stretch"):
                 with StreamlitAuthenticateUser():
                     # Use the helper function to save
                     add_tags_on_network(gena_state.get_edited_network(), gena_state)

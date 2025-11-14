@@ -41,7 +41,7 @@ def render_twin_builder_step(selected_scenario: Scenario, gena_state: State) -> 
                 st.link_button("**?**", url_doc_twin_builder)
             with col_run:
                 # On click, open a dialog to allow the user to select params of twin builder
-                st.button(translate_service.translate("run_twin_builder"), icon=":material/play_arrow:", use_container_width=False,
+                st.button(translate_service.translate("run_twin_builder"), icon=":material/play_arrow:", width="stretch",
                         on_click=lambda state=gena_state: twin_builder_run(state))
     else:
         # Display details about scenario twin builder

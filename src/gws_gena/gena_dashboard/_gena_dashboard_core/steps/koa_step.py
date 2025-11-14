@@ -28,7 +28,7 @@ def dialog_koa_params(gena_state: State):
             elif choice_table_type == translate_service.translate("entity_id_table"):
                 koa_df = pd.DataFrame(columns=["entity_id"])
             edited_koa_df = st.data_editor(
-                koa_df, use_container_width=True, hide_index=True, num_rows="dynamic")
+                koa_df, width="stretch", hide_index=True, num_rows="dynamic")
 
     elif gena_state.get_koa_resource_option() == translate_service.translate("select_resource"):
         # select ko table data
@@ -47,10 +47,10 @@ def dialog_koa_params(gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button(translate_service.translate("save_koa"), use_container_width=True, icon=":material/save:", key="button_koa_save")
+        save_clicked = st.button(translate_service.translate("save_koa"), width="stretch", icon=":material/save:", key="button_koa_save")
 
     with col2:
-        run_clicked = st.button(translate_service.translate("run_koa"), use_container_width=True, icon=":material/play_arrow:", key="button_koa_run")
+        run_clicked = st.button(translate_service.translate("run_koa"), width="stretch", icon=":material/play_arrow:", key="button_koa_run")
 
     if save_clicked or run_clicked:
         if not gena_state.get_koa_config()["is_valid"] or (not gena_state.get_resource_selector_ko_table() if gena_state.get_koa_resource_option() == translate_service.translate("select_resource") else False):
@@ -112,7 +112,7 @@ def render_koa_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of KOA analysis
-            st.button(translate_service.translate("configure_new_koa"), icon=":material/edit:", use_container_width=False,
+            st.button(translate_service.translate("configure_new_koa"), icon=":material/edit:", width="stretch",
                     on_click=lambda state=gena_state: dialog_koa_params(state))
 
         # Display table of existing KOA Analysis scenarios

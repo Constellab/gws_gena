@@ -211,7 +211,7 @@ def display_scenario_parameters(scenario: Scenario, process_name: str, gena_stat
 
         if param_data:
             param_df = pd.DataFrame(param_data)
-            st.dataframe(param_df, use_container_width=True, hide_index=True)
+            st.dataframe(param_df, width="stretch", hide_index=True)
 
 def create_base_scenario_with_tags(gena_state: State, step_tag: str, title: str) -> ScenarioProxy:
     """Generic function to create a scenario with base tags."""
@@ -377,7 +377,7 @@ def display_saved_scenario_actions(scenario: Scenario, gena_state: State) -> Non
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button(translate_service.translate("run"), icon=":material/play_arrow:", key=f"run_{scenario.id}", use_container_width=True):
+        if st.button(translate_service.translate("run"), icon=":material/play_arrow:", key=f"run_{scenario.id}", width="stretch"):
             scenario_proxy = ScenarioProxy.from_existing_scenario(scenario.id)
             scenario_proxy.add_to_queue()
             gena_state.reset_tree_analysis()
@@ -385,7 +385,7 @@ def display_saved_scenario_actions(scenario: Scenario, gena_state: State) -> Non
             st.rerun()
 
     with col2:
-        if st.button(translate_service.translate("edit"), icon=":material/edit:", key=f"edit_{scenario.id}", use_container_width=True):
+        if st.button(translate_service.translate("edit"), icon=":material/edit:", key=f"edit_{scenario.id}", width="stretch"):
             dialog_edit_scenario_params(scenario, gena_state)
 
 @st.dialog("Edit Scenario Parameters")
@@ -432,10 +432,10 @@ def dialog_edit_scenario_params(scenario: Scenario, gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button(translate_service.translate("save_changes"), icon=":material/save:", use_container_width=True, key=f"save_edit_{scenario.id}")
+        save_clicked = st.button(translate_service.translate("save_changes"), icon=":material/save:", width="stretch", key=f"save_edit_{scenario.id}")
 
     with col2:
-        run_clicked = st.button(translate_service.translate("save_and_run"), icon=":material/play_arrow:", use_container_width=True, key=f"run_edit_{scenario.id}")
+        run_clicked = st.button(translate_service.translate("save_and_run"), icon=":material/play_arrow:", width="stretch", key=f"run_edit_{scenario.id}")
 
     if save_clicked or run_clicked:
         # Get the updated configuration from session state

@@ -21,10 +21,10 @@ def dialog_fba_params(gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button(translate_service.translate("save_fba"), use_container_width=True, icon=":material/save:", key="button_fba_save")
+        save_clicked = st.button(translate_service.translate("save_fba"), width="stretch", icon=":material/save:", key="button_fba_save")
 
     with col2:
-        run_clicked = st.button(translate_service.translate("run_fba"), use_container_width=True, icon=":material/play_arrow:", key="button_fba_run")
+        run_clicked = st.button(translate_service.translate("run_fba"), width="stretch", icon=":material/play_arrow:", key="button_fba_run")
 
     if save_clicked or run_clicked:
         if not gena_state.get_fba_config()["is_valid"]:
@@ -66,7 +66,7 @@ def render_fba_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of fba
-            st.button(translate_service.translate("configure_new_fba"), icon=":material/edit:", use_container_width=False,
+            st.button(translate_service.translate("configure_new_fba"), icon=":material/edit:", width="stretch",
                         on_click=lambda state=gena_state: dialog_fba_params(state))
 
         # Display table of existing FBA scenarios

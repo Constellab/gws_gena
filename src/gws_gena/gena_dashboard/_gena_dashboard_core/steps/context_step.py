@@ -447,7 +447,7 @@ def _render_context_creation_ui(gena_state: State) -> None:
     st.info(f"ℹ️ {translate_service.translate('context_note')}")
 
     # Run context importer button
-    if st.button(translate_service.translate("run_context_importer"), icon=":material/play_arrow:", use_container_width=False):
+    if st.button(translate_service.translate("run_context_importer"), icon=":material/play_arrow:", width="stretch"):
         context_choice = gena_state.get_context_bool()
 
         if context_choice == translate_service.translate("no"):

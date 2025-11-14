@@ -22,10 +22,10 @@ def dialog_fva_params(gena_state: State):
     col1, col2 = st.columns(2)
 
     with col1:
-        save_clicked = st.button(translate_service.translate("save_fva"), use_container_width=True, icon=":material/save:", key="button_fva_save")
+        save_clicked = st.button(translate_service.translate("save_fva"), width="stretch", icon=":material/save:", key="button_fva_save")
 
     with col2:
-        run_clicked = st.button(translate_service.translate("run_fva"), use_container_width=True, icon=":material/play_arrow:", key="button_fva_run")
+        run_clicked = st.button(translate_service.translate("run_fva"), width="stretch", icon=":material/play_arrow:", key="button_fva_run")
 
     if save_clicked or run_clicked:
         if not gena_state.get_fva_config()["is_valid"]:
@@ -67,7 +67,7 @@ def render_fva_step(selected_scenario: Scenario, gena_state: State) -> None:
     if not selected_scenario:
         if not gena_state.get_is_standalone():
             # On click, open a dialog to allow the user to select params of fva
-            st.button(translate_service.translate("configure_new_fva"), icon=":material/edit:", use_container_width=False,
+            st.button(translate_service.translate("configure_new_fva"), icon=":material/edit:", width="stretch",
                         on_click=lambda state=gena_state: dialog_fva_params(state))
 
         # Display table of existing FVA scenarios
