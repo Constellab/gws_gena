@@ -1,11 +1,19 @@
-
 import json
 import os
-from typing import Type
 
-from gws_core import (BadRequestException, ConfigParams, ConfigSpecs, File,
-                      FileHelper, ResourceExporter, ResourceImporter, StrParam,
-                      TypingStyle, exporter_decorator, importer_decorator)
+from gws_core import (
+    BadRequestException,
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    FileHelper,
+    ResourceExporter,
+    ResourceImporter,
+    StrParam,
+    TypingStyle,
+    exporter_decorator,
+    importer_decorator,
+)
 
 from .context import Context
 
@@ -16,11 +24,15 @@ from .context import Context
 # ####################################################################
 
 
-@importer_decorator("ContextImporter", human_name="Context importer",
-                    short_description="Metabolic context importer",
-                    source_type=File, target_type=Context, supported_extensions=[
-                        "json"],
-                    style=TypingStyle.material_icon(material_icon_name="tune", background_color="#d9d9d9"))
+@importer_decorator(
+    "ContextImporter",
+    human_name="Context importer",
+    short_description="Metabolic context importer",
+    source_type=File,
+    target_type=Context,
+    supported_extensions=["json"],
+    style=TypingStyle.material_icon(material_icon_name="tune", background_color="#d9d9d9"),
+)
 class ContextImporter(ResourceImporter):
     """
     ContextImporter Task
@@ -32,11 +44,17 @@ class ContextImporter(ResourceImporter):
         0.03, -0.003, 0.001], "confidence_score": [1, 1, 1], "variables": [{"reference_id": "Metabolite1", "coefficient": 1.0}]}
     """
 
-    config_specs: ConfigSpecs = ConfigSpecs({
-        'file_format': StrParam(allowed_values=["json"], default_value="json", short_description="File format")
-    })
+    config_specs: ConfigSpecs = ConfigSpecs(
+        {
+            "file_format": StrParam(
+                allowed_values=["json"], default_value="json", short_description="File format"
+            )
+        }
+    )
 
-    def import_from_path(self, file: File, params: ConfigParams, target_type: Type[Context]) -> Context:
+    def import_from_path(
+        self, file: File, params: ConfigParams, target_type: type[Context]
+    ) -> Context:
         """
         Import from a repository
 
@@ -44,16 +62,15 @@ class ContextImporter(ResourceImporter):
         :rtype: Context
         """
 
-        file_format = FileHelper.clean_extension(
-            params.get_value("file_format", "json"))
+        file_format = FileHelper.normalize_extension(params.get_value("file_format", "json"))
         if file_format in ["json"]:
-            with open(file.path, "r", encoding="utf-8") as f:
+            with open(file.path, encoding="utf-8") as f:
                 data = json.load(f)
         else:
-            raise BadRequestException(
-                "Invalid file format. A .json file is required.")
+            raise BadRequestException("Invalid file format. A .json file is required.")
 
         return target_type.loads(data)
+
 
 # ####################################################################
 #
@@ -62,10 +79,14 @@ class ContextImporter(ResourceImporter):
 # ####################################################################
 
 
-@exporter_decorator("ContextExporter", human_name="Context exporter",
-                    short_description="Metabolic context exporter",
-                    source_type=Context, target_type=File,
-                    style=TypingStyle.material_icon(material_icon_name="cloud_upload", background_color="#d9d9d9"))
+@exporter_decorator(
+    "ContextExporter",
+    human_name="Context exporter",
+    short_description="Metabolic context exporter",
+    source_type=Context,
+    target_type=File,
+    style=TypingStyle.material_icon(material_icon_name="cloud_upload", background_color="#d9d9d9"),
+)
 class ContextExporter(ResourceExporter):
     """
     ContextExporter
@@ -73,13 +94,20 @@ class ContextExporter(ResourceExporter):
     Exports a metabolic context
     """
 
-    config_specs: ConfigSpecs = ConfigSpecs({
-        'file_name': StrParam(default_value="context", short_description="File name (without extension)"),
-        'file_format': StrParam(
-            allowed_values=["json"], default_value="json",
-            short_description="File format.")})
+    config_specs: ConfigSpecs = ConfigSpecs(
+        {
+            "file_name": StrParam(
+                default_value="context", short_description="File name (without extension)"
+            ),
+            "file_format": StrParam(
+                allowed_values=["json"], default_value="json", short_description="File format."
+            ),
+        }
+    )
 
-    def export_to_path(self, resource: Context, dest_dir: str, params: ConfigParams, target_type: Type[File]) -> File:
+    def export_to_path(
+        self, resource: Context, dest_dir: str, params: ConfigParams, target_type: type[File]
+    ) -> File:
         """
         Export to a give repository
 
@@ -88,9 +116,8 @@ class ContextExporter(ResourceExporter):
         """
 
         file_name = params.get_value("file_name", "context")
-        file_format = FileHelper.clean_extension(
-            params.get_value("file_format", "json"))
-        file_path = os.path.join(dest_dir, file_name + '.' + file_format)
+        file_format = FileHelper.normalize_extension(params.get_value("file_format", "json"))
+        file_path = os.path.join(dest_dir, file_name + "." + file_format)
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(resource.dumps(), f)
 
