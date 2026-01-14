@@ -1,7 +1,19 @@
 import os
+
 import pandas as pd
-from gws_core import (task_decorator, Task, OutputSpec, OutputSpecs, File, ConfigSpecs,
-                      ConfigParams, StrParam, TaskInputs, TaskOutputs, TypingStyle)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 
 @task_decorator("LoadBiggModels", human_name="Load BiGG Models",
@@ -29,12 +41,10 @@ class LoadBiGGModels(Task):
             # If the name is selected, we search for the corresponding ID in the file
             file_id_name = pd.read_csv(os.path.join(os.path.abspath(os.path.dirname(
                 __file__)), "Bigg_numeroID_name.csv"), header=0, index_col=0, delimiter=";")
-            i = 0
-            for organism in file_id_name["Organism"].values:
+            for i, organism in enumerate(file_id_name["Organism"].values):
                 if organism == name_organism:
                     id_organism = file_id_name.index[i]
                     break
-                i += 1
         else:
             raise Exception("You must select the name of an organism.")
 

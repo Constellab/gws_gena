@@ -1,12 +1,26 @@
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
-from gws_core import (ConfigParams, ConfigSpecs, Task,
-                      StrParam, Table, TypingStyle,
-                      task_decorator, InputSpecs, InputSpec, OutputSpec, OutputSpecs, TaskInputs, TaskOutputs)
 
-
-@task_decorator("TransformerPhenotypeTable", human_name="Transformer Phenotype Table",
-                short_description="Task to transform table into Phenotype table",
-                style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"))
+@task_decorator(
+    "TransformerPhenotypeTable",
+    human_name="Transformer Phenotype Table",
+    short_description="Task to transform table into Phenotype table",
+    style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"),
+)
 class TransformerPhenotypeTable(Task):
     """
     TransformerPhenotypeTable class
@@ -46,30 +60,39 @@ class TransformerPhenotypeTable(Task):
     upper_bound_column_name: str = "upper_bound"
     confidence_score_column: str = "confidence_score"
 
-    input_specs = InputSpecs({
-        'table': InputSpec(Table, human_name="Initial table", optional=False)})
-    output_specs = OutputSpecs({'transformed_table': OutputSpec(Table)})
-    config_specs: ConfigSpecs = ConfigSpecs({
-        'entity_id_column':
-        StrParam(
-            default_value=entity_id_column_name, human_name="Entity column name",
-            short_description="The name of the column of entity ids"),
-        'target_column':
-        StrParam(
-            default_value=target_column_name, human_name="Target column name",
-            short_description="The name of the target column"),
-        'lower_bound_column':
-        StrParam(
-            default_value=lower_bound_column_name, human_name="Lower bound column name",
-            short_description="The name of the lower-bound column"),
-        'upper_bound_column':
-        StrParam(
-            default_value=upper_bound_column_name, human_name="Upper bound column name",
-            short_description="The name of the upper-bound column"),
-        'confidence_score_column':
-        StrParam(
-            default_value=confidence_score_column, human_name="Confidence score column name",
-            short_description="The name of the confidence score column")})
+    input_specs = InputSpecs(
+        {"table": InputSpec(Table, human_name="Initial table", optional=False)}
+    )
+    output_specs = OutputSpecs({"transformed_table": OutputSpec(Table)})
+    config_specs: ConfigSpecs = ConfigSpecs(
+        {
+            "entity_id_column": StrParam(
+                default_value=entity_id_column_name,
+                human_name="Entity column name",
+                short_description="The name of the column of entity ids",
+            ),
+            "target_column": StrParam(
+                default_value=target_column_name,
+                human_name="Target column name",
+                short_description="The name of the target column",
+            ),
+            "lower_bound_column": StrParam(
+                default_value=lower_bound_column_name,
+                human_name="Lower bound column name",
+                short_description="The name of the lower-bound column",
+            ),
+            "upper_bound_column": StrParam(
+                default_value=upper_bound_column_name,
+                human_name="Upper bound column name",
+                short_description="The name of the upper-bound column",
+            ),
+            "confidence_score_column": StrParam(
+                default_value=confidence_score_column,
+                human_name="Confidence score column name",
+                short_description="The name of the confidence score column",
+            ),
+        }
+    )
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         table = inputs["table"]
@@ -84,18 +107,21 @@ class TransformerPhenotypeTable(Task):
         if name_entity_id_column != self.entity_id_column_name:
             # rename column
             table.set_column_name(
-                current_name=name_entity_id_column, new_name=self.entity_id_column_name)
+                current_name=name_entity_id_column, new_name=self.entity_id_column_name
+            )
         if name_target_column != self.target_column_name:
-            table.set_column_name(
-                current_name=name_target_column, new_name=self.target_column_name)
+            table.set_column_name(current_name=name_target_column, new_name=self.target_column_name)
         if name_lower_bound_column != self.lower_bound_column_name:
             table.set_column_name(
-                current_name=name_lower_bound_column, new_name=self.lower_bound_column_name)
+                current_name=name_lower_bound_column, new_name=self.lower_bound_column_name
+            )
         if name_upper_bound_column != self.upper_bound_column_name:
             table.set_column_name(
-                current_name=name_upper_bound_column, new_name=self.upper_bound_column_name)
+                current_name=name_upper_bound_column, new_name=self.upper_bound_column_name
+            )
         if name_confidence_score_column != self.confidence_score_column:
             table.set_column_name(
-                current_name=name_confidence_score_column, new_name=self.confidence_score_column)
+                current_name=name_confidence_score_column, new_name=self.confidence_score_column
+            )
 
         return {"transformed_table": table}

@@ -1,12 +1,26 @@
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
-from gws_core import (ConfigParams, ConfigSpecs, Task,
-                      StrParam, Table, TypingStyle,
-                      task_decorator, InputSpecs, InputSpec, OutputSpec, OutputSpecs, TaskInputs, TaskOutputs)
 
-
-@task_decorator("TransformerECNumberTable", human_name="Transformer EC Number Table",
-                short_description="Task to transform table into EC Number",
-                style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"))
+@task_decorator(
+    "TransformerECNumberTable",
+    human_name="Transformer EC Number Table",
+    short_description="Task to transform table into EC Number",
+    style=TypingStyle.material_icon(material_icon_name="change_circle", background_color="#d9d9d9"),
+)
 class TransformerECNumberTable(Task):
     """
     TransformerECNumber class
@@ -25,14 +39,19 @@ class TransformerECNumberTable(Task):
 
     ec_number_name: str = "ec_number"
 
-    input_specs = InputSpecs({
-        'table': InputSpec(Table, human_name="Initial table", optional=False)})
-    output_specs = OutputSpecs({'transformed_table': OutputSpec(Table)})
-    config_specs: ConfigSpecs = ConfigSpecs({
-        'ec_number_column':
-        StrParam(
-            default_value=ec_number_name, human_name="EC number column name",
-            short_description="The name of the EC number column")})
+    input_specs = InputSpecs(
+        {"table": InputSpec(Table, human_name="Initial table", optional=False)}
+    )
+    output_specs = OutputSpecs({"transformed_table": OutputSpec(Table)})
+    config_specs: ConfigSpecs = ConfigSpecs(
+        {
+            "ec_number_column": StrParam(
+                default_value=ec_number_name,
+                human_name="EC number column name",
+                short_description="The name of the EC number column",
+            )
+        }
+    )
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         table = inputs["table"]
@@ -41,18 +60,19 @@ class TransformerECNumberTable(Task):
 
         if not table.column_exists(name_ec_number_column):
             raise Exception(
-                f"Cannot import Table. No ec numbers found (no column with name '{name_ec_number_column}')")
+                f"Cannot import Table. No ec numbers found (no column with name '{name_ec_number_column}')"
+            )
 
         # If the column names are incorrect, rename them.
         if name_ec_number_column != self.ec_number_name:
-            table.set_column_name(
-                current_name=name_ec_number_column, new_name=self.ec_number_name)
+            table.set_column_name(current_name=name_ec_number_column, new_name=self.ec_number_name)
 
         # clean ec data
         table._data.replace(
             to_replace={self.ec_number_name: r"EC:"},
             value={self.ec_number_name: ""},
             regex=True,
-            inplace=True)
+            inplace=True,
+        )
 
         return {"transformed_table": table}

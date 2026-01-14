@@ -1,15 +1,13 @@
-from typing import List, Dict
-import streamlit as st
 import pandas as pd
-
-from gws_core import Scenario, ResourceModel
-from gws_core.tag.tag_entity_type import TagEntityType
-from gws_core.tag.entity_tag_list import EntityTagList
+import streamlit as st
+from gws_core import ResourceModel, Scenario
 from gws_core.streamlit import StreamlitTranslateLang, StreamlitTranslateService
+from gws_core.tag.entity_tag_list import EntityTagList
+from gws_core.tag.tag_entity_type import TagEntityType
+
 
 class State:
-    """Class to manage the state of the app.
-    """
+    """Class to manage the state of the app."""
 
     TAG_BRICK = "brick"
     TAG_GENA = "gena"
@@ -33,7 +31,6 @@ class State:
     FBA_SCENARIO_NAME_INPUT_KEY = "fba_scenario_name_input"
     FVA_SCENARIO_NAME_INPUT_KEY = "fva_scenario_name_input"
     KOA_SCENARIO_NAME_INPUT_KEY = "koa_scenario_name_input"
-
 
     SELECTED_SCENARIO_KEY = "selected_scenario"
     SELECTED_ANALYSIS_KEY = "selected_analysis"
@@ -95,17 +92,21 @@ class State:
     FBA_CONFIG_KEY = "fba_config"
     FVA_CONFIG_KEY = "fva_config"
     KOA_CONFIG_KEY = "koa_config"
-    GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY = "generation_multi_simulations_metabolite_config"
-    GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY = "generation_multi_simulations_reaction_config"
+    GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY = (
+        "generation_multi_simulations_metabolite_config"
+    )
+    GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY = (
+        "generation_multi_simulations_reaction_config"
+    )
     ID_CONVERT_CONFIG_KEY = "id_convert_config"
     CONTEXT_FROM_DEG_CONFIG_KEY = "context_from_deg_config"
 
     LANG_KEY = "lang_select"
     TRANSLATE_SERVICE = "translate_service"
 
-    def __init__(cls, file_lang: str):
+    def __init__(self, file_lang: str):
         translate_service = StreamlitTranslateService(file_lang)
-        st.session_state[cls.TRANSLATE_SERVICE] = translate_service
+        st.session_state[self.TRANSLATE_SERVICE] = translate_service
 
     @classmethod
     def get_is_standalone(cls) -> bool:
@@ -136,7 +137,7 @@ class State:
         return st.session_state.get(cls.TRANSLATE_SERVICE, None)
 
     @classmethod
-    def set_translate_service(cls, value : StreamlitTranslateService) -> None:
+    def set_translate_service(cls, value: StreamlitTranslateService) -> None:
         st.session_state[cls.TRANSLATE_SERVICE] = value
 
     @classmethod
@@ -163,16 +164,14 @@ class State:
 
     @classmethod
     def check_if_required_is_filled(cls, valeur: str) -> bool:
-        if not valeur:
-            return False
-        return True
+        return bool(valeur)
 
     @classmethod
-    def get_edited_network(cls)-> str:
+    def get_edited_network(cls) -> str:
         return st.session_state.get(cls.EDITED_NETWORK, None)
 
     @classmethod
-    def set_edited_network(cls, df_network : pd.DataFrame) -> None:
+    def set_edited_network(cls, df_network: pd.DataFrame) -> None:
         st.session_state[cls.EDITED_NETWORK] = df_network
 
     @classmethod
@@ -236,7 +235,7 @@ class State:
         st.session_state[cls.SELECTED_SCENARIO_KEY] = scenario
 
     @classmethod
-    def get_selected_scenario(cls) -> Scenario:
+    def get_selected_scenario(cls) -> Scenario | None:
         return st.session_state.get(cls.SELECTED_SCENARIO_KEY)
 
     @classmethod
@@ -245,16 +244,18 @@ class State:
         st.session_state[cls.SELECTED_ANALYSIS_KEY] = scenario
 
     @classmethod
-    def get_selected_analysis(cls) -> Scenario:
+    def get_selected_analysis(cls) -> Scenario | None:
         return st.session_state.get(cls.SELECTED_ANALYSIS_KEY)
 
     # Infos of the network scenario
     @classmethod
     def get_current_tag_value_by_key(cls, key: str) -> str:
-        network_scenario : Scenario = cls.get_selected_analysis()
+        network_scenario: Scenario | None = cls.get_selected_analysis()
+        if network_scenario is None:
+            return ""
         entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, network_scenario.id)
         tag = entity_tag_list.get_tags_by_key(key)[0].to_simple_tag()
-        return tag.value
+        return str(tag.value)
 
     @classmethod
     def get_current_gena_pipeline_id(cls) -> str:
@@ -266,7 +267,7 @@ class State:
 
     @classmethod
     def get_resource_id_network(cls) -> str:
-        return st.session_state.get(cls.RESOURCE_ID_NETWORK_KEY)
+        return st.session_state.get(cls.RESOURCE_ID_NETWORK_KEY, "")
 
     @classmethod
     def set_resource_id_network(cls, resource_id: str):
@@ -274,7 +275,7 @@ class State:
 
     @classmethod
     def get_resource_id_context(cls) -> str:
-        return st.session_state.get(cls.RESOURCE_ID_CONTEXT_KEY)
+        return st.session_state.get(cls.RESOURCE_ID_CONTEXT_KEY, "")
 
     @classmethod
     def set_resource_id_context(cls, resource_id: str):
@@ -286,7 +287,7 @@ class State:
 
     @classmethod
     def get_step_pipeline(cls) -> str:
-        return st.session_state.get(cls.STEP_PIPELINE_KEY)
+        return st.session_state.get(cls.STEP_PIPELINE_KEY, "")
 
     @classmethod
     def set_selected_folder_id(cls, folder_id: str):
@@ -294,7 +295,7 @@ class State:
 
     @classmethod
     def get_selected_folder_id(cls) -> str:
-        return st.session_state.get(cls.SELECTED_FOLDER_ID_KEY)
+        return st.session_state.get(cls.SELECTED_FOLDER_ID_KEY, "")
 
     @classmethod
     def get_scenario_user_name(cls, key: str) -> str:
@@ -303,104 +304,104 @@ class State:
     # Functions get config
 
     @classmethod
-    def get_network_importer_config(cls) -> Dict:
+    def get_network_importer_config(cls) -> dict:
         return st.session_state.get(cls.NETWORK_IMPORTER_CONFIG_KEY, {})
 
     @classmethod
-    def get_load_bigg_model_config(cls) -> Dict:
+    def get_load_bigg_model_config(cls) -> dict:
         return st.session_state.get(cls.LOAD_BIGG_MODEL_CONFIG_KEY, {})
 
     @classmethod
-    def get_gap_filler_config(cls) -> Dict:
+    def get_gap_filler_config(cls) -> dict:
         return st.session_state.get(cls.GAP_FILLER_CONFIG_KEY, {})
 
     @classmethod
-    def get_network_merger_config(cls) -> Dict:
+    def get_network_merger_config(cls) -> dict:
         return st.session_state.get(cls.NETWORK_MERGER_CONFIG_KEY, {})
 
     @classmethod
-    def get_network_mergem_config(cls) -> Dict:
+    def get_network_mergem_config(cls) -> dict:
         return st.session_state.get(cls.NETWORK_MERGEM_CONFIG_KEY, {})
 
     @classmethod
-    def get_reaction_adder_config(cls) -> Dict:
+    def get_reaction_adder_config(cls) -> dict:
         return st.session_state.get(cls.REACTION_ADDER_CONFIG_KEY, {})
 
     @classmethod
-    def get_transporter_adder_config(cls) -> Dict:
+    def get_transporter_adder_config(cls) -> dict:
         return st.session_state.get(cls.TRANSPORTER_ADDER_CONFIG_KEY, {})
 
     @classmethod
-    def get_reaction_remover_config(cls) -> Dict:
+    def get_reaction_remover_config(cls) -> dict:
         return st.session_state.get(cls.REACTION_REMOVER_CONFIG_KEY, {})
 
     @classmethod
-    def get_orphan_remover_config(cls) -> Dict:
+    def get_orphan_remover_config(cls) -> dict:
         return st.session_state.get(cls.ORPHAN_REMOVER_CONFIG_KEY, {})
 
     @classmethod
-    def get_twin_builder_config(cls) -> Dict:
+    def get_twin_builder_config(cls) -> dict:
         return st.session_state.get(cls.TWIN_BUILDER_CONFIG_KEY, {})
 
     @classmethod
-    def get_fba_config(cls) -> Dict:
+    def get_fba_config(cls) -> dict:
         return st.session_state.get(cls.FBA_CONFIG_KEY, {})
 
     @classmethod
-    def get_fva_config(cls) -> Dict:
+    def get_fva_config(cls) -> dict:
         return st.session_state.get(cls.FVA_CONFIG_KEY, {})
 
     @classmethod
-    def get_koa_config(cls) -> Dict:
+    def get_koa_config(cls) -> dict:
         return st.session_state.get(cls.KOA_CONFIG_KEY, {})
 
     @classmethod
-    def get_generation_multi_simulations_metabolite_config(cls) -> Dict:
+    def get_generation_multi_simulations_metabolite_config(cls) -> dict:
         return st.session_state.get(cls.GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY, {})
 
     @classmethod
-    def get_generation_multi_simulations_reaction_config(cls) -> Dict:
+    def get_generation_multi_simulations_reaction_config(cls) -> dict:
         return st.session_state.get(cls.GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY, {})
 
     @classmethod
-    def get_id_convert_config(cls) -> Dict:
+    def get_id_convert_config(cls) -> dict:
         return st.session_state.get(cls.ID_CONVERT_CONFIG_KEY, {})
 
     @classmethod
-    def get_context_from_deg_config(cls) -> Dict:
+    def get_context_from_deg_config(cls) -> dict:
         return st.session_state.get(cls.CONTEXT_FROM_DEG_CONFIG_KEY, {})
 
     # Get scenarios ids of each step
     @classmethod
-    def get_scenarios_by_step_dict(cls) -> Dict:
+    def get_scenarios_by_step_dict(cls) -> dict:
         return st.session_state.get(cls.SCENARIOS_BY_STEP_KEY, {})
 
     @classmethod
-    def set_scenarios_by_step_dict(cls, scenarios_by_step: Dict) -> None:
+    def set_scenarios_by_step_dict(cls, scenarios_by_step: dict) -> None:
         st.session_state[cls.SCENARIOS_BY_STEP_KEY] = scenarios_by_step
 
     @classmethod
-    def get_scenario_step_network(cls) -> List[Scenario]:
-        return cls.get_scenarios_by_step_dict().get(cls.TAG_NETWORK)
+    def get_scenario_step_network(cls) -> list[Scenario]:
+        return cls.get_scenarios_by_step_dict().get(cls.TAG_NETWORK, [])
 
     @classmethod
-    def get_scenario_step_context(cls) -> List[Scenario]:
-        return cls.get_scenarios_by_step_dict().get(cls.TAG_CONTEXT)
+    def get_scenario_step_context(cls) -> list[Scenario]:
+        return cls.get_scenarios_by_step_dict().get(cls.TAG_CONTEXT, [])
 
     @classmethod
-    def get_scenario_step_twin_builder(cls) -> List[Scenario]:
-        return cls.get_scenarios_by_step_dict().get(cls.TAG_TWIN_BUILDER)
+    def get_scenario_step_twin_builder(cls) -> list[Scenario]:
+        return cls.get_scenarios_by_step_dict().get(cls.TAG_TWIN_BUILDER, [])
 
     @classmethod
-    def get_scenario_step_fba(cls) -> List[Scenario]:
+    def get_scenario_step_fba(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_FBA, [])
 
     @classmethod
-    def get_scenario_step_fva(cls) -> List[Scenario]:
+    def get_scenario_step_fva(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_FVA, [])
 
     @classmethod
-    def get_scenario_step_koa(cls) -> List[Scenario]:
+    def get_scenario_step_koa(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_KOA, [])
 
     @classmethod

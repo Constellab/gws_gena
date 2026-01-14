@@ -1,8 +1,14 @@
-
-from typing import Dict, List, Optional
-
-from gws_core import (ConfigParams, JSONView, Resource, SerializableRField,
-                      Table, TableView, TypingStyle, resource_decorator, view)
+from gws_core import (
+    ConfigParams,
+    JSONView,
+    Resource,
+    SerializableRField,
+    Table,
+    TableView,
+    TypingStyle,
+    resource_decorator,
+    view,
+)
 from pandas import DataFrame
 
 from .compartment.compartment import Compartment
@@ -14,10 +20,12 @@ from .typing.simulation_typing import SimulationDict
 from .view.network_view import NetworkView
 
 
-@resource_decorator("Network",
-                    human_name="Network",
-                    short_description="Metabolic network",
-                    style=TypingStyle.material_icon(material_icon_name='hub', background_color='#EB984E'))
+@resource_decorator(
+    "Network",
+    human_name="Network",
+    short_description="Metabolic network",
+    style=TypingStyle.material_icon(material_icon_name="hub", background_color="#EB984E"),
+)
 class Network(Resource):
     """
     Class that represents a network.
@@ -27,7 +35,7 @@ class Network(Resource):
 
     DEFAULT_NAME = "network"
 
-    network_data: Dict = SerializableRField(NetworkData)
+    network_data = SerializableRField(NetworkData)
 
     def __init__(self):
         super().__init__()
@@ -73,21 +81,21 @@ class Network(Resource):
 
     @property
     def simulations(self) -> dict:
-        """ Get the list of simulations """
+        """Get the list of simulations"""
         return self.network_data.simulations
 
     @property
     def compartments(self) -> dict:
-        """ Get the list of compartments """
+        """Get the list of compartments"""
         return self.network_data.compartments
 
     @property
     def compounds(self) -> dict:
-        """ Get the list of compounds """
+        """Get the list of compounds"""
         return self.network_data.compounds
 
-    def copy(self) -> 'Network':
-        """ Returns a deep copy """
+    def copy(self) -> "Network":
+        """Returns a deep copy"""
         net = Network()
         net.name = self.name
         net.network_data = self.network_data.copy()
@@ -110,7 +118,9 @@ class Network(Resource):
 
         return self.network_data.create_steady_stoichiometric_matrix(ignore_cofactors)
 
-    def create_non_steady_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+    def create_non_steady_stoichiometric_matrix(
+        self, include_biomass=True, ignore_cofactors=False
+    ) -> DataFrame:
         """
         Create the non-steady stoichiometric matrix of the network
 
@@ -118,9 +128,13 @@ class Network(Resource):
         involving the non-steady compounds (e.g. extra-cellular, biomass compounds)
         """
 
-        return self.network_data.create_non_steady_stoichiometric_matrix(include_biomass, ignore_cofactors)
+        return self.network_data.create_non_steady_stoichiometric_matrix(
+            include_biomass, ignore_cofactors
+        )
 
-    def create_input_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+    def create_input_stoichiometric_matrix(
+        self, include_biomass=True, ignore_cofactors=False
+    ) -> DataFrame:
         """
         Create the input stoichiometric matrix of the network
 
@@ -128,9 +142,13 @@ class Network(Resource):
         involving the consumed compounds
         """
 
-        return self.network_data.create_input_stoichiometric_matrix(include_biomass, ignore_cofactors)
+        return self.network_data.create_input_stoichiometric_matrix(
+            include_biomass, ignore_cofactors
+        )
 
-    def create_output_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+    def create_output_stoichiometric_matrix(
+        self, include_biomass=True, ignore_cofactors=False
+    ) -> DataFrame:
         """
         Create the output stoichiometric matrix of the network
 
@@ -138,7 +156,9 @@ class Network(Resource):
         involving the excreted compounds
         """
 
-        return self.network_data.create_output_stoichiometric_matrix(include_biomass, ignore_cofactors)
+        return self.network_data.create_output_stoichiometric_matrix(
+            include_biomass, ignore_cofactors
+        )
 
     # -- D --
 
@@ -187,23 +207,23 @@ class Network(Resource):
         return net
 
     def flatten_reaction_id(self, rxn: Reaction) -> str:
-        """ Flatten the id of a reaction """
+        """Flatten the id of a reaction"""
         return self.network_data.flatten_reaction_id(rxn)
 
     def flatten_compound_id(self, comp: Compound) -> str:
-        """ Flatten the id of a compound """
+        """Flatten the id of a compound"""
         return self.network_data.flatten_compound_id(comp)
 
     def flatten_compartment_id(self, compartment: Compartment) -> str:
-        """ Flatten the id of a compartment """
+        """Flatten the id of a compartment"""
         return self.network_data.flatten_compartment_id(compartment)
 
-    def get_compound_ids(self) -> List[str]:
-        """ Get all compound ids """
+    def get_compound_ids(self) -> list[str]:
+        """Get all compound ids"""
         return self.network_data.get_compound_ids()
 
-    def get_reaction_ids(self) -> List[str]:
-        """ Get all reaction ids """
+    def get_reaction_ids(self) -> list[str]:
+        """Get all reaction ids"""
         return self.network_data.get_reaction_ids()
 
     def get_compound_by_id(self, comp_id: str) -> Compound:
@@ -218,7 +238,9 @@ class Network(Resource):
 
         return self.network_data.get_compound_by_id(comp_id)
 
-    def get_compounds_by_chebi_id(self, chebi_id: str, compartment: Optional[str] = None) -> List[Compound]:
+    def get_compounds_by_chebi_id(
+        self, chebi_id: str, compartment: str | None = None
+    ) -> list[Compound]:
         """
         Get a compound by its chebi id and compartment.
 
@@ -244,7 +266,7 @@ class Network(Resource):
 
         return self.network_data.get_reaction_by_id(rxn_id)
 
-    def get_reaction_by_ec_number(self, ec_number: str) -> Reaction:
+    def get_reaction_by_ec_number(self, ec_number: str) -> Reaction | None:
         """
         Get a reaction by its ec number.
 
@@ -256,7 +278,7 @@ class Network(Resource):
 
         return self.network_data.get_reaction_by_ec_number(ec_number)
 
-    def get_reaction_by_rhea_id(self, rhea_id: str) -> Reaction:
+    def get_reaction_by_rhea_id(self, rhea_id: str) -> Reaction | None:
         """
         Get a reaction by its rhea id.
 
@@ -268,12 +290,12 @@ class Network(Resource):
 
         return self.network_data.get_reaction_by_rhea_id(rhea_id)
 
-    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> List[Reaction]:
-        """ Get the reactions related to a compound with having a given CheBI ID """
+    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> list[Reaction]:
+        """Get the reactions related to a compound with having a given CheBI ID"""
 
         return self.network_data.get_reactions_related_to_chebi_id(chebi_id)
 
-    def get_biomass_reaction(self) -> Reaction:
+    def get_biomass_reaction(self) -> Reaction | None:
         """
         Get the biomass reaction if it exists
 
@@ -283,42 +305,44 @@ class Network(Resource):
 
         return self.network_data.get_biomass_reaction()
 
-    def get_biomass_compound(self) -> Compound:
+    def get_biomass_compound(self) -> Compound | None:
         """
         Get the biomass compounds if it exists
 
         :returns: The biomass compounds
-        :rtype: `gena.network.Compound`
+        :rtype: `gena.network.Compound` or `None`
         """
 
         return self.network_data.get_biomass_compound()
 
-    def get_compounds_by_compartments(self, compartment_list: List[str] = None) -> Dict[str, Compound]:
+    def get_compounds_by_compartments(
+        self, compartment_list: list[str] | None = None
+    ) -> dict[str, Compound]:
         """
         Get the compounds in a compartments
 
         :returns: The list of compounds
-        :rtype: List[`gena.network.Compound`]
+        :rtype: list[`gena.network.Compound`]
         """
 
         return self.network_data.get_compounds_by_compartments(compartment_list)
 
-    def get_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the steady compounds
 
         :returns: The list of steady compounds
-        :rtype: List[`gena.network.Compound`]
+        :rtype: list[`gena.network.Compound`]
         """
 
         return self.network_data.get_steady_compounds(ignore_cofactors)
 
-    def get_non_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_non_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the non-steady compounds
 
         :returns: The list of non-steady compounds
-        :rtype: List[`gena.network.Compound`]
+        :rtype: list[`gena.network.Compound`]
         """
 
         return self.network_data.get_non_steady_compounds(ignore_cofactors)
@@ -334,49 +358,49 @@ class Network(Resource):
         return self.network_data.get_reaction_bounds()
 
     def get_number_of_reactions(self) -> int:
-        """ Get number of reactions """
+        """Get number of reactions"""
 
         return self.network_data.get_number_of_reactions()
 
     def get_number_of_compounds(self) -> int:
-        """ Get number of compounds """
+        """Get number of compounds"""
 
         return self.network_data.get_number_of_compounds()
 
     def get_compound_stats_as_json(self) -> dict:
-        """ Get compound stats as JSON """
+        """Get compound stats as JSON"""
 
         return self.network_data.get_compound_stats_as_json()
 
     def get_compound_stats_as_table(self) -> Table:
-        """ Get compound stats as table """
+        """Get compound stats as table"""
 
         return self.network_data.get_compound_stats_as_table()
 
     def get_total_abs_flux_as_table(self) -> Table:
-        """ Get the total absolute flux as table """
+        """Get the total absolute flux as table"""
 
         return self.network_data.get_total_abs_flux_as_table()
 
     def get_stats_as_json(self) -> dict:
-        """ Get stats as JSON """
+        """Get stats as JSON"""
 
         return self.network_data.get_stats_as_json()
 
     def get_stats(self) -> dict:
-        """ Gather and return networks stats """
+        """Gather and return networks stats"""
 
         return self.network_data.get_stats()
 
     def get_summary(self) -> dict:
-        """ Return the summary of the network """
+        """Return the summary of the network"""
 
         return self.network_data.get_summary()
 
     # -- H --
 
     def has_sink(self) -> bool:
-        """ Return True if the network has sink reaction, False otherwise """
+        """Return True if the network has sink reaction, False otherwise"""
 
         return self.network_data.has_sink()
 
@@ -385,12 +409,16 @@ class Network(Resource):
     # -- L --
 
     @classmethod
-    def loads(cls, data: NetworkDict, biomass_reaction_id: str = None,
-              skip_orphans: bool = False,
-              replace_unknown_compartments: bool = False,
-              biomass_metabolite_id_user: str = None,
-              add_biomass: bool = False) -> 'Network':
-        """ Create a Network from JSON data  """
+    def loads(
+        cls,
+        data: NetworkDict,
+        biomass_reaction_id: str | None = None,
+        skip_orphans: bool = False,
+        replace_unknown_compartments: bool = False,
+        biomass_metabolite_id_user: str | None = None,
+        add_biomass: bool = False,
+    ) -> "Network":
+        """Create a Network from JSON data"""
 
         network = cls()
         network.network_data = NetworkData.loads(
@@ -408,18 +436,22 @@ class Network(Resource):
 
     # -- M --
 
-    def merge(self, network: 'Network', inplace=False):
-        """ Merge with another network """
+    def merge(self, network: "Network", inplace=False):
+        """Merge with another network"""
         from .helper.network_merger import NetworkMergerHelper
+
         merger_helper = NetworkMergerHelper()
-        return merger_helper.merge(destination_network=self, source_network=network, inplace=inplace)
+        return merger_helper.merge(
+            destination_network=self, source_network=network, inplace=inplace
+        )
+
     # -- P --
 
     # -- R --
 
     @property
     def reactions(self) -> dict:
-        """ Get the list of reactions """
+        """Get the list of reactions"""
 
         return self.network_data.reactions
 
@@ -445,8 +477,8 @@ class Network(Resource):
 
     # -- S --
 
-    def set_simulations(self, simulations: Dict):
-        """ Set simulations """
+    def set_simulations(self, simulations: dict):
+        """Set simulations"""
         self.network_data.set_simulations(simulations)
 
     # -- T --
@@ -490,17 +522,17 @@ class Network(Resource):
     # -- U --
 
     def update_ec_recon_tag(self, tag_id, tag_data: dict):
-        """ Set a ec recon tag """
+        """Set a ec recon tag"""
 
         self.network_data.update_ec_recon_tag(tag_id, tag_data)
 
     def update_reaction_recon_tag(self, tag_id, tag_data: dict):
-        """ Set a reaction recon tag """
+        """Set a reaction recon tag"""
 
         self.network_data.update_reaction_recon_tag(tag_id, tag_data)
 
     def update_compound_recon_tag(self, tag_id, tag_data: dict):
-        """ Set a compound recon tag """
+        """Set a compound recon tag"""
 
         self.network_data.update_compound_recon_tag(tag_id, tag_data)
 
@@ -512,39 +544,40 @@ class Network(Resource):
 
     @view(view_type=JSONView, human_name="Summary")
     def view_as_summary(self, _: ConfigParams) -> JSONView:
-        """  View as summary """
+        """View as summary"""
         data = self.get_summary()
         j_view = JSONView()
         j_view.set_data(data=data)
         return j_view
 
-    @ view(view_type=TableView, human_name="Reaction table")
+    @view(view_type=TableView, human_name="Reaction table")
     def view_as_table(self, _: ConfigParams) -> TableView:
-        """ View as table """
+        """View as table"""
         table = self.to_table()
         t_view = TableView(table)
         return t_view
 
-    @ view(view_type=JSONView, human_name="JSON view")
+    @view(view_type=JSONView, human_name="JSON view")
     def view_as_json(self, params: ConfigParams) -> JSONView:
-        """ View as json """
+        """View as json"""
         json_view: JSONView = super().view_as_json(params)
         json_view.set_data(self.dumps())
         return json_view
 
-    @ view(view_type=TableView, human_name="Reaction gaps")
+    @view(view_type=TableView, human_name="Reaction gaps")
     def view_gaps_as_table(self, _: ConfigParams) -> TableView:
-        """ View gaps as table """
+        """View gaps as table"""
         from ..sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
+
         helper = GapFinderHelper()
-        data: DataFrame() = helper.find_gaps(self)
+        data = helper.find_gaps(self)
         table = Table(data)
         t_view = TableView(table)
         return t_view
 
-    @ view(view_type=TableView, human_name="Compound distribution")
+    @view(view_type=TableView, human_name="Compound distribution")
     def view_compound_stats_as_table(self, _: ConfigParams) -> TableView:
-        """ View compound stats as table """
+        """View compound stats as table"""
         table: Table = self.get_compound_stats_as_table()
         t_view = TableView(table)
         return t_view

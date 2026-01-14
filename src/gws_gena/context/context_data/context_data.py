@@ -1,10 +1,6 @@
-
-from typing import Dict, List
-
 from gws_core import BadRequestException, SerializableObjectJson
 
 from ..measure import Measure
-from ..typing.context_typing import ContextDict
 
 
 class ContextData(SerializableObjectJson):
@@ -17,9 +13,9 @@ class ContextData(SerializableObjectJson):
     DEFAULT_NAME = "context"
     FLATTENING_DELIMITER = ":"
 
-    name: str = None
-    reaction_data: Dict[str, Measure] = None
-    compound_data: Dict[str, Measure] = None
+    name: str | None = None
+    reaction_data: dict[str, Measure] | None = None
+    compound_data: dict[str, Measure] | None = None
 
     def __init__(self):
         super().__init__()
@@ -28,16 +24,16 @@ class ContextData(SerializableObjectJson):
             self.reaction_data = {}
             self.compound_data = {}
 
-    def serialize(self) -> ContextDict:
+    def serialize(self) -> dict:
         """
         Serialize
         """
 
         return self.dumps()
 
-    @ classmethod
-    def deserialize(cls, data: Dict[str, dict]) -> 'ContextData':
-        """ Deserialize """
+    @classmethod
+    def deserialize(cls, data: dict[str, dict]) -> "ContextData":
+        """Deserialize"""
         if data is None:
             return {}
 
@@ -48,25 +44,37 @@ class ContextData(SerializableObjectJson):
     # -- A --
 
     def add_reaction_data(self, measure: Measure):
-        """ Add a reaction data """
+        """Add a reaction data"""
+        if self.reaction_data is None:
+            self.reaction_data = {}
+        if measure.id is None:
+            raise BadRequestException("Measure id cannot be None")
         if measure.id in self.reaction_data:
             raise BadRequestException("Reaction data duplicate")
         self.reaction_data[measure.id] = measure
 
     def add_compound_data(self, measure: Measure):
-        """ Add a compound data """
+        """Add a compound data"""
+        if self.compound_data is None:
+            self.compound_data = {}
+        if measure.id is None:
+            raise BadRequestException("Measure id cannot be None")
         if measure.id in self.compound_data:
             raise BadRequestException("Compound data duplicate")
         self.compound_data[measure.id] = measure
 
     # -- C --
 
-    def copy(self) -> 'ContextData':
-        """ Copy the context """
+    def copy(self) -> "ContextData":
+        """Copy the context"""
         ctx_data = ContextData()
         ctx_data.name = self.name
-        ctx_data.reaction_data = {k: v.copy() for k, v in self.reaction_data.items()}
-        ctx_data.compound_data = {k: v.copy() for k, v in self.compound_data.items()}
+        ctx_data.reaction_data = (
+            {k: v.copy() for k, v in self.reaction_data.items()} if self.reaction_data else {}
+        )
+        ctx_data.compound_data = (
+            {k: v.copy() for k, v in self.compound_data.items()} if self.compound_data else {}
+        )
         return ctx_data
 
     # -- B --
@@ -74,18 +82,16 @@ class ContextData(SerializableObjectJson):
     # -- D --
 
     def dumps(self) -> dict:
-        """ Dumps the context data """
-        data = {
-            "name": self.name,
-            "reaction_data": [],
-            "compound_data": []
-        }
+        """Dumps the context data"""
+        data = {"name": self.name, "reaction_data": [], "compound_data": []}
 
-        for measure in self.compound_data.values():
-            data["compound_data"].append(measure.dumps())
+        if self.compound_data is not None:
+            for measure in self.compound_data.values():
+                data["compound_data"].append(measure.dumps())
 
-        for measure in self.reaction_data.values():
-            data["reaction_data"].append(measure.dumps())
+        if self.reaction_data is not None:
+            for measure in self.reaction_data.values():
+                data["reaction_data"].append(measure.dumps())
 
         return data
 
@@ -93,12 +99,16 @@ class ContextData(SerializableObjectJson):
 
     # -- G --
 
-    def get_reaction_data_ids(self) -> List[str]:
-        """ Get the ids of the measures """
+    def get_reaction_data_ids(self) -> list[str]:
+        """Get the ids of the measures"""
+        if self.reaction_data is None:
+            return []
         return list(self.reaction_data.keys())
 
-    def get_compound_data_ids(self) -> List[str]:
-        """ Get the ids of the measures """
+    def get_compound_data_ids(self) -> list[str]:
+        """Get the ids of the measures"""
+        if self.compound_data is None:
+            return []
         return list(self.compound_data.keys())
 
     # -- F --
@@ -112,8 +122,8 @@ class ContextData(SerializableObjectJson):
     # -- L --
 
     @classmethod
-    def loads(cls, data: dict) -> 'ContextData':
-        """ Load a context data """
+    def loads(cls, data: dict) -> "ContextData":
+        """Load a context data"""
 
         ctx = cls()
         if "measures" in data:

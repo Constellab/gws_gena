@@ -1,35 +1,58 @@
 import streamlit as st
-from typing import List, Dict
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core import Tag, Settings, File, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, search_updated_network, get_status_emoji, get_status_prettify, build_scenarios_by_step_dict
-from gws_core.streamlit import StreamlitContainers, StreamlitRouter, StreamlitTreeMenu, StreamlitTreeMenuItem
-from gws_core.tag.tag_entity_type import TagEntityType
+from gws_core import (
+    File,
+    ProtocolProxy,
+    Scenario,
+    ScenarioProxy,
+    ScenarioStatus,
+    Settings,
+)
+from gws_core.streamlit import (
+    StreamlitContainers,
+    StreamlitRouter,
+    StreamlitTreeMenu,
+    StreamlitTreeMenuItem,
+)
 from gws_core.tag.entity_tag_list import EntityTagList
-
-#Steps functions
-from gws_gena.gena_dashboard._gena_dashboard_core.steps.network_step import render_network_step
+from gws_core.tag.tag_entity_type import TagEntityType
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import (
+    build_scenarios_by_step_dict,
+    get_status_emoji,
+    get_status_prettify,
+    search_context,
+    search_updated_network,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.context_step import render_context_step
-from gws_gena.gena_dashboard._gena_dashboard_core.steps.twin_builder_step import render_twin_builder_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.fba_step import render_fba_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.fva_step import render_fva_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.koa_step import render_koa_step
 
+# Steps functions
+from gws_gena.gena_dashboard._gena_dashboard_core.steps.network_step import render_network_step
+from gws_gena.gena_dashboard._gena_dashboard_core.steps.twin_builder_step import (
+    render_twin_builder_step,
+)
+
 
 # Check if steps are completed (have successful scenarios)
-def has_successful_scenario(step_name : str, scenarios_by_step: Dict):
+def has_successful_scenario(step_name: str, scenarios_by_step: dict):
     if step_name not in scenarios_by_step:
         return False
     return any(s.status == ScenarioStatus.SUCCESS for s in scenarios_by_step[step_name])
 
+
 # Helper function to get icon - check_circle if step has been run for specific parent, otherwise original icon
-def get_step_icon(step_name: str, scenarios_by_step: Dict, list_scenarios: List[Scenario] = None) -> str:
+def get_step_icon(
+    step_name: str, scenarios_by_step: dict, list_scenarios: list[Scenario] | None = None
+) -> str:
     """Get icon for step - check_circle if step has scenarios, empty otherwise."""
     if step_name not in scenarios_by_step:
-        return ''
+        return ""
     if not list_scenarios:
-        return ''
-    return 'check_circle'
+        return ""
+    return "check_circle"
+
 
 def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
     """Build the tree menu for analysis workflow steps"""
@@ -52,19 +75,22 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
     # Show the default selected item if exist either show first step
     if gena_state.get_tree_default_item():
         key_default_item = gena_state.get_tree_default_item()
-    else :
+    else:
         key_default_item = key_network
 
     network_item = StreamlitTreeMenuItem(
         label=translate_service.translate("model"),
         key=key_network,
-        material_icon=get_step_icon(gena_state.TAG_NETWORK, scenarios_by_step, scenario_network)
+        material_icon=get_step_icon(gena_state.TAG_NETWORK, scenarios_by_step, scenario_network),
     )
 
     button_menu.add_item(network_item)
 
     # 2) CONTEXT - only if network is successful
-    if has_successful_scenario(gena_state.TAG_NETWORK, scenarios_by_step) or gena_state.TAG_CONTEXT in scenarios_by_step:
+    if (
+        has_successful_scenario(gena_state.TAG_NETWORK, scenarios_by_step)
+        or gena_state.TAG_CONTEXT in scenarios_by_step
+    ):
         scenario_context = None
         if gena_state.TAG_CONTEXT in scenarios_by_step:
             scenario_context = gena_state.get_scenario_step_context()
@@ -75,13 +101,18 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         context_item = StreamlitTreeMenuItem(
             label=translate_service.translate("contextualisation"),
             key=key_context,
-            material_icon=get_step_icon(gena_state.TAG_CONTEXT, scenarios_by_step, scenario_context)
+            material_icon=get_step_icon(
+                gena_state.TAG_CONTEXT, scenarios_by_step, scenario_context
+            ),
         )
 
         button_menu.add_item(context_item)
 
     # 3) Twin builder - only if CONTEXT is successful
-    if has_successful_scenario(gena_state.TAG_CONTEXT, scenarios_by_step) or gena_state.TAG_TWIN_BUILDER in scenarios_by_step:
+    if (
+        has_successful_scenario(gena_state.TAG_CONTEXT, scenarios_by_step)
+        or gena_state.TAG_TWIN_BUILDER in scenarios_by_step
+    ):
         scenario_twin_builder = None
         if gena_state.TAG_TWIN_BUILDER in scenarios_by_step:
             scenario_twin_builder = gena_state.get_scenario_step_twin_builder()
@@ -92,7 +123,9 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         twin_builder_item = StreamlitTreeMenuItem(
             label=translate_service.translate("twin"),
             key=key_twin_builder,
-            material_icon=get_step_icon(gena_state.TAG_TWIN_BUILDER, scenarios_by_step, scenario_twin_builder)
+            material_icon=get_step_icon(
+                gena_state.TAG_TWIN_BUILDER, scenarios_by_step, scenario_twin_builder
+            ),
         )
         button_menu.add_item(twin_builder_item)
 
@@ -102,13 +135,13 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         fba_item = StreamlitTreeMenuItem(
             label=translate_service.translate("fba"),
             key=f"{gena_state.TAG_FBA}",
-            material_icon=get_step_icon(gena_state.TAG_FBA, scenarios_by_step, fba_scenarios)
+            material_icon=get_step_icon(gena_state.TAG_FBA, scenarios_by_step, fba_scenarios),
         )
         for fba_scenario in fba_scenarios:
             fba_scenario_item = StreamlitTreeMenuItem(
                 label=fba_scenario.get_short_name(),
                 key=fba_scenario.id,
-                material_icon='description'
+                material_icon="description",
             )
             fba_item.add_children([fba_scenario_item])
         button_menu.add_item(fba_item)
@@ -118,13 +151,13 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         fva_item = StreamlitTreeMenuItem(
             label=translate_service.translate("fva"),
             key=f"{gena_state.TAG_FVA}",
-            material_icon=get_step_icon(gena_state.TAG_FVA, scenarios_by_step, fva_scenarios)
+            material_icon=get_step_icon(gena_state.TAG_FVA, scenarios_by_step, fva_scenarios),
         )
         for fva_scenario in fva_scenarios:
             fva_scenario_item = StreamlitTreeMenuItem(
                 label=fva_scenario.get_short_name(),
                 key=fva_scenario.id,
-                material_icon='description'
+                material_icon="description",
             )
             fva_item.add_children([fva_scenario_item])
         button_menu.add_item(fva_item)
@@ -134,29 +167,30 @@ def build_analysis_tree_menu(gena_state: State, gena_pipeline_id: str):
         koa_item = StreamlitTreeMenuItem(
             label=translate_service.translate("koa"),
             key=f"{gena_state.TAG_KOA}",
-            material_icon=get_step_icon(gena_state.TAG_KOA, scenarios_by_step, koa_scenarios)
+            material_icon=get_step_icon(gena_state.TAG_KOA, scenarios_by_step, koa_scenarios),
         )
         for koa_scenario in koa_scenarios:
             koa_scenario_item = StreamlitTreeMenuItem(
                 label=koa_scenario.get_short_name(),
                 key=koa_scenario.id,
-                material_icon='description'
+                material_icon="description",
             )
             koa_item.add_children([koa_scenario_item])
         button_menu.add_item(koa_item)
 
     return button_menu, key_default_item
 
-def render_analysis_page(gena_state : State):
+
+def render_analysis_page(gena_state: State):
     style = """
     [CLASS_NAME] {
         padding: 40px;
     }
     """
 
-    with StreamlitContainers.container_full_min_height('container-center_analysis_page',
-                additional_style=style):
-
+    with StreamlitContainers.container_full_min_height(
+        "container-center_analysis_page", additional_style=style
+    ):
         translate_service = gena_state.get_translate_service()
         router = StreamlitRouter.load_from_session()
         # Create two columns
@@ -164,7 +198,12 @@ def render_analysis_page(gena_state : State):
 
         with left_col:
             # Button to go home
-            if st.button(translate_service.translate("recipes"), width="stretch", icon=":material/home:", type="primary"):
+            if st.button(
+                translate_service.translate("recipes"),
+                width="stretch",
+                icon=":material/home:",
+                type="primary",
+            ):
                 # Reset the state of selected tree default item
                 gena_state.set_tree_default_item(None)
                 router = StreamlitRouter.load_from_session()
@@ -176,18 +215,30 @@ def render_analysis_page(gena_state : State):
 
         # Get analysis name from scenario tag
         entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, selected_analysis.id)
-        tag_analysis_name = entity_tag_list.get_tags_by_key(gena_state.TAG_ANALYSIS_NAME)[0].to_simple_tag()
+        tag_analysis_name = entity_tag_list.get_tags_by_key(gena_state.TAG_ANALYSIS_NAME)[
+            0
+        ].to_simple_tag()
         analysis_name = tag_analysis_name.value
 
         # Get gena pipeline id from scenario tag
-        tag_gena_pipeline_id = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA_PIPELINE_ID)[0].to_simple_tag()
+        tag_gena_pipeline_id = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA_PIPELINE_ID)[
+            0
+        ].to_simple_tag()
         gena_pipeline_id = tag_gena_pipeline_id.value
 
         # Get folder from scenario folder
-        gena_state.set_selected_folder_id(selected_analysis.folder.id if selected_analysis.folder else None)
+        gena_state.set_selected_folder_id(
+            selected_analysis.folder.id if selected_analysis.folder else None
+        )
 
         if selected_analysis.status != ScenarioStatus.SUCCESS:
-            if selected_analysis.status in [ScenarioStatus.RUNNING, ScenarioStatus.DRAFT, ScenarioStatus.WAITING_FOR_CLI_PROCESS, ScenarioStatus.IN_QUEUE, ScenarioStatus.PARTIALLY_RUN]:
+            if selected_analysis.status in [
+                ScenarioStatus.RUNNING,
+                ScenarioStatus.DRAFT,
+                ScenarioStatus.WAITING_FOR_CLI_PROCESS,
+                ScenarioStatus.IN_QUEUE,
+                ScenarioStatus.PARTIALLY_RUN,
+            ]:
                 message = translate_service.translate("analysis_still_running")
             else:
                 message = translate_service.translate("analysis_not_completed")
@@ -206,13 +257,14 @@ def render_analysis_page(gena_state : State):
 
         if network_updated:
             gena_state.set_resource_id_network(network_updated.get_model_id())
-        else : # Get the table from initial scenario
-            network_output : File = protocol_proxy.get_process('network_process_output').get_input('resource')
+        else:  # Get the table from initial scenario
+            network_output: File = protocol_proxy.get_process("network_process_output").get_input(
+                "resource"
+            )
             gena_state.set_resource_id_network(network_output.get_model_id())
 
         # Left column - Analysis workflow tree
         with left_col:
-
             st.write(f"**{translate_service.translate('recipe')}:** {analysis_name}")
 
             # Build and render the analysis tree menu, and keep the key of the first element
@@ -236,8 +288,12 @@ def render_analysis_page(gena_state : State):
                 if selected_scenario_new:
                     gena_state.set_selected_scenario(selected_scenario_new)
 
-                    entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, selected_scenario_new.id)
-                    tag_step_name = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA)[0].to_simple_tag()
+                    entity_tag_list = EntityTagList.find_by_entity(
+                        TagEntityType.SCENARIO, selected_scenario_new.id
+                    )
+                    tag_step_name = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA)[
+                        0
+                    ].to_simple_tag()
                     gena_state.set_step_pipeline(tag_step_name.value)
 
                 else:
@@ -259,38 +315,52 @@ def render_analysis_page(gena_state : State):
                 padding-left: 20px !important;
             }
             """
-            with StreamlitContainers.container_with_style('analysis-container', style):
-
-                is_scenario = True if gena_state.get_selected_scenario() else False
+            with StreamlitContainers.container_with_style("analysis-container", style):
+                is_scenario = bool(gena_state.get_selected_scenario())
 
                 if is_scenario:
-                    selected_scenario : Scenario = gena_state.get_selected_scenario()
+                    selected_scenario: Scenario = gena_state.get_selected_scenario()
 
                     # Write the status of the scenario at the top right
-                    col_title, col_status, col_refresh= StreamlitContainers.columns_with_fit_content(
+                    col_title, col_status, col_refresh = (
+                        StreamlitContainers.columns_with_fit_content(
                             key="container_status",
-                            cols=[1, 'fit-content', 'fit-content'], vertical_align_items='center')
+                            cols=[1, "fit-content", "fit-content"],
+                            vertical_align_items="center",
+                        )
+                    )
                     with col_title:
                         st.markdown(f"#### {selected_scenario.get_short_name()}")
                     with col_status:
                         status_emoji = get_status_emoji(selected_scenario.status)
-                        st.markdown(f"#### **{translate_service.translate('status')}:** {status_emoji} {get_status_prettify(selected_scenario.status)}")
+                        st.markdown(
+                            f"#### **{translate_service.translate('status')}:** {status_emoji} {get_status_prettify(selected_scenario.status)}"
+                        )
                         # Add a button to redirect to the scenario page
                         virtual_host = Settings.get_instance().get_virtual_host()
-                        if Settings.get_instance().is_prod_mode():
-                            lab_mode = "lab"
-                        else:
-                            lab_mode = "dev-lab"
+                        lab_mode = "lab" if Settings.get_instance().is_prod_mode() else "dev-lab"
                         if not gena_state.get_is_standalone():
-                            st.link_button(translate_service.translate("view_scenario"), f"https://{lab_mode}.{virtual_host}/app/scenario/{selected_scenario.id}", icon=":material/open_in_new:")
+                            st.link_button(
+                                translate_service.translate("view_scenario"),
+                                f"https://{lab_mode}.{virtual_host}/app/scenario/{selected_scenario.id}",
+                                icon=":material/open_in_new:",
+                            )
                     with col_refresh:
                         # If the scenario status is running or in queue, add a refresh button to refresh the page
-                        if selected_scenario.status in [ScenarioStatus.RUNNING, ScenarioStatus.WAITING_FOR_CLI_PROCESS, ScenarioStatus.IN_QUEUE]:
-                            if st.button(translate_service.translate("refresh"), icon=":material/refresh:", width="stretch"):
+                        if selected_scenario.status in [
+                            ScenarioStatus.RUNNING,
+                            ScenarioStatus.WAITING_FOR_CLI_PROCESS,
+                            ScenarioStatus.IN_QUEUE,
+                        ]:
+                            if st.button(
+                                translate_service.translate("refresh"),
+                                icon=":material/refresh:",
+                                width="stretch",
+                            ):
                                 gena_state.set_tree_default_item(selected_scenario.id)
                                 st.rerun()
 
-                else :
+                else:
                     selected_scenario = None
 
                 if gena_state.get_step_pipeline() == gena_state.TAG_NETWORK:

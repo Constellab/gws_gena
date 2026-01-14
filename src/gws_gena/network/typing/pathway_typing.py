@@ -1,14 +1,12 @@
-
 from typing import TypedDict
 
 
-PathwayDict = TypedDict("PathwayDict", {
-    "id": list,
-    "name": list,
-})
+class PathwayDict(TypedDict):
+    id: list | None
+    name: list | None
 
-ReactionPathwayDict = TypedDict("ReactionPathwayDict", {
-    "brenda": PathwayDict,
-    "kegg": PathwayDict,
-    "metacyc": PathwayDict,
-})
+
+class ReactionPathwayDict(TypedDict):
+    brenda: PathwayDict | None
+    kegg: PathwayDict | None
+    metacyc: PathwayDict | None

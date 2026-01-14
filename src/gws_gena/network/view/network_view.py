@@ -1,15 +1,7 @@
-
-from typing import Dict
-
-import networkx as nx
-from gws_core import (BadRequestException, BoolParam, ConfigParams, StrParam,
-                      View, ViewType)
-
-from ..graph.graph import BipartiteGraph
+from gws_core import BadRequestException, ConfigParams, View, ViewType
 
 
 class NetworkView(View):
-
     _type: ViewType = ViewType.NETWORK
     _data: "Network"
 
@@ -17,30 +9,30 @@ class NetworkView(View):
         super().__init__()
         self._check_and_set_data(data)
 
-    def _check_and_set_data(self, data: Dict):
+    def _check_and_set_data(self, data: dict):
         """
         Check the data and return.
 
         Must be overloaded to implement adhoc data checker
         """
         from ..network import Network
+
         if not isinstance(data, Network):
-            raise BadRequestException(
-                "NetworkView data must be an instance of Network")
+            raise BadRequestException("NetworkView data must be an instance of Network")
 
         self._data = data
 
     # def to_dict(self, params: ConfigParams) -> dict:
-        # if params["layout"] == "spring":
-        #     dump_data = self._spring_layout(params)
-        # else:
-     #   dump_data = self._data.dumps(refresh_layout=True)
-       # return {
-        #    **super().to_dict(params),
-        #   "data": dump_data
-        # }
+    # if params["layout"] == "spring":
+    #     dump_data = self._spring_layout(params)
+    # else:
+    #   dump_data = self._data.dumps(refresh_layout=True)
+    # return {
+    #    **super().to_dict(params),
+    #   "data": dump_data
+    # }
 
-    def data_to_dict(self, params: ConfigParams) -> dict:
+    def data_to_dict(self, params: ConfigParams) -> "NetworkDict":
         return self._data.dumps(refresh_layout=True)
 
     # def _spring_layout(self, params: ConfigParams):

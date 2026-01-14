@@ -1,4 +1,3 @@
-
 from ..flat_twin import FlatTwin, Twin
 
 # ####################################################################
@@ -9,16 +8,17 @@ from ..flat_twin import FlatTwin, Twin
 
 
 class TwinFalltenerHelper:
-    """ TwinFalltenerHelper """
+    """TwinFalltenerHelper"""
+
     @classmethod
     def flatten(cls, twin: Twin) -> FlatTwin:
-        """ Flatten the digital twin """
-        data = twin.dumps_flat()
+        """Flatten the digital twin"""
+        data = cls.dumps_flat(twin)
         return FlatTwin.loads(data)
 
     @classmethod
     def dumps_flat(cls, twin: Twin) -> dict:
-        """ Generates a flat dump of the digital twin """
+        """Generates a flat dump of the digital twin"""
 
         all_compart_data = []
         all_met_data = []
@@ -60,10 +60,10 @@ class TwinFalltenerHelper:
 
                 _rxn_mapping[current_rxn_data["id"]] = {
                     "network_name": net.name,
-                    "reaction_id": original_rxn_id
+                    "reaction_id": original_rxn_id,
                 }
 
-                if not net.name in _rev_rxn_mapping:
+                if net.name not in _rev_rxn_mapping:
                     _rev_rxn_mapping[net.name] = {}
                 _rev_rxn_mapping[net.name][original_rxn_id] = current_rxn_data["id"]
 
@@ -100,17 +100,16 @@ class TwinFalltenerHelper:
         data = {
             "name": twin.name,
             # "description": twin.description,
-            "networks": [{
-                "metabolites": all_met_data,
-                "reactions": all_rxn_data,
-                "compartments": all_compart_data,
-            }],
-            "contexts": [{
-                "reaction_data": all_reaction_data,
-                "compound_data": all_compound_data
-            }],
+            "networks": [
+                {
+                    "metabolites": all_met_data,
+                    "reactions": all_rxn_data,
+                    "compartments": all_compart_data,
+                }
+            ],
+            "contexts": [{"reaction_data": all_reaction_data, "compound_data": all_compound_data}],
             "reaction_mapping": _rxn_mapping,
-            "reverse_reaction_mapping": _rev_rxn_mapping
+            "reverse_reaction_mapping": _rev_rxn_mapping,
         }
 
         return data

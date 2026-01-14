@@ -1,4 +1,3 @@
-
 from gws_biota import Compound as BiotaCompound
 from gws_biota import Reaction as BiotaReaction
 
@@ -6,7 +5,6 @@ from ..unicell.unicell import Unicell
 
 
 class BiggMapper:
-
     @classmethod
     def _convert_bigg_annotation_list_to_dict(cls, annotation):
         if isinstance(annotation, list):
@@ -55,11 +53,12 @@ class BiggMapper:
                 if isinstance(chebi_ids, str):
                     chebi_ids = [chebi_ids]
 
-                chebi_ids = [val if val.startswith("CHEBI") else "CHEBI:"+val for val in chebi_ids]
+                chebi_ids = [
+                    val if val.startswith("CHEBI") else "CHEBI:" + val for val in chebi_ids
+                ]
 
                 for chebi_id in chebi_ids:
                     if chebi_id in unicell_comps:
-                        comp = unicell_comps[chebi_id]
                         comp_table[comp_data["id"]] = biota_comps[chebi_id]
                         break
 
@@ -74,11 +73,10 @@ class BiggMapper:
                 if isinstance(rhea_ids, str):
                     rhea_ids = [rhea_ids]
 
-                rhea_ids = [val if val.startswith("RHEA") else "RHEA:"+val for val in rhea_ids]
+                rhea_ids = [val if val.startswith("RHEA") else "RHEA:" + val for val in rhea_ids]
 
                 for rhea_id in rhea_ids:
                     if rhea_id in unicell_rxns:
-                        rxn = unicell_rxns[rhea_id]
                         rxn_table[rxn_data["id"]] = biota_rxns[rhea_id]
                         break
 

@@ -1,19 +1,18 @@
-
-from typing import Any, Dict
+from typing import Any
 
 from gws_core import SerializableObjectJson
 
 
 class FBAOptimizeResult(SerializableObjectJson):
     """
-    OptimizeResult class.
+    FBAOptimizeResult class.
 
     A simple proxy of SciPy OptimizeResult
     """
 
-    _data: dict = None
+    _data: dict = {}
 
-    def __init__(self, data: dict = None):
+    def __init__(self, data: dict | None = None):
         if data is None:
             self._data = {}
             return
@@ -99,16 +98,16 @@ class FBAOptimizeResult(SerializableObjectJson):
     def status(self, status):
         self._data["status"] = status
 
-    def serialize(self) -> Dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         """
         Serialize
         """
 
         return self._data
 
-    @ classmethod
-    def deserialize(cls, data: Dict[str, Any]) -> 'OptimizeResult':
-        """ Deserialize """
+    @classmethod
+    def deserialize(cls, data: dict[str, Any]) -> "FBAOptimizeResult":
+        """Deserialize"""
         if data is None:
             return {}
 

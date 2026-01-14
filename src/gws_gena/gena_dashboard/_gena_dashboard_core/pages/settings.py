@@ -1,17 +1,18 @@
 import streamlit as st
-from gws_core.streamlit import StreamlitTranslateLang, StreamlitContainers
+from gws_core.streamlit import StreamlitContainers, StreamlitTranslateLang
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 
-def render_settings_page(gena_state : State):
+
+def render_settings_page(gena_state: State):
     style = """
     [CLASS_NAME] {
         padding: 40px;
     }
     """
 
-    with StreamlitContainers.container_full_min_height('container-center_settings_page',
-                additional_style=style):
-
+    with StreamlitContainers.container_full_min_height(
+        "container-center_settings_page", additional_style=style
+    ):
         translate_service = gena_state.get_translate_service()
 
         # Get current language from translate service, not from session state string
@@ -21,7 +22,7 @@ def render_settings_page(gena_state : State):
         lang_options = ["English", "Français"]
         lang_enum_map = {
             "English": StreamlitTranslateLang.EN,
-            "Français": StreamlitTranslateLang.FR
+            "Français": StreamlitTranslateLang.FR,
         }
 
         # Convert current enum to index
@@ -36,7 +37,7 @@ def render_settings_page(gena_state : State):
             translate_service.translate("select_language"),
             options=lang_options,
             index=current_index,
-            key=gena_state.LANG_KEY
+            key=gena_state.LANG_KEY,
         )
 
         # Convert selected string back to enum

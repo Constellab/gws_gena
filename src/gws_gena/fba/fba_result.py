@@ -1,16 +1,25 @@
-
-from typing import List, Union
-
 import pandas as pd
-from gws_core import (BadRequestException, ResourceSet,Table, TechnicalInfo,
-                      resource_decorator, TypingStyle)
+from gws_core import (
+    BadRequestException,
+    ResourceSet,
+    Table,
+    TechnicalInfo,
+    TypingStyle,
+    resource_decorator,
+)
 from pandas import DataFrame
 from scipy import stats
 
 from .fba_optimize_result import FBAOptimizeResult
 
-@resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True,
-                    style=TypingStyle.material_icon(material_icon_name='assessment', background_color='#FFC300'))
+
+@resource_decorator(
+    "FBAResult",
+    human_name="FBA result",
+    short_description="Flux Balance Analysis Result",
+    hide=True,
+    style=TypingStyle.material_icon(material_icon_name="assessment", background_color="#FFC300"),
+)
 class FBAResult(ResourceSet):
     """
     FBAResult class.
@@ -23,7 +32,9 @@ class FBAResult(ResourceSet):
 
     _default_zero_flux_threshold = 0.05
 
-    def __init__(self, flux_dataframe: DataFrame = None, sv_dataframe: DataFrame = None):
+    def __init__(
+        self, flux_dataframe: DataFrame | None = None, sv_dataframe: DataFrame | None = None
+    ):
         super().__init__()
 
         if flux_dataframe is not None:
@@ -41,8 +52,8 @@ class FBAResult(ResourceSet):
 
     # -- C --
 
-    def compute_zero_flux_threshold(self) -> (float, float):
-        """ Compute the zero-flux threshold """
+    def compute_zero_flux_threshold(self) -> tuple[float, float | None]:
+        """Compute the zero-flux threshold"""
         data = self.get_sv_dataframe()
         value = data["value"]
         try:
@@ -57,11 +68,11 @@ class FBAResult(ResourceSet):
     # -- G --
 
     def get_sv_table(self):
-        """ Get the SV table """
+        """Get the SV table"""
         return self.get_resource(self.SV_TABLE_NAME)
 
     def get_flux_table(self):
-        """ Get the flux table """
+        """Get the flux table"""
         return self.get_resource(self.FLUX_TABLE_NAME)
 
     # def get_biomass_flux_dataframe(self) -> DataFrame:
@@ -74,8 +85,8 @@ class FBAResult(ResourceSet):
     #         t.append(data.loc[[flat_id], :])
     #     return pd.concat(t)
 
-    def get_flux_dataframe_by_reaction_ids(self, reaction_ids: Union[List, str]) -> DataFrame:
-        """ Get flux values by reaction ids """
+    def get_flux_dataframe_by_reaction_ids(self, reaction_ids: list | str) -> DataFrame:
+        """Get flux values by reaction ids"""
         if isinstance(reaction_ids, str):
             reaction_ids = [reaction_ids]
         if not isinstance(reaction_ids, list):
@@ -83,8 +94,8 @@ class FBAResult(ResourceSet):
         data = self.get_fluxes_dataframe()
         return data.loc[reaction_ids, :]
 
-    def get_sv_by_compound_ids(self, compound_ids: Union[List, str]) -> DataFrame:
-        """ Get SV values by compound ids """
+    def get_sv_by_compound_ids(self, compound_ids: list | str) -> DataFrame:
+        """Get SV values by compound ids"""
         if isinstance(compound_ids, str):
             compound_ids = [compound_ids]
         if not isinstance(compound_ids, list):
@@ -93,12 +104,14 @@ class FBAResult(ResourceSet):
         return data.loc[compound_ids, :]
 
     def get_fluxes_dataframe(self) -> DataFrame:
-        """ Get fluxes as dataframe """
-        return self.get_flux_table().get_data()
+        """Get fluxes as dataframe"""
+        flux_table = self.get_flux_table()
+        return flux_table.get_data()
 
     def get_sv_dataframe(self) -> DataFrame:
-        """ Get SV as dataframe """
-        return self.get_sv_table().get_data()
+        """Get SV as dataframe"""
+        sv_table: Table = self.get_sv_table()
+        return sv_table.get_data()
 
     def _set_technical_info(self):
         value, pval = self.compute_zero_flux_threshold()
@@ -109,7 +122,7 @@ class FBAResult(ResourceSet):
         sv_table.add_technical_info(TechnicalInfo(key="zero_flux_pvalue", value=pval))
 
     @classmethod
-    def from_optimized_result(cls, optimized_result: FBAOptimizeResult) -> 'FBAResult':
+    def from_optimized_result(cls, optimized_result: FBAOptimizeResult) -> "FBAResult":
         flux_dataframe = cls._create_fluxes_dataframe(optimized_result)
         sv_dataframe = cls._create_sv_dataframe(optimized_result)
 

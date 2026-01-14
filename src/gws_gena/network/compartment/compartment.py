@@ -1,10 +1,5 @@
-
-
-from typing import Dict
-
 from gws_biota import Compartment as BiotaCompartment
-from gws_biota import \
-    CompartmentNotFoundException as BiotaCompartmentNotFoundException
+from gws_biota import CompartmentNotFoundException as BiotaCompartmentNotFoundException
 from gws_core import BadRequestException
 
 from ..exceptions.compartment_exceptions import InvalidCompartmentException
@@ -31,12 +26,14 @@ class Compartment:
     bigg_id = None
     name = None
     color = None
-    is_steady: bool = None
+    is_steady: bool | None = None
 
-    def __init__(self, dict_: CompartmentDict = None):
+    def __init__(self, dict_: CompartmentDict | None = None):
         super().__init__()
         if dict_ is None:
-            dict_ = {}
+            dict_ = CompartmentDict(
+                id=None, go_id=None, bigg_id=None, name=None, color=None, is_steady=None
+            )
         for key, val in dict_.items():
             setattr(self, key, val)
 
@@ -51,12 +48,12 @@ class Compartment:
 
         self.id = SlugifyHelper.slugify_id(self.id)
         self.name = biota_compart.name
-        self.is_steady = biota_compart.data["is_steady"]
+        self.is_steady = biota_compart.data["is_steady"] if biota_compart.data else None
         self.bigg_id = biota_compart.bigg_id
         self.color = biota_compart.color
 
     def copy(self):
-        """ Deep copy the compartment """
+        """Deep copy the compartment"""
         compart = Compartment(
             CompartmentDict(
                 id=self.id,
@@ -64,31 +61,34 @@ class Compartment:
                 bigg_id=self.bigg_id,
                 color=self.color,
                 name=self.name,
-                is_steady=self.is_steady
-            ))
+                is_steady=self.is_steady,
+            )
+        )
         return compart
 
-    def dumps(self) -> Dict:
-        """ Dumps as JSON """
+    def dumps(self) -> dict:
+        """Dumps as JSON"""
         return {
             "id": None,
             "go_id": self.go_id,
             "bigg_id": self.bigg_id,
             "color": self.color,
-            "name": self.name
+            "name": self.name,
         }
 
-    def loads(self, data: dict) -> 'Compartment':
-        """ Loads from as JSON """
-        return Compartment(data)
+    def loads(self, data: dict) -> "Compartment":
+        """Loads from as JSON"""
+        return Compartment(CompartmentDict(**data))
 
     @classmethod
-    def exists(cls, go_id: str = None, bigg_id: str = None):
-        """ Returns True if the compartment exists """
+    def exists(cls, go_id: str | None = None, bigg_id: str | None = None):
+        """Returns True if the compartment exists"""
         return cls.from_biota(go_id=go_id, bigg_id=bigg_id) is not None
 
     @classmethod
-    def from_biota(cls, *, go_id: str = None, bigg_id: str = None, default_other: bool = False):
+    def from_biota(
+        cls, *, go_id: str | None = None, bigg_id: str | None = None, default_other: bool = False
+    ):
         """
         Loads from biota using its `go_id` or `bigg_id`
         The `go_id` is tested in priority if provied
@@ -105,53 +105,57 @@ class Compartment:
         except BiotaCompartmentNotFoundException as _:
             return None
         except Exception as err:
-            raise BadRequestException("An error occured when fetching compartment from biota") from err
+            raise BadRequestException(
+                "An error occured when fetching compartment from biota"
+            ) from err
 
         if biota_compart:
             return Compartment(
                 CompartmentDict(
-                    id = biota_compart.bigg_id,
+                    id=biota_compart.bigg_id,
                     go_id=biota_compart.go_id,
                     bigg_id=biota_compart.bigg_id,
                     name=biota_compart.name,
-                    is_steady=biota_compart.data["is_steady"]
-                ))
+                    color=biota_compart.color,
+                    is_steady=biota_compart.data["is_steady"] if biota_compart.data else None,
+                )
+            )
         else:
             return None
 
-    @ classmethod
+    @classmethod
     def create_cytosol_compartment(cls):
-        """ Create cytosol compartment """
+        """Create cytosol compartment"""
         return cls.from_biota(go_id=cls.CYTOSOL_GO_ID)
 
-    @ classmethod
+    @classmethod
     def create_nucleus_compartment(cls):
-        """ Create nucleus compartment """
+        """Create nucleus compartment"""
         return cls.from_biota(go_id=cls.NUCLEUS_GO_ID)
 
-    @ classmethod
+    @classmethod
     def create_biomass_compartment(cls):
-        """ Create bioamss compartment """
+        """Create bioamss compartment"""
         return cls.from_biota(go_id=cls.BIOMASS_GO_ID)
 
-    @ classmethod
+    @classmethod
     def create_extracellular_compartment(cls):
-        """ Create extracellular space compartment """
+        """Create extracellular space compartment"""
         return cls.from_biota(go_id=cls.EXTRACELL_SPACE_GO_ID)
 
-    @ classmethod
+    @classmethod
     def create_extracellular_region_environment_compartment(cls):
-        """ Create extracellular region (environment) compartment """
+        """Create extracellular region (environment) compartment"""
         return cls.from_biota(go_id=cls.EXTRACELL_REGION_GO_ID)
 
-    @ classmethod
+    @classmethod
     def create_sink_compartment(cls):
-        """ Create extracellular space compartment """
+        """Create extracellular space compartment"""
         return cls.from_biota(go_id=cls.SINK_GO_ID)
 
-    @ classmethod
+    @classmethod
     def create_other_compartment(cls):
-        """ Create unknown/other compartment """
+        """Create unknown/other compartment"""
         return cls.from_biota(go_id=cls.OTHER_GO_ID)
 
     def is_extracellular(self) -> bool:
@@ -193,7 +197,11 @@ class Compartment:
         """
 
         return self.go_id not in [
-            self.EXTRACELL_SPACE_GO_ID, self.EXTRACELL_REGION_GO_ID, self.BIOMASS_GO_ID, self.SINK_GO_ID]
+            self.EXTRACELL_SPACE_GO_ID,
+            self.EXTRACELL_REGION_GO_ID,
+            self.BIOMASS_GO_ID,
+            self.SINK_GO_ID,
+        ]
 
     def is_biomass(self) -> bool:
         """

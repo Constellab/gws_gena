@@ -1,6 +1,4 @@
-
 import copy
-from typing import List
 
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import EnzymeOrtholog as BiotaEnzymeOrtholog
@@ -15,7 +13,9 @@ from ...typing.reaction_typing import ReactionDict
 
 
 class NetworkDataLoaderHelper(BaseHelper):
-    """ NetworkDataLoaderHelper """
+    """NetworkDataLoaderHelper"""
+
+    from ...typing.network_typing import NetworkDict
 
     BIGG_REACTION_PREFIX_TO_IGNORE = ["EX_", "DM_"]
     is_bigg_data_format = False
@@ -33,22 +33,21 @@ class NetworkDataLoaderHelper(BaseHelper):
                 annotation_dict[k].append(v)
         return annotation_dict
 
-    def _create_compounds_from_dump(
-            self, net, data: 'NetworkDict', *, mapping_dict, skip_orphans):
+    def _create_compounds_from_dump(self, net, data: "NetworkDict", *, mapping_dict, skip_orphans):
         from ...compound.compound import Compound
 
         added_comps = {}
         ckey = "compounds" if "compounds" in data else "metabolites"
 
         count = 0
-        total_number_of_compounds = len(data[ckey])
+        total_number_of_compounds = len(data[ckey] or [])
         total_number_of_prints = 3
         comp_print_interval = int(total_number_of_compounds / total_number_of_prints) or 1
 
-        for comp_data in data[ckey]:
+        for comp_data in data[ckey] or []:
             count += 1
             if not count % comp_print_interval:
-                perc = int(100 * count/total_number_of_compounds)
+                perc = int(100 * count / total_number_of_compounds)
                 self.log_info_message(f"... {perc}%")
 
             # loads biota info if it exists
@@ -57,16 +56,15 @@ class NetworkDataLoaderHelper(BaseHelper):
                 biota_comp = mapping_dict["compounds"].get(comp_id)
                 if biota_comp is not None:
                     for k in comp_data:
-                        if hasattr(biota_comp, k):
-                            if k != "id":
-                                comp_data[k] = getattr(biota_comp, k)
+                        if hasattr(biota_comp, k) and k != "id":
+                            comp_data[k] = getattr(biota_comp, k)
 
             # create compartment
             compart_id = comp_data["compartment"]
             if compart_id == "":
                 # for some bigg models
                 # try to infer compartment from compound id
-                compart_id = comp_id.split("_")[-1]
+                compart_id = comp_id.split("_")[-1] if comp_id is not None else "c"
                 compartment = Compartment.from_biota(bigg_id=compart_id)
                 if compartment is None:
                     raise BadRequestException(f"Cannot create compartment '{compart_id}'")
@@ -88,16 +86,20 @@ class NetworkDataLoaderHelper(BaseHelper):
                     inchi=comp_data.get("inchi", ""),
                     inchikey=comp_data.get("inchikey", ""),
                     chebi_id=comp_data.get("chebi_id", ""),
+                    alt_chebi_ids=comp_data.get("alt_chebi_ids", []),
                     kegg_id=comp_data.get("kegg_id", ""),
-                    layout=comp_data.get("layout")
-                ))
+                    layout=comp_data.get("layout", {}),
+                )
+            )
 
             if not skip_orphans:
                 # add all compounds by default
                 try:
                     net.add_compound(comp)
                 except Exception as err:
-                    raise BadRequestException(f"Cannot compound add {comp_data['id']}. Error: {err}")
+                    raise BadRequestException(
+                        f"Cannot compound add {comp_data['id']}. Error: {err}"
+                    ) from err
 
             if comp_id not in added_comps:
                 added_comps[comp_id] = comp
@@ -126,8 +128,9 @@ class NetworkDataLoaderHelper(BaseHelper):
         rxn_biota_helper = ReactionBiotaHelper()
         rxn_biota_helper.attach_message_dispatcher(self._message_dispatcher)
 
-        enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
-            query, load_taxonomy=False, load_pathway=True)
+        enzyme_list: list[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
+            query, load_taxonomy=False, load_pathway=True
+        )
 
         biota_enzymes_dict = {}
         for val in enzyme_list:
@@ -136,10 +139,11 @@ class NetworkDataLoaderHelper(BaseHelper):
 
         return biota_enzymes_dict
 
-    def _creates_reactions_from_dump(
-            self, net, data: 'NetworkDict', *, added_comps, mapping_dict):
-
+    def _creates_reactions_from_dump(self, net, data: "NetworkDict", *, added_comps, mapping_dict):
         from ...reaction.reaction import Reaction
+
+        if data["reactions"] is None:
+            data["reactions"] = []
 
         ckey = "compounds" if "compounds" in data else "metabolites"
         count = 0
@@ -156,13 +160,14 @@ class NetworkDataLoaderHelper(BaseHelper):
         for rxn_data in data["reactions"]:
             count += 1
             if not count % rxn_print_interval:
-                perc = int(100 * count/total_number_of_reactions)
+                perc = int(100 * count / total_number_of_reactions)
                 self.log_info_message(f"... {perc}%")
 
             enzyme_list = []
-            for ec_number in rxn_data["ec_numbers"]:
-                if ec_number in biota_enzymes_dict:
-                    enzyme_list.append(biota_enzymes_dict[ec_number])
+            if rxn_data["ec_numbers"]:
+                for ec_number in rxn_data["ec_numbers"]:
+                    if ec_number in biota_enzymes_dict:
+                        enzyme_list.append(biota_enzymes_dict[ec_number])
 
             # loads biota info if it exists
             if "reactions" in mapping_dict:
@@ -181,50 +186,59 @@ class NetworkDataLoaderHelper(BaseHelper):
                     enzymes=enzyme_list,
                     direction=rxn_data.get("direction", "B"),
                     rhea_id=rxn_data.get("rhea_id", ""),
-                    gene_reaction_rule= rxn_data.get("gene_reaction_rule","")
-                ))
-            rxn.layout = rxn_data.get("layout", {})
+                    gene_reaction_rule=rxn_data.get("gene_reaction_rule", ""),
+                    layout=rxn_data.get("layout", {}),
+                    ec_numbers=rxn_data.get("ec_numbers", []),
+                )
+            )
 
             if "data" in rxn_data:
                 rxn.set_data(rxn_data.get("data"))
                 # @TODO: check data simulations
 
-            for comp_id in rxn_data[ckey]:
+            metabolites_data = rxn_data.get(ckey, {})
+            for comp_id in metabolites_data:
                 comp = added_comps[comp_id]
-                if isinstance(rxn_data[ckey][comp_id], dict):
-                    stoich = float(rxn_data[ckey][comp_id].get("stoich"))
+                if isinstance(metabolites_data[comp_id], dict):
+                    stoich = float(metabolites_data[comp_id].get("stoich"))
                 else:
-                    stoich = float(rxn_data[ckey][comp_id])  # for retro compatiblity
+                    stoich = float(metabolites_data[comp_id])  # for retro compatiblity
                 if stoich < 0:
-                    rxn.add_substrate(comp, stoich, net)
+                    rxn.add_substrate(comp, stoich, net, True)
                 elif stoich > 0:
-                    rxn.add_product(comp, stoich, net)
+                    rxn.add_product(comp, stoich, net, True)
 
             if net.reaction_exists(rxn):
-                self.log_warning_message(f"The reaction {rxn.rhea_id} is duplicated. It is only added once.")
+                self.log_warning_message(
+                    f"The reaction {rxn.rhea_id} is duplicated. It is only added once."
+                )
             else:
                 net.add_reaction(rxn)
 
         return net
 
-    def _loads_simulations_from_dump(self, net, data: 'NetworkDict'):
-        """ Load simulations  """
-        if "simulations" in data:
+    def _loads_simulations_from_dump(self, net, data: "NetworkDict"):
+        """Load simulations"""
+        if "simulations" in data and data["simulations"]:
             for vals in data["simulations"]:
                 net.add_simulation(vals)
         return net
 
-    def _loads_recon_tags_from_dump(self, net, data: 'NetworkReconTagDict'):
+    def _loads_recon_tags_from_dump(self, net, data: "NetworkReconTagDict"):
         net.set_recon_tags(data.get("recon_tags", {}))
         return net
 
-    def loads(self, data: 'NetworkDict', *,
-              biomass_reaction_id: str = None,
-              skip_orphans: bool = False,
-              replace_unknown_compartments: bool = False,
-              biomass_metabolite_id_user: str = None,
-              add_biomass: bool = False) -> 'NetworkData':
-        """ Load JSON data and create a Network  """
+    def loads(
+        self,
+        data: "NetworkDict",
+        *,
+        biomass_reaction_id: str | None = None,
+        skip_orphans: bool = False,
+        replace_unknown_compartments: bool = False,
+        biomass_metabolite_id_user: str | None = None,
+        add_biomass: bool = False,
+    ) -> "NetworkData":
+        """Load JSON data and create a Network"""
         from ...compound.compound import Compound
         from ...network import NetworkData
 
@@ -248,106 +262,133 @@ class NetworkDataLoaderHelper(BaseHelper):
 
         self.log_info_message("Creating compounds ...")
         net, added_comps = self._create_compounds_from_dump(
-            net,
-            data,
-            mapping_dict=mapping_dict,
-            skip_orphans=skip_orphans
+            net, data, mapping_dict=mapping_dict, skip_orphans=skip_orphans
         )
 
         self.log_info_message("Creating reactions ...")
         net = self._creates_reactions_from_dump(
-            net,
-            data,
-            added_comps=added_comps,
-            mapping_dict=mapping_dict
+            net, data, added_comps=added_comps, mapping_dict=mapping_dict
         )
 
         # check if the biomass compartment exists
-        if biomass_metabolite_id_user is not None:
-            if biomass_metabolite_id_user != "":
-                # Check if the metabolite exists in the network
-                if biomass_metabolite_id_user not in net.compounds:
+        if biomass_metabolite_id_user is not None and biomass_metabolite_id_user != "":
+            # Check if the metabolite exists in the network
+            if biomass_metabolite_id_user not in net.compounds:
+                # If not, raise an Exception
+                raise Exception(
+                    f"The metabolite {biomass_metabolite_id_user} doesn't exist in the network."
+                )
+
+            # Check if the metabolite produced by the reaction is in the biomass compartment
+            compartment_go_id = net.compounds[biomass_metabolite_id_user].compartment.go_id
+            if compartment_go_id != "GO:0016049":
+                # If not, raise an Exception
+                raise Exception(
+                    f"The metabolite {biomass_metabolite_id_user} must be in the biomass compartment"
+                )
+
+            # Check is the metabolite biomass is not used in another reaction as substrates
+            for reaction in net.reactions:
+                if biomass_metabolite_id_user in net.reactions[reaction].substrates:
                     # If not, raise an Exception
-                    raise Exception(f"The metabolite {biomass_metabolite_id_user} doesn't exist in the network.")
+                    raise Exception(
+                        f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction}. Verify your biomass_metabolite_id."
+                    )
 
-                # Check if the metabolite produced by the reaction is in the biomass compartment
-                compartment_go_id = net.compounds[biomass_metabolite_id_user].compartment.go_id
-                if compartment_go_id != 'GO:0016049':
-                    # If not, raise an Exception
-                    raise Exception(f"The metabolite {biomass_metabolite_id_user} must be in the biomass compartment")
-
-                # Check is the metabolite biomass is not used in another reaction as substrates
-                for reaction in net.reactions:
-                    if biomass_metabolite_id_user in net.reactions[reaction].substrates:
-                        # If not, raise an Exception
-                        raise Exception(
-                            f"The metabolite {biomass_metabolite_id_user} can't be used in the reaction {reaction}. Verify your biomass_metabolite_id.")
-
-        if add_biomass is True:
-            if net.get_biomass_compound() is None:
+        if add_biomass is True and net.get_biomass_compound() is None:
+            self.log_warning_message(
+                "No explicit biomass entity found. Trying to infer and add an explicit biomass entity ..."
+            )
+            if biomass_reaction_id:
                 self.log_warning_message(
-                    "No explicit biomass entity found. Trying to infer and add an explicit biomass entity ...")
-                if biomass_reaction_id:
-                    self.log_warning_message(f'Looking for user biomass reaction "{biomass_reaction_id}" ...')
-                    if biomass_reaction_id in net.reactions.get_elements():
-                        rxn = net.reactions[biomass_reaction_id]
-                        biomass = Compound(
-                            CompoundDict(
-                                name="biomass",
-                                compartment=Compartment.create_biomass_compartment()
-                            ))
-                        rxn.add_product(biomass, 1, net)
-                    else:
-                        raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
+                    f'Looking for user biomass reaction "{biomass_reaction_id}" ...'
+                )
+                if biomass_reaction_id in net.reactions.get_elements():
+                    rxn = net.reactions[biomass_reaction_id]
+                    biomass = Compound(
+                        CompoundDict(
+                            name="biomass",
+                            compartment=Compartment.create_biomass_compartment(),
+                            id=None,
+                            charge=None,
+                            mass=None,
+                            monoisotopic_mass=None,
+                            formula=None,
+                            inchi=None,
+                            chebi_id=None,
+                            alt_chebi_ids=None,
+                            kegg_id=None,
+                            inchikey=None,
+                            layout=None,
+                        )
+                    )
+                    rxn.add_product(biomass, 1, net)
                 else:
-                    self.log_warning_message('No user biomass given')
-                    biomass = None
-                    for rxn in net.reactions.values():
-                        if "biomass" in rxn.id.lower():
-                            # can be used as biomas reaction
-                            if biomass is None:
-                                biomass = Compound(
-                                    CompoundDict(
-                                        name="biomass",
-                                        compartment=Compartment.create_biomass_compartment()
-                                    ))
-                            rxn.add_product(biomass, 1, net)
-                            self.log_warning_message(
-                                f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction')
+                    raise BadRequestException(f"No reaction found with ID '{biomass_reaction_id}'")
+            else:
+                self.log_warning_message("No user biomass given")
+                biomass = None
+                for rxn in net.reactions.values():
+                    if "biomass" in rxn.id.lower():
+                        # can be used as biomas reaction
+                        if biomass is None:
+                            biomass = Compound(
+                                CompoundDict(
+                                    name="biomass",
+                                    compartment=Compartment.create_biomass_compartment(),
+                                    id=None,
+                                    charge=None,
+                                    mass=None,
+                                    monoisotopic_mass=None,
+                                    formula=None,
+                                    inchi=None,
+                                    chebi_id=None,
+                                    alt_chebi_ids=None,
+                                    kegg_id=None,
+                                    inchikey=None,
+                                    layout=None,
+                                )
+                            )
+                        rxn.add_product(biomass, 1, net)
+                        self.log_warning_message(
+                            f'Reaction "{rxn.id} ({rxn.name})" was automatically inferred as biomass reaction'
+                        )
 
         return net
 
     def _prepare_data(self, data, replace_unknown_compartments):
-        """ Clean data """
+        """Clean data"""
         out_data = copy.deepcopy(data)
         out_data = self._remove_ignored_reactions(out_data)
 
         # prepare compartment
         if isinstance(data["compartments"], dict):
             # -> is bigg data
-            for bigg_id in out_data["compartments"].keys():
+            for bigg_id in out_data["compartments"]:
                 compart = Compartment.from_biota(bigg_id=bigg_id)
                 if compart is None:
                     if replace_unknown_compartments:
-                        self.log_warning_message(
-                            f"The compartment '{bigg_id}' is not known. It is replaced by {compart.bigg_id}.")
                         compart = Compartment.create_other_compartment()
-                        bigg_id = compart.bigg_id
+                        correct_bigg_id = compart.bigg_id if compart else None
+                        self.log_warning_message(
+                            f"The compartment '{bigg_id}' is not known. It is replaced by {correct_bigg_id}."
+                        )
                     else:
                         raise BadRequestException(f"The compartment '{bigg_id}' is not known")
-
-                out_data["compartments"][bigg_id] = {
-                    "id": bigg_id,
-                    "go_id": compart.go_id,
-                    "name": compart.name
+                else:
+                    correct_bigg_id = bigg_id
+                out_data["compartments"][correct_bigg_id] = {
+                    "id": correct_bigg_id,
+                    "go_id": compart.go_id if compart else "",
+                    "name": compart.name if compart else "",
                 }
             # append biomass compartment
             biomass_compart = Compartment.create_biomass_compartment()
-            bigg_id = biomass_compart.bigg_id
+            bigg_id = biomass_compart.bigg_id if biomass_compart else "biomass"
             out_data["compartments"][bigg_id] = {
                 "id": bigg_id,
-                "go_id": biomass_compart.go_id,
-                "name": biomass_compart.name
+                "go_id": biomass_compart.go_id if biomass_compart else "",
+                "name": biomass_compart.name if biomass_compart else "",
             }
         elif isinstance(data["compartments"], list):
             out_data["compartments"] = {}
@@ -386,21 +427,20 @@ class NetworkDataLoaderHelper(BaseHelper):
 
             if master_chebi_id is not None:
                 comp_data["chebi_id"] = master_chebi_id
+            elif len(alt_chebi_ids) >= 1:
+                comp_data["chebi_id"] = alt_chebi_ids[0]
             else:
-                if len(alt_chebi_ids) >= 1:
-                    comp_data["chebi_id"] = alt_chebi_ids[0]
-                else:
-                    comp_data["chebi_id"] = None
+                comp_data["chebi_id"] = None
 
         # prepare reactions
         for rxn_data in out_data["reactions"]:
             if rxn_data.get("enzymes", []):
-                rxn_data['ec_numbers'] = [enzyme["ec_number"] for enzyme in rxn_data["enzymes"]]
+                rxn_data["ec_numbers"] = [enzyme["ec_number"] for enzyme in rxn_data["enzymes"]]
             elif rxn_data.get("enzyme", {}):
                 # TODO:  deprecated to delete later
-                rxn_data['ec_numbers'] = [rxn_data["enzyme"]["ec_number"]]
+                rxn_data["ec_numbers"] = [rxn_data["enzyme"]["ec_number"]]
             else:
-                rxn_data['ec_numbers'] = []
+                rxn_data["ec_numbers"] = []
                 annotation = rxn_data.get("annotation")
                 if annotation is None:
                     continue
@@ -409,16 +449,15 @@ class NetworkDataLoaderHelper(BaseHelper):
                 if isinstance(annotation, list):
                     annotation = self._convert_bigg_annotation_list_to_dict(annotation)
 
-                ec_number = annotation.get("ec-code") or \
-                    annotation.get("ec-number") or \
-                    annotation.get("EC Number")
+                ec_number = (
+                    annotation.get("ec-code")
+                    or annotation.get("ec-number")
+                    or annotation.get("EC Number")
+                )
 
                 if ec_number:
-                    if isinstance(ec_number, list):
-                        ec_numbers = ec_number
-                    else:
-                        ec_numbers = [ec_number]
-                    rxn_data['ec_numbers'] = ec_numbers
+                    ec_numbers = ec_number if isinstance(ec_number, list) else [ec_number]
+                    rxn_data["ec_numbers"] = ec_numbers
 
             if rxn_data.get("gene_reaction_rule"):
                 rxn_data["gene_reaction_rule"] = rxn_data.get("gene_reaction_rule")
@@ -435,14 +474,20 @@ class NetworkDataLoaderHelper(BaseHelper):
                         metabolite = next(iter(rxn_data["metabolites"]))
                         # Add compartment environment
                         if isinstance(data["compartments"], dict):  # If there is the first loading
-                            data["compartments"].update({"env": "extracellular region (environment)"})
+                            data["compartments"].update(
+                                {"env": "extracellular region (environment)"}
+                            )
                             # Create a new metabolite with the suffix "_env"
                             new_metabolite = metabolite.split("_e")[0] + "_env"
                             # Check if the new metabolite is already in the data["metabolites"]
-                            metabolite_found = any(new_metabolite in meta.values() for meta in data["metabolites"])
+                            metabolite_found = any(
+                                new_metabolite in meta.values() for meta in data["metabolites"]
+                            )
                             if not metabolite_found:
                                 # Add this metabolite in the model
-                                data["metabolites"].append({'id': new_metabolite, 'compartment': 'env'})
+                                data["metabolites"].append(
+                                    {"id": new_metabolite, "compartment": "env"}
+                                )
                                 # Add this metabolite to the reaction EX_
                                 rxn_data["metabolites"].update({new_metabolite: 1.0})
                     else:
@@ -451,10 +496,11 @@ class NetworkDataLoaderHelper(BaseHelper):
             if to_keep:
                 list_to_keep.append(i)
 
-        nb_ignored_rxns = len(data['reactions']) - len(list_to_keep)
+        nb_ignored_rxns = len(data["reactions"]) - len(list_to_keep)
         if nb_ignored_rxns > 0:
             self.log_info_message(
-                f"{nb_ignored_rxns} reactions with prefixes {self.BIGG_REACTION_PREFIX_TO_IGNORE} were ignored")
+                f"{nb_ignored_rxns} reactions with prefixes {self.BIGG_REACTION_PREFIX_TO_IGNORE} were ignored"
+            )
             rxn_data = [data["reactions"][i] for i in list_to_keep]
             data["reactions"] = rxn_data
 

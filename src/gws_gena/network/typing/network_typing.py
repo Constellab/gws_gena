@@ -1,20 +1,26 @@
-
-from typing import List, TypedDict
+from typing import TypedDict
 
 from .compartment_typing import CompartmentDict
 from .compound_typing import CompoundDict
 from .reaction_typing import ReactionDict
 
-NetworkReconTagDict = TypedDict("NetworkReconTagDict", {
-    "reactions": dict,
-    "compounds": dict,
-    "ec_numbers": dict
-})
 
-NetworkDict = TypedDict("NetworkDict", {
-    "name": str,
-    "metabolites": List[CompoundDict],
-    "reactions": List[ReactionDict],
-    "compartments": List[CompartmentDict],
-    "recon_tags": NetworkReconTagDict
-})
+class NetworkReconTagDict(TypedDict):
+    reactions: dict | None
+    compounds: dict | None
+    ec_numbers: dict | None
+
+
+class SimulationDict(TypedDict):
+    id: str | None
+    name: str | None
+    description: str | None
+
+
+class NetworkDict(TypedDict):
+    name: str | None
+    metabolites: list[CompoundDict] | None
+    reactions: list[ReactionDict] | None
+    compartments: list[CompartmentDict] | None
+    simulations: list[SimulationDict] | None
+    recon_tags: NetworkReconTagDict | None

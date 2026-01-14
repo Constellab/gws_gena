@@ -3,33 +3,46 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings
-from gws_gena import ContextImporter, FBAProto, NetworkImporter
+from gws_core import File, ScenarioProxy, Settings
+from gws_gena import ContextImporter, DataProvider, FBAProto, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestFBA(BaseTestCaseUsingFullBiotaDB):
-
     def test_toy_fba(self):
-        testdata_dir = settings.get_variable("gws_gena:testdata_dir")
-        data_dir = os.path.join(testdata_dir, "toy")
-        organism_result_dir = os.path.join(testdata_dir, 'pfba', "toy")
+        test_data_dir = DataProvider.get_test_data_dir()
+        data_dir = os.path.join(test_data_dir, "toy")
+        organism_result_dir = os.path.join(data_dir, "pfba", "toy")
 
         def run_fba(context, solver="highs", relax_qssa=False):
-            experiment = IExperiment(FBAProto)
+            experiment = ScenarioProxy(FBAProto)
             proto = experiment.get_protocol()
-            net = NetworkImporter.call(File(
-                path=os.path.join(data_dir, "toy.json")),
-                params = {"add_biomass" : True}
+            net = NetworkImporter.call(
+                File(path=os.path.join(data_dir, "toy.json")), params={"add_biomass": True}
             )
             ctx = ContextImporter.call(
-                File(path=os.path.join(data_dir, ("toy_context.json" if context else "toy_context_empty.json")))
+                File(
+                    path=os.path.join(
+                        data_dir, ("toy_context.json" if context else "toy_context_empty.json")
+                    )
+                )
             )
 
-            proto.set_input("network", net)
-            proto.set_input("context", ctx)
             fba = proto.get_process("fba")
+
+            proto.add_resource(
+                instance_name="network_input",
+                resource_model_id=str(net.id),
+                in_port=fba << "network",
+            )
+
+            proto.add_resource(
+                instance_name="context_input",
+                resource_model_id=str(ctx.id),
+                in_port=fba << "context",
+            )
+
             fba.set_param("solver", solver)
             fba.set_param("parsimony_strength", 1.0)
             experiment.run()
@@ -39,15 +52,14 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fluxes = result.get_fluxes_dataframe()
             sv = result.get_sv_dataframe()
 
-            print(fluxes)
-            print(sv)
+            self.print(fluxes)
+            self.print(sv)
             th, p = result.compute_zero_flux_threshold()
-            print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
+            self.print(
+                f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}"
+            )
 
-            if solver == "quad":
-                relax_dir = "relax" if relax_qssa else "no-relax"
-            else:
-                relax_dir = ""
+            relax_dir = ("relax" if relax_qssa else "no-relax") if solver == "quad" else ""
 
             if context:
                 result_dir = os.path.join(organism_result_dir, solver, relax_dir)
@@ -67,7 +79,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
 
                 file_path = os.path.join(result_dir, "flux.csv")
                 expected_table = pandas.read_csv(file_path, index_col=0, header=0)
-                print(expected_table)
+                self.print(str(expected_table))
                 expected_table = expected_table.to_numpy()
                 expected_table = numpy.array(expected_table, dtype=float)
                 self.assertTrue(numpy.isclose(table, expected_table, rtol=1e-01).all())

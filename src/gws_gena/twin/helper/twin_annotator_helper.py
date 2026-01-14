@@ -1,11 +1,10 @@
-
-from typing import List
 from gws_core import BadRequestException
-from gws_gena.network.typing.simulation_typing import SimulationDict
 
 from gws_gena.fba.fba_result import FBAResult
 from gws_gena.fva.fva_result import FVAResult
 from gws_gena.koa.koa_result import KOAResult
+from gws_gena.network.typing.simulation_typing import SimulationDict
+
 from ...helper.base_helper import BaseHelper
 from ..flat_twin import FlatTwin
 from ..twin import Twin
@@ -18,8 +17,7 @@ from ..twin import Twin
 
 
 class TwinAnnotatorHelper(BaseHelper):
-
-    def annotate_from_fba_results(self, twin: Twin, fba_results: List[FBAResult]):
+    def annotate_from_fba_results(self, twin: Twin, fba_results: list[FBAResult] | list[FVAResult]):
         """
         Annotate a twin using from FBAResult
         """
@@ -59,23 +57,27 @@ class TwinAnnotatorHelper(BaseHelper):
 
         return annotated_twin
 
-    def annotate_from_fva_results(self, twin: Twin, fva_result: FVAResult):
+    def annotate_from_fva_results(self, twin: Twin, fva_result: list[FVAResult]):
         """
         Annotate a twin using from FVAResult
         """
 
         return self.annotate_from_fba_results(twin, fva_result)
 
-    def annotate_from_fba_result(self, twin: Twin, simulation: SimulationDict, fba_result: 'FBAResult'):
+    def annotate_from_fba_result(
+        self, twin: Twin, simulation: SimulationDict | None, fba_result: "FBAResult"
+    ):
         """
         Annotate a twin using from FBAResult
         """
         if simulation is None:
-            simulation = SimulationDict({
-                "id": "fba_sim",
-                "name": "fba simulation",
-                "description": "Metabolic flux simulation"
-            })
+            simulation = SimulationDict(
+                {
+                    "id": "fba_sim",
+                    "name": "fba simulation",
+                    "description": "Metabolic flux simulation",
+                }
+            )
 
         if isinstance(twin, FlatTwin):
             raise BadRequestException("Cannot annotate a FlatTwin. A non-flat Twin is required")
@@ -110,16 +112,20 @@ class TwinAnnotatorHelper(BaseHelper):
 
         return annotated_twin
 
-    def annotate_from_fva_result(self, twin: Twin, simulation: SimulationDict, fva_result: FVAResult):
+    def annotate_from_fva_result(
+        self, twin: Twin, simulation: SimulationDict | None, fva_result: FVAResult
+    ):
         """
         Annotate a twin using from FVAResult
         """
         if simulation is None:
-            simulation = SimulationDict({
-                "id": "fva_sim",
-                "name": "fva simulation",
-                "description": "Metabolic flux simulation"
-            })
+            simulation = SimulationDict(
+                {
+                    "id": "fva_sim",
+                    "name": "fva simulation",
+                    "description": "Metabolic flux simulation",
+                }
+            )
 
         return self.annotate_from_fba_result(twin, simulation, fva_result)
 

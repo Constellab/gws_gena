@@ -1,12 +1,10 @@
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import Unicell
+from gws_gena import DataProvider, Unicell
 
 
 class TestUnicell(BaseTestCaseUsingFullBiotaDB):
     # def test_unicell(self):
     #     settings = Settings.get_instance()
-    #     data_dir = settings.get_variable("gws_gena:testdata_dir")
-    #     data_dir = os.path.join(data_dir, "./unicell/build")
 
     #     net = Unicell.create_network(refresh=False)
 
@@ -16,15 +14,13 @@ class TestUnicell(BaseTestCaseUsingFullBiotaDB):
     #     helper = GapFinderHelper()
     #     table = helper.find_gaps(net)
 
-    #     path = os.path.join(data_dir, "deadends.csv")
+    #     path = DataProvider.get_test_data_path("unicell/build/deadends.csv")
     #     with open(path, 'w', encoding="utf-8") as fp:
     #         table.to_csv(fp)
 
     def test_network_from_biota(self):
         df1 = Unicell.create_stoichiometric_matrix(refresh=False)
         df2 = Unicell.create_stoichiometric_matrix(tax_id="562", refresh=False)
-        print(f"Size unicell: {df1.shape}")
-        print(f"Size ecoli: {df2.shape}")
 
         self.assertTrue(df1.shape[0] > df2.shape[0])
         self.assertTrue(df1.shape[1] > df2.shape[1])

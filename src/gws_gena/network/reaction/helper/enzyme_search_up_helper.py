@@ -1,5 +1,3 @@
-
-
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxonomy
 from gws_core import BadRequestException
@@ -8,10 +6,10 @@ from ....helper.base_helper import BaseHelper
 
 
 class EnzymeSearchUpHelper(BaseHelper):
-    """ SearchUpHelper """
+    """SearchUpHelper"""
 
     @classmethod
-    def search(cls, ec_number, tax_id, tax_search_method='bottom_up') -> list:
+    def search(cls, ec_number, tax_id, tax_search_method="bottom_up") -> list:
         """
         Search the ec_number at a given taxonomy level. If not found goes at higher taxonomy levels to find it
         """
@@ -21,11 +19,11 @@ class EnzymeSearchUpHelper(BaseHelper):
                 raise BadRequestException(f"No taxonomy found with tax_id {tax_id}")
 
             query = BiotaEnzyme.select_and_follow_if_deprecated(
-                ec_number=ec_number, tax_id=tax_id, fields=['id', 'ec_number'])
+                ec_number=ec_number, tax_id=tax_id, fields=["id", "ec_number"]
+            )
 
-            if len(query) == 0:
-                if tax_search_method == 'bottom_up':
-                    query = cls.search_up(ec_number, tax)
+            if len(query) == 0 and tax_search_method == "bottom_up":
+                query = cls.search_up(ec_number, tax)
 
             return query
         else:
@@ -33,7 +31,7 @@ class EnzymeSearchUpHelper(BaseHelper):
 
     @classmethod
     def search_up(cls, ec_number, tax):
-        """ Search for unique enzymes (i.e. enzyme orthologs) with ec_numbers at the higher taxonomy level """
+        """Search for unique enzymes (i.e. enzyme orthologs) with ec_numbers at the higher taxonomy level"""
         found_query = []
         query = BiotaEnzyme.select_and_follow_if_deprecated(ec_number=ec_number)
         tab = {}
@@ -48,7 +46,7 @@ class EnzymeSearchUpHelper(BaseHelper):
                 for e in e_group:
                     if t.rank == "no rank":
                         continue
-                    if getattr(e, "tax_"+t.rank, None) == t.tax_id:
+                    if getattr(e, "tax_" + t.rank, None) == t.tax_id:
                         found_query.append(e)
                         is_found = True
                         break  # -> stop at this taxonomy rank

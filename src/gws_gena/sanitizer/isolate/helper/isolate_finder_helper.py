@@ -1,6 +1,3 @@
-
-from typing import Tuple
-
 import networkx as nx
 from gws_core import BadRequestException, Table
 from pandas import DataFrame
@@ -9,13 +6,16 @@ from ....helper.base_helper import BaseHelper
 from ....network.graph.graph import Graph
 from ....network.network import Network
 
+
 class IsolateFinderHelper(BaseHelper):
+    """IsolateFinderHelper"""
 
-    """ IsolateFinderHelper """
-
-    def find_isolates(self, network: Network) -> Tuple[Table, Table]:
+    def find_isolates(self, network: Network) -> tuple[Table, Table]:
         graph = Graph(network=network)
         nxgraph = graph.get_nx_graph()
+
+        if nxgraph is None:
+            raise BadRequestException("Cannot generate network graph")
 
         biomass = network.get_biomass_compound()
         if biomass is None:

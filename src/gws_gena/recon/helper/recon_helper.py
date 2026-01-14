@@ -1,13 +1,12 @@
-
 import math
 
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import BadRequestException, Logger, Table
 
-from ...data.task.transformer_medium_table import TransformerMediumTable
-from ...data.task.transformer_ec_number_table import TransformerECNumberTable
 from ...data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
+from ...data.task.transformer_ec_number_table import TransformerECNumberTable
+from ...data.task.transformer_medium_table import TransformerMediumTable
 from ...helper.base_helper import BaseHelper
 from ...network.compartment.compartment import Compartment
 from ...network.compound.compound import Compound
@@ -19,23 +18,24 @@ from ...network.typing.reaction_typing import ReactionDict
 
 
 class ReconHelper(BaseHelper):
-    """ ReconHelper """
+    """ReconHelper"""
 
     def add_biomass_equation_to_network(self, net: Network, biomass_table: Table):
-        """ Add the biomass equation to a network """
+        """Add the biomass equation to a network"""
         biomass_comps = self._create_biomass_compounds(net, biomass_table)
         self._create_biomass_rxns(net, biomass_comps, biomass_table)
 
     def create_network_with_taxonomy(
-            self, unique_name: str, tax_id: str, tax_search_method: str) -> Network:
-        """ Create a network related to a given taxonomy level """
+        self, unique_name: str, tax_id: str, tax_search_method: str
+    ) -> Network:
+        """Create a network related to a given taxonomy level"""
         try:
             tax = BiotaTaxo.get(BiotaTaxo.tax_id == tax_id)
         except Exception as err:
             raise BadRequestException(f"No taxonomy found with tax_id {tax_id}") from err
 
         enzymes = BiotaEnzyme.select(BiotaEnzyme.ec_number.distinct()).where(
-            getattr(BiotaEnzyme, "tax_"+tax.rank) == tax.tax_id,
+            getattr(BiotaEnzyme, "tax_" + tax.rank) == tax.tax_id,
         )
 
         net = Network()
@@ -44,13 +44,13 @@ class ReconHelper(BaseHelper):
         total_enzymes = len(enzymes)
         self.log_info_message(f"{total_enzymes} enzymes found")
         counter = 1
-        nb_interval = int(total_enzymes/10) + 1
+        nb_interval = int(total_enzymes / 10) + 1
         perc = 0
         self.update_progress_value(perc, message=f"enzyme {counter} ...")
 
         for enzyme in enzymes:
             if (counter % nb_interval) == 0:
-                perc = 100*(counter/total_enzymes)
+                perc = 100 * (counter / total_enzymes)
                 self.update_progress_value(perc, message=f"enzyme {counter} ...")
             counter += 1
 
@@ -59,12 +59,13 @@ class ReconHelper(BaseHelper):
                 "ec_number": ec_number,
                 "reactions": [],
                 "errors": [],
-                "is_partial_ec_number": None
+                "is_partial_ec_number": None,
             }
 
             try:
-                rxns = Reaction.from_biota(ec_number=ec_number,
-                                           tax_id=tax_id, tax_search_method=tax_search_method)
+                rxns = Reaction.from_biota(
+                    ec_number=ec_number, tax_id=tax_id, tax_search_method=tax_search_method
+                )
                 for rxn in rxns:
                     try:
                         net.add_reaction(rxn)
@@ -79,28 +80,62 @@ class ReconHelper(BaseHelper):
                 # })
             net.update_reaction_recon_tag(ec_number, ec_tag)
 
-        #We create a copy of the network, each metabolite extra must have a metabolite env
+        # We create a copy of the network, each metabolite extra must have a metabolite env
         new_net = net.copy()
-        #We parse the compounds of the network
-        for compound,info in net.compounds.items():
-            if (compound.endswith('_extracellular space (theoretical supernatant)')):
-                if (info.compartment.go_id == "GO:0005615"):
-                    name_env = compound.rsplit('_', 1)[0]
-                    #if the metabolite env doesn't exist in the network, we will create it
-                    if (name_env + "_extracellular region (environment)" not in new_net.compounds):
-                        #create reaction env
-                        reaction_env = Reaction(dict(id="reaction_env_"+ name_env))
-                        new_net.add_reaction(reaction_env)
-                        reaction_env.add_substrate(info, -1, new_net)
-                        #create compound env
-                        compound_env= Compound(dict(name=name_env, compartment=Compartment.from_biota(go_id=Compartment.EXTRACELL_REGION_GO_ID)))
-                        reaction_env.add_product(compound_env, +1, new_net)
+        # We parse the compounds of the network
+        for compound, info in net.compounds.items():
+            if (
+                compound.endswith("_extracellular space (theoretical supernatant)")
+                and info.compartment.go_id == "GO:0005615"
+            ):
+                name_env = compound.rsplit("_", 1)[0]
+                # if the metabolite env doesn't exist in the network, we will create it
+                if name_env + "_extracellular region (environment)" not in new_net.compounds:
+                    # create reaction env
+                    reaction_env = Reaction(
+                        ReactionDict(
+                            id="reaction_env_" + name_env,
+                            name=None,
+                            direction=None,
+                            lower_bound=None,
+                            upper_bound=None,
+                            rhea_id=None,
+                            enzymes=None,
+                            layout=None,
+                            gene_reaction_rule=None,
+                            ec_numbers=None,
+                        )
+                    )
+                    new_net.add_reaction(reaction_env)
+                    reaction_env.add_substrate(info, -1, new_net)
+                    # create compound env
+                    compound_env = Compound(
+                        CompoundDict(
+                            name=name_env,
+                            compartment=Compartment.from_biota(
+                                go_id=Compartment.EXTRACELL_REGION_GO_ID
+                            ),
+                            id=None,
+                            charge=None,
+                            mass=None,
+                            monoisotopic_mass=None,
+                            formula=None,
+                            inchi=None,
+                            chebi_id=None,
+                            alt_chebi_ids=None,
+                            kegg_id=None,
+                            inchikey=None,
+                            layout=None,
+                        )
+                    )
+                    reaction_env.add_product(compound_env, +1, new_net)
 
         return new_net
 
     def create_network_with_ec_table(
-            self, unique_name: str, ec_table: Table, tax_id: str, tax_search_method: str) -> Network:
-        """ Create a network related to a list of EC numbers """
+        self, unique_name: str, ec_table: Table, tax_id: str, tax_search_method: str
+    ) -> Network:
+        """Create a network related to a list of EC numbers"""
         ec_number_name = TransformerECNumberTable.ec_number_name
         ec_list = ec_table.get_column_data(ec_number_name)
         net = Network()
@@ -109,21 +144,16 @@ class ReconHelper(BaseHelper):
         total_enzymes = len(ec_list)
         self.log_info_message(f"{total_enzymes} enzymes to process")
         counter = 1
-        nb_interval = int(total_enzymes/10) + 1
+        nb_interval = int(total_enzymes / 10) + 1
         perc = 0
         self.update_progress_value(perc, message=f"enzyme {counter} ...")
 
-        for ec in ec_list:
-            ec = str(ec).strip()
+        for ec_loop in ec_list:
+            ec = str(ec_loop).strip()
 
-            ec_tag = {
-                "ec_number": ec,
-                "reactions": [],
-                "errors": [],
-                "is_partial_ec_number": None
-            }
+            ec_tag = {"ec_number": ec, "reactions": [], "errors": [], "is_partial_ec_number": None}
             if (counter % nb_interval) == 0:
-                perc = 100*(counter/total_enzymes)
+                perc = 100 * (counter / total_enzymes)
                 self.update_progress_value(perc, message=f"enzyme {counter} ...")
             counter += 1
 
@@ -133,15 +163,13 @@ class ReconHelper(BaseHelper):
                 ec_tag["errors"].append("Partial ec number")
             else:
                 try:
-                    rxns = Reaction.from_biota(ec_number=ec, tax_id=tax_id, tax_search_method=tax_search_method)
+                    rxns = Reaction.from_biota(
+                        ec_number=ec, tax_id=tax_id, tax_search_method=tax_search_method
+                    )
                     for rxn in rxns:
                         ec_tag["reactions"].append(rxn.id)
 
-                        rnx_tag = {
-                            "id": rxn.id,
-                            "original_ec": ec,
-                            "errors": []
-                        }
+                        rnx_tag = {"id": rxn.id, "original_ec": ec, "errors": []}
                         try:
                             # check that is it not a transferred
                             # for i, enz in enumerate(rxn.enzymes):
@@ -161,26 +189,59 @@ class ReconHelper(BaseHelper):
 
             net.update_ec_recon_tag(ec, ec_tag)
 
-        #We create a copy of the network, each metabolite extra must have a metabolite env
+        # We create a copy of the network, each metabolite extra must have a metabolite env
         new_net = net.copy()
-        #We parse the compounds of the network
-        for compound,info in net.compounds.items():
-            if (compound.endswith('_extracellular space (theoretical supernatant)')):
-                if (info.compartment.go_id == "GO:0005615"):
-                    name_env = compound.rsplit('_', 1)[0]
-                    #if the metabolite env doesn't exist in the network, we will create it
-                    if (name_env + "_extracellular region (environment)" not in new_net.compounds):
-                        #create reaction env
-                        reaction_env = Reaction(dict(id="reaction_env_"+ name_env))
-                        new_net.add_reaction(reaction_env)
-                        reaction_env.add_substrate(info, -1, new_net)
-                        #create compound env
-                        compound_env= Compound(dict(name=name_env, compartment=Compartment.from_biota(go_id=Compartment.EXTRACELL_REGION_GO_ID)))
-                        reaction_env.add_product(compound_env, +1, new_net)
+        # We parse the compounds of the network
+        for compound, info in net.compounds.items():
+            if (
+                compound.endswith("_extracellular space (theoretical supernatant)")
+                and info.compartment.go_id == "GO:0005615"
+            ):
+                name_env = compound.rsplit("_", 1)[0]
+                # if the metabolite env doesn't exist in the network, we will create it
+                if name_env + "_extracellular region (environment)" not in new_net.compounds:
+                    # create reaction env
+                    reaction_env = Reaction(
+                        ReactionDict(
+                            id="reaction_env_" + name_env,
+                            name=None,
+                            direction=None,
+                            lower_bound=None,
+                            upper_bound=None,
+                            rhea_id=None,
+                            enzymes=None,
+                            layout=None,
+                            gene_reaction_rule=None,
+                            ec_numbers=None,
+                        )
+                    )
+                    new_net.add_reaction(reaction_env)
+                    reaction_env.add_substrate(info, -1, new_net)
+                    # create compound env
+                    compound_env = Compound(
+                        CompoundDict(
+                            name=name_env,
+                            compartment=Compartment.from_biota(
+                                go_id=Compartment.EXTRACELL_REGION_GO_ID
+                            ),
+                            id=None,
+                            charge=None,
+                            mass=None,
+                            monoisotopic_mass=None,
+                            formula=None,
+                            inchi=None,
+                            chebi_id=None,
+                            alt_chebi_ids=None,
+                            kegg_id=None,
+                            inchikey=None,
+                            layout=None,
+                        )
+                    )
+                    reaction_env.add_product(compound_env, +1, new_net)
         return new_net
 
     def add_medium_to_network(self, net: Network, medium_table: Table):
-        """ Add medium compounds to a network """
+        """Add medium compounds to a network"""
         chebi_id_column_name = TransformerMediumTable.chebi_id_column_name
         chebi_ids = medium_table.get_column_data(chebi_id_column_name)
         entity_column_name = TransformerMediumTable.entity_column_name
@@ -188,40 +249,68 @@ class ReconHelper(BaseHelper):
         for i, chebi_id in enumerate(chebi_ids):
             name = entities[i]
             subs = ReconHelper._retrieve_or_create_comp(
-                net, chebi_id, name, compartment=Compartment.create_extracellular_region_environment_compartment())
+                net,
+                chebi_id,
+                name,
+                compartment=Compartment.create_extracellular_region_environment_compartment(),
+            )
             inter = ReconHelper._retrieve_or_create_comp(
-                net, chebi_id, name, compartment=Compartment.create_extracellular_compartment())
+                net, chebi_id, name, compartment=Compartment.create_extracellular_compartment()
+            )
             prod = ReconHelper._retrieve_or_create_comp(
-                net, chebi_id, name, compartment=Compartment.create_cytosol_compartment())
+                net, chebi_id, name, compartment=Compartment.create_cytosol_compartment()
+            )
             try:
-                #reaction subs => inter
-                rxn = Reaction(ReactionDict(id=inter.name+"_env"))
+                # reaction subs => inter
+                rxn = Reaction(
+                    ReactionDict(
+                        id=inter.name + "_env",
+                        name=None,
+                        direction=None,
+                        lower_bound=None,
+                        upper_bound=None,
+                        rhea_id=None,
+                        enzymes=None,
+                        layout=None,
+                        gene_reaction_rule=None,
+                        ec_numbers=None,
+                    )
+                )
                 rxn.add_product(inter, 1, net)
                 rxn.add_substrate(subs, 1, net)
                 net.add_reaction(rxn)
                 for comp in [subs, inter]:
-                    net.update_compound_recon_tag(comp.id, {
-                        "id": comp.id,
-                        "is_supplemented": True
-                    })
-                #reaction inter => prod
-                rxn = Reaction(ReactionDict(id=prod.name+"_ex"))
+                    net.update_compound_recon_tag(comp.id, {"id": comp.id, "is_supplemented": True})
+                # reaction inter => prod
+                rxn = Reaction(
+                    ReactionDict(
+                        id=prod.name + "_ex",
+                        name=None,
+                        direction=None,
+                        lower_bound=None,
+                        upper_bound=None,
+                        rhea_id=None,
+                        enzymes=None,
+                        layout=None,
+                        gene_reaction_rule=None,
+                        ec_numbers=None,
+                    )
+                )
                 rxn.add_product(prod, 1, net)
                 rxn.add_substrate(inter, 1, net)
                 net.add_reaction(rxn)
                 for comp in [inter, prod]:
-                    net.update_compound_recon_tag(comp.id, {
-                        "id": comp.id,
-                        "is_supplemented": True
-                    })
+                    net.update_compound_recon_tag(comp.id, {"id": comp.id, "is_supplemented": True})
 
             except ReactionDuplicate:
                 # ... the reaction already exits => OK!
                 pass
             except Exception as err:
-                raise BadRequestException(f"Cannot create culture medium reactions. Exception: {err}") from err
+                raise BadRequestException(
+                    f"Cannot create culture medium reactions. Exception: {err}"
+                ) from err
 
-    @ staticmethod
+    @staticmethod
     def _retrieve_or_create_comp(net, chebi_id, name, compartment):
         if not isinstance(chebi_id, str):
             chebi_id = str(chebi_id)
@@ -230,20 +319,46 @@ class ReconHelper(BaseHelper):
             comp = Compound(
                 CompoundDict(
                     name=name,
-                    compartment=compartment
-                ))
+                    compartment=compartment,
+                    inchikey=None,
+                    chebi_id=None,
+                    layout=None,
+                    id=None,
+                    charge=None,
+                    mass=None,
+                    monoisotopic_mass=None,
+                    formula=None,
+                    kegg_id=None,
+                    alt_chebi_ids=None,
+                    inchi=None,
+                )
+            )
         else:
             comps = net.get_compounds_by_chebi_id(chebi_id, compartment=compartment)
             if not comps:
                 try:
-                    comp = Compound.from_biota(chebi_id=chebi_id, compartment_go_id=compartment.go_id)
+                    comp = Compound.from_biota(
+                        chebi_id=chebi_id, compartment_go_id=compartment.go_id
+                    )
                 except BadRequestException as _:
                     # invalid chebi_id
                     comp = Compound(
                         CompoundDict(
                             name=name,
-                            compartment=compartment
-                        ))
+                            compartment=compartment,
+                            inchikey=None,
+                            chebi_id=None,
+                            layout=None,
+                            id=None,
+                            charge=None,
+                            mass=None,
+                            monoisotopic_mass=None,
+                            formula=None,
+                            kegg_id=None,
+                            alt_chebi_ids=None,
+                            inchi=None,
+                        )
+                    )
             else:
                 comp = comps[0]
 
@@ -254,14 +369,27 @@ class ReconHelper(BaseHelper):
         chebi_col_name = TransformerBiomassReactionTable.chebi_id_column_name
         entity_column = TransformerBiomassReactionTable.entity_column_name
         for col_name in col_names:
-            if col_name == chebi_col_name or col_name == entity_column:
+            if col_name in (chebi_col_name, entity_column):
                 continue
-            rxn = Reaction(ReactionDict(id=col_name, direction="R", lower_bound=0.0))
+            rxn = Reaction(
+                ReactionDict(
+                    id=col_name,
+                    direction="R",
+                    lower_bound=0.0,
+                    name=None,
+                    upper_bound=None,
+                    rhea_id=None,
+                    enzymes=None,
+                    layout=None,
+                    gene_reaction_rule=None,
+                    ec_numbers=None,
+                )
+            )
             coefs = biomass_table.get_column_data(col_name)
             error_message = "The reaction is empty"
-            for i, coef in enumerate(coefs):
-                if isinstance(coef, str):
-                    coef = coef.strip()
+            for i, coef_loop in enumerate(coefs):
+                if isinstance(coef_loop, str):
+                    coef = coef_loop.strip()
                     if not coef:
                         continue
                     try:
@@ -274,18 +402,15 @@ class ReconHelper(BaseHelper):
                         continue
                     stoich = coef
                 comp = biomass_comps[i]
-                if stoich > 0:
-                    rxn.add_product(comp, stoich, net)
+                if float(stoich) > 0:
+                    rxn.add_product(comp, float(stoich), net)
                 else:
-                    rxn.add_substrate(comp, stoich, net)
+                    rxn.add_substrate(comp, float(stoich), net)
             if not rxn.is_empty():
                 net.add_reaction(rxn)
             else:
                 ec = col_name
-                net.update_reaction_recon_tag(ec, {
-                    "ec_number": ec,
-                    "error": error_message
-                })
+                net.update_reaction_recon_tag(ec, {"ec_number": ec, "error": error_message})
 
     def _create_biomass_compounds(self, net, biomass_table):
         chebi_id_column_name = TransformerBiomassReactionTable.chebi_id_column_name
@@ -300,12 +425,25 @@ class ReconHelper(BaseHelper):
                 comp = Compound(
                     CompoundDict(
                         name=name,
-                        compartment=Compartment.create_biomass_compartment()
-                    ))
+                        compartment=Compartment.create_biomass_compartment(),
+                        inchikey=None,
+                        chebi_id=None,
+                        layout=None,
+                        id=None,
+                        charge=None,
+                        mass=None,
+                        monoisotopic_mass=None,
+                        formula=None,
+                        kegg_id=None,
+                        alt_chebi_ids=None,
+                        inchi=None,
+                    )
+                )
                 _comps.append(comp)
             else:
                 comp = self._retrieve_or_create_comp(
-                    net, chebi_id, name, compartment=Compartment.create_cytosol_compartment())
+                    net, chebi_id, name, compartment=Compartment.create_cytosol_compartment()
+                )
                 _comps.append(comp)
 
         return _comps

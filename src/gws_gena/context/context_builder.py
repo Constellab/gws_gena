@@ -1,16 +1,28 @@
-
-from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Table, Task, TaskInputs, TaskOutputs,
-                      TypingStyle, task_decorator)
+from gws_core import (
+    ConfigParams,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..network.network import Network
 from .context import Context
 from .helper.context_builder_helper import ContextBuilderHelper
 
 
-@task_decorator("ContextBuilder", human_name="Context builder",
-                short_description="Build a context for a metabolic network using a flux table",
-                style=TypingStyle.material_icon(material_icon_name="build", background_color="#d9d9d9"))
+@task_decorator(
+    "ContextBuilder",
+    human_name="Context builder",
+    short_description="Build a context for a metabolic network using a flux table",
+    style=TypingStyle.material_icon(material_icon_name="build", background_color="#d9d9d9"),
+)
 class ContextBuilder(Task):
     """
     ContextBuilder Task
@@ -28,15 +40,18 @@ class ContextBuilder(Task):
 
     """
 
-    input_specs = InputSpecs({
-        'network': InputSpec(Network),
-        'flux_table': InputSpec(Table, human_name="Flux table", optional=True),
-        'pheno_table': InputSpec(Table, human_name="Phenotype table", optional=True)})
-    output_specs = OutputSpecs({'context': OutputSpec(Context)})
+    input_specs = InputSpecs(
+        {
+            "network": InputSpec(Network),
+            "flux_table": InputSpec(Table, human_name="Flux table", optional=True),
+            "pheno_table": InputSpec(Table, human_name="Phenotype table", optional=True),
+        }
+    )
+    output_specs = OutputSpecs({"context": OutputSpec(Context)})
 
     def run(self, _: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
-        flux_table: Table = inputs.get("flux_table")
-        pheno_table: Table = inputs.get("pheno_table")
+        flux_table: Table = inputs["flux_table"]
+        pheno_table: Table = inputs["pheno_table"]
 
         net: Network = inputs["network"]
         helper = ContextBuilderHelper()

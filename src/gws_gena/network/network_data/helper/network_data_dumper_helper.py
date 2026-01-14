@@ -1,10 +1,9 @@
-
 from ....helper.base_helper import BaseHelper
 from ...typing.network_typing import NetworkDict
 
 
 class NetworkDataDumperHelper(BaseHelper):
-    """ NetworkDataDumperHelper """
+    """NetworkDataDumperHelper"""
 
     def dumps(self, network_data, refresh_layout: bool = False) -> NetworkDict:
         """
@@ -33,21 +32,23 @@ class NetworkDataDumperHelper(BaseHelper):
                     comp.append_biomass_layout()
 
         for _met in network_data.compounds.values():
-            met_data.append({
-                "id": _met.id,
-                "name": _met.name,
-                "charge": _met.charge,
-                "mass": _met.mass,
-                "monoisotopic_mass": _met.monoisotopic_mass,
-                "formula": _met.formula,
-                "inchi": _met.inchi,
-                "type": _met.get_type(),
-                "level": _met.get_level(),
-                "compartment": _met.compartment.id,
-                "chebi_id": _met.chebi_id,
-                "kegg_id": _met.kegg_id,
-                "layout": _met.get_layout(refresh=refresh_layout),
-            })
+            met_data.append(
+                {
+                    "id": _met.id,
+                    "name": _met.name,
+                    "charge": _met.charge,
+                    "mass": _met.mass,
+                    "monoisotopic_mass": _met.monoisotopic_mass,
+                    "formula": _met.formula,
+                    "inchi": _met.inchi,
+                    "type": _met.get_type(),
+                    "level": _met.get_level(),
+                    "compartment": _met.compartment.id,
+                    "chebi_id": _met.chebi_id,
+                    "kegg_id": _met.kegg_id,
+                    "layout": _met.get_layout(refresh=refresh_layout),
+                }
+            )
 
         for _rxn in network_data.reactions.values():
             _rxn_met = {}
@@ -61,36 +62,42 @@ class NetworkDataDumperHelper(BaseHelper):
                 stoich = product.stoich
                 _rxn_met.update({comp_id: abs(stoich)})
 
-            rxn_data.append({
-                "id": _rxn.id,
-                "name": _rxn.name,
-                "enzymes": _rxn.enzymes,
-                "rhea_id": _rxn.rhea_id,
-                "metabolites": _rxn_met,
-                "lower_bound": _rxn.lower_bound,
-                "upper_bound": _rxn.upper_bound,
-                "layout": {"x": None, "y": None},
-                "data": _rxn.data,
-                "balance": _rxn.compute_mass_and_charge_balance(),
-                "gene_reaction_rule": _rxn.gene_reaction_rule
-            })
+            rxn_data.append(
+                {
+                    "id": _rxn.id,
+                    "name": _rxn.name,
+                    "enzymes": _rxn.enzymes,
+                    "rhea_id": _rxn.rhea_id,
+                    "metabolites": _rxn_met,
+                    "lower_bound": _rxn.lower_bound,
+                    "upper_bound": _rxn.upper_bound,
+                    "layout": {"x": None, "y": None},
+                    "data": _rxn.data,
+                    "balance": _rxn.compute_mass_and_charge_balance(),
+                    "gene_reaction_rule": _rxn.gene_reaction_rule,
+                }
+            )
 
         for _compart in network_data.compartments.values():
-            compart_data.append({
-                "id": _compart.id,
-                "go_id": _compart.go_id,
-                "bigg_id": _compart.bigg_id,
-                "color": _compart.color,
-                "name": _compart.name,
-            })
+            compart_data.append(
+                {
+                    "id": _compart.id,
+                    "go_id": _compart.go_id,
+                    "bigg_id": _compart.bigg_id,
+                    "color": _compart.color,
+                    "name": _compart.name,
+                }
+            )
 
         sim_data = []
         for sim in network_data.simulations.values():
-            sim_data.append({
-                "id": sim["id"],
-                "name": sim["name"],
-                "description": sim["description"],
-            })
+            sim_data.append(
+                {
+                    "id": sim["id"],
+                    "name": sim["name"],
+                    "description": sim["description"],
+                }
+            )
 
         return NetworkDict(
             name=network_data.name,
@@ -98,5 +105,5 @@ class NetworkDataDumperHelper(BaseHelper):
             reactions=rxn_data,
             compartments=compart_data,
             simulations=sim_data,
-            recon_tags=network_data.recon_tags
+            recon_tags=network_data.recon_tags,
         )

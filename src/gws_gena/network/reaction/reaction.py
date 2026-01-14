@@ -1,6 +1,5 @@
-
 import copy
-from typing import Dict, List, Union
+from typing import Union
 
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
@@ -8,8 +7,7 @@ from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
 from gws_core import BadRequestException
 
 from ..compound.compound import Compound
-from ..exceptions.compound_exceptions import (ProductDuplicateException,
-                                              SubstrateDuplicateException)
+from ..exceptions.compound_exceptions import ProductDuplicateException, SubstrateDuplicateException
 from ..exceptions.reaction_exceptions import InvalidReactionException
 from ..helper.numeric_helper import NumericHelper
 from ..reaction.helper.reaction_biota_helper import ReactionBiotaHelper
@@ -54,16 +52,27 @@ class Reaction:
     lower_bound: float = LOWER_BOUND
     upper_bound: float = UPPER_BOUND
     rhea_id: str = ""
-    enzymes: List[EnzymeDict] = None
-    products: Dict[str, Product] = None
-    substrates: Dict[str, Substrate] = None
-    data: dict = None
-    layout: BiotaReactionLayoutDict = None
+    enzymes: list[EnzymeDict] = []
+    products: dict[str, Product] = {}
+    substrates: dict[str, Substrate] = {}
+    data: dict = {}
+    layout: BiotaReactionLayoutDict | None = None
     gene_reaction_rule: str = ""
 
-    def __init__(self, dict_: ReactionDict = None):
+    def __init__(self, dict_: ReactionDict | None = None):
         if dict_ is None:
-            dict_ = {}
+            dict_ = ReactionDict(
+                id=None,
+                name=None,
+                direction=None,
+                lower_bound=None,
+                upper_bound=None,
+                rhea_id=None,
+                enzymes=None,
+                layout=None,
+                gene_reaction_rule=None,
+                ec_numbers=None,
+            )
         for key, val in dict_.items():
             setattr(self, key, val)
 
@@ -102,7 +111,11 @@ class Reaction:
             self.data = {}
 
         if self.layout is None:
-            self.layout = {}
+            self.layout = BiotaReactionLayoutDict(
+                x="",
+                y="",
+                points=[],
+            )
 
         if self.gene_reaction_rule is None:
             self.gene_reaction_rule = ""
@@ -110,11 +123,16 @@ class Reaction:
     # -- A --
 
     def add_data_slot(self, slot: str, data: dict):
-        """ Set data """
+        """Set data"""
         self.data[slot] = data
 
     def add_substrate(
-            self, comp: Compound, stoich: float, network: Union['Network', 'NetworkData'] = None, update_if_exists=False):
+        self,
+        comp: Compound,
+        stoich: float,
+        network: Union["Network", "NetworkData"] = None,
+        update_if_exists=False,
+    ):
         """
         Adds a substrate to the reaction
 
@@ -126,28 +144,40 @@ class Reaction:
 
         from ..network import Network
         from ..network_data.network_data import NetworkData
+
         if not isinstance(comp, Compound):
             raise BadRequestException("The compound must be an instance of Compound")
         if not NumericHelper.isfloat(stoich):
-            raise BadRequestException(f"The stoichiometry must be a float. Current value is {stoich}.")
+            raise BadRequestException(
+                f"The stoichiometry must be a float. Current value is {stoich}."
+            )
         if (network is not None) and (not isinstance(network, (Network, NetworkData))):
             raise BadRequestException("The network must be an instance of Network or NetworkData")
 
         if comp.id in self.substrates:
             if update_if_exists:
                 substrate = self.substrates[comp.id]
-                substrate.stoich += abs(float(stoich))
+                if substrate.stoich is None:
+                    substrate.stoich = abs(float(stoich))
+                else:
+                    substrate.stoich += abs(float(stoich))
                 return
             else:
                 raise SubstrateDuplicateException(
-                    f"Substrate duplicate (rxn_id={self.rhea_id}, rxn_rhea={self.rhea_id}, comp_id= {comp.id})")
+                    f"Substrate duplicate (rxn_id={self.id}, rxn_rhea={self.rhea_id}, comp_id= {comp.id})"
+                )
 
         if (network is not None) and (not network.compound_exists(comp)):
             network.add_compound(comp)
         self.substrates[comp.id] = Substrate(comp, stoich)
 
     def add_product(
-            self, comp: Compound, stoich: float, network: Union['Network', 'NetworkData'] = None, update_if_exists=False):
+        self,
+        comp: Compound,
+        stoich: float,
+        network: Union["Network", "NetworkData"] = None,
+        update_if_exists=False,
+    ):
         """
         Adds a product to the reaction
 
@@ -159,21 +189,28 @@ class Reaction:
 
         from ..network import Network
         from ..network_data.network_data import NetworkData
+
         if not isinstance(comp, Compound):
             raise BadRequestException("The compound must be an instance of Compound")
         if not NumericHelper.isfloat(stoich):
-            raise BadRequestException(f"The stoichiometry must be a float. Current value is {stoich}.")
+            raise BadRequestException(
+                f"The stoichiometry must be a float. Current value is {stoich}."
+            )
         if (network is not None) and (not isinstance(network, (Network, NetworkData))):
             raise BadRequestException("The network must be an instance of Network")
 
         if comp.id in self.products:
             if update_if_exists:
                 product = self.products[comp.id]
-                product.stoich += abs(float(stoich))
+                if product.stoich is None:
+                    product.stoich = abs(float(stoich))
+                else:
+                    product.stoich += abs(float(stoich))
                 return
             else:
-                raise ProductDuplicateException("gena.reaction.Reaction", "add_product",
-                                                f"Product duplicate (id= {comp.id})")
+                raise ProductDuplicateException(
+                    f"Product duplicate (rxn_id={self.id}, rxn_rhea={self.rhea_id}, comp_id={comp.id})"
+                )
 
         if (network is not None) and (not network.compound_exists(comp)):
             network.add_compound(comp)
@@ -182,14 +219,23 @@ class Reaction:
 
     # -- C --
 
-    def copy(self) -> 'Reaction':
-        """ Deep copy """
-        if self.layout is None:
-            # check attribute for retro-compatiblity
-            # TODO: remove on next major
-            self.layout = {}
+    def copy(self) -> "Reaction":
+        """Deep copy"""
 
-        rxn = Reaction(ReactionDict(id=self.id, name=self.name))
+        rxn = Reaction(
+            ReactionDict(
+                id=self.id,
+                name=self.name,
+                direction=None,
+                lower_bound=None,
+                upper_bound=None,
+                rhea_id=None,
+                enzymes=None,
+                layout=None,
+                gene_reaction_rule=None,
+                ec_numbers=None,
+            )
+        )
         rxn.direction = self.direction
         rxn.lower_bound = self.lower_bound
         rxn.upper_bound = self.upper_bound
@@ -197,14 +243,15 @@ class Reaction:
         rxn.enzymes = self.enzymes
         rxn.gene_reaction_rule = self.gene_reaction_rule
 
-        rxn.layout = self.layout.copy()
+        rxn.layout = self.layout.copy() if self.layout else None
         rxn.data = copy.deepcopy(self.data)
-        rxn.substrates = {k: v.copy() for k, v, in self.substrates.items()}
+        rxn.substrates = {k: v.copy() for k, v in self.substrates.items()}
         rxn.products = {k: v.copy() for k, v in self.products.items()}
         return rxn
 
     def compute_mass_and_charge_balance(self) -> dict:
-        """ Compute the mass and charge balance of a reaction """
+        """Compute the mass and charge balance of a reaction"""
+
         def _compute_blance(val, stoich, comp_val):
             if isinstance(val, float):
                 if isinstance(comp_val, str) and len(comp_val) != 0:
@@ -222,21 +269,31 @@ class Reaction:
 
         for substrate in self.substrates.values():
             comp = substrate.compound
+            if comp is None:
+                continue
             stoich = substrate.stoich
             charge = _compute_blance(charge, stoich, comp.charge)
             mass = _compute_blance(mass, stoich, comp.mass)
 
         for product in self.products.values():
             comp = product.compound
+            if comp is None:
+                continue
             stoich = product.stoich
-            charge = _compute_blance(charge, -stoich, comp.charge)
-            mass = _compute_blance(mass, -stoich, comp.mass)
+            if stoich is not None:
+                charge = _compute_blance(charge, -stoich, comp.charge)
+                mass = _compute_blance(mass, -stoich, comp.mass)
 
         return {"mass": mass, "charge": charge}
 
-    @ classmethod
-    def create_sink_reaction(cls, related_compound: Compound, network: Union['Network', 'NetworkData'],
-                             lower_bound: float = LOWER_BOUND, upper_bound: float = UPPER_BOUND) -> 'Reaction':
+    @classmethod
+    def create_sink_reaction(
+        cls,
+        related_compound: Compound,
+        network: Union["Network", "NetworkData"] = None,
+        lower_bound: float = LOWER_BOUND,
+        upper_bound: float = UPPER_BOUND,
+    ) -> "Reaction":
         if not isinstance(related_compound, Compound):
             raise BadRequestException("A compound is required")
         name = related_compound.id + "_sink"
@@ -245,8 +302,15 @@ class Reaction:
                 name=name,
                 direction="B",
                 lower_bound=lower_bound,
-                upper_bound=upper_bound
-            ))
+                upper_bound=upper_bound,
+                rhea_id=None,
+                enzymes=None,
+                layout=None,
+                gene_reaction_rule=None,
+                id=None,
+                ec_numbers=None,
+            )
+        )
         sink_comp = Compound.create_sink_compound(related_compound=related_compound)
         rxn.add_substrate(related_compound, -1.0, network)
         rxn.add_product(sink_comp, 1.0, network)
@@ -256,9 +320,16 @@ class Reaction:
 
     # -- F --
 
-    @ classmethod
-    def from_biota(cls, *, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None,
-                   tax_search_method='bottom_up') -> List['Reaction']:
+    @classmethod
+    def from_biota(
+        cls,
+        *,
+        biota_reaction=None,
+        rhea_id=None,
+        ec_number=None,
+        tax_id=None,
+        tax_search_method="bottom_up",
+    ) -> list["Reaction"]:
         """
         Create a biota reaction from a Rhea id or an EC number.
 
@@ -291,17 +362,22 @@ class Reaction:
         elif ec_number:
             biota_reaction_dict = {}
             if tax_id:
-                query = EnzymeSearchUpHelper.search(ec_number, tax_id, tax_search_method=tax_search_method)
+                query = EnzymeSearchUpHelper.search(
+                    ec_number, tax_id, tax_search_method=tax_search_method
+                )
 
                 if len(query) == 0:
-                    raise BadRequestException(f"No enzyme found with ec_number {ec_number} and tax_id {tax_id}")
+                    raise BadRequestException(
+                        f"No enzyme found with ec_number {ec_number} and tax_id {tax_id}"
+                    )
 
                 for biota_enzyme in query:
                     for rhea_rxn in biota_enzyme.reactions:
                         biota_reaction_dict[rhea_rxn.id] = rhea_rxn
             else:
                 query = BiotaEnzyme.select_and_follow_if_deprecated(
-                    ec_number=ec_number, fields=['id', 'ec_number'])
+                    ec_number=ec_number, fields=["id", "ec_number"]
+                )
                 if len(query) == 0:
                     raise BadRequestException(f"No enzyme found with ec_number {ec_number}")
                 for biota_enzyme in query:
@@ -322,53 +398,56 @@ class Reaction:
 
     def get_pathways(self) -> ReactionPathwayDict:
         if len(self.enzymes) == 0:
-            return ReactionPathwayDict({})
+            return ReactionPathwayDict(brenda=None, kegg=None, metacyc=None)
         else:
-            if self.enzymes[0].get("pathways"):
-                return self.enzymes[0].get("pathways")
-            return ReactionPathwayDict()
+            pathways = self.enzymes[0].get("pathways")
+            if pathways:
+                return ReactionPathwayDict(**pathways)
+            return ReactionPathwayDict(brenda=None, kegg=None, metacyc=None)
 
-    def get_pathways_as_flat_dict(self) -> Dict:
+    def get_pathways_as_flat_dict(self) -> dict:
         pw_dict = {}
         pw = self.get_pathways()
         if pw:
-            bkms = ['brenda', 'kegg', 'metacyc']
+            bkms = ["brenda", "kegg", "metacyc"]
             for db_name in bkms:
                 if pw.get(db_name):
-                    pw_dict[db_name] = pw[db_name]["name"] + \
-                        " (" + (pw[db_name]["id"] if pw[db_name]["id"] else "--") + ")"
+                    pw_dict[db_name] = (
+                        pw[db_name]["name"]
+                        + " ("
+                        + (pw[db_name]["id"] if pw[db_name]["id"] else "--")
+                        + ")"
+                    )
             return pw_dict
         else:
             return {"kegg": "", "brenda": "", "metacyc": ""}
 
     def get_data_slot(self, slot: str, default=None):
-        """ Set data """
+        """Set data"""
         return self.data.get(slot, default)
-
-
 
     # -- I --
 
     def is_biomass_reaction(self):
-        """ Returns True, if it is the biomass reaction; False otherwise """
+        """Returns True, if it is the biomass reaction; False otherwise"""
         tf = False
         for product in self.products.values():
             comp = product.compound
-            if comp.is_biomass():
+            if comp and comp.is_biomass():
                 tf = True
                 break
         return tf
 
     def has_products(self):
-        """ has products """
+        """has products"""
         return bool(self.products)
 
     def has_substrates(self):
-        """ has substrates """
+        """has substrates"""
         return bool(self.substrates)
 
     def is_empty(self):
-        """ is empty """
+        """is empty"""
         return not self.has_substrates() and not self.has_products()
 
     # -- P --
@@ -383,7 +462,7 @@ class Reaction:
         :type comp: `gena.compound.Compound`
         """
 
-        if not comp.id in self.substrates:
+        if comp.id not in self.substrates:
             raise BadRequestException(f"Substrate (id= {comp.id}) does not exist")
 
         # remove the compound from the reaction
@@ -397,7 +476,7 @@ class Reaction:
         :type comp: `gena.compound.Compound`
         """
 
-        if not comp.id in self.products:
+        if comp.id not in self.products:
             raise BadRequestException(f"Product (id= {comp.id}) does not exist")
 
         # remove the compound from the reaction
@@ -416,7 +495,7 @@ class Reaction:
     # -- S --
 
     def set_data(self, data: dict):
-        """ Set data """
+        """Set data"""
         if not isinstance(data, dict):
             raise BadRequestException("The data must be a dictionary")
         self.data = data
@@ -435,21 +514,23 @@ class Reaction:
         right_ = []
         dir_ = {"L": " <==(E)== ", "R": " ==(E)==> ", "B": " <==(E)==> "}
 
-        for comp_id, substrate in self.substrates.items():
+        for _comp_id, substrate in self.substrates.items():
             comp = substrate.compound
             stoich = substrate.stoich
-            if show_names:
-                left_.append(f"({stoich}) {comp.name}")
-            else:
-                left_.append(f"({stoich}) {comp.id}")
+            if comp:
+                if show_names:
+                    left_.append(f"({stoich}) {comp.name}")
+                else:
+                    left_.append(f"({stoich}) {comp.id}")
 
-        for comp_id, product in self.products.items():
+        for _comp_id, product in self.products.items():
             comp = product.compound
             stoich = product.stoich
-            if show_names:
-                right_.append(f"({stoich}) {comp.name}")
-            else:
-                right_.append(f"({stoich}) {comp.id}")
+            if comp:
+                if show_names:
+                    right_.append(f"({stoich}) {comp.name}")
+                else:
+                    right_.append(f"({stoich}) {comp.id}")
 
         if not left_:
             left_ = ["*"]
@@ -457,8 +538,12 @@ class Reaction:
         if not right_:
             right_ = ["*"]
 
-        ec_number = list(set([e.get("ec_number", "") for e in self.enzymes]))
-        str_ = " + ".join(left_) + \
-            dir_[self.direction].replace("E", ",".join(ec_number)) + " + ".join(right_)
+        ec_number = list({e.get("ec_number", "") for e in self.enzymes})
+        ec_number_filtered = [ec for ec in ec_number if ec is not None]
+        str_ = (
+            " + ".join(left_)
+            + dir_[self.direction].replace("E", ",".join(ec_number_filtered))
+            + " + ".join(right_)
+        )
 
         return str_

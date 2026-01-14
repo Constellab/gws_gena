@@ -1,7 +1,6 @@
-
 from typing import TypedDict
 
-ContextDict = TypedDict("ContextDict", {
-    "name": str,
-    "reaction_data": list,
-})
+
+class ContextDict(TypedDict):
+    name: str | None
+    reaction_data: list | None

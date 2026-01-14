@@ -1,14 +1,13 @@
-
 from gws_core import BadRequestException, Logger, MessageDispatcher
 
 
 class BaseHelper:
-    """ BaseHelper """
+    """BaseHelper"""
 
-    _message_dispatcher: MessageDispatcher = None
+    _message_dispatcher: MessageDispatcher | None = None
 
     def attach_message_dispatcher(self, message_dispatcher):
-        """ attach task """
+        """attach task"""
         if message_dispatcher is not None and not isinstance(message_dispatcher, MessageDispatcher):
             raise BadRequestException("Invalid message dispatcher.")
         self._message_dispatcher = message_dispatcher

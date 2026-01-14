@@ -1,6 +1,3 @@
-
-from typing import List
-
 from gws_core import BadRequestException, StringHelper
 
 from ..network.helper.slugify_helper import SlugifyHelper
@@ -24,19 +21,27 @@ class Measure:
     These measures are used to build `Context` objects for the analysis of digital twins of cell metabolism.
     """
 
-    id: str = None
-    name: str = None
-    lower_bound: list = None
-    upper_bound: list = None
-    target: list = None
-    confidence_score: list = None
-    variables: List[Variable] = None
+    id: str | None = None
+    name: str | None = None
+    lower_bound: list | None = None
+    upper_bound: list | None = None
+    target: list | None = None
+    confidence_score: list | None = None
+    variables: list[Variable] | None = None
 
     FLATTENING_DELIMITER = ":"
 
-    def __init__(self, dict_: MeasureDict = None):
+    def __init__(self, dict_: MeasureDict | None = None):
         if dict_ is None:
-            dict_ = {}
+            dict_ = MeasureDict(
+                id=None,
+                name=None,
+                lower_bound=None,
+                upper_bound=None,
+                target=None,
+                confidence_score=None,
+                variables=None,
+            )
         else:
             self.id = dict_.get("id") or ""
             self.name = dict_.get("name") or ""
@@ -46,11 +51,12 @@ class Measure:
             self.confidence_score = dict_.get("confidence_score")
             self.variables = []
             var_data = dict_.get("variables")
-            for data_ in var_data:
-                self.variables.append(Variable(data_))
+            if var_data is not None:
+                for data_ in var_data:
+                    self.variables.append(Variable(data_))
 
         if self.id:
-            #self.id = SlugifyHelper.slugify_id(self.id)
+            # self.id = SlugifyHelper.slugify_id(self.id)
             self.id = self.id
         else:
             self.id = self._generate_unique_id()
@@ -61,13 +67,14 @@ class Measure:
     # -- A --
 
     def add_variable(self, variable: Variable):
-        """ Add a variable """
+        """Add a variable"""
         if not isinstance(variable, Variable):
             raise BadRequestException("The variable must an instance of Variable")
-        self.variables.append(variable)
+        if self.variables is not None:
+            self.variables.append(variable)
 
     def copy(self):
-        """ Copyt the measure """
+        """Copyt the measure"""
 
         meas = Measure()
         meas.id = self.id
@@ -76,15 +83,16 @@ class Measure:
         meas.upper_bound = self.upper_bound
         meas.target = self.target
         meas.confidence_score = self.confidence_score
-        meas.variables = [v.copy() for v in self.variables]
+        meas.variables = [v.copy() for v in self.variables] if self.variables is not None else None
         return meas
 
     def dumps(self):
-        """ dumps """
+        """dumps"""
 
         var_data = []
-        for _var in self.variables:
-            var_data.append(_var.dumps())
+        if self.variables is not None:
+            for _var in self.variables:
+                var_data.append(_var.dumps())
 
         data = {
             "id": self._format_id(self.id),
@@ -93,7 +101,7 @@ class Measure:
             "upper_bound": self.upper_bound,
             "target": self.target,
             "confidence_score": self.confidence_score,
-            "variables": var_data
+            "variables": var_data,
         }
 
         return data

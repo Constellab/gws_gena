@@ -1,6 +1,4 @@
-
 import copy
-from typing import Dict, List, Optional
 
 import numpy as np
 from gws_biota import EnzymeClass
@@ -32,18 +30,17 @@ class NetworkData(SerializableObjectJson):
     DEFAULT_NAME = "network"
     DELIMITER = "_"
 
-    name: str = None
-    compounds: Dict[str, Compound] = None
-    reactions: Dict[str, Reaction] = None
-    compartments: Dict[str, Compartment] = None
-    simulations: Dict[str, SimulationDict] = None
-    recon_tags: Dict[str, NetworkReconTagDict] = None
-
+    name: str | None = None
+    compounds: dict[str, Compound] = {}
+    reactions: dict[str, Reaction] = {}
+    compartments: dict[str, Compartment] = {}
+    simulations: dict[str, SimulationDict] = {}
+    recon_tags: NetworkReconTagDict = NetworkReconTagDict(reactions={}, compounds={}, ec_numbers={})
     # created by the class
-    _compartment_chebi_ids: Dict[str, str] = None
-    _ec_rxn_ids_map: Dict[str, str] = None
-    _rhea_rxn_ids_map: Dict[str, str] = None
-    _gpr_rxn_ids_map: Dict[str, str] = None
+    _compartment_chebi_ids: dict[str, dict[str, str]] = {}
+    _ec_rxn_ids_map: dict[str, str] = {}
+    _rhea_rxn_ids_map: dict[str, str] = {}
+    _gpr_rxn_ids_map: dict[str, str] = {}
 
     def __init__(self):
         super().__init__()
@@ -67,9 +64,9 @@ class NetworkData(SerializableObjectJson):
 
         return self.dumps()
 
-    @ classmethod
-    def deserialize(cls, data: Dict[str, dict]) -> 'NetworkData':
-        """ Deserialize """
+    @classmethod
+    def deserialize(cls, data: NetworkDict) -> "NetworkData":
+        """Deserialize"""
         if data is None:
             return {}
 
@@ -90,11 +87,9 @@ class NetworkData(SerializableObjectJson):
         :type sim: `SimulationDict`,
         """
         id_ = sim["id"]
-        self.simulations[id_] = {
-            "id": id_,
-            "name": sim["name"],
-            "description": sim["description"]
-        }
+        if id_ is None:
+            raise BadRequestException("The simulation id must not be None")
+        self.simulations[id_] = {"id": id_, "name": sim["name"], "description": sim["description"]}
 
     def add_compound(self, comp: Compound):
         """
@@ -115,13 +110,14 @@ class NetworkData(SerializableObjectJson):
         self.add_compartment(comp.compartment)
 
         # update maps
-        if comp.chebi_id:
+        if comp.chebi_id and comp.compartment.go_id:
             if comp.compartment.go_id not in self._compartment_chebi_ids:
                 self._compartment_chebi_ids[comp.compartment.go_id] = {}
             self._compartment_chebi_ids[comp.compartment.go_id][comp.chebi_id] = comp.id
             # also add alternative chebi_ids
-            for chebi_id in comp.alt_chebi_ids:
-                self._compartment_chebi_ids[comp.compartment.go_id][chebi_id] = comp.id
+            if comp.alt_chebi_ids:
+                for chebi_id in comp.alt_chebi_ids:
+                    self._compartment_chebi_ids[comp.compartment.go_id][chebi_id] = comp.id
 
     def add_reaction(self, rxn: Reaction):
         """
@@ -133,19 +129,23 @@ class NetworkData(SerializableObjectJson):
 
         if not isinstance(rxn, Reaction):
             raise BadRequestException("The reaction must an instance of Reaction")
+        if self.reactions is None:
+            self.reactions = {}
         if rxn.id in self.reactions:
             raise ReactionDuplicate(f"Reaction id {rxn.id} duplicate")
 
         # add reaction compounds to the network
-        for substrate in rxn.substrates.values():
-            comp = substrate.compound
-            if not self.compound_exists(comp):
-                self.add_compound(comp)
+        if rxn.substrates:
+            for substrate in rxn.substrates.values():
+                comp = substrate.compound
+                if comp is not None and not self.compound_exists(comp):
+                    self.add_compound(comp)
 
-        for product in rxn.products.values():
-            comp = product.compound
-            if not self.compound_exists(comp):
-                self.add_compound(comp)
+        if rxn.products:
+            for product in rxn.products.values():
+                comp = product.compound
+                if comp is not None and not self.compound_exists(comp):
+                    self.add_compound(comp)
 
         # add the reaction
         self.reactions[rxn.id] = rxn
@@ -163,18 +163,26 @@ class NetworkData(SerializableObjectJson):
     def add_compartment(self, compartment: Compartment):
         if not isinstance(compartment, Compartment):
             raise BadRequestException("The compartment must an instance of Compartment")
+        if compartment.id is None:
+            raise BadRequestException("The compartment id must not be None")
         self.compartments[compartment.id] = compartment
 
     # -- B --
 
     # -- C --
 
-    def copy(self) -> 'NetworkData':
+    def copy(self) -> "NetworkData":
         net_data: NetworkData = NetworkData()
         net_data.name = self.name
-        net_data.compounds = {k: v.copy() for k, v in self.compounds.items()}
-        net_data.reactions = {k: v.copy() for k, v in self.reactions.items()}
-        net_data.compartments = {k: v.copy() for k, v in self.compartments.items()}
+        net_data.compounds = (
+            {k: v.copy() for k, v in self.compounds.items()} if self.compounds else {}
+        )
+        net_data.reactions = (
+            {k: v.copy() for k, v in self.reactions.items()} if self.reactions else {}
+        )
+        net_data.compartments = (
+            {k: v.copy() for k, v in self.compartments.items()} if self.compartments else {}
+        )
         net_data.simulations = copy.deepcopy(self.simulations)
         net_data.recon_tags = copy.deepcopy(self.recon_tags)
 
@@ -188,24 +196,28 @@ class NetworkData(SerializableObjectJson):
         """
         Create the full stoichiometric matrix of the network
         """
+        if self.reactions is None:
+            self.reactions = {}
+        if self.compounds is None:
+            self.compounds = {}
         rxn_ids = list(self.reactions.keys())
         comp_ids = list(self.compounds.keys())
-        S = DataFrame(
-            index=comp_ids,
-            columns=rxn_ids,
-            data=np.zeros((len(comp_ids), len(rxn_ids)))
-        )
+        S = DataFrame(index=comp_ids, columns=rxn_ids, data=np.zeros((len(comp_ids), len(rxn_ids))))
 
         for rxn_id, rxn in self.reactions.items():
             for substrate in rxn.substrates.values():
-                comp_id = substrate.compound.id
-                stoich = substrate.stoich
-                S.at[comp_id, rxn_id] -= stoich
+                comp_id = substrate.compound.id if substrate.compound is not None else None
+                if comp_id is not None:
+                    stoich = substrate.stoich
+                    if stoich is not None:
+                        S.at[comp_id, rxn_id] -= stoich
 
             for product in rxn.products.values():
-                comp_id = product.compound.id
-                stoich = product.stoich
-                S.at[comp_id, rxn_id] += stoich
+                comp_id = product.compound.id if product.compound is not None else None
+                if comp_id is not None:
+                    stoich = product.stoich
+                    if stoich is not None:
+                        S.at[comp_id, rxn_id] += stoich
 
         return S
 
@@ -221,7 +233,9 @@ class NetworkData(SerializableObjectJson):
         names = list(self.get_steady_compounds(ignore_cofactors=ignore_cofactors).keys())
         return S.loc[names, :]
 
-    def create_non_steady_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+    def create_non_steady_stoichiometric_matrix(
+        self, include_biomass=True, ignore_cofactors=False
+    ) -> DataFrame:
         """
         Create the non-steady stoichiometric matrix of the network
 
@@ -233,7 +247,9 @@ class NetworkData(SerializableObjectJson):
         names = list(self.get_non_steady_compounds(ignore_cofactors=ignore_cofactors).keys())
         return S.loc[names, :]
 
-    def create_input_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+    def create_input_stoichiometric_matrix(
+        self, include_biomass=True, ignore_cofactors=False
+    ) -> DataFrame:
         """
         Create the input stoichiometric matrix of the network
 
@@ -242,15 +258,16 @@ class NetworkData(SerializableObjectJson):
         """
 
         S = self.create_non_steady_stoichiometric_matrix(
-            include_biomass=include_biomass,
-            ignore_cofactors=ignore_cofactors
+            include_biomass=include_biomass, ignore_cofactors=ignore_cofactors
         )
         df = S.sum(axis=1)
         in_sub = df.loc[df < 0]
         names = in_sub.index.values
         return S.loc[names, :]
 
-    def create_output_stoichiometric_matrix(self, include_biomass=True, ignore_cofactors=False) -> DataFrame:
+    def create_output_stoichiometric_matrix(
+        self, include_biomass=True, ignore_cofactors=False
+    ) -> DataFrame:
         """
         Create the output stoichiometric matrix of the network
 
@@ -259,8 +276,7 @@ class NetworkData(SerializableObjectJson):
         """
 
         S = self.create_non_steady_stoichiometric_matrix(
-            include_biomass=include_biomass,
-            ignore_cofactors=ignore_cofactors
+            include_biomass=include_biomass, ignore_cofactors=ignore_cofactors
         )
         df = S.sum(axis=1)
         out_prod = df.loc[df > 0]
@@ -336,7 +352,9 @@ class NetworkData(SerializableObjectJson):
         if tax is None:
             query = BiotaReaction.select().where(BiotaReaction.direction == "UN")
         else:
-            query = BiotaReaction.search_by_tax_ids(tax.tax_id).where(BiotaReaction.direction == "UN")
+            query = BiotaReaction.search_by_tax_ids(tax.tax_id).where(
+                BiotaReaction.direction == "UN"
+            )
 
         nb_rxn = query.count()
 
@@ -359,23 +377,25 @@ class NetworkData(SerializableObjectJson):
         return net_data
 
     def flatten_reaction_id(self, rxn: Reaction) -> str:
-        """ Flatten the id of a reaction """
+        """Flatten the id of a reaction"""
         if not isinstance(rxn, Reaction):
             raise BadRequestException("The reaction must be an instance of Reaction")
         if not self.reaction_exists(rxn):
             raise BadRequestException(f"The reaction {rxn.id} does not exist in the network")
 
-        return self.name + self.DELIMITER + rxn.id
+        name = self.name if self.name is not None else self.DEFAULT_NAME
+        return name + self.DELIMITER + rxn.id
 
     def flatten_compound_id(self, comp: Compound) -> str:
-        """ Flatten the id of a compound """
+        """Flatten the id of a compound"""
         if not isinstance(comp, Compound):
             raise BadRequestException("The compound must be an instance of Compound")
         if not self.compound_exists(comp):
             raise BadRequestException(f"The reaction {comp.id} does not exist in the network")
 
-        if not comp.compartment.is_extracellular_region_environment():
-            return self.name + self.DELIMITER + comp.id
+        if comp.compartment and not comp.compartment.is_extracellular_region_environment():
+            name = self.name if self.name is not None else self.DEFAULT_NAME
+            return name + self.DELIMITER + comp.id
         else:
             return comp.id
 
@@ -394,16 +414,20 @@ class NetworkData(SerializableObjectJson):
         if not isinstance(compartment, Compartment):
             raise BadRequestException("The compartment must be an instance of Compartment")
         if not self.compartment_exists(compartment):
-            raise BadRequestException(f"The compartment {compartment.id} does not exist in the network")
+            raise BadRequestException(
+                f"The compartment {compartment.id} does not exist in the network"
+            )
 
         if not compartment.is_extracellular_region_environment():
-            return SlugifyHelper.slugify_id(self.name + self.DELIMITER + compartment.id)
+            name = self.name if self.name is not None else self.DEFAULT_NAME
+            comp_id = compartment.id if compartment.id is not None else ""
+            return SlugifyHelper.slugify_id(name + self.DELIMITER + comp_id)
         else:
-            return compartment.id
+            return compartment.id if compartment.id is not None else ""
 
     # -- G --
 
-    def get_compound_recon_tag(self, comp_id: str, tag_name: str = None):
+    def get_compound_recon_tag(self, comp_id: str, tag_name: str | None = None):
         """
         Get a compound recon_tag value a compound id and a recon_tag name.
 
@@ -428,15 +452,16 @@ class NetworkData(SerializableObjectJson):
         :rtype: `dict`
         """
 
-        return self.recon_tags.get("compounds", {})
+        result = self.recon_tags.get("compounds", {})
+        return result if result is not None else {}
 
-    def get_compound_ids(self) -> List[str]:
+    def get_compound_ids(self) -> list[str]:
         return list(self.compounds.keys())
 
-    def get_reaction_ids(self) -> List[str]:
+    def get_reaction_ids(self) -> list[str]:
         return list(self.reactions.keys())
 
-    def get_ec_recon_tag(self, ec_number: str, tag_name: str = None):
+    def get_ec_recon_tag(self, ec_number: str, tag_name: str | None = None):
         """
         Get a ec_tag value from a ec_number and a tag_name.
 
@@ -461,9 +486,10 @@ class NetworkData(SerializableObjectJson):
         :rtype: `dict`
         """
 
-        return self.recon_tags.get("ec_numbers", {})
+        result = self.recon_tags.get("ec_numbers", {})
+        return result if result is not None else {}
 
-    def get_reaction_recon_tag(self, rxn_id: str, tag_name: str = None):
+    def get_reaction_recon_tag(self, rxn_id: str, tag_name: str | None = None):
         """
         Get a reaction tag value from a reaction_id and a tag_name.
 
@@ -488,7 +514,8 @@ class NetworkData(SerializableObjectJson):
         :rtype: `dict`
         """
 
-        return self.recon_tags.get("reactions", {})
+        result = self.recon_tags.get("reactions", {})
+        return result if result is not None else {}
 
     def get_compound_by_id(self, comp_id: str) -> Compound:
         """
@@ -502,7 +529,9 @@ class NetworkData(SerializableObjectJson):
 
         return self.compounds[comp_id]
 
-    def get_compounds_by_chebi_id(self, chebi_id: str, compartment_go_id: Optional[str] = None) -> List[Compound]:
+    def get_compounds_by_chebi_id(
+        self, chebi_id: str, compartment_go_id: str | None = None
+    ) -> list[Compound]:
         """
         Get a compound by its chebi id and compartment.
 
@@ -514,7 +543,7 @@ class NetworkData(SerializableObjectJson):
         :rtype: `gena.network.Compound` or `None`
         """
 
-        if isinstance(chebi_id, float) or isinstance(chebi_id, int):
+        if isinstance(chebi_id, (float, int)):
             chebi_id = f"CHEBI:{chebi_id}"
 
         if "CHEBI" not in chebi_id:
@@ -548,7 +577,7 @@ class NetworkData(SerializableObjectJson):
 
         return self.reactions[rxn_id]
 
-    def get_reaction_by_ec_number(self, ec_number: str) -> Reaction:
+    def get_reaction_by_ec_number(self, ec_number: str) -> Reaction | None:
         """
         Get a reaction by its ec number.
 
@@ -564,7 +593,7 @@ class NetworkData(SerializableObjectJson):
         else:
             return None
 
-    def get_reaction_by_rhea_id(self, rhea_id: str) -> Reaction:
+    def get_reaction_by_rhea_id(self, rhea_id: str) -> Reaction | None:
         """
         Get a reaction by its rhea id.
 
@@ -580,8 +609,8 @@ class NetworkData(SerializableObjectJson):
         else:
             return None
 
-    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> List[Reaction]:
-        """ Get the reactions related to a compound with having a given CheBI ID """
+    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> list[Reaction]:
+        """Get the reactions related to a compound with having a given CheBI ID"""
         rxns = []
         comps = self.get_compounds_by_chebi_id(chebi_id)
         if not comps:
@@ -592,7 +621,7 @@ class NetworkData(SerializableObjectJson):
                     rxns.append(rxn)
         return rxns
 
-    def get_biomass_reaction(self) -> Reaction:
+    def get_biomass_reaction(self) -> Reaction | None:
         """
         Get the biomass reaction if it exists
 
@@ -605,7 +634,7 @@ class NetworkData(SerializableObjectJson):
                 return rxn
         return None
 
-    def get_biomass_compound(self) -> Compound:
+    def get_biomass_compound(self) -> Compound | None:
         """
         Get the biomass compounds if it exists
 
@@ -618,26 +647,32 @@ class NetworkData(SerializableObjectJson):
                 return comp
         return None
 
-    def get_compounds_by_compartments(self, compartment_go_ids: List[str] = None) -> Dict[str, Compound]:
+    def get_compounds_by_compartments(
+        self, compartment_go_ids: list[str] | None = None
+    ) -> dict[str, Compound]:
         """
         Get the compounds in a compartments
 
         :returns: The list of compounds
-        :rtype: List[`gena.network.Compound`]
+        :rtype: list[`gena.network.Compound`]
         """
 
         comps = {}
         for comp_id, comp in self.compounds.items():
-            if comp.compartment.go_id in compartment_go_ids:
+            if (
+                comp.compartment
+                and compartment_go_ids
+                and comp.compartment.go_id in compartment_go_ids
+            ):
                 comps[comp_id] = comp
         return comps
 
-    def get_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the steady compounds
 
         :returns: The list of steady compounds
-        :rtype: List[`gena.network.Compound`]
+        :rtype: list[`gena.network.Compound`]
         """
 
         comps = {}
@@ -649,12 +684,12 @@ class NetworkData(SerializableObjectJson):
                     comps[comp_id] = comp
         return comps
 
-    def get_non_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_non_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the non-steady compounds
 
         :returns: The list of non-steady compounds
-        :rtype: List[`gena.network.Compound`]
+        :rtype: list[`gena.network.Compound`]
         """
 
         comps = {}
@@ -677,33 +712,35 @@ class NetworkData(SerializableObjectJson):
         bounds = DataFrame(
             index=self.get_reaction_ids(),
             columns=["lb", "ub"],
-            data=np.zeros((len(self.reactions), 2))
+            data=np.zeros((len(self.reactions), 2)),
         )
         for rxn_id, rxn in self.reactions.items():
             bounds.loc[rxn_id, :] = [rxn.lower_bound, rxn.upper_bound]
         return bounds
 
     def get_number_of_reactions(self) -> int:
-        """ Get number of reactions """
+        """Get number of reactions"""
 
         return len(self.reactions)
 
     def get_number_of_compounds(self) -> int:
-        """ Get number of compounds """
+        """Get number of compounds"""
 
         return len(self.compounds)
 
     def get_summary(self) -> dict:
-        """ Return the summary of the network """
+        """Return the summary of the network"""
         from ...sanitizer.gap.helper.gap_finder_helper import GapFinderHelper
+
         biomass_rxn = self.get_biomass_reaction()
         helper = GapFinderHelper()
         dem = helper.find_deadend_compound_ids(self)
         urxn = {}
         for rxn_id, rxn in self.reactions.items():
             balance = rxn.compute_mass_and_charge_balance()
-            if (balance["charge"] is not None and balance["charge"] > 0) or \
-                    (balance["mass"] is not None and balance["mass"] > 0):
+            if (balance["charge"] is not None and balance["charge"] > 0) or (
+                balance["mass"] is not None and balance["mass"] > 0
+            ):
                 urxn[rxn_id] = balance
 
         data = {
@@ -711,13 +748,13 @@ class NetworkData(SerializableObjectJson):
             "Number of metabolites": len(self.compounds),
             "Number of reactions": len(self.reactions),
             "Number of compartments": len(self.compartments),
-            "List of compartments": [c for c in self.compartments.values()],
+            "List of compartments": list(self.compartments.values()),
             "Quality control": {
                 "Number of deadend metabolites": len(dem),
                 "Number of unbalanced reactions": len(urxn),
                 "List of deadend metabolites": dem,
                 "List of unbalanced reactions": urxn,
-            }
+            },
         }
 
         if biomass_rxn:
@@ -725,7 +762,7 @@ class NetworkData(SerializableObjectJson):
                 "ID": biomass_rxn.id,
                 "Name": biomass_rxn.name,
                 "Formula": [biomass_rxn.to_str()],
-                "Data": biomass_rxn.data
+                "Data": biomass_rxn.data,
             }
         else:
             data["Biomass reaction"] = {}
@@ -733,17 +770,15 @@ class NetworkData(SerializableObjectJson):
         return data
 
     def generate_stats(self) -> dict:
-        """ Gather and return networks stats """
+        """Gather and return networks stats"""
         stats = {
             "compound_count": len(self.compounds),
             "reaction_count": len(self.reactions),
             "compounds": {},
-            "reactions": {}
+            "reactions": {},
         }
         for comp_id in self.compounds:
-            stats["compounds"][comp_id] = {
-                "count": 0
-            }
+            stats["compounds"][comp_id] = {"count": 0}
         for rxn in self.reactions.values():
             for comp_id in rxn.products:
                 stats["compounds"][comp_id]["count"] += 1
@@ -751,15 +786,15 @@ class NetworkData(SerializableObjectJson):
                 stats["compounds"][comp_id]["count"] += 1
         if stats["compound_count"]:
             for comp_id in self.compounds:
-                stats["compounds"][comp_id]["frequency"] = stats["compounds"][comp_id]["count"] / stats["compound_count"]
+                stats["compounds"][comp_id]["frequency"] = (
+                    stats["compounds"][comp_id]["count"] / stats["compound_count"]
+                )
         return stats
 
     # -- H --
 
     def has_sink(self) -> bool:
-        for comp in self.compounds.values():
-            if comp.is_sink():
-                return True
+        return any(comp.is_sink() for comp in self.compounds.values())
 
     # -- I --
 
@@ -767,13 +802,16 @@ class NetworkData(SerializableObjectJson):
 
     @classmethod
     def loads(
-            cls, data: NetworkDict, *,
-            biomass_reaction_id: str = None,
-            skip_orphans: bool = False,
-            replace_unknown_compartments: bool = False,
-            biomass_metabolite_id_user: str = None,
-            add_biomass: bool = False) -> 'NetworkData':
-        """ Load JSON data and create a Network  """
+        cls,
+        data: NetworkDict,
+        *,
+        biomass_reaction_id: str | None = None,
+        skip_orphans: bool = False,
+        replace_unknown_compartments: bool = False,
+        biomass_metabolite_id_user: str | None = None,
+        add_biomass: bool = False,
+    ) -> "NetworkData":
+        """Load JSON data and create a Network"""
 
         helper = NetworkDataLoaderHelper()
         return helper.loads(
@@ -782,7 +820,7 @@ class NetworkData(SerializableObjectJson):
             skip_orphans=skip_orphans,
             replace_unknown_compartments=replace_unknown_compartments,
             biomass_metabolite_id_user=biomass_metabolite_id_user,
-            add_biomass=add_biomass
+            add_biomass=add_biomass,
         )
 
     # -- N --
@@ -827,22 +865,22 @@ class NetworkData(SerializableObjectJson):
         del self.reactions[rxn_id]
 
     def get_compound_stats_as_json(self, **kwargs) -> dict:
-        """ Get compound stats as JSON """
+        """Get compound stats as JSON"""
         return self.generate_stats()["compounds"]
 
     def get_compound_stats_as_table(self) -> Table:
-        """ Get compound stats as table """
+        """Get compound stats as table"""
         dict_ = self.generate_stats()["compounds"]
-        for comp_id in dict_.keys():
+        for comp_id in dict_:
             dict_[comp_id]["chebi_id"] = self.compounds[comp_id].chebi_id
 
         df = DataFrame.from_dict(dict_, columns=["count", "frequency", "chebi_id"], orient="index")
-        df = df.sort_values(by=['frequency'], ascending=False)
+        df = df.sort_values(by=["frequency"], ascending=False)
 
         return Table(data=df)
 
     def get_total_abs_flux_as_table(self) -> Table:
-        """ Get the total absolute flux as table """
+        """Get the total absolute flux as table"""
         total_flux = 0
         for rxn in self.reactions.values():
             flux_estimates = rxn.get_data_slot("flux_estimates")
@@ -852,14 +890,14 @@ class NetworkData(SerializableObjectJson):
         return Table(data=df)
 
     def generate_stats_as_json(self) -> dict:
-        """ Get stats as JSON """
+        """Get stats as JSON"""
         return self.generate_stats()
 
     # -- R --
 
     # -- S --
 
-    def set_recon_tags(self, recon_tags: NetworkReconTagDict) -> dict:
+    def set_recon_tags(self, recon_tags: NetworkReconTagDict) -> None:
         self.recon_tags = recon_tags
 
     # -- T --
@@ -893,7 +931,7 @@ class NetworkData(SerializableObjectJson):
         Returns a DataFrame representation of the network
         """
 
-        bkms = ['brenda', 'kegg', 'metacyc']
+        bkms = ["brenda", "kegg", "metacyc"]
         column_names = [
             "id",
             "equation",
@@ -912,7 +950,7 @@ class NetworkData(SerializableObjectJson):
             "recon_ec_number",
             "recon_comments",
             *BiotaTaxonomy.get_tax_tree(),
-            *bkms
+            *bkms,
         ]
 
         table = {}
@@ -946,7 +984,7 @@ class NetworkData(SerializableObjectJson):
                 enzyme_names.append(enzyme.get("name", ""))
                 ec_numbers.append(ec_number)
 
-                ec_tag = self.get_ec_recon_tag(ec_number)
+                ec_tag = self.get_ec_recon_tag(ec_number) if ec_number else None
                 if ec_tag:
                     recon_ec_number.append(ec_tag["ec_number"])
                     recon_comments.append(str(";".join(ec_tag["errors"])))
@@ -956,32 +994,41 @@ class NetworkData(SerializableObjectJson):
                     enzyme_history.append(str(deprecated_enz))
                     # enzyme_history.append(str(deprecated_enz["ec_number"]) + " (" + str(deprecated_enz["reason"]) + ")")
                 if enzyme.get("pathways"):
-                    bkms = ['brenda', 'kegg', 'metacyc']
+                    bkms = ["brenda", "kegg", "metacyc"]
                     pw = enzyme.get("pathways")
                     if pw:
                         for db in bkms:
                             if pw.get(db):
-                                pathway_cols[db] = pw[db]["name"] + " (" + (pw[db]
-                                                                            ["id"] if pw[db]["id"] else "--") + ")"
+                                pathway_cols[db] = (
+                                    pw[db]["name"]
+                                    + " ("
+                                    + (pw[db]["id"] if pw[db]["id"] else "--")
+                                    + ")"
+                                )
                 if enzyme.get("tax"):
                     tax = enzyme.get("tax")
-                    for f in BiotaTaxonomy.get_tax_tree():
-                        if f in tax:
-                            tax_cols[f] = tax[f]["name"] + " (" + str(tax[f]["tax_id"]) + ")"
+                    if tax:
+                        for f in BiotaTaxonomy.get_tax_tree():
+                            if f in tax:
+                                tax_cols[f] = tax[f]["name"] + " (" + str(tax[f]["tax_id"]) + ")"
                 if ec_number:
-                    enzyme_class = EnzymeClass.get_or_none(EnzymeClass.ec_number == enzyme.get("ec_number"))
+                    enzyme_class = EnzymeClass.get_or_none(
+                        EnzymeClass.ec_number == enzyme.get("ec_number")
+                    )
                     if enzyme_class:
                         enzyme_classes.append(enzyme_class.ec_number)
 
             subs = []
             for substrate in rxn.substrates.values():
                 comp = substrate.compound
-                subs.append(comp.name + " (" + comp.chebi_id + ")")
+                if comp:
+                    subs.append(comp.name + " (" + comp.chebi_id + ")")
 
             prods = []
             for product in rxn.products.values():
                 comp = product.compound
-                prods.append(comp.name + " (" + comp.chebi_id + ")")
+                if comp:
+                    prods.append(comp.name + " (" + comp.chebi_id + ")")
 
             if not subs:
                 subs = ["*"]
@@ -1042,7 +1089,7 @@ class NetworkData(SerializableObjectJson):
         #             data["enzyme_classes"][-1] = ";".join(enzyme_classes)
 
         data = DataFrame.from_records(list(table.values()))
-        data = data.sort_values(by=['id'])
+        data = data.sort_values(by=["id"])
 
         return data
 
@@ -1054,6 +1101,8 @@ class NetworkData(SerializableObjectJson):
         """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
+        if self.recon_tags is None:
+            self.recon_tags = NetworkReconTagDict(reactions={}, compounds={}, ec_numbers={})
         if "ec_numbers" not in self.recon_tags:
             self.recon_tags["ec_numbers"] = {}
         if tag_id not in self.recon_tags["ec_numbers"]:
@@ -1067,6 +1116,8 @@ class NetworkData(SerializableObjectJson):
 
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
+        if self.recon_tags is None:
+            self.recon_tags = NetworkReconTagDict(reactions={}, compounds={}, ec_numbers={})
         if "reactions" not in self.recon_tags:
             self.recon_tags["reactions"] = {}
         if tag_id not in self.recon_tags["reactions"]:
@@ -1079,6 +1130,8 @@ class NetworkData(SerializableObjectJson):
         """
         if not isinstance(tag, dict):
             raise BadRequestException("The tag must be a dictionary")
+        if self.recon_tags is None:
+            self.recon_tags = NetworkReconTagDict(reactions={}, compounds={}, ec_numbers={})
         if "compounds" not in self.recon_tags:
             self.recon_tags["compounds"] = {}
         if tag_id not in self.recon_tags["compounds"]:

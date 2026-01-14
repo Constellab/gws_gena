@@ -1,28 +1,24 @@
-
 import os
 
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, Settings, TaskRunner
-from gws_gena import ContextImporter, NetworkImporter, Twin, TwinReducer
+from gws_gena import ContextImporter, DataProvider, NetworkImporter, Twin, TwinReducer
 from pandas import DataFrame
 
 settings = Settings.get_instance()
 
 
 class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):
-
     def test_twin_reducer(self):
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = DataProvider.get_test_data_dir()
         data_dir = os.path.join(data_dir, "bastin")
 
         net = NetworkImporter.call(
-            File(path=os.path.join(data_dir, "bastin_network.json")),
-            {"add_biomass" : True}
+            File(path=os.path.join(data_dir, "bastin_network.json")), {"add_biomass": True}
         )
         ctx = ContextImporter.call(
-            File(path=os.path.join(data_dir, "bastin_context_reduce.json")),
-            {}
+            File(path=os.path.join(data_dir, "bastin_context_reduce.json")), {}
         )
 
         twin = Twin()
@@ -32,12 +28,12 @@ class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):
         tester = TaskRunner(
             params={},  # {"reversible_reactions": ["network_v1", "network_v18"]},
             inputs={"twin": twin},
-            task_type=TwinReducer
+            task_type=TwinReducer,
         )
         outputs = tester.run()
 
         efm = outputs["efm_table"]
-        K = outputs["reduction_table"]
+        k = outputs["reduction_table"]
 
         file = os.path.join(data_dir, "./reduction/efm.csv")
         expected_efm: DataFrame = pandas.read_csv(file, index_col=0, encoding="utf-8")
@@ -48,11 +44,11 @@ class TestTwinReducer(BaseTestCaseUsingFullBiotaDB):
         # self.assertTrue(efm.equals(expected_efm))
 
         file = os.path.join(data_dir, "./reduction/K.csv")
-        expected_K = pandas.read_csv(file, index_col=0)
-        self.assertEqual(K.get_data().shape, expected_K.shape)
+        expected_k = pandas.read_csv(file, index_col=0)
+        self.assertEqual(k.get_data().shape, expected_k.shape)
 
-        print('\n--- EFM Bastin & Provost ---')
-        print(efm)
+        self.print("\n--- EFM Bastin & Provost ---")
+        self.print(str(efm))
 
-        print('\n--- Reduced Bastin & Provost ---')
-        print(K)
+        self.print("\n--- Reduced Bastin & Provost ---")
+        self.print(str(k))

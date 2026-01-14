@@ -1,7 +1,4 @@
-
-from gws_biota.unicell.unicell_service import \
-    UnicellService as BiotaUnicellService
-from pandas import DataFrame
+from gws_biota.unicell.unicell_service import UnicellService as BiotaUnicellService
 
 from ....helper.base_helper import BaseHelper
 from ....network.network import Network
@@ -10,10 +7,12 @@ from ..helper.gap_finder_helper import GapFinderHelper
 
 
 class GapFillerHelper(BaseHelper):
-    """ GapFinderHelper """
+    """GapFinderHelper"""
 
-    def fill_gaps(self, net: Network, tax_id: str = None, weight: str = None) -> DataFrame:
-        """ Find all gaps """
+    def fill_gaps(
+        self, net: Network, tax_id: str | None = None, weight: str | None = None
+    ) -> Network:
+        """Find all gaps"""
 
         rhea_ids = self.find_gap_filling_rhea_ids(net, tax_id=tax_id, weight=weight)
         count = 0
@@ -27,8 +26,10 @@ class GapFillerHelper(BaseHelper):
         self.log_info_message(f"{count} reaction(s) added")
         return net
 
-    def find_gap_filling_rhea_ids(self, net: Network, tax_id: str = None, weight: str = None, partial: bool = True):
-        """ Fill gaps """
+    def find_gap_filling_rhea_ids(
+        self, net: Network, tax_id: str | None = None, weight: str | None = None, partial: bool = True
+    ):
+        """Fill gaps"""
 
         helper = GapFinderHelper()
         dead_ends = helper.find_deadend_compound_ids(net)

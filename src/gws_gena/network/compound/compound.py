@@ -1,7 +1,5 @@
-
 import copy
 import random
-from typing import List
 
 from gws_biota import Cofactor as BiotaCofactor
 from gws_biota import Compound as BiotaCompound
@@ -11,8 +9,7 @@ from gws_biota import Residue as BiotaResidue
 from gws_core import BadRequestException
 
 from ..compartment.compartment import Compartment
-from ..exceptions.compound_exceptions import (CompoundNotFoundException,
-                                              InvalidCompoundIdException)
+from ..exceptions.compound_exceptions import CompoundNotFoundException, InvalidCompoundIdException
 from ..typing.compound_typing import CompoundDict
 
 
@@ -58,21 +55,35 @@ class Compound:
 
     id: str = ""
     name: str = ""
-    charge: float = None
-    mass: float = None
-    monoisotopic_mass: float = None
+    charge: float | None = None
+    mass: float | None = None
+    monoisotopic_mass: float | None = None
     formula: str = ""
     inchi: str = ""
-    compartment: Compartment = None
+    compartment: Compartment | None = None
     chebi_id: str = ""
-    alt_chebi_ids: List = None
+    alt_chebi_ids: list | None = None
     kegg_id: str = ""
     inchikey: str = ""
-    layout: BiotaCompoundLayoutDict = None
+    layout: BiotaCompoundLayoutDict | None = None
 
-    def __init__(self, dict_: CompoundDict = None):
+    def __init__(self, dict_: CompoundDict | None= None):
         if dict_ is None:
-            dict_ = {}
+            dict_ = CompoundDict(
+                id=None,
+                name=None,
+                charge=None,
+                mass=None,
+                monoisotopic_mass=None,
+                formula=None,
+                inchi=None,
+                compartment=None,
+                chebi_id=None,
+                alt_chebi_ids=None,
+                kegg_id=None,
+                inchikey=None,
+                layout=None,
+            )
         for key, val in dict_.items():
             setattr(self, key, val)
 
@@ -81,7 +92,9 @@ class Compound:
         if isinstance(self.charge, str):
             self.charge = float(self.charge) if len(self.charge) else None
         if isinstance(self.monoisotopic_mass, str):
-            self.monoisotopic_mass = float(self.monoisotopic_mass) if len(self.monoisotopic_mass) else None
+            self.monoisotopic_mass = (
+                float(self.monoisotopic_mass) if len(self.monoisotopic_mass) else None
+            )
 
         if not isinstance(self.mass, float):
             self.mass = None
@@ -110,9 +123,9 @@ class Compound:
                     raise InvalidCompoundIdException("The compound name or chebi_id is required")
 
             if self.chebi_id:
-                self.id = self.chebi_id + self.DELIMITER + self.compartment.name
+                self.id = self.chebi_id + self.DELIMITER + (self.compartment.name or "")
             else:
-                self.id = self.name + self.DELIMITER + self.compartment.name
+                self.id = self.name + self.DELIMITER + (self.compartment.name or "")
 
         if not self.name:
             self.name = self.id
@@ -123,7 +136,8 @@ class Compound:
         if self.layout is None:
             # refresh layout
             self.layout = BiotaCompoundLayout.get_layout_by_chebi_id(
-                synonym_chebi_ids=self.chebi_id)
+                synonym_chebi_ids=self.chebi_id
+            )
 
         if self.is_biomass():
             self.append_biomass_layout(is_biomass=True)
@@ -131,7 +145,7 @@ class Compound:
     # -- A --
 
     def append_biomass_layout(self, is_biomass=False):
-        """ Append biomass layout """
+        """Append biomass layout"""
         if self.is_cofactor():
             return
 
@@ -148,14 +162,9 @@ class Compound:
 
     # -- C --
 
-    def copy(self) -> 'Compound':
-        """ Create a copy of the compound """
-        c = Compound(
-            CompoundDict(
-                id=self.id,
-                name=self.name,
-                compartment=self.compartment
-            ))
+    def copy(self) -> "Compound":
+        """Create a copy of the compound"""
+        c = Compound(CompoundDict(id=self.id, name=self.name, compartment=self.compartment))
         c.charge = self.charge
         c.mass = self.mass
         c.monoisotopic_mass = self.monoisotopic_mass
@@ -173,9 +182,9 @@ class Compound:
         c.layout = self.layout
         return c
 
-    @ classmethod
-    def create_sink_compound(cls, related_compound: 'Compound') -> 'Compound':
-        """ Create a sink compound """
+    @classmethod
+    def create_sink_compound(cls, related_compound: "Compound") -> "Compound":
+        """Create a sink compound"""
         compart = related_compound.compartment
         if compart.is_sink():
             raise BadRequestException("Cannot add a sink reaction to another sink reaction")
@@ -187,12 +196,13 @@ class Compound:
                 compartment=Compartment.create_sink_compartment(),
                 chebi_id=related_compound.chebi_id,
                 inchikey=related_compound.inchikey,
-            ))
+            )
+        )
 
     # -- F --
 
     # @classmethod
-    # def from_bulk_biota(cls, chebi_ids: List = None, compartment="") -> dict:
+    # def from_bulk_biota(cls, chebi_ids: list = None, compartment="") -> dict:
     #     """
     #     Create a a list of compounds from a list of chebi_ids
 
@@ -217,9 +227,18 @@ class Compound:
     #         list_of_comps[c.chebi_id].append(c)
     #     return list_of_comps
 
-    @ classmethod
-    def from_biota(cls, *, id=None, name="", biota_compound=None, chebi_id="", kegg_id="", inchikey="",
-                   compartment_go_id="") -> 'Compound':
+    @classmethod
+    def from_biota(
+        cls,
+        *,
+        id=None,
+        name="",
+        biota_compound=None,
+        chebi_id="",
+        kegg_id="",
+        inchikey="",
+        compartment_go_id="",
+    ) -> "Compound":
         """
         Create a network compound from a ChEBI of Kegg id
 
@@ -244,8 +263,7 @@ class Compound:
             biota_compound = BiotaCompound.get_or_none(BiotaCompound.kegg_id == kegg_id)
 
         if biota_compound is None:
-            raise CompoundNotFoundException(
-                f"Cannot find compound (chebi_id={chebi_id})")
+            raise CompoundNotFoundException(f"Cannot find compound (chebi_id={chebi_id})")
 
         if not compartment_go_id:
             compart = Compartment.create_cytosol_compartment()
@@ -266,17 +284,18 @@ class Compound:
                 formula=biota_compound.formula,
                 mass=biota_compound.mass,
                 monoisotopic_mass=biota_compound.monoisotopic_mass,
-            ))
+            )
+        )
 
         return c
 
     # -- G --
 
     def get_layout(self, refresh: bool = False) -> int:
-        """ Get compound layout """
+        """Get compound layout"""
 
         def rnd_offset():
-            """ Random offset """
+            """Random offset"""
             rnd_num = random.uniform(0, 1)
             return -1 if rnd_num >= 0.5 else 1
 
@@ -286,14 +305,15 @@ class Compound:
             if refresh:
                 if self.chebi_id:
                     layout: BiotaCompoundLayoutDict = BiotaCompoundLayout.get_layout_by_chebi_id(
-                        synonym_chebi_ids=self.chebi_id)
+                        synonym_chebi_ids=self.chebi_id
+                    )
                     layout = copy.deepcopy(layout)
 
                     if not self.compartment.is_cytosol() and not self.compartment.is_biomass():
                         for clust in layout["clusters"].values():
                             if clust.get("x"):
-                                clust["x"] = clust["x"] + 100*rnd_offset()
-                                clust["y"] = clust["y"] + 100*rnd_offset()
+                                clust["x"] = clust["x"] + 100 * rnd_offset()
+                                clust["y"] = clust["y"] + 100 * rnd_offset()
                 else:
                     layout = self.layout
             else:
@@ -302,7 +322,7 @@ class Compound:
             return layout
 
     def get_level(self) -> int:
-        """ Get compound level """
+        """Get compound level"""
         if self.layout is None:
             # check attribute for retro-compatiblity
             # TODO: remove on next major
@@ -331,7 +351,7 @@ class Compound:
         Get the biota reactions that are related to this network compound
 
         :return: The list of biota reactions corresponding to the chebi of kegg id. Returns [] is no biota reaction is found
-        :rtype: `List[bioa.compound.reaction]` or SQL `select` resutls
+        :rtype: `list[bioa.compound.reaction]` or SQL `select` resutls
         """
 
         if self.chebi_id:
@@ -438,13 +458,20 @@ class Compound:
         :rtype: `str`
         """
 
-        _str = "" + \
-            "================= Compound ===================" + \
-            "\n id: " + self.id + \
-            "\n charge: " + str(self.charge) + \
-            "\n mass: " + str(self.mass) + \
-            "\n formula: " + self.formula + \
-            "\n chebi_id: " + self.chebi_id + \
-            "=============================================="
+        _str = (
+            ""
+            + "================= Compound ==================="
+            + "\n id: "
+            + self.id
+            + "\n charge: "
+            + str(self.charge)
+            + "\n mass: "
+            + str(self.mass)
+            + "\n formula: "
+            + self.formula
+            + "\n chebi_id: "
+            + self.chebi_id
+            + "=============================================="
+        )
 
         return _str

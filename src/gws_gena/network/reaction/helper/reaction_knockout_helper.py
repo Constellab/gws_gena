@@ -1,19 +1,16 @@
-
-from typing import List, Tuple
-
 from ....helper.base_helper import BaseHelper
 from ...network import Network
 
 
 class ReactionKnockOutHelper(BaseHelper):
-    """ ReactionKnockOutHelper """
+    """ReactionKnockOutHelper"""
 
     FLUX_EPSILON = 1e-9
 
     def knockout_list_of_reactions(
-            self, network: Network, reactions: List[str],
-            ko_delimiter=None, inplace=False) -> Tuple[Network, List]:
-        """ knockout a list of reactions in a network """
+        self, network: Network, reactions: list[str], ko_delimiter=None, inplace=False
+    ) -> tuple[Network, list]:
+        """knockout a list of reactions in a network"""
 
         if inplace:
             new_net = network
@@ -31,10 +28,7 @@ class ReactionKnockOutHelper(BaseHelper):
                     ec_number_tab.append(enzyme.get("ec_number"))
 
                 for _, ko_id_str in enumerate(reactions):
-                    if ko_delimiter:
-                        ko_ids = ko_id_str.split(ko_delimiter)
-                    else:
-                        ko_ids = [ko_id_str]
+                    ko_ids = ko_id_str.split(ko_delimiter) if ko_delimiter else [ko_id_str]
                     all_ids.extend(ko_ids)
 
                     for ko_id in ko_ids:

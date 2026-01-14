@@ -1,17 +1,29 @@
-
-from typing import List
-
 import pandas
-from gws_core import (ConfigParams, InputSpec, InputSpecs, ListParam,
-                      OutputSpec, OutputSpecs, Table, Task, TaskInputs, ConfigSpecs,
-                      TaskOutputs, task_decorator, TypingStyle)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    ListParam,
+    OutputSpec,
+    OutputSpecs,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from .koa_result import KOAResult
 
 
-@task_decorator("KOAResultExtractor", human_name="KOA result extractor",
-                short_description="Extract a list of fluxes as a table",
-                style=TypingStyle.material_icon(material_icon_name="output", background_color="#d9d9d9"))
+@task_decorator(
+    "KOAResultExtractor",
+    human_name="KOA result extractor",
+    short_description="Extract a list of fluxes as a table",
+    style=TypingStyle.material_icon(material_icon_name="output", background_color="#d9d9d9"),
+)
 class KOAResultExtractor(Task):
     """
     Knock-out analysis result extractor.
@@ -19,21 +31,33 @@ class KOAResultExtractor(Task):
     Specify the fluxes you want to extract by following this structure "network_NameReaction".
     """
 
-    input_specs = InputSpecs({
-        'koa_result': InputSpec(KOAResult, human_name="KOA result tables", short_description="The KOA result tables")
-    })
-    output_specs = OutputSpecs({
-        'table': OutputSpec(Table, human_name="Extracted table", short_description="The extracted table")
-    })
-    config_specs = ConfigSpecs({
-        'fluxes_to_extract':
-        ListParam(
-            default_value=[], human_name="Fluxes to extract",
-            short_description="The list of fluxes to extract")})
+    input_specs = InputSpecs(
+        {
+            "koa_result": InputSpec(
+                KOAResult, human_name="KOA result tables", short_description="The KOA result tables"
+            )
+        }
+    )
+    output_specs = OutputSpecs(
+        {
+            "table": OutputSpec(
+                Table, human_name="Extracted table", short_description="The extracted table"
+            )
+        }
+    )
+    config_specs = ConfigSpecs(
+        {
+            "fluxes_to_extract": ListParam(
+                default_value=[],
+                human_name="Fluxes to extract",
+                short_description="The list of fluxes to extract",
+            )
+        }
+    )
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         koa_result = inputs["koa_result"]
-        fluxes_to_extract: List = params.get_value("fluxes_to_extract")
+        fluxes_to_extract: list = params.get_value("fluxes_to_extract")
 
         data = []
         for flux_name in fluxes_to_extract:
@@ -41,11 +65,10 @@ class KOAResultExtractor(Task):
                 df = koa_result.get_flux_dataframe(ko_id).loc[[flux_name], :]
                 df["ko_id"] = ko_id
                 df["reaction_id"] = df.index
-                df = df[["ko_id", "reaction_id", "value",
-                         "lower_bound", "upper_bound"]]
+                df = df[["ko_id", "reaction_id", "value", "lower_bound", "upper_bound"]]
                 data.append(df)
 
         data = pandas.concat(data, axis=0)
         data.reset_index(drop=True, inplace=True)
         table = Table(data)
-        return {'table': table}
+        return {"table": table}

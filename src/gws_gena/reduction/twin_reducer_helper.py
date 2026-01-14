@@ -2,17 +2,17 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import ShellProxy, MessageDispatcher
+from gws_core import MessageDispatcher, ShellProxy
 
 
-class TwinReducerHelper():
+class TwinReducerHelper:
     """
     Helper class for TwinReducer task to provide shell proxy functionality
     for installing Java and other system dependencies.
     """
 
     @classmethod
-    def create_proxy(cls, message_dispatcher: MessageDispatcher = None):
+    def create_proxy(cls, message_dispatcher: MessageDispatcher | None = None):
         """
         Create a shell proxy for running system commands.
 
@@ -22,6 +22,8 @@ class TwinReducerHelper():
         Returns:
             ShellProxy: Shell proxy instance for running commands
         """
+        if message_dispatcher is None:
+            message_dispatcher = MessageDispatcher()
         return ShellProxy(message_dispatcher=message_dispatcher)
 
     @classmethod
@@ -36,7 +38,6 @@ class TwinReducerHelper():
             bool: True if installation was successful, False otherwise
         """
         try:
-
             # Update package list
             result = shell_proxy.run("apt update", shell_mode=True)
             if result != 0:
@@ -51,5 +52,7 @@ class TwinReducerHelper():
             return True
 
         except Exception as e:
-            shell_proxy.log_error_message(f"[TwinReducerHelper] Error during Java installation: {str(e)}")
+            shell_proxy.log_error_message(
+                f"[TwinReducerHelper] Error during Java installation: {str(e)}"
+            )
             return False

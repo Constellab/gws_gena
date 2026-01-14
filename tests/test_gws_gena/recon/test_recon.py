@@ -1,52 +1,70 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
-from gws_gena import TransformerBiomassReactionTable, ReconProto, TransformerECNumberTable
+from gws_core import File, ScenarioProxy, TableImporter, TaskRunner
+from gws_gena import (
+    DataProvider,
+    ReconProto,
+    TransformerBiomassReactionTable,
+    TransformerECNumberTable,
+)
 
 
 class TestRecon(BaseTestCaseUsingFullBiotaDB):
-
     def test_recon_proto(self):
-        settings = Settings.get_instance()
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = DataProvider.get_test_data_dir()
         data_dir = os.path.join(data_dir, "recon")
 
-        ec_table = TableImporter.call(File(
-            path=os.path.join(data_dir, "recon_ec_table.csv")))
+        ec_table = TableImporter.call(File(path=os.path.join(data_dir, "recon_ec_table.csv")))
 
         # run transformer
         runner_transformer = TaskRunner(
             inputs={"table": ec_table},
             task_type=TransformerECNumberTable,
-            params = {'ec_number_column': "EC Number"})
+            params={"ec_number_column": "EC Number"},
+        )
 
-        ec_table = runner_transformer.run()['transformed_table']
+        ec_table = runner_transformer.run()["transformed_table"]
 
         # run transformer
         biomass_table = TableImporter.call(File(path=os.path.join(data_dir, "recon_biomass.csv")))
         runner_transformer_biomasss = TaskRunner(
             inputs={"table": biomass_table},
             task_type=TransformerBiomassReactionTable,
-            params = {"entity_column": "Component",
-                    "chebi_id_column": "Chebi ID",
-                    "biomass_column": "Biomass"})
+            params={
+                "entity_column": "Component",
+                "chebi_id_column": "Chebi ID",
+                "biomass_column": "Biomass",
+            },
+        )
 
-        biomass_table = runner_transformer_biomasss.run()['transformed_table']
+        biomass_table = runner_transformer_biomasss.run()["transformed_table"]
 
-        experiment = IExperiment(ReconProto)
+        experiment = ScenarioProxy(ReconProto)
         proto = experiment.get_protocol()
 
-        proto.set_input("ec_table", ec_table)
-        proto.set_input("biomass_table", biomass_table)
+        # Add ec_table as input resource
+        recon_process = proto.get_process("recon")
+        proto.add_resource(
+            instance_name="ec_table_input",
+            resource_model_id=str(ec_table.id),
+            in_port=recon_process << "ec_table",
+        )
+
+        # Add biomass_table as input resource
+        proto.add_resource(
+            instance_name="biomass_table_input",
+            resource_model_id=str(biomass_table.id),
+            in_port=recon_process << "biomass_table",
+        )
 
         recon = proto.get_process("recon")
         # recon.set_param('tax_id', "4753")  # pcystis
-        recon.set_param('tax_id', "263815")  # pcystis murina
+        recon.set_param("tax_id", "263815")  # pcystis murina
 
         gap_filler = proto.get_process("gap_filler")
         # gap_filler.set_param('tax_id', "4753")      # pcystis
-        gap_filler.set_param('tax_id', "4751")    # fungi
+        gap_filler.set_param("tax_id", "4751")  # fungi
         # gap_filler.set_param('tax_id', "2759")    # eukaryota
         # gap_filler.set_param('biomass_and_medium_gaps_only', True)
         # gap_filler.set_param('add_sink_reactions', True)

@@ -1,66 +1,78 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings
-from gws_gena import ContextImporter, FVAProto, NetworkImporter
+from gws_core import File, ScenarioProxy, Settings
+from gws_gena import ContextImporter, DataProvider, FVAProto, NetworkImporter
 
 settings = Settings.get_instance()
 
 
 class TestFVA(BaseTestCaseUsingFullBiotaDB):
-
     def test_large_ecoli(self):
         self.print("Test FBAProto: Medium or large metwork (typically Ecoli)")
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = DataProvider.get_test_data_dir()
 
         def run_fva(organism, solver="highs", relax_qssa=False):
-            experiment = IExperiment(FVAProto)
+            experiment = ScenarioProxy(FVAProto)
             proto = experiment.get_protocol()
             organism_dir = os.path.join(data_dir, organism)
-            organism_result_dir = os.path.join(data_dir, 'fva', organism)
+            # organism_result_dir = os.path.join(data_dir, "fva", organism)
             net = NetworkImporter.call(
                 File(path=os.path.join(organism_dir, f"{organism}.json")),
-                params={"add_biomass": True}
+                params={"add_biomass": True},
             )
-            ctx = ContextImporter.call(File(
-                path=os.path.join(organism_dir, f"{organism}_context.json")
-            ))
+            ctx = ContextImporter.call(
+                File(path=os.path.join(organism_dir, f"{organism}_context.json"))
+            )
 
-            proto.set_input("network", net)
-            proto.set_input("context", ctx)
             fva = proto.get_process("fva")
-            fva.set_param('solver', solver)
-            fva.set_param('relax_qssa', relax_qssa)
-            fva.set_param('qssa_relaxation_strength', 1)
-            if organism == 'ecoli':
-                fva.set_param('fluxes_to_maximize', ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
+
+            proto.add_resource(
+                instance_name="network_input",
+                resource_model_id=str(net.id),
+                in_port=fva << "network",
+            )
+
+            proto.add_resource(
+                instance_name="context_input",
+                resource_model_id=str(ctx.id),
+                in_port=fva << "context",
+            )
+
+            fva.set_param("solver", solver)
+            fva.set_param("relax_qssa", relax_qssa)
+            fva.set_param("qssa_relaxation_strength", 1)
+            if organism == "ecoli":
+                fva.set_param("fluxes_to_maximize", ["ecoli_BIOMASS_Ecoli_core_w_GAM:1.0"])
             else:
-                fva.set_param('fluxes_to_maximize', ["pcys_Biomass:1.0"])
+                fva.set_param("fluxes_to_maximize", ["pcys_Biomass:1.0"])
 
             experiment.run()
 
-            relax_dir = ""
-            if solver == "quad":
-                relax_dir = "relax" if relax_qssa else "no-relax"
+            # relax_dir = ""
+            # if solver == "quad":
+            #    relax_dir = "relax" if relax_qssa else "no-relax"
 
             # test results
             result = proto.get_output("fva_result")
             # biomass_flux = result.get_biomass_flux_dataframe()
-            # print("---------------- BIOMASS FLUX ----------------")
-            # print(biomass_flux)
-            # print("----------------------------------------------")
+            # self.print("---------------- BIOMASS FLUX ----------------")
+            # self.print(biomass_flux)
+            # self.print("----------------------------------------------")
 
-            result_dir = os.path.join(organism_result_dir, solver, relax_dir)
-            file_path = os.path.join(result_dir, "biomass_flux.csv")
+            # result_dir = os.path.join(organism_result_dir, solver, relax_dir)
+            # file_path = os.path.join(result_dir, "biomass_flux.csv")
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #    fp.write(biomass_flux.to_csv())
 
             # fluxes = result.get_fluxes_dataframe()
-            # print(fluxes)
-            # print(sv)
+            # self.print(fluxes)
+            # self.print(sv)
             sv = result.get_sv_dataframe()
             th, p = result.compute_zero_flux_threshold()
-            print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
+            self.print(
+                f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}"
+            )
 
             # if not os.path.exists(result_dir):
             #     os.makedirs(result_dir)

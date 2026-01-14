@@ -1,16 +1,28 @@
-
-from typing import List
-
-from gws_core import (BadRequestException, BarPlotView, ConfigParams,
-                      ConfigSpecs, ListParam, ListRField, ResourceSet,
-                      StringHelper, Table, TechnicalInfo, TypingStyle,
-                      resource_decorator, view)
+from gws_core import (
+    BadRequestException,
+    BarPlotView,
+    ConfigParams,
+    ConfigSpecs,
+    ListParam,
+    ListRField,
+    ResourceSet,
+    StringHelper,
+    Table,
+    TechnicalInfo,
+    TypingStyle,
+    resource_decorator,
+    view,
+)
 from pandas import DataFrame
 
 
-@resource_decorator("KOAResult", human_name="KOA result",
-                    short_description="Knockout analysis result", hide=True,
-                    style=TypingStyle.material_icon(material_icon_name='troubleshoot', background_color='#CB4335'))
+@resource_decorator(
+    "KOAResult",
+    human_name="KOA result",
+    short_description="Knockout analysis result",
+    hide=True,
+    style=TypingStyle.material_icon(material_icon_name="troubleshoot", background_color="#CB4335"),
+)
 class KOAResult(ResourceSet):
     """
     KOAResultTable
@@ -22,9 +34,9 @@ class KOAResult(ResourceSet):
     _simulations = ListRField()
     # _ko_table = ResourceRField()
 
-    _ko_list: List[str] = ListRField()
+    _ko_list = ListRField()
 
-    def __init__(self, data: List[DataFrame] = None, ko_list: List[str] = None):
+    def __init__(self, data: list[DataFrame] | None = None, ko_list: list[str] | None = None):
         super().__init__()
         self._simulations = []
 
@@ -32,8 +44,7 @@ class KOAResult(ResourceSet):
             ko_list = []
 
         if not isinstance(ko_list, list):
-            raise BadRequestException(
-                "The ko list must be an instance of list")
+            raise BadRequestException("The ko list must be an instance of list")
         self._ko_list = ko_list
 
         if data:
@@ -42,8 +53,9 @@ class KOAResult(ResourceSet):
                 invalid_ko_ids = current_data["invalid_ko_ids"]
                 flux_table = Table(data=flux_df)
                 flux_table.name = self._create_flux_table_name(ko_list[i])
-                flux_table.add_technical_info(TechnicalInfo(
-                    key="invalid_ko_ids", value=f"{invalid_ko_ids}"))
+                flux_table.add_technical_info(
+                    TechnicalInfo(key="invalid_ko_ids", value=f"{invalid_ko_ids}")
+                )
                 self.add_resource(flux_table)
 
         self._set_technical_info()
@@ -55,27 +67,27 @@ class KOAResult(ResourceSet):
     # -- G --
 
     def get_simulations(self):
-        """ Get simulations """
+        """Get simulations"""
         return self._simulations
 
     def get_flux_table(self, ko_id) -> Table:
-        """ Get the flux table """
+        """Get the flux table"""
         name = self._create_flux_table_name(ko_id)
         return self.get_resource(name)
 
     def get_flux_dataframe(self, ko_id) -> DataFrame:
-        """ Get the flux table """
+        """Get the flux table"""
         name = self._create_flux_table_name(ko_id)
         return self.get_resource(name).get_data()
 
-    def get_ko_ids(self) -> List[str]:
-        """ Get the ids of the knock-outed reactions """
+    def get_ko_ids(self) -> list[str]:
+        """Get the ids of the knock-outed reactions"""
         return self._ko_list
 
     # -- S --
 
     def set_simulations(self, simulations: list):
-        """ Set simulations """
+        """Set simulations"""
         if not isinstance(simulations, list):
             raise BadRequestException("The simulations must be a list")
         self._simulations = simulations
@@ -83,29 +95,35 @@ class KOAResult(ResourceSet):
     def _set_technical_info(self):
         pass
 
-    @view(view_type=BarPlotView, human_name='KO Barplots', short_description='View KOA results as 2D-bar plots',
-          specs=ConfigSpecs({
-              "flux_names":
-              ListParam(
-                  human_name="Flux names",
-                  short_description="List of fluxes to plot. Set 'biomass' to plot biomass reaction flux.")}))
+    @view(
+        view_type=BarPlotView,
+        human_name="KO Barplots",
+        short_description="View KOA results as 2D-bar plots",
+        specs=ConfigSpecs(
+            {
+                "flux_names": ListParam(
+                    human_name="Flux names",
+                    short_description="List of fluxes to plot. Set 'biomass' to plot biomass reaction flux.",
+                )
+            }
+        ),
+    )
     def view_as_bar_plot(self, params: ConfigParams) -> BarPlotView:
         """
         View one or several columns as 2D-bar plots
         """
 
-        flux_names: List = params.get_value("flux_names")
+        flux_names: list = params.get_value("flux_names")
 
+        barplot_view = BarPlotView()
         for flux_name in flux_names:
             values = []
             for ko_id in self.get_ko_ids():
-                value = self.get_flux_dataframe(ko_id).at[flux_name, "value"]
+                df: DataFrame = self.get_flux_dataframe(ko_id)
+                value = df.loc[flux_name, "value"]
                 values.append(value)
 
-            barplot_view = BarPlotView()
-            barplot_view.add_series(
-                y=values
-            )
+            barplot_view.add_series(y=values)
         barplot_view.x_tick_labels = self.get_ko_ids()
         barplot_view.x_label = "KO simulations"
         barplot_view.y_label = "flux"
