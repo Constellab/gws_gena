@@ -2,7 +2,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
-from gws_gena import (ContextImporter, KOAProto, NetworkImporter, TransformerEntityIDTable)
+from gws_gena import ContextImporter, KOAProto, NetworkImporter, TransformerEntityIDTable
 
 settings = Settings.get_instance()
 

@@ -1,5 +1,4 @@
 
-from typing import List, Tuple
 
 from ....helper.base_helper import BaseHelper
 from ...network import Network
@@ -11,8 +10,8 @@ class ReactionKnockOutHelper(BaseHelper):
     FLUX_EPSILON = 1e-9
 
     def knockout_list_of_reactions(
-            self, network: Network, reactions: List[str],
-            ko_delimiter=None, inplace=False) -> Tuple[Network, List]:
+            self, network: Network, reactions: list[str],
+            ko_delimiter=None, inplace=False) -> tuple[Network, list]:
         """ knockout a list of reactions in a network """
 
         if inplace:

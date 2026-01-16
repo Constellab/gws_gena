@@ -1,7 +1,7 @@
 
 from typing import TypedDict
 
-VariableDict = TypedDict("VariableDict", {
-    "coefficient": float,
-    "reference_id": str,
-})
+
+class VariableDict(TypedDict):
+    coefficient: float
+    reference_id: str

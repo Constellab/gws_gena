@@ -1,10 +1,17 @@
 
 import json
-from typing import Type
 
-from gws_core import (BadRequestException, BoolParam, ConfigParams,
-                      ConfigSpecs, File, ResourceImporter, StrParam,
-                      TypingStyle, importer_decorator)
+from gws_core import (
+    BadRequestException,
+    BoolParam,
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    ResourceImporter,
+    StrParam,
+    TypingStyle,
+    importer_decorator,
+)
 
 from ..network import Network
 
@@ -52,7 +59,7 @@ class NetworkImporter(ResourceImporter):
             visibility=BoolParam.PROTECTED_VISIBILITY,
             short_description="Set True to skip orphan compounds"), })
 
-    def import_from_path(self, source: File, params: ConfigParams, target_type: Type[Network]) -> Network:
+    def import_from_path(self, source: File, params: ConfigParams, target_type: type[Network]) -> Network:
         """
         Import a network from a repository
 
@@ -77,7 +84,7 @@ class NetworkImporter(ResourceImporter):
             raise Exception(
                 "A biomass metabolite must be present in the network. Set the biomass_metabolite_id_user parameter with your metabolite or set add_biomass to True.")
 
-        with open(source.path, 'r', encoding="utf-8") as fp:
+        with open(source.path, encoding="utf-8") as fp:
             try:
                 data = json.load(fp)
             except Exception as err:

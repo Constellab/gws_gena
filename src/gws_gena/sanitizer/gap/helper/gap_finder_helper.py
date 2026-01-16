@@ -1,5 +1,4 @@
 
-from typing import List
 
 import pandas as pd
 from pandas import DataFrame, Series
@@ -35,13 +34,13 @@ class GapFinderHelper(BaseHelper):
     #     """ Returns True if the network has deadend metabolites; False otherwise """
     #     return len(self.find_deadend_compound_ids(network))
 
-    def find_orphan_compound_ids(self, network: Network) -> List[str]:
+    def find_orphan_compound_ids(self, network: Network) -> list[str]:
         """ Find only orphan compounds as list """
         df = self.find_gaps(network)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_orphan"]]
         return comp_ids
 
-    def find_deadend_compound_ids(self, network: Network) -> List[str]:
+    def find_deadend_compound_ids(self, network: Network) -> list[str]:
         """ Find dead-end compounds as list """
         df = self.find_gaps(network)
         comp_ids = [idx for idx in df.index if df.at[idx, "is_dead_end"]]

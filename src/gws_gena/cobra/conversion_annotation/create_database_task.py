@@ -1,9 +1,20 @@
 import csv
 import re
 
-from gws_core import (ConfigParams, ConfigSpecs, FileDownloader, Folder,
-                      OutputSpec, OutputSpecs, Settings, StrParam, Task,
-                      TaskInputs, TaskOutputs, task_decorator)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    FileDownloader,
+    Folder,
+    OutputSpec,
+    OutputSpecs,
+    Settings,
+    StrParam,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    task_decorator,
+)
 
 
 @task_decorator("Transform_metabolites_file", human_name="Metabolites file transformation",
@@ -28,7 +39,7 @@ class TransformMetabolitesFile(Task):
             params["URL"], filename="metabolites.txt")
         metabolites_dict = {}
         # Check if there is a chebi id in the line and create a dictionary if there is.
-        with open(metabolites_file, "r", encoding='utf-8') as file:
+        with open(metabolites_file, encoding='utf-8') as file:
             for line in file:
                 if "chebi" in line:
                     line_info = line.split()
@@ -71,7 +82,7 @@ class TransformReactionsFile(Task):
         reactions_file = file_downloader.download_file_if_missing(
             params["URL"], filename="reactions.txt")
         reactions_dict = {}
-        with open(reactions_file, "r", encoding='utf-8') as file:
+        with open(reactions_file, encoding='utf-8') as file:
             for line in file:
                 # Check if there is a RHEA and/or EC number in the line and create a dictionary if there is.
                 if "rhea" in line:

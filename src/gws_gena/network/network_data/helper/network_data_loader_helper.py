@@ -1,6 +1,5 @@
 
 import copy
-from typing import List
 
 from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_biota import EnzymeOrtholog as BiotaEnzymeOrtholog
@@ -126,7 +125,7 @@ class NetworkDataLoaderHelper(BaseHelper):
         rxn_biota_helper = ReactionBiotaHelper()
         rxn_biota_helper.attach_message_dispatcher(self._message_dispatcher)
 
-        enzyme_list: List[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
+        enzyme_list: list[EnzymeDict] = rxn_biota_helper.create_reaction_enzyme_dict_from_biota(
             query, load_taxonomy=False, load_pathway=True)
 
         biota_enzymes_dict = {}
@@ -386,11 +385,10 @@ class NetworkDataLoaderHelper(BaseHelper):
 
             if master_chebi_id is not None:
                 comp_data["chebi_id"] = master_chebi_id
+            elif len(alt_chebi_ids) >= 1:
+                comp_data["chebi_id"] = alt_chebi_ids[0]
             else:
-                if len(alt_chebi_ids) >= 1:
-                    comp_data["chebi_id"] = alt_chebi_ids[0]
-                else:
-                    comp_data["chebi_id"] = None
+                comp_data["chebi_id"] = None
 
         # prepare reactions
         for rxn_data in out_data["reactions"]:

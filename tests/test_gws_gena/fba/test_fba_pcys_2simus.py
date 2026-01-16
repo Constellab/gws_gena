@@ -1,7 +1,5 @@
 import os
 
-import numpy
-import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings
 from gws_gena import ContextImporter, FBAProto, NetworkImporter

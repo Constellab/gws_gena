@@ -1,11 +1,12 @@
 
-from typing import List
+
 from gws_core import BadRequestException
-from gws_gena.network.typing.simulation_typing import SimulationDict
 
 from gws_gena.fba.fba_result import FBAResult
 from gws_gena.fva.fva_result import FVAResult
 from gws_gena.koa.koa_result import KOAResult
+from gws_gena.network.typing.simulation_typing import SimulationDict
+
 from ...helper.base_helper import BaseHelper
 from ..flat_twin import FlatTwin
 from ..twin import Twin
@@ -19,7 +20,7 @@ from ..twin import Twin
 
 class TwinAnnotatorHelper(BaseHelper):
 
-    def annotate_from_fba_results(self, twin: Twin, fba_results: List[FBAResult]):
+    def annotate_from_fba_results(self, twin: Twin, fba_results: list[FBAResult]):
         """
         Annotate a twin using from FBAResult
         """

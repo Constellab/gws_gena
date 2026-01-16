@@ -2,7 +2,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
-from gws_gena import TransformerBiomassReactionTable, ReconProto, TransformerECNumberTable
+from gws_gena import ReconProto, TransformerBiomassReactionTable, TransformerECNumberTable
 
 
 class TestRecon(BaseTestCaseUsingFullBiotaDB):

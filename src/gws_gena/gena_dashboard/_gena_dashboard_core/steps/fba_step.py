@@ -1,10 +1,19 @@
-import streamlit as st
 import plotly.express as px
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+import streamlit as st
+from gws_core import InputTask, Scenario, ScenarioProxy, ScenarioStatus
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner
-from gws_core import Scenario, ScenarioProxy, InputTask, Scenario, ScenarioStatus, ScenarioProxy
 from gws_gena import FBA
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_saved_scenario_actions, display_network, extract_network_and_context_from_twin, create_base_scenario_with_tags, render_scenario_table, display_scenario_parameters, should_include_row
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import (
+    create_base_scenario_with_tags,
+    display_network,
+    display_saved_scenario_actions,
+    display_scenario_parameters,
+    extract_network_and_context_from_twin,
+    render_scenario_table,
+    should_include_row,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+
 
 @st.dialog("FBA parameters")
 def dialog_fba_params(gena_state: State):

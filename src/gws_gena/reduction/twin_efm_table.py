@@ -1,5 +1,5 @@
 
-from gws_core import Table, resource_decorator, TypingStyle
+from gws_core import Table, TypingStyle, resource_decorator
 
 
 @resource_decorator("TwinEFMTable",

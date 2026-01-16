@@ -1,18 +1,30 @@
 
-from typing import List
 
 import pandas as pd
-from gws_core import (ConfigParams, ConfigSpecs, InputSpec, InputSpecs,
-                      OutputSpec, OutputSpecs, StrParam, Table, Task, File,
-                      TaskInputs, TaskOutputs, TypingStyle, task_decorator, TableImporter)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    TableImporter,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
 from ..data.task.transformer_entity_id_table import TransformerEntityIDTable
 from ..fba.fba import FBA
 from ..fba.fba_helper.fba_helper import FBAHelper
 from ..fba.fba_result import FBAResult
-from ..network.reaction.helper.reaction_knockout_helper import \
-    ReactionKnockOutHelper
+from ..network.reaction.helper.reaction_knockout_helper import ReactionKnockOutHelper
 from ..twin.flat_twin import FlatTwin
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.twin import Twin
@@ -138,7 +150,7 @@ class KOA(Task):
             table_summary = ko_table
         table_summary.name = "Table summary"
 
-        ko_list: List[str]
+        ko_list: list[str]
         if ko_table.column_exists(id_column_name):
             ko_list = ko_table.get_column_data(id_column_name)
         elif ko_table.column_exists(ec_number_name):

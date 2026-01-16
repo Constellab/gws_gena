@@ -1,5 +1,5 @@
 
-from gws_core import resource_decorator, TypingStyle
+from gws_core import TypingStyle, resource_decorator
 
 from ..fba.fba_result import FBAResult
 

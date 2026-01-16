@@ -1,5 +1,4 @@
 
-from typing import List
 
 import networkx as nx
 from gws_biota import Cofactor as BiotaCofactor
@@ -35,13 +34,13 @@ class BaseGraph:
 
         return neigbors
 
-    def get_all_rhea_ids(self) -> List:
+    def get_all_rhea_ids(self) -> list:
         """ Get all rhea ids """
         rhea_ids = set([edge[3] for edge in self._nxgraph.edges.data("rhea_id", default=None)])
         rhea_ids = [id_ for id_ in rhea_ids if id_ is not None]
         return rhea_ids
 
-    def get_all_chebi_ids(self) -> List:
+    def get_all_chebi_ids(self) -> list:
         """ Get all chebi ids """
         chebi_id_tuples = [edge[3] for edge in self._nxgraph.edges.data("chebi_ids", default=None)]
         chebi_ids = set()
@@ -66,7 +65,7 @@ class BaseGraph:
         is_warning_shown = False
         nxgraph = nx.Graph()
 
-        cofactor_list: List[str] = BiotaCofactor.get_factors_as_list()
+        cofactor_list: list[str] = BiotaCofactor.get_factors_as_list()
         for rxn in network.reactions.values():
             if rxn.rhea_id in added_rhea_ids:
                 continue
@@ -126,7 +125,7 @@ class BipartiteGraph(BaseGraph):
         is_warning_shown = False
         nxgraph = nx.Graph()
 
-        cofactor_list: List[str] = BiotaCofactor.get_factors_as_list()
+        cofactor_list: list[str] = BiotaCofactor.get_factors_as_list()
         for rxn in network.reactions.values():
             if rxn.rhea_id in added_rhea_ids:
                 continue

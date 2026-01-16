@@ -1,5 +1,4 @@
 
-from typing import List
 
 from gws_core import BadRequestException, StringHelper
 
@@ -30,7 +29,7 @@ class Measure:
     upper_bound: list = None
     target: list = None
     confidence_score: list = None
-    variables: List[Variable] = None
+    variables: list[Variable] = None
 
     FLATTENING_DELIMITER = ":"
 

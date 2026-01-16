@@ -1,18 +1,18 @@
 
-import math
 import ast
+import math
 
-from gws_core import (BadRequestException,Table)
+from gws_core import BadRequestException, Table
 
-from ...network.reaction.reaction import Reaction
+from ...data.task.transformer_flux_table import TransformerFluxTable
+from ...data.task.transformer_phenotype_table import TransformerPhenotypeTable
+from ...helper.base_helper import BaseHelper
 from ...network.compound.compound import Compound
+from ...network.reaction.reaction import Reaction
 from ..context import Context
 from ..measure import Measure
 from ..typing.measure_typing import MeasureDict
 from ..typing.variable_typing import VariableDict
-from ...helper.base_helper import BaseHelper
-from ...data.task.transformer_phenotype_table import TransformerPhenotypeTable
-from ...data.task.transformer_flux_table import TransformerFluxTable
 
 
 class ContextBuilderHelper(BaseHelper):

@@ -1,5 +1,5 @@
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_gena import (Compartment, Compound)
+from gws_gena import Compartment, Compound
 
 
 class TestNetwork(BaseTestCaseUsingFullBiotaDB):

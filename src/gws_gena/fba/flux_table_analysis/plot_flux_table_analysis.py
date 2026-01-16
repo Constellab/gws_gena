@@ -4,10 +4,24 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from gws_core import (BoolParam, ConfigParams, ConfigSpecs, File, FloatParam,
-                      InputSpec, InputSpecs, OutputSpec, OutputSpecs,
-                      PlotlyResource, StrParam, Table, Task, TaskInputs,
-                      TaskOutputs, TypingStyle, task_decorator)
+from gws_core import (
+    BoolParam,
+    ConfigParams,
+    ConfigSpecs,
+    FloatParam,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    PlotlyResource,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 
 @task_decorator("PlotFluxTableAnalysis", human_name="Flux Table Analysis",
@@ -113,14 +127,13 @@ class PlotFluxTableAnalysis(Task):
                         fold_change = np.log2(lin_fc)
                     else:
                         fold_change = np.NAN
+                # Handle division by zero
+                elif flux_condition2_value > 0:
+                    fold_change = np.inf
+                elif flux_condition2_value < 0:
+                    fold_change = -np.inf
                 else:
-                    # Handle division by zero
-                    if flux_condition2_value > 0:
-                        fold_change = np.inf
-                    elif flux_condition2_value < 0:
-                        fold_change = -np.inf
-                    else:
-                        fold_change = np.NAN
+                    fold_change = np.NAN
 
                 # We tag each reaction depending the fluxes values
                 if reaction_id in list_reactions_modified[column_reaction_id].values:

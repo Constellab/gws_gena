@@ -1,17 +1,29 @@
 
 import copy
 
-from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs, ConfigSpecs,
-                      ListParam, OutputSpec, OutputSpecs, Task, TaskInputs,
-                      TaskOutputs, task_decorator, TypingStyle)
+from gws_core import (
+    BoolParam,
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    ListParam,
+    OutputSpec,
+    OutputSpecs,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..network.reaction.reaction import Reaction
 from ..twin.flat_twin import FlatTwin
 from ..twin.helper.twin_helper import TwinHelper
 from ..twin.twin import Twin
 from .twin_efm_table import TwinEFMTable
-from .twin_reduction_table import TwinReductionTable
 from .twin_reducer_helper import TwinReducerHelper
+from .twin_reduction_table import TwinReductionTable
 
 
 @task_decorator("TwinReducer", human_name="Twin reducer", short_description="Perform model reduction based on a digital twin",

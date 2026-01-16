@@ -1,13 +1,29 @@
 
 import multiprocessing
 from copy import deepcopy
-from typing import List, Tuple
+
 import cvxpy as cp
 import numpy as np
-from gws_core import (BadRequestException, ConfigParams, ConfigSpecs,
-                      FloatParam, InputSpec, InputSpecs, Logger, OutputSpec,
-                      OutputSpecs, StrParam, Task, TaskInputs, TaskOutputs,
-                      TypingStyle, task_decorator, TableConcatHelper, Table)
+from gws_core import (
+    BadRequestException,
+    ConfigParams,
+    ConfigSpecs,
+    FloatParam,
+    InputSpec,
+    InputSpecs,
+    Logger,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    TableConcatHelper,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
+
 # from joblib import Parallel, delayed
 from pandas import DataFrame
 
@@ -194,7 +210,7 @@ class FVA(Task):
                     " values of confidence score while the number of simulations is set to " +
                     str(number_of_simulations))
 
-        fva_results: List[FVAResult] = []
+        fva_results: list[FVAResult] = []
 
         # If number of simulations is not None, there is a context with simulations
         if (number_of_simulations):
@@ -221,8 +237,8 @@ class FVA(Task):
         self.log_info_message('Merging all fba results')
         # merge all fba results
         self.log_info_message('Creating lists')
-        flux_tables: List[Table] = []
-        sv_tables: List[Table] = []
+        flux_tables: list[Table] = []
+        sv_tables: list[Table] = []
         if len(fva_results) > 1:
             # If there are multiple simulations, add suffix to the index
             # like this "simu0", "simu1"...
@@ -370,7 +386,7 @@ class FVA(Task):
         return xmin, xmax
 
 
-    def call_fva(self, data: Tuple[int, Twin, ConfigParams] ) -> FVAResult:
+    def call_fva(self, data: tuple[int, Twin, ConfigParams] ) -> FVAResult:
         j, twin, params = data
         solver = params["solver"]
         gamma = params["gamma"]

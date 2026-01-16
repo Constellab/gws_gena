@@ -2,9 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner, TableImporter
-from gws_gena import (Network, NetworkImporter,
-                      TransporterAdder,TransformerMediumTable)
+from gws_core import File, Settings, TableImporter, TaskRunner
+from gws_gena import Network, NetworkImporter, TransformerMediumTable, TransporterAdder
 
 settings = Settings.get_instance()
 
@@ -57,5 +56,5 @@ class TestTransporterAdder(BaseTestCaseUsingFullBiotaDB):
             f.write(net.to_csv())
 
         file_path = os.path.join(data_dir, "extended_recon_net.csv")
-        with open(file_path, 'r', encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             self.assertEqual(net.to_csv(), f.read())

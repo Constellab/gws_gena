@@ -1,5 +1,4 @@
 
-from typing import Dict, List
 
 from gws_core import BadRequestException, SerializableObjectJson
 
@@ -18,8 +17,8 @@ class ContextData(SerializableObjectJson):
     FLATTENING_DELIMITER = ":"
 
     name: str = None
-    reaction_data: Dict[str, Measure] = None
-    compound_data: Dict[str, Measure] = None
+    reaction_data: dict[str, Measure] = None
+    compound_data: dict[str, Measure] = None
 
     def __init__(self):
         super().__init__()
@@ -36,7 +35,7 @@ class ContextData(SerializableObjectJson):
         return self.dumps()
 
     @ classmethod
-    def deserialize(cls, data: Dict[str, dict]) -> 'ContextData':
+    def deserialize(cls, data: dict[str, dict]) -> 'ContextData':
         """ Deserialize """
         if data is None:
             return {}
@@ -93,11 +92,11 @@ class ContextData(SerializableObjectJson):
 
     # -- G --
 
-    def get_reaction_data_ids(self) -> List[str]:
+    def get_reaction_data_ids(self) -> list[str]:
         """ Get the ids of the measures """
         return list(self.reaction_data.keys())
 
-    def get_compound_data_ids(self) -> List[str]:
+    def get_compound_data_ids(self) -> list[str]:
         """ Get the ids of the measures """
         return list(self.compound_data.keys())
 

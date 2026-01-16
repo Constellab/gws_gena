@@ -1,22 +1,21 @@
 
-from typing import Any, Dict, List, Type
+from typing import Any
 
-from gws_biota import CompoundLayout as BiotaCompoundLayout
 from gws_core import BadRequestException, SerializableObjectJson
 
 
 class BaseSeries(SerializableObjectJson):
     """ BaseSeries """
 
-    _elements: Dict[str, Any] = None
-    _serialized_attrs: List = None
+    _elements: dict[str, Any] = None
+    _serialized_attrs: list = None
 
-    def __init__(self, elements: Dict[str, Any] = None):
+    def __init__(self, elements: dict[str, Any] = None):
         super().__init__()
         self._elements = {}
         if elements is not None:
             for key, val in elements.items():
-                elt_type: Type = self.get_element_type()
+                elt_type: type = self.get_element_type()
                 self._elements[key] = elt_type(val)
 
     def copy(self) -> Any:
@@ -47,7 +46,7 @@ class BaseSeries(SerializableObjectJson):
             raise BadRequestException(f"The element must be an instance of {type(elt).__name__}")
         self._elements[key] = elt
 
-    def serialize(self) -> Dict:
+    def serialize(self) -> dict:
         """
         Serialize
         """
@@ -58,7 +57,7 @@ class BaseSeries(SerializableObjectJson):
         return _dict
 
     @ classmethod
-    def deserialize(cls, data: Dict[str, dict]) -> 'BaseSeries':
+    def deserialize(cls, data: dict[str, dict]) -> 'BaseSeries':
         """ Deserialize """
         if data is None:
             return {}
@@ -67,7 +66,7 @@ class BaseSeries(SerializableObjectJson):
     # METHODS TO OVERRIDE
 
     @classmethod
-    def get_fields_to_serialize(cls) -> List:
+    def get_fields_to_serialize(cls) -> list:
         """
         Get the element attributes to serilize
 
@@ -76,7 +75,7 @@ class BaseSeries(SerializableObjectJson):
         return []
 
     @classmethod
-    def get_element_type(cls) -> Type:
+    def get_element_type(cls) -> type:
         """
         Get the type the element to serialize
 

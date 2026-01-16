@@ -1,9 +1,15 @@
 import streamlit as st
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+from gws_core import InputTask, Scenario, ScenarioProxy, ScenarioStatus, Tag
 from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitContainers
-from gws_core import Scenario, ScenarioProxy, Tag, InputTask, Scenario, ScenarioStatus, ScenarioProxy
 from gws_gena import TwinBuilder
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import extract_network_and_context_from_twin, create_base_scenario_with_tags, display_scenario_parameters, display_network
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import (
+    create_base_scenario_with_tags,
+    display_network,
+    display_scenario_parameters,
+    extract_network_and_context_from_twin,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+
 
 def twin_builder_run(gena_state: State):
     with StreamlitAuthenticateUser():

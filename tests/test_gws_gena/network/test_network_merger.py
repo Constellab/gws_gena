@@ -1,11 +1,9 @@
 
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (ConfigParams, Experiment, File,
-                      Settings, TaskRunner)
-from gws_gena import Context, Network, NetworkImporter, NetworkMerger, Twin
+from gws_core import File, Settings, TaskRunner
+from gws_gena import NetworkImporter, NetworkMerger
 
 settings = Settings.get_instance()
 

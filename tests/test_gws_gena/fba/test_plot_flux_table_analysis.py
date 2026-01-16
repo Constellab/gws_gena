@@ -1,8 +1,7 @@
 import os
 
+from gws_core import BaseTestCase, File, Settings, Table, TableImporter, TaskRunner
 from gws_gena.fba.flux_table_analysis.plot_flux_table_analysis import PlotFluxTableAnalysis
-from gws_core import (File, TaskRunner, Table, TableImporter)
-from gws_core import BaseTestCase, Settings
 
 settings = Settings.get_instance()
 

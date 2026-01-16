@@ -1,8 +1,13 @@
-import streamlit as st
-from gws_gena.gena_dashboard._gena_dashboard_core.pages import first_page, new_analysis_page, analysis_page, settings
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core.streamlit import StreamlitRouter
 import os
+
+from gws_core.streamlit import StreamlitRouter
+from gws_gena.gena_dashboard._gena_dashboard_core.pages import (
+    analysis_page,
+    first_page,
+    new_analysis_page,
+    settings,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 
 # Path of the folder containing the translation files
 lang_translation_folder_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../_gena_dashboard_core')

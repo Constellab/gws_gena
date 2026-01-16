@@ -1,5 +1,6 @@
 import sys
-from cobra.io import save_json_model, read_sbml_model, load_matlab_model
+
+from cobra.io import load_matlab_model, read_sbml_model, save_json_model
 
 file_path = sys.argv[1]
 output_path = sys.argv[2]

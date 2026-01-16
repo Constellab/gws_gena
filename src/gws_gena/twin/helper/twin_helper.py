@@ -1,5 +1,5 @@
 
-from typing import List, TypedDict
+from typing import TypedDict
 
 import efmtool
 import numpy as np
@@ -8,11 +8,10 @@ from gws_core import BadRequestException
 from pandas import DataFrame
 from scipy.linalg import null_space
 
-from ...context.variable import Variable
-from ..flat_twin import FlatTwin
-from ...network.reaction.reaction import Reaction
-from ..twin import Twin
 from ...context.helper.context_builder_helper import ContextBuilderHelper
+from ...network.reaction.reaction import Reaction
+from ..flat_twin import FlatTwin
+from ..twin import Twin
 
 # ####################################################################
 #
@@ -20,13 +19,12 @@ from ...context.helper.context_builder_helper import ContextBuilderHelper
 #
 # ####################################################################
 
-FBAProblem = TypedDict("FBAProblem", {
-    "S": DataFrame,
-    "C": DataFrame,
-    "b": DataFrame,
-    "r": DataFrame,
-    "C_rel": DataFrame
-})
+class FBAProblem(TypedDict):
+    S: DataFrame
+    C: DataFrame
+    b: DataFrame
+    r: DataFrame
+    C_rel: DataFrame
 
 ObsvMatrices = TypedDict("ObsvMatrices", {
     "C": DataFrame,  # stoichiometric matrix of measured fluxes
@@ -34,10 +32,9 @@ ObsvMatrices = TypedDict("ObsvMatrices", {
     "r": DataFrame   # stoichiometric matrix of metabolic pool variations
 })
 
-ReducedMatrices = TypedDict("ReducedMatrices", {
-    "K": DataFrame,
-    "EFM": DataFrame,
-})
+class ReducedMatrices(TypedDict):
+    K: DataFrame
+    EFM: DataFrame
 
 
 class TwinHelper:
@@ -241,7 +238,7 @@ class TwinHelper:
         return cls._compute_elementary_flux_modes_from_matrix(N, reversibilities=reversibilities)
 
     @ classmethod
-    def _compute_elementary_flux_modes_from_matrix(cls, N: DataFrame, reversibilities: List[int] = None) -> DataFrame:
+    def _compute_elementary_flux_modes_from_matrix(cls, N: DataFrame, reversibilities: list[int] = None) -> DataFrame:
         if reversibilities is None:
             reversibilities = [0] * N.shape[1]
         efms = efmtool.calculate_efms(

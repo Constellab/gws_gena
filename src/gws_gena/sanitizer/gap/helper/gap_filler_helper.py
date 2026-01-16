@@ -1,6 +1,5 @@
 
-from gws_biota.unicell.unicell_service import \
-    UnicellService as BiotaUnicellService
+from gws_biota.unicell.unicell_service import UnicellService as BiotaUnicellService
 from pandas import DataFrame
 
 from ....helper.base_helper import BaseHelper

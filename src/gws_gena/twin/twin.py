@@ -1,8 +1,15 @@
 
-from typing import Dict
 
-from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
-                    ResourceSet,resource_decorator, view, TypingStyle)
+from gws_core import (
+    BadRequestException,
+    ConfigParams,
+    DictRField,
+    JSONView,
+    ResourceSet,
+    TypingStyle,
+    resource_decorator,
+    view,
+)
 
 from ..context.context import Context
 from ..network.network import Network
@@ -20,7 +27,7 @@ class Twin(ResourceSet):
     """
     DEFAUTL_NAME = "twin"
     # description: str = StrRField(default_value="", searchable=True)
-    network_contexts: Dict[str, str] = DictRField()
+    network_contexts: dict[str, str] = DictRField()
 
     def __init__(self):
         super().__init__()
@@ -80,13 +87,13 @@ class Twin(ResourceSet):
 
             for measure in ctx.reaction_data.values():
                 for variable in measure.variables:
-                    if not variable.reference_id in reaction_ids:
+                    if variable.reference_id not in reaction_ids:
                         raise BadRequestException(
                             f"The reaction '{variable.reference_id}' of the context measure '{measure.id}' is not found in the list of reactions")
 
             for measure in ctx.compound_data.values():
                 for variable in measure.variables:
-                    if not variable.reference_id in compound_ids:
+                    if variable.reference_id not in compound_ids:
                         raise BadRequestException(
                             f"The compound '{variable.reference_id}' of the context measure '{measure.id}' is not found in the list of compounds")
 

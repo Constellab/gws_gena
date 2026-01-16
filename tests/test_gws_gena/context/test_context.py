@@ -3,7 +3,7 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (File,Settings)
+from gws_core import File, Settings
 from gws_gena import ContextImporter
 
 settings = Settings.get_instance()
@@ -17,7 +17,7 @@ class TestContext(BaseTestCaseUsingFullBiotaDB):
         file_path = os.path.join(data_dir, "toy_context.json")
         ctx = ContextImporter.call(File(path=file_path), params={})
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
 
         print(ctx.dumps())

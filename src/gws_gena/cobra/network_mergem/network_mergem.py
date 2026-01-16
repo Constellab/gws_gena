@@ -1,9 +1,22 @@
 import json
 import os
 
-from gws_core import (BoolParam, ConfigParams, ConfigSpecs, File, InputSpec,
-                      InputSpecs, OutputSpec, OutputSpecs, StrParam, Task,
-                      TaskInputs, TaskOutputs, TypingStyle, task_decorator)
+from gws_core import (
+    BoolParam,
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ...network.network import Network
 from ...network.network_task.network_exporter import NetworkExporter
@@ -124,7 +137,7 @@ class NetworkMergem(Task):
                                        params={'file_name': "network",
                                                'file_format': "json"})
         # Load json file
-        with open(network.path, 'r', encoding='utf-8') as file:
+        with open(network.path, encoding='utf-8') as file:
             data = json.load(file)
 
         # Add the key 'genes'

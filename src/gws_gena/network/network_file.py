@@ -1,5 +1,5 @@
 
-from gws_core import ConfigParams, File, TabularView, resource_decorator, view, TypingStyle
+from gws_core import ConfigParams, File, TabularView, TypingStyle, resource_decorator, view
 
 from .view.network_view import NetworkView
 

@@ -1,10 +1,21 @@
 
-from typing import List
 
 import pandas
-from gws_core import (ConfigParams, InputSpec, InputSpecs, ListParam,
-                      OutputSpec, OutputSpecs, Table, Task, TaskInputs, ConfigSpecs,
-                      TaskOutputs, task_decorator, TypingStyle)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    ListParam,
+    OutputSpec,
+    OutputSpecs,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from .koa_result import KOAResult
 
@@ -33,7 +44,7 @@ class KOAResultExtractor(Task):
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         koa_result = inputs["koa_result"]
-        fluxes_to_extract: List = params.get_value("fluxes_to_extract")
+        fluxes_to_extract: list = params.get_value("fluxes_to_extract")
 
         data = []
         for flux_name in fluxes_to_extract:

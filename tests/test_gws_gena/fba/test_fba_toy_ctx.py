@@ -3,8 +3,8 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings, TaskRunner, TableImporter
-from gws_gena import (ContextBuilder, FBAProto, NetworkImporter,TransformerFluxTable)
+from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
+from gws_gena import ContextBuilder, FBAProto, NetworkImporter, TransformerFluxTable
 
 settings = Settings.get_instance()
 

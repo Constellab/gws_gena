@@ -21,7 +21,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
                                    params={"add_biomass": True})
 
         ## CASE JSON exporter ##
-        self.print(f"Test json export")
+        self.print("Test json export")
 
         file_exporter = NetworkExporter.call(
             net,
@@ -32,7 +32,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue(file_exporter.is_json())
 
         ## CASE csv exporter ##
-        self.print(f"Test csv export")
+        self.print("Test csv export")
 
         file_exporter = NetworkExporter.call(
             net,
@@ -43,7 +43,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue(file_exporter.is_csv())
 
         ## CASE txt exporter ##
-        self.print(f"Test txt export")
+        self.print("Test txt export")
 
         file_exporter = NetworkExporter.call(
             net,
@@ -64,7 +64,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
                                            "biomass_metabolite_id_user": "biomass_biomass"})
 
         ## CASE JSON exporter ##
-        self.print(f"Test json export")
+        self.print("Test json export")
 
         file_exporter = NetworkExporter.call(
             net,
@@ -75,7 +75,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue(file_exporter.is_json())
 
         ## CASE csv exporter ##
-        self.print(f"Test csv export")
+        self.print("Test csv export")
 
         file_exporter = NetworkExporter.call(
             net,
@@ -86,7 +86,7 @@ class TestNetworkExporter(BaseTestCaseUsingFullBiotaDB):
         self.assertTrue(file_exporter.is_csv())
 
         ## CASE txt exporter ##
-        self.print(f"Test txt export")
+        self.print("Test txt export")
 
         file_exporter = NetworkExporter.call(
             net,

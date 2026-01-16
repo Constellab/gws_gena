@@ -1,6 +1,6 @@
 
 import copy
-from typing import Dict, List, Union
+from typing import Union
 
 from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Reaction as BiotaReaction
@@ -8,8 +8,7 @@ from gws_biota import ReactionLayoutDict as BiotaReactionLayoutDict
 from gws_core import BadRequestException
 
 from ..compound.compound import Compound
-from ..exceptions.compound_exceptions import (ProductDuplicateException,
-                                              SubstrateDuplicateException)
+from ..exceptions.compound_exceptions import ProductDuplicateException, SubstrateDuplicateException
 from ..exceptions.reaction_exceptions import InvalidReactionException
 from ..helper.numeric_helper import NumericHelper
 from ..reaction.helper.reaction_biota_helper import ReactionBiotaHelper
@@ -54,9 +53,9 @@ class Reaction:
     lower_bound: float = LOWER_BOUND
     upper_bound: float = UPPER_BOUND
     rhea_id: str = ""
-    enzymes: List[EnzymeDict] = None
-    products: Dict[str, Product] = None
-    substrates: Dict[str, Substrate] = None
+    enzymes: list[EnzymeDict] = None
+    products: dict[str, Product] = None
+    substrates: dict[str, Substrate] = None
     data: dict = None
     layout: BiotaReactionLayoutDict = None
     gene_reaction_rule: str = ""
@@ -258,7 +257,7 @@ class Reaction:
 
     @ classmethod
     def from_biota(cls, *, biota_reaction=None, rhea_id=None, ec_number=None, tax_id=None,
-                   tax_search_method='bottom_up') -> List['Reaction']:
+                   tax_search_method='bottom_up') -> list['Reaction']:
         """
         Create a biota reaction from a Rhea id or an EC number.
 
@@ -328,7 +327,7 @@ class Reaction:
                 return self.enzymes[0].get("pathways")
             return ReactionPathwayDict()
 
-    def get_pathways_as_flat_dict(self) -> Dict:
+    def get_pathways_as_flat_dict(self) -> dict:
         pw_dict = {}
         pw = self.get_pathways()
         if pw:
@@ -383,7 +382,7 @@ class Reaction:
         :type comp: `gena.compound.Compound`
         """
 
-        if not comp.id in self.substrates:
+        if comp.id not in self.substrates:
             raise BadRequestException(f"Substrate (id= {comp.id}) does not exist")
 
         # remove the compound from the reaction
@@ -397,7 +396,7 @@ class Reaction:
         :type comp: `gena.compound.Compound`
         """
 
-        if not comp.id in self.products:
+        if comp.id not in self.products:
             raise BadRequestException(f"Product (id= {comp.id}) does not exist")
 
         # remove the compound from the reaction

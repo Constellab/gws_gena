@@ -63,7 +63,7 @@ class TwinFalltenerHelper:
                     "reaction_id": original_rxn_id
                 }
 
-                if not net.name in _rev_rxn_mapping:
+                if net.name not in _rev_rxn_mapping:
                     _rev_rxn_mapping[net.name] = {}
                 _rev_rxn_mapping[net.name][original_rxn_id] = current_rxn_data["id"]
 

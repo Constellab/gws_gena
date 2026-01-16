@@ -1,5 +1,5 @@
 
-from typing import Any, Dict
+from typing import Any
 
 from gws_core import SerializableObjectJson
 
@@ -99,7 +99,7 @@ class FBAOptimizeResult(SerializableObjectJson):
     def status(self, status):
         self._data["status"] = status
 
-    def serialize(self) -> Dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         """
         Serialize
         """
@@ -107,7 +107,7 @@ class FBAOptimizeResult(SerializableObjectJson):
         return self._data
 
     @ classmethod
-    def deserialize(cls, data: Dict[str, Any]) -> 'OptimizeResult':
+    def deserialize(cls, data: dict[str, Any]) -> 'OptimizeResult':
         """ Deserialize """
         if data is None:
             return {}

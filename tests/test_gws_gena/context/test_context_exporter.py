@@ -2,8 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (File,Settings)
-from gws_gena import (ContextImporter,ContextExporter)
+from gws_core import File, Settings
+from gws_gena import ContextExporter, ContextImporter
 
 settings = Settings.get_instance()
 

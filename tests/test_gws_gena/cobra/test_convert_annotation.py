@@ -1,6 +1,7 @@
 import os
+
+from gws_core import BaseTestCase, File, Settings, TaskRunner
 from gws_gena.cobra.conversion_annotation.conversion_annotation import ConvertAnnotation
-from gws_core import (File,TaskRunner,BaseTestCase,Settings)
 
 settings = Settings.get_instance()
 

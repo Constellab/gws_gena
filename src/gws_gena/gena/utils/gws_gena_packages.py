@@ -1,4 +1,4 @@
-class GwsGenaPackages():
+class GwsGenaPackages:
     """List of pip packages used by GWS Gena
     """
     CVXPY = "cvxpy"

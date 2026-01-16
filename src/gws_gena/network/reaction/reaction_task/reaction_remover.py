@@ -1,7 +1,19 @@
 
-from gws_core import (BoolParam, ConfigParams, InputSpec, InputSpecs,
-                      OutputSpec, OutputSpecs, Table, Task, TaskInputs, ConfigSpecs,
-                      TaskOutputs, TypingStyle, task_decorator)
+from gws_core import (
+    BoolParam,
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ...network import Network
 from ..helper.reaction_remover_helper import ReactionRemoverHelper

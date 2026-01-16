@@ -2,7 +2,7 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskRunner
+from gws_core import File, Settings, TaskRunner
 from gws_gena import GapFiller, GapFinderHelper, NetworkImporter
 
 settings = Settings.get_instance()

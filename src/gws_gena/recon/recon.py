@@ -1,11 +1,23 @@
 
-from gws_core import (BadRequestException, ConfigParams, InputSpec, InputSpecs,
-                      OutputSpec, OutputSpecs, StringHelper, StrParam, Table,
-                      Task, TaskInputs, TaskOutputs, TypingStyle, ConfigSpecs,
-                      task_decorator)
+from gws_core import (
+    BadRequestException,
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StringHelper,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
-from ..data.task.transformer_biomass_reaction_table import \
-    TransformerBiomassReactionTable
+from ..data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
 from ..data.task.transformer_ec_number_table import TransformerECNumberTable
 from ..network.network import Network
 from .helper.recon_helper import ReconHelper

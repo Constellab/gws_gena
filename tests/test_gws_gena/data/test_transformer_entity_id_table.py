@@ -1,6 +1,8 @@
 import os
-from gws_core import File, Settings, TaskRunner, BaseTestCaseLight, TableImporter
+
+from gws_core import BaseTestCaseLight, File, Settings, TableImporter, TaskRunner
 from gws_gena import TransformerEntityIDTable
+
 
 class TestTransformerEntityIDTable(BaseTestCaseLight):
 

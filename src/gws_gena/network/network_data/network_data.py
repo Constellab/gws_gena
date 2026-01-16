@@ -1,6 +1,5 @@
 
 import copy
-from typing import Dict, List, Optional
 
 import numpy as np
 from gws_biota import EnzymeClass
@@ -33,17 +32,17 @@ class NetworkData(SerializableObjectJson):
     DELIMITER = "_"
 
     name: str = None
-    compounds: Dict[str, Compound] = None
-    reactions: Dict[str, Reaction] = None
-    compartments: Dict[str, Compartment] = None
-    simulations: Dict[str, SimulationDict] = None
-    recon_tags: Dict[str, NetworkReconTagDict] = None
+    compounds: dict[str, Compound] = None
+    reactions: dict[str, Reaction] = None
+    compartments: dict[str, Compartment] = None
+    simulations: dict[str, SimulationDict] = None
+    recon_tags: dict[str, NetworkReconTagDict] = None
 
     # created by the class
-    _compartment_chebi_ids: Dict[str, str] = None
-    _ec_rxn_ids_map: Dict[str, str] = None
-    _rhea_rxn_ids_map: Dict[str, str] = None
-    _gpr_rxn_ids_map: Dict[str, str] = None
+    _compartment_chebi_ids: dict[str, str] = None
+    _ec_rxn_ids_map: dict[str, str] = None
+    _rhea_rxn_ids_map: dict[str, str] = None
+    _gpr_rxn_ids_map: dict[str, str] = None
 
     def __init__(self):
         super().__init__()
@@ -68,7 +67,7 @@ class NetworkData(SerializableObjectJson):
         return self.dumps()
 
     @ classmethod
-    def deserialize(cls, data: Dict[str, dict]) -> 'NetworkData':
+    def deserialize(cls, data: dict[str, dict]) -> 'NetworkData':
         """ Deserialize """
         if data is None:
             return {}
@@ -430,10 +429,10 @@ class NetworkData(SerializableObjectJson):
 
         return self.recon_tags.get("compounds", {})
 
-    def get_compound_ids(self) -> List[str]:
+    def get_compound_ids(self) -> list[str]:
         return list(self.compounds.keys())
 
-    def get_reaction_ids(self) -> List[str]:
+    def get_reaction_ids(self) -> list[str]:
         return list(self.reactions.keys())
 
     def get_ec_recon_tag(self, ec_number: str, tag_name: str = None):
@@ -502,7 +501,7 @@ class NetworkData(SerializableObjectJson):
 
         return self.compounds[comp_id]
 
-    def get_compounds_by_chebi_id(self, chebi_id: str, compartment_go_id: Optional[str] = None) -> List[Compound]:
+    def get_compounds_by_chebi_id(self, chebi_id: str, compartment_go_id: str | None = None) -> list[Compound]:
         """
         Get a compound by its chebi id and compartment.
 
@@ -580,7 +579,7 @@ class NetworkData(SerializableObjectJson):
         else:
             return None
 
-    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> List[Reaction]:
+    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> list[Reaction]:
         """ Get the reactions related to a compound with having a given CheBI ID """
         rxns = []
         comps = self.get_compounds_by_chebi_id(chebi_id)
@@ -618,7 +617,7 @@ class NetworkData(SerializableObjectJson):
                 return comp
         return None
 
-    def get_compounds_by_compartments(self, compartment_go_ids: List[str] = None) -> Dict[str, Compound]:
+    def get_compounds_by_compartments(self, compartment_go_ids: list[str] = None) -> dict[str, Compound]:
         """
         Get the compounds in a compartments
 
@@ -632,7 +631,7 @@ class NetworkData(SerializableObjectJson):
                 comps[comp_id] = comp
         return comps
 
-    def get_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the steady compounds
 
@@ -649,7 +648,7 @@ class NetworkData(SerializableObjectJson):
                     comps[comp_id] = comp
         return comps
 
-    def get_non_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_non_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the non-steady compounds
 

@@ -3,7 +3,7 @@ import os
 from gws_core import MessageDispatcher, PipShellProxy
 
 
-class CobraEnvHelper():
+class CobraEnvHelper:
     ENV_DIR_NAME = "CobraShellProxy"
     ENV_FILE_PATH = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),

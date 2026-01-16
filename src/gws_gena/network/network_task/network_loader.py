@@ -1,7 +1,19 @@
 import os
+
 import pandas as pd
-from gws_core import (task_decorator, Task, OutputSpec, OutputSpecs, File, ConfigSpecs,
-                      ConfigParams, StrParam, TaskInputs, TaskOutputs, TypingStyle)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 
 @task_decorator("LoadBiggModels", human_name="Load BiGG Models",

@@ -1,5 +1,5 @@
 
-from gws_core import (ProcessSpec, Protocol,protocol_decorator)
+from gws_core import ProcessSpec, Protocol, protocol_decorator
 
 from ..koa.koa import KOA
 from ..twin.twin_builder import TwinBuilder

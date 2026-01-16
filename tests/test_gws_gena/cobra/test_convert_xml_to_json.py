@@ -1,8 +1,8 @@
 import json
 import os
 
+from gws_core import BaseTestCase, File, Settings, TaskRunner
 from gws_gena.cobra.network_convert.convert_xml_to_json import ConvertXmlToJson
-from gws_core import (File,TaskRunner,Settings,BaseTestCase)
 
 settings = Settings.get_instance()
 
@@ -25,10 +25,10 @@ class TestConvertXmlToJson(BaseTestCase):
         expected_model_xml = os.path.join(data_dir, "cobra/network_convert/model_xml.json")
 
         #Compare the two model using an assert function :
-        with open(model_output_xml.path, 'r', encoding="utf-8") as model:
+        with open(model_output_xml.path, encoding="utf-8") as model:
             data_output_xml  = json.load(model)
 
-        with open(expected_model_xml, 'r', encoding="utf-8") as model:
+        with open(expected_model_xml, encoding="utf-8") as model:
             data_expected_xml  = json.load(model)
 
         self.assertTrue('D-Glucose' in data_expected_xml["metabolites"][0]["name"])
@@ -54,10 +54,10 @@ class TestConvertXmlToJson(BaseTestCase):
         expected_model_mat = os.path.join(data_dir, "cobra/network_convert/model_mat.json")
 
         #Compare the two model using an assert function :
-        with open(model_output_mat.path, 'r', encoding="utf-8") as model:
+        with open(model_output_mat.path, encoding="utf-8") as model:
             data_output_mat  = json.load(model)
 
-        with open(expected_model_mat, 'r', encoding="utf-8") as model:
+        with open(expected_model_mat, encoding="utf-8") as model:
             data_expected_mat  = json.load(model)
 
         self.assertTrue('D-Glucose' in data_expected_mat["metabolites"][0]["name"])

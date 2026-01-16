@@ -1,9 +1,15 @@
 
 import copy
-from typing import Dict
 
-from gws_core import (BadRequestException, ConfigParams, DictRField, JSONView,
-                      resource_decorator, view, TypingStyle)
+from gws_core import (
+    BadRequestException,
+    ConfigParams,
+    DictRField,
+    JSONView,
+    TypingStyle,
+    resource_decorator,
+    view,
+)
 
 from ..context.context import Context
 from ..network.network import Network
@@ -19,8 +25,8 @@ class FlatTwin(Twin):
     A flat digital twin of cell metabolism
     """
 
-    _mapping: Dict[str, dict] = DictRField()
-    _reverse_mapping: Dict[str, str] = DictRField()
+    _mapping: dict[str, dict] = DictRField()
+    _reverse_mapping: dict[str, str] = DictRField()
 
     def copy(self) -> 'FlatTwin':
         twin = super().copy()
@@ -29,11 +35,11 @@ class FlatTwin(Twin):
         return twin
 
     @property
-    def reaction_mapping(self) -> Dict[str, dict]:
+    def reaction_mapping(self) -> dict[str, dict]:
         return self._reaction_mapping
 
     @property
-    def reverse_reaction_mapping(self) -> Dict[str, str]:
+    def reverse_reaction_mapping(self) -> dict[str, str]:
         return self._reverse_reaction_mapping
 
     def dumps(self, *args, **kwargs):

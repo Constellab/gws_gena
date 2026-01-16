@@ -1,9 +1,26 @@
 import streamlit as st
+from gws_core import (
+    InputTask,
+    ProcessProxy,
+    ProtocolProxy,
+    ResourceModel,
+    ScenarioCreationType,
+    ScenarioProxy,
+    SpaceFolder,
+    SpaceService,
+    StringHelper,
+    Tag,
+)
+from gws_core.streamlit import (
+    StreamlitAuthenticateUser,
+    StreamlitContainers,
+    StreamlitResourceSelect,
+    StreamlitRouter,
+    StreamlitTaskRunner,
+)
+from gws_gena import ConvertXmlToJson, LoadBiGGModels, NetworkImporter
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core.streamlit import StreamlitResourceSelect, StreamlitRouter, StreamlitTaskRunner, StreamlitAuthenticateUser, StreamlitContainers
-from gws_core import ResourceModel, SpaceFolder, StringHelper, Tag, InputTask, SpaceService, ProcessProxy, ScenarioProxy, ProtocolProxy, ScenarioCreationType
-from gws_gena import NetworkImporter, LoadBiGGModels
-from gws_gena import ConvertXmlToJson
+
 
 def _flatten_folders_recursive(folders, folder_dict, folder_display_names, prefix="-"):
     """Recursively flatten folder hierarchy for display"""

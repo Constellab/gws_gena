@@ -1,10 +1,20 @@
 
-from typing import List
 
-from gws_core import (BadRequestException, BarPlotView, ConfigParams,
-                      ConfigSpecs, ListParam, ListRField, ResourceSet,
-                      StringHelper, Table, TechnicalInfo, TypingStyle,
-                      resource_decorator, view)
+from gws_core import (
+    BadRequestException,
+    BarPlotView,
+    ConfigParams,
+    ConfigSpecs,
+    ListParam,
+    ListRField,
+    ResourceSet,
+    StringHelper,
+    Table,
+    TechnicalInfo,
+    TypingStyle,
+    resource_decorator,
+    view,
+)
 from pandas import DataFrame
 
 
@@ -22,9 +32,9 @@ class KOAResult(ResourceSet):
     _simulations = ListRField()
     # _ko_table = ResourceRField()
 
-    _ko_list: List[str] = ListRField()
+    _ko_list: list[str] = ListRField()
 
-    def __init__(self, data: List[DataFrame] = None, ko_list: List[str] = None):
+    def __init__(self, data: list[DataFrame] = None, ko_list: list[str] = None):
         super().__init__()
         self._simulations = []
 
@@ -68,7 +78,7 @@ class KOAResult(ResourceSet):
         name = self._create_flux_table_name(ko_id)
         return self.get_resource(name).get_data()
 
-    def get_ko_ids(self) -> List[str]:
+    def get_ko_ids(self) -> list[str]:
         """ Get the ids of the knock-outed reactions """
         return self._ko_list
 
@@ -94,7 +104,7 @@ class KOAResult(ResourceSet):
         View one or several columns as 2D-bar plots
         """
 
-        flux_names: List = params.get_value("flux_names")
+        flux_names: list = params.get_value("flux_names")
 
         for flux_name in flux_names:
             values = []

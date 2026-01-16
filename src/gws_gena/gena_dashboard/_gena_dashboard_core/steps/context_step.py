@@ -1,16 +1,29 @@
-import os
 import json
+import os
+
 import streamlit as st
-from typing import Optional
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_core import (
-    ResourceOrigin, File, Settings, Scenario,
-    ProtocolProxy, InputTask, ResourceModel, ScenarioStatus
+    File,
+    InputTask,
+    ProtocolProxy,
+    ResourceModel,
+    ResourceOrigin,
+    Scenario,
+    ScenarioStatus,
+    Settings,
 )
-from gws_gena import ContextImporter, ContextBuilder, GenerationMultiSimulations, ContextFromDEG
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, create_base_scenario_with_tags, search_updated_network, get_context_process_name, display_scenario_parameters
-from gws_core.streamlit import StreamlitResourceSelect, StreamlitContainers, StreamlitTaskRunner
+from gws_core.streamlit import StreamlitContainers, StreamlitResourceSelect, StreamlitTaskRunner
+from gws_gena import ContextBuilder, ContextFromDEG, ContextImporter, GenerationMultiSimulations
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import (
+    create_base_scenario_with_tags,
+    display_scenario_parameters,
+    get_context_process_name,
+    search_context,
+    search_updated_network,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_omix import IDConvertTask
+
 
 def _create_empty_context_resource(gena_state: State) -> ResourceModel:
     """Create an empty context resource file."""
@@ -420,7 +433,7 @@ def _render_context_setup_ui(gena_state: State) -> bool:
         return False
 
 
-def render_context_step(selected_scenario: Optional[Scenario], gena_state: State) -> None:
+def render_context_step(selected_scenario: Scenario | None, gena_state: State) -> None:
     """Main function to render the context step."""
     if not selected_scenario:
         _render_context_creation_ui(gena_state)
@@ -504,10 +517,9 @@ def _render_context_creation_ui(gena_state: State) -> None:
                 _handle_context_simulation_builder(protocol, gena_state)
             elif context_option == translate_service.translate("build_new_context_deg"):
                 _handle_context_deg_builder(protocol, gena_state)
-            else:  # Select existing context resource
-                if _handle_existing_context(protocol, gena_state):
-                    # Context is already processed, no need for importer
-                    pass
+            elif _handle_existing_context(protocol, gena_state):
+                # Context is already processed, no need for importer
+                pass
 
         # Queue scenario and refresh UI
         scenario.add_to_queue()

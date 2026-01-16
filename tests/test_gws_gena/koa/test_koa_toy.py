@@ -2,9 +2,15 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner, TableImporter
-from gws_gena import (KOA, ContextImporter, TransformerEntityIDTable, 
-                      KOAResultExtractor, NetworkImporter, Twin)
+from gws_core import File, Settings, TableImporter, TaskRunner
+from gws_gena import (
+    KOA,
+    ContextImporter,
+    KOAResultExtractor,
+    NetworkImporter,
+    TransformerEntityIDTable,
+    Twin,
+)
 
 settings = Settings.get_instance()
 

@@ -1,6 +1,5 @@
 
 import re
-from typing import List, Union
 
 from gws_biota import Compound as BiotaCompound
 from gws_biota import Enzyme as BiotaEnzyme
@@ -22,7 +21,7 @@ class ReactionBiotaHelper(BaseHelper):
     """ ReactionBiotaHelper """
 
     def create_oligomer_if_required_and_add_to_reaction(
-            self, biota_comps: List[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
+            self, biota_comps: list[BiotaCompound], stoich, rxn: 'Reaction', is_product: bool,
             compartment_go_id=None, alt_litteral_compound_name=None, oligomerization=None):
         """ Merge a list of compounds (oligomerisation) """
 
@@ -76,11 +75,11 @@ class ReactionBiotaHelper(BaseHelper):
             rxn.add_substrate(c, stoich, update_if_exists=True)
 
     def create_reaction_enzyme_dict_from_biota(
-            self, enzymes: List[Union[BiotaEnzyme, BiotaEnzymeOrtholog]],
+            self, enzymes: list[BiotaEnzyme | BiotaEnzymeOrtholog],
             load_taxonomy=True, load_pathway=True) -> EnzymeDict:
         """ create_reaction_enzyme_dict_from_biota """
 
-        enzyme_list: List[EnzymeDict] = []
+        enzyme_list: list[EnzymeDict] = []
 
         found_ec_list = []
         for enzyme in enzymes:
@@ -131,7 +130,7 @@ class ReactionBiotaHelper(BaseHelper):
 
         from ...reaction.reaction import Reaction
 
-        enzyme_list: List[EnzymeDict] = self.create_reaction_enzyme_dict_from_biota(
+        enzyme_list: list[EnzymeDict] = self.create_reaction_enzyme_dict_from_biota(
             rhea_rxn.enzymes, load_taxonomy=False)
 
         rxn: Reaction = Reaction(

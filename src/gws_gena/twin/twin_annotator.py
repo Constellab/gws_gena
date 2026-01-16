@@ -1,7 +1,16 @@
 
-from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs, TypingStyle,
-                      task_decorator)
+from gws_core import (
+    ConfigParams,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..fba.fba_result import FBAResult
 from ..fva.fva_result import FVAResult

@@ -2,8 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import (File, Settings,TaskRunner)
-from gws_gena import (ContextImporter,NetworkImporter, Twin,TwinBuilder)
+from gws_core import File, Settings, TaskRunner
+from gws_gena import ContextImporter, NetworkImporter, Twin, TwinBuilder
 
 settings = Settings.get_instance()
 

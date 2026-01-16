@@ -1,7 +1,7 @@
 import sys
-from cobra.io import save_json_model
-import mergem
 
+import mergem
+from cobra.io import save_json_model
 
 net1_path = sys.argv[1]
 net2_path = sys.argv[2]

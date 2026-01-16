@@ -1,7 +1,6 @@
 
 import copy
 import random
-from typing import List
 
 from gws_biota import Cofactor as BiotaCofactor
 from gws_biota import Compound as BiotaCompound
@@ -11,8 +10,7 @@ from gws_biota import Residue as BiotaResidue
 from gws_core import BadRequestException
 
 from ..compartment.compartment import Compartment
-from ..exceptions.compound_exceptions import (CompoundNotFoundException,
-                                              InvalidCompoundIdException)
+from ..exceptions.compound_exceptions import CompoundNotFoundException, InvalidCompoundIdException
 from ..typing.compound_typing import CompoundDict
 
 
@@ -65,7 +63,7 @@ class Compound:
     inchi: str = ""
     compartment: Compartment = None
     chebi_id: str = ""
-    alt_chebi_ids: List = None
+    alt_chebi_ids: list = None
     kegg_id: str = ""
     inchikey: str = ""
     layout: BiotaCompoundLayoutDict = None

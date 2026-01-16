@@ -2,8 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import ConfigParams, File, Settings, TaskRunner, TableImporter
-from gws_gena import (NetworkImporter, ReactionAdder, TransformerEntityIDTable)
+from gws_core import File, Settings, TableImporter, TaskRunner
+from gws_gena import NetworkImporter, ReactionAdder, TransformerEntityIDTable
 
 settings = Settings.get_instance()
 

@@ -1,8 +1,8 @@
 
 from typing import TypedDict
 
-SimulationDict = TypedDict("SimulationDict", {
-    "id": str,
-    "name": str,
-    "description": str,
-})
+
+class SimulationDict(TypedDict):
+    id: str
+    name: str
+    description: str

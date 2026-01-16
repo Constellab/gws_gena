@@ -1,9 +1,24 @@
 
-from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Table, Task, TaskInputs, TaskOutputs,
-                      TypingStyle, task_decorator, ConfigSpecs, IntParam, StrParam, FloatParam, File)
-import pandas as pd
 import numpy as np
+import pandas as pd
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    FloatParam,
+    InputSpec,
+    InputSpecs,
+    IntParam,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 
 @task_decorator("GenerationMultiSimulations", human_name="Generation Multi Simulations",

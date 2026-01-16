@@ -1,29 +1,49 @@
-import streamlit as st
-from typing import List, Dict
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core import Tag, Settings, File, ScenarioSearchBuilder,  Scenario, ScenarioStatus, ScenarioProxy, ProtocolProxy
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import search_context, search_updated_network, get_status_emoji, get_status_prettify, build_scenarios_by_step_dict
-from gws_core.streamlit import StreamlitContainers, StreamlitRouter, StreamlitTreeMenu, StreamlitTreeMenuItem
-from gws_core.tag.tag_entity_type import TagEntityType
-from gws_core.tag.entity_tag_list import EntityTagList
 
-#Steps functions
-from gws_gena.gena_dashboard._gena_dashboard_core.steps.network_step import render_network_step
+import streamlit as st
+from gws_core import (
+    File,
+    ProtocolProxy,
+    Scenario,
+    ScenarioProxy,
+    ScenarioStatus,
+    Settings,
+)
+from gws_core.streamlit import (
+    StreamlitContainers,
+    StreamlitRouter,
+    StreamlitTreeMenu,
+    StreamlitTreeMenuItem,
+)
+from gws_core.tag.entity_tag_list import EntityTagList
+from gws_core.tag.tag_entity_type import TagEntityType
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import (
+    build_scenarios_by_step_dict,
+    get_status_emoji,
+    get_status_prettify,
+    search_context,
+    search_updated_network,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.context_step import render_context_step
-from gws_gena.gena_dashboard._gena_dashboard_core.steps.twin_builder_step import render_twin_builder_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.fba_step import render_fba_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.fva_step import render_fva_step
 from gws_gena.gena_dashboard._gena_dashboard_core.steps.koa_step import render_koa_step
 
+#Steps functions
+from gws_gena.gena_dashboard._gena_dashboard_core.steps.network_step import render_network_step
+from gws_gena.gena_dashboard._gena_dashboard_core.steps.twin_builder_step import (
+    render_twin_builder_step,
+)
+
 
 # Check if steps are completed (have successful scenarios)
-def has_successful_scenario(step_name : str, scenarios_by_step: Dict):
+def has_successful_scenario(step_name : str, scenarios_by_step: dict):
     if step_name not in scenarios_by_step:
         return False
     return any(s.status == ScenarioStatus.SUCCESS for s in scenarios_by_step[step_name])
 
 # Helper function to get icon - check_circle if step has been run for specific parent, otherwise original icon
-def get_step_icon(step_name: str, scenarios_by_step: Dict, list_scenarios: List[Scenario] = None) -> str:
+def get_step_icon(step_name: str, scenarios_by_step: dict, list_scenarios: list[Scenario] = None) -> str:
     """Get icon for step - check_circle if step has scenarios, empty otherwise."""
     if step_name not in scenarios_by_step:
         return ''

@@ -1,7 +1,8 @@
 import os
-from gws_core import Settings, BaseTestCase, TaskRunner, File
-from gws_gena.network.network_task.network_loader import LoadBiGGModels
+
+from gws_core import BaseTestCase, File, Settings, TaskRunner
 from gws_gena import NetworkImporter
+from gws_gena.network.network_task.network_loader import LoadBiGGModels
 
 settings = Settings.get_instance()
 

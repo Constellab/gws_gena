@@ -2,8 +2,8 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File,  Settings
-from gws_gena import (GapFinderHelper,NetworkImporter )
+from gws_core import File, Settings
+from gws_gena import GapFinderHelper, NetworkImporter
 
 settings = Settings.get_instance()
 

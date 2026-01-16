@@ -1,8 +1,19 @@
 import os
 
-from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs, ConfigSpecs,
-                      task_decorator, TypingStyle)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..cobra_env import CobraEnvHelper
 

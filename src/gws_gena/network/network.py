@@ -1,8 +1,16 @@
 
-from typing import Dict, List, Optional
 
-from gws_core import (ConfigParams, JSONView, Resource, SerializableRField,
-                      Table, TableView, TypingStyle, resource_decorator, view)
+from gws_core import (
+    ConfigParams,
+    JSONView,
+    Resource,
+    SerializableRField,
+    Table,
+    TableView,
+    TypingStyle,
+    resource_decorator,
+    view,
+)
 from pandas import DataFrame
 
 from .compartment.compartment import Compartment
@@ -27,7 +35,7 @@ class Network(Resource):
 
     DEFAULT_NAME = "network"
 
-    network_data: Dict = SerializableRField(NetworkData)
+    network_data: dict = SerializableRField(NetworkData)
 
     def __init__(self):
         super().__init__()
@@ -198,11 +206,11 @@ class Network(Resource):
         """ Flatten the id of a compartment """
         return self.network_data.flatten_compartment_id(compartment)
 
-    def get_compound_ids(self) -> List[str]:
+    def get_compound_ids(self) -> list[str]:
         """ Get all compound ids """
         return self.network_data.get_compound_ids()
 
-    def get_reaction_ids(self) -> List[str]:
+    def get_reaction_ids(self) -> list[str]:
         """ Get all reaction ids """
         return self.network_data.get_reaction_ids()
 
@@ -218,7 +226,7 @@ class Network(Resource):
 
         return self.network_data.get_compound_by_id(comp_id)
 
-    def get_compounds_by_chebi_id(self, chebi_id: str, compartment: Optional[str] = None) -> List[Compound]:
+    def get_compounds_by_chebi_id(self, chebi_id: str, compartment: str | None = None) -> list[Compound]:
         """
         Get a compound by its chebi id and compartment.
 
@@ -268,7 +276,7 @@ class Network(Resource):
 
         return self.network_data.get_reaction_by_rhea_id(rhea_id)
 
-    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> List[Reaction]:
+    def get_reactions_related_to_chebi_id(self, chebi_id: str) -> list[Reaction]:
         """ Get the reactions related to a compound with having a given CheBI ID """
 
         return self.network_data.get_reactions_related_to_chebi_id(chebi_id)
@@ -293,7 +301,7 @@ class Network(Resource):
 
         return self.network_data.get_biomass_compound()
 
-    def get_compounds_by_compartments(self, compartment_list: List[str] = None) -> Dict[str, Compound]:
+    def get_compounds_by_compartments(self, compartment_list: list[str] = None) -> dict[str, Compound]:
         """
         Get the compounds in a compartments
 
@@ -303,7 +311,7 @@ class Network(Resource):
 
         return self.network_data.get_compounds_by_compartments(compartment_list)
 
-    def get_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the steady compounds
 
@@ -313,7 +321,7 @@ class Network(Resource):
 
         return self.network_data.get_steady_compounds(ignore_cofactors)
 
-    def get_non_steady_compounds(self, ignore_cofactors=False) -> Dict[str, Compound]:
+    def get_non_steady_compounds(self, ignore_cofactors=False) -> dict[str, Compound]:
         """
         Get the non-steady compounds
 
@@ -445,7 +453,7 @@ class Network(Resource):
 
     # -- S --
 
-    def set_simulations(self, simulations: Dict):
+    def set_simulations(self, simulations: dict):
         """ Set simulations """
         self.network_data.set_simulations(simulations)
 

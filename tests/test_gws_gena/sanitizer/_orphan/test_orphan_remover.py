@@ -3,7 +3,7 @@ import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, Settings, TaskRunner
-from gws_gena import OrphanRemover, NetworkImporter
+from gws_gena import NetworkImporter, OrphanRemover
 
 settings = Settings.get_instance()
 

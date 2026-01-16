@@ -1,10 +1,25 @@
 # import multiprocessing
-from typing import List, Tuple
 
-from gws_core import (BoolParam, ConfigParams, FloatParam, InputSpec,
-                      InputSpecs, IntParam, ListParam, OutputSpec, OutputSpecs, ConfigSpecs,
-                      StrParam, Table, TableConcatHelper, Task, TaskInputs,
-                      TaskOutputs, TypingStyle, task_decorator)
+from gws_core import (
+    BoolParam,
+    ConfigParams,
+    ConfigSpecs,
+    FloatParam,
+    InputSpec,
+    InputSpecs,
+    IntParam,
+    ListParam,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    TableConcatHelper,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..twin.helper.twin_annotator_helper import TwinAnnotatorHelper
 from ..twin.helper.twin_helper import TwinHelper
@@ -142,7 +157,7 @@ class FBA(Task):
                     " values of confidence score while the number of simulations is set to " +
                     str(number_of_simulations))
 
-        fba_results: List[FBAResult] = []
+        fba_results: list[FBAResult] = []
 
         # If number of simulations is not None, there is a context with simulations
         if (number_of_simulations):
@@ -166,8 +181,8 @@ class FBA(Task):
         self.log_info_message('Merging all fba results')
         # merge all fba results
         self.log_info_message('Creating lists')
-        flux_tables: List[Table] = []
-        sv_tables: List[Table] = []
+        flux_tables: list[Table] = []
+        sv_tables: list[Table] = []
         if len(fba_results) > 1:
             # If there are multiple simulations, add suffix to the index
             # like this "simu0", "simu1"...
@@ -206,7 +221,7 @@ class FBA(Task):
             "twin": result_twin
         }
 
-    def call_fba(self, data: Tuple[int, Twin, ConfigParams]) -> FBAResult:
+    def call_fba(self, data: tuple[int, Twin, ConfigParams]) -> FBAResult:
         j, twin, params = data
 
         # Run the FBA for this twin

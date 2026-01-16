@@ -1,7 +1,8 @@
 
-from gws_core import TaskRunner, Table, BaseTestCase
-from gws_gena import GenerationMultiSimulations
 import pandas as pd
+from gws_core import BaseTestCase, Table, TaskRunner
+from gws_gena import GenerationMultiSimulations
+
 
 class TestGenerationMultiSimulations(BaseTestCase):
 

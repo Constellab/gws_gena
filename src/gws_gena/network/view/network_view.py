@@ -1,11 +1,6 @@
 
-from typing import Dict
 
-import networkx as nx
-from gws_core import (BadRequestException, BoolParam, ConfigParams, StrParam,
-                      View, ViewType)
-
-from ..graph.graph import BipartiteGraph
+from gws_core import BadRequestException, ConfigParams, View, ViewType
 
 
 class NetworkView(View):
@@ -17,7 +12,7 @@ class NetworkView(View):
         super().__init__()
         self._check_and_set_data(data)
 
-    def _check_and_set_data(self, data: Dict):
+    def _check_and_set_data(self, data: dict):
         """
         Check the data and return.
 

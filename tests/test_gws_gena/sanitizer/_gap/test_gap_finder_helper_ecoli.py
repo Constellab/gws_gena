@@ -21,8 +21,8 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         helper = GapFinderHelper()
         dead = helper.find_deadend_compound_ids(net)
         orphans = helper.find_orphan_compound_ids(net)
-        self.assertEquals(len(dead), 0)
-        self.assertEquals(len(orphans), 0)
+        self.assertEqual(len(dead), 0)
+        self.assertEqual(len(orphans), 0)
 
     def test_gap_finder_ecoli_without_AKGDH(self):
         data_dir = settings.get_variable("gws_gena:testdata_dir")
@@ -36,5 +36,5 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
         helper = GapFinderHelper()
         dead = helper.find_deadend_compound_ids(net)
         orphans = helper.find_orphan_compound_ids(net)
-        self.assertEquals(len(dead), 1)
-        self.assertEquals(len(orphans), 0)
+        self.assertEqual(len(dead), 1)
+        self.assertEqual(len(orphans), 0)

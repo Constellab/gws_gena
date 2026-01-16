@@ -1,7 +1,9 @@
-import sys
-import pandas as pd
 import re
-from cobra.io import save_json_model, load_json_model
+import sys
+
+import pandas as pd
+from cobra.io import load_json_model, save_json_model
+
 
 #Function to annotate metabolites
 def annotate_metabolites(model, db_bigg_chebi, metabolites_id, metabolites_name):

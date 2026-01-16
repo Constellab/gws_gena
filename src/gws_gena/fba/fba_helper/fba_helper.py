@@ -244,11 +244,10 @@ class FBAHelper(BaseHelper):
                     expanded_fluxes_to_minmax.append(biomass_rxn.id + ":" + weight)
                 else:
                     raise BadRequestException("The biomass reaction is not found")
+            elif rxn_name in list_of_rxn_names:
+                expanded_fluxes_to_minmax.append(rxn_name+":"+weight)
             else:
-                if rxn_name in list_of_rxn_names:
-                    expanded_fluxes_to_minmax.append(rxn_name+":"+weight)
-                else:
-                    raise BadRequestException(f"Invalid reactions to maximize. No reaction found with id '{k}'")
+                raise BadRequestException(f"Invalid reactions to maximize. No reaction found with id '{k}'")
         return list(set(expanded_fluxes_to_minmax))
 
     # -- S --
@@ -544,9 +543,8 @@ class FBAHelper(BaseHelper):
                     c.loc[biomass_rxn.id, 0] = weight
                 else:
                     raise BadRequestException(f"Reaction to minimize not found with id '{k}'")
+            elif (rxn_name in flat_net.reactions) and (rxn_name in c.index):
+                c.loc[rxn_name, 0] = weight
             else:
-                if (rxn_name in flat_net.reactions) and (rxn_name in c.index):
-                    c.loc[rxn_name, 0] = weight
-                else:
-                    raise BadRequestException(f"Reaction to maximize not found with id '{k}'")
+                raise BadRequestException(f"Reaction to maximize not found with id '{k}'")
         return c

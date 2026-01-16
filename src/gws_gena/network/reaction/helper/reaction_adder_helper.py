@@ -1,10 +1,11 @@
 
 from gws_core import BadRequestException, Table
 
-from ....helper.base_helper import BaseHelper
-from ...network import Network, Reaction
 from ....data.task.transformer_ec_number_table import TransformerECNumberTable
 from ....data.task.transformer_entity_id_table import TransformerEntityIDTable
+from ....helper.base_helper import BaseHelper
+from ...network import Network, Reaction
+
 
 class ReactionAdderHelper(BaseHelper):
     """ ReactionAdderHelper """

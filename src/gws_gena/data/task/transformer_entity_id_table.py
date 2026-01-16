@@ -1,7 +1,19 @@
 
-from gws_core import (ConfigParams, ConfigSpecs, Task,
-                      StrParam, Table, TypingStyle,
-                      task_decorator, InputSpecs, InputSpec, OutputSpec, OutputSpecs, TaskInputs, TaskOutputs)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 
 @task_decorator("TransformerEntityIDTable", human_name="Transformer Entity ID Table",

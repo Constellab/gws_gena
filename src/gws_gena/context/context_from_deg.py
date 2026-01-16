@@ -1,8 +1,22 @@
 import re
+
 import pandas as pd
-from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs,
-                      task_decorator, ConfigSpecs, Table, StrParam, FloatParam)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    FloatParam,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    task_decorator,
+)
+
 from ..network.network import Network
 
 
@@ -303,4 +317,4 @@ class ContextFromDEG(Task):
         match_percentage = (match_count / total_deg_genes * 100) if total_deg_genes > 0 else 0
 
         if match_percentage == 0:
-            raise Exception(f"We can't find any matching gene IDs between the DEG file and the network. Please check that the gene IDs in the DEG file match those used in the network. You can use the Gene_ID_conversion task to convert gene IDs of your DEG file. Either the gene IDs are in a different format, or genes in the DEG file are not represented in the network.")
+            raise Exception("We can't find any matching gene IDs between the DEG file and the network. Please check that the gene IDs in the DEG file match those used in the network. You can use the Gene_ID_conversion task to convert gene IDs of your DEG file. Either the gene IDs are in a different format, or genes in the DEG file are not represented in the network.")

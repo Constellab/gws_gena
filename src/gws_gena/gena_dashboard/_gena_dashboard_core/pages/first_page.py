@@ -1,16 +1,20 @@
+
 import streamlit as st
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from typing import List
+from gws_core import Scenario, ScenarioSearchBuilder, Tag
 from gws_core.streamlit import StreamlitContainers, StreamlitRouter
-from gws_core import Tag, ScenarioSearchBuilder, Scenario
-from gws_core.tag.tag_entity_type import TagEntityType
 from gws_core.tag.entity_tag_list import EntityTagList
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import get_status_emoji, build_scenarios_by_step_dict
-from streamlit_slickgrid import (
-    slickgrid,
-    FieldType,
-    ExportServices,
+from gws_core.tag.tag_entity_type import TagEntityType
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import (
+    build_scenarios_by_step_dict,
+    get_status_emoji,
 )
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+from streamlit_slickgrid import (
+    ExportServices,
+    FieldType,
+    slickgrid,
+)
+
 
 def render_first_page(gena_state : State):
     style = """
@@ -48,7 +52,7 @@ def render_first_page(gena_state : State):
             .add_is_archived_filter(False)
 
         # We got here all the network scenarios
-        list_scenario_user: List[Scenario] = search_scenario_builder.search_all()
+        list_scenario_user: list[Scenario] = search_scenario_builder.search_all()
 
         # Create data for SlickGrid table
         table_data = []

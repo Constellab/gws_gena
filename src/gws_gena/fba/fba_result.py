@@ -1,13 +1,19 @@
 
-from typing import List, Union
 
 import pandas as pd
-from gws_core import (BadRequestException, ResourceSet,Table, TechnicalInfo,
-                      resource_decorator, TypingStyle)
+from gws_core import (
+    BadRequestException,
+    ResourceSet,
+    Table,
+    TechnicalInfo,
+    TypingStyle,
+    resource_decorator,
+)
 from pandas import DataFrame
 from scipy import stats
 
 from .fba_optimize_result import FBAOptimizeResult
+
 
 @resource_decorator("FBAResult", human_name="FBA result", short_description="Flux Balance Analysis Result", hide=True,
                     style=TypingStyle.material_icon(material_icon_name='assessment', background_color='#FFC300'))
@@ -74,7 +80,7 @@ class FBAResult(ResourceSet):
     #         t.append(data.loc[[flat_id], :])
     #     return pd.concat(t)
 
-    def get_flux_dataframe_by_reaction_ids(self, reaction_ids: Union[List, str]) -> DataFrame:
+    def get_flux_dataframe_by_reaction_ids(self, reaction_ids: list | str) -> DataFrame:
         """ Get flux values by reaction ids """
         if isinstance(reaction_ids, str):
             reaction_ids = [reaction_ids]
@@ -83,7 +89,7 @@ class FBAResult(ResourceSet):
         data = self.get_fluxes_dataframe()
         return data.loc[reaction_ids, :]
 
-    def get_sv_by_compound_ids(self, compound_ids: Union[List, str]) -> DataFrame:
+    def get_sv_by_compound_ids(self, compound_ids: list | str) -> DataFrame:
         """ Get SV values by compound ids """
         if isinstance(compound_ids, str):
             compound_ids = [compound_ids]

@@ -1,7 +1,16 @@
 
-from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, Task, TaskInputs, TaskOutputs, TypingStyle,
-                      task_decorator)
+from gws_core import (
+    ConfigParams,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..helper.network_merger import NetworkMergerHelper
 from ..network import Network

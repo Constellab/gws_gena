@@ -1,6 +1,15 @@
 
-from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpecs, Task,
-                      TaskInputs, TaskOutputs, TypingStyle, task_decorator)
+from gws_core import (
+    ConfigParams,
+    InputSpec,
+    InputSpecs,
+    OutputSpecs,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ...network.network import Network
 from ..gap.helper.gap_finder_helper import GapFinderHelper

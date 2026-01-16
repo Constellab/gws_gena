@@ -5,9 +5,9 @@ from gws_biota import Enzyme as BiotaEnzyme
 from gws_biota import Taxonomy as BiotaTaxo
 from gws_core import BadRequestException, Logger, Table
 
-from ...data.task.transformer_medium_table import TransformerMediumTable
-from ...data.task.transformer_ec_number_table import TransformerECNumberTable
 from ...data.task.transformer_biomass_reaction_table import TransformerBiomassReactionTable
+from ...data.task.transformer_ec_number_table import TransformerECNumberTable
+from ...data.task.transformer_medium_table import TransformerMediumTable
 from ...helper.base_helper import BaseHelper
 from ...network.compartment.compartment import Compartment
 from ...network.compound.compound import Compound

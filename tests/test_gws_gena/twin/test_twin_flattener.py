@@ -42,7 +42,7 @@ class TestTwinFlattener(BaseTestCaseUsingFullBiotaDB):
         # with open(os.path.join(output_dir, "toy_flat.json"), 'w', encoding="utf-8") as fp:
         #     json.dump(twin.dumps_flat(), fp, indent=4)
 
-        with open(os.path.join(output_dir, "toy_flat.json"), 'r', encoding="utf-8") as fp:
+        with open(os.path.join(output_dir, "toy_flat.json"), encoding="utf-8") as fp:
             expected_json = json.load(fp)
 
         self.assertEqual(twin.dumps_flat(), expected_json)

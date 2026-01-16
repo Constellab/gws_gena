@@ -1,10 +1,9 @@
 
-import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
 from gws_core import File, Settings
-from gws_gena import Network, NetworkImporter
+from gws_gena import NetworkImporter
 from gws_gena.network.graph.graph import Graph
 
 settings = Settings.get_instance()

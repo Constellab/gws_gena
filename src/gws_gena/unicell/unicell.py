@@ -39,7 +39,7 @@ class Unicell:
         # Experimental method
         Logger.warning("Take care, `create_bigg_network` is an experimental method")
         path = "/lab/user/notebooks/recon/universal_model.json"
-        with open(path, 'r', encoding="utf-8") as fp:
+        with open(path, encoding="utf-8") as fp:
             data = json.load(fp)
 
         net = Network.loads(data)

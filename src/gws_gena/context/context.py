@@ -1,8 +1,14 @@
 
-from typing import List
 
-from gws_core import (ConfigParams, JSONView, Resource, SerializableRField,
-                      resource_decorator, view, TypingStyle)
+from gws_core import (
+    ConfigParams,
+    JSONView,
+    Resource,
+    SerializableRField,
+    TypingStyle,
+    resource_decorator,
+    view,
+)
 
 from .context_data.context_data import ContextData
 from .measure import Measure
@@ -59,11 +65,11 @@ class Context(Resource):
 
     # -- G --
 
-    def get_reaction_ids(self) -> List[str]:
+    def get_reaction_ids(self) -> list[str]:
         """ Get the ids of the reaction_data """
         return self.context_data.get_reaction_ids()
 
-    def get_compound_ids(self) -> List[str]:
+    def get_compound_ids(self) -> list[str]:
         """ Get the ids of the compound_data """
         return self.context_data.get_compound_ids()
 

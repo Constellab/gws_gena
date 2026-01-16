@@ -1,11 +1,11 @@
-from typing import List, Dict
-import streamlit as st
-import pandas as pd
 
-from gws_core import Scenario, ResourceModel
-from gws_core.tag.tag_entity_type import TagEntityType
-from gws_core.tag.entity_tag_list import EntityTagList
+import pandas as pd
+import streamlit as st
+from gws_core import ResourceModel, Scenario
 from gws_core.streamlit import StreamlitTranslateLang, StreamlitTranslateService
+from gws_core.tag.entity_tag_list import EntityTagList
+from gws_core.tag.tag_entity_type import TagEntityType
+
 
 class State:
     """Class to manage the state of the app.
@@ -303,104 +303,104 @@ class State:
     # Functions get config
 
     @classmethod
-    def get_network_importer_config(cls) -> Dict:
+    def get_network_importer_config(cls) -> dict:
         return st.session_state.get(cls.NETWORK_IMPORTER_CONFIG_KEY, {})
 
     @classmethod
-    def get_load_bigg_model_config(cls) -> Dict:
+    def get_load_bigg_model_config(cls) -> dict:
         return st.session_state.get(cls.LOAD_BIGG_MODEL_CONFIG_KEY, {})
 
     @classmethod
-    def get_gap_filler_config(cls) -> Dict:
+    def get_gap_filler_config(cls) -> dict:
         return st.session_state.get(cls.GAP_FILLER_CONFIG_KEY, {})
 
     @classmethod
-    def get_network_merger_config(cls) -> Dict:
+    def get_network_merger_config(cls) -> dict:
         return st.session_state.get(cls.NETWORK_MERGER_CONFIG_KEY, {})
 
     @classmethod
-    def get_network_mergem_config(cls) -> Dict:
+    def get_network_mergem_config(cls) -> dict:
         return st.session_state.get(cls.NETWORK_MERGEM_CONFIG_KEY, {})
 
     @classmethod
-    def get_reaction_adder_config(cls) -> Dict:
+    def get_reaction_adder_config(cls) -> dict:
         return st.session_state.get(cls.REACTION_ADDER_CONFIG_KEY, {})
 
     @classmethod
-    def get_transporter_adder_config(cls) -> Dict:
+    def get_transporter_adder_config(cls) -> dict:
         return st.session_state.get(cls.TRANSPORTER_ADDER_CONFIG_KEY, {})
 
     @classmethod
-    def get_reaction_remover_config(cls) -> Dict:
+    def get_reaction_remover_config(cls) -> dict:
         return st.session_state.get(cls.REACTION_REMOVER_CONFIG_KEY, {})
 
     @classmethod
-    def get_orphan_remover_config(cls) -> Dict:
+    def get_orphan_remover_config(cls) -> dict:
         return st.session_state.get(cls.ORPHAN_REMOVER_CONFIG_KEY, {})
 
     @classmethod
-    def get_twin_builder_config(cls) -> Dict:
+    def get_twin_builder_config(cls) -> dict:
         return st.session_state.get(cls.TWIN_BUILDER_CONFIG_KEY, {})
 
     @classmethod
-    def get_fba_config(cls) -> Dict:
+    def get_fba_config(cls) -> dict:
         return st.session_state.get(cls.FBA_CONFIG_KEY, {})
 
     @classmethod
-    def get_fva_config(cls) -> Dict:
+    def get_fva_config(cls) -> dict:
         return st.session_state.get(cls.FVA_CONFIG_KEY, {})
 
     @classmethod
-    def get_koa_config(cls) -> Dict:
+    def get_koa_config(cls) -> dict:
         return st.session_state.get(cls.KOA_CONFIG_KEY, {})
 
     @classmethod
-    def get_generation_multi_simulations_metabolite_config(cls) -> Dict:
+    def get_generation_multi_simulations_metabolite_config(cls) -> dict:
         return st.session_state.get(cls.GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY, {})
 
     @classmethod
-    def get_generation_multi_simulations_reaction_config(cls) -> Dict:
+    def get_generation_multi_simulations_reaction_config(cls) -> dict:
         return st.session_state.get(cls.GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY, {})
 
     @classmethod
-    def get_id_convert_config(cls) -> Dict:
+    def get_id_convert_config(cls) -> dict:
         return st.session_state.get(cls.ID_CONVERT_CONFIG_KEY, {})
 
     @classmethod
-    def get_context_from_deg_config(cls) -> Dict:
+    def get_context_from_deg_config(cls) -> dict:
         return st.session_state.get(cls.CONTEXT_FROM_DEG_CONFIG_KEY, {})
 
     # Get scenarios ids of each step
     @classmethod
-    def get_scenarios_by_step_dict(cls) -> Dict:
+    def get_scenarios_by_step_dict(cls) -> dict:
         return st.session_state.get(cls.SCENARIOS_BY_STEP_KEY, {})
 
     @classmethod
-    def set_scenarios_by_step_dict(cls, scenarios_by_step: Dict) -> None:
+    def set_scenarios_by_step_dict(cls, scenarios_by_step: dict) -> None:
         st.session_state[cls.SCENARIOS_BY_STEP_KEY] = scenarios_by_step
 
     @classmethod
-    def get_scenario_step_network(cls) -> List[Scenario]:
+    def get_scenario_step_network(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_NETWORK)
 
     @classmethod
-    def get_scenario_step_context(cls) -> List[Scenario]:
+    def get_scenario_step_context(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_CONTEXT)
 
     @classmethod
-    def get_scenario_step_twin_builder(cls) -> List[Scenario]:
+    def get_scenario_step_twin_builder(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_TWIN_BUILDER)
 
     @classmethod
-    def get_scenario_step_fba(cls) -> List[Scenario]:
+    def get_scenario_step_fba(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_FBA, [])
 
     @classmethod
-    def get_scenario_step_fva(cls) -> List[Scenario]:
+    def get_scenario_step_fva(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_FVA, [])
 
     @classmethod
-    def get_scenario_step_koa(cls) -> List[Scenario]:
+    def get_scenario_step_koa(cls) -> list[Scenario]:
         return cls.get_scenarios_by_step_dict().get(cls.TAG_KOA, [])
 
     @classmethod

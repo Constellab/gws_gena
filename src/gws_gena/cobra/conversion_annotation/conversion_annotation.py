@@ -1,12 +1,26 @@
 import os
 
 import pandas as pd
-from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, StrParam, Table, Task, TaskInputs, ConfigSpecs,
-                      TaskOutputs, task_decorator, TaskRunner, TypingStyle)
-from .create_database_task import TransformMetabolitesFile, TransformReactionsFile
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TaskRunner,
+    TypingStyle,
+    task_decorator,
+)
 
 from ..cobra_env import CobraEnvHelper
+from .create_database_task import TransformMetabolitesFile, TransformReactionsFile
 
 
 @task_decorator("ConvertAnnotation", human_name="Convert Model Annotation",

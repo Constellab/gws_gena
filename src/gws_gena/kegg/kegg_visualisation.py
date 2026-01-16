@@ -4,10 +4,25 @@ import sys
 import pandas as pd
 from Bio import Entrez
 from bioservices.kegg import KEGG
-from gws_core import (ConfigParams, File, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, ResourceSet, ShellProxy, StrParam, Table,
-                      TableImporter, Task, TaskInputs, TaskOutputs, ConfigSpecs,
-                      TypingStyle, task_decorator)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    File,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    ResourceSet,
+    ShellProxy,
+    StrParam,
+    Table,
+    TableImporter,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from .kegg_r_env_task import KeggREnvHelper
 
@@ -210,7 +225,7 @@ class KEGGVisualisation(Task):
         request = Entrez.epost("gene", id=",".join(id_list))
         try:
             result = Entrez.read(request)
-        except RuntimeError as e:
+        except RuntimeError:
             sys.exit(-1)
         web_env = result["WebEnv"]
         query_key = result["QueryKey"]

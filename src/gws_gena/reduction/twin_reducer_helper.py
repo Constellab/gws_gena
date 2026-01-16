@@ -2,10 +2,10 @@
 # The use and distribution of this software is prohibited without the prior consent of Gencovery SAS.
 # About us: https://gencovery.com
 
-from gws_core import ShellProxy, MessageDispatcher
+from gws_core import MessageDispatcher, ShellProxy
 
 
-class TwinReducerHelper():
+class TwinReducerHelper:
     """
     Helper class for TwinReducer task to provide shell proxy functionality
     for installing Java and other system dependencies.

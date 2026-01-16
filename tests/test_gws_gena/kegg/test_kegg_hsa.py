@@ -1,6 +1,7 @@
 import os
+
+from gws_core import BaseTestCase, File, Settings, TableImporter, TaskRunner
 from gws_gena.kegg.kegg_visualisation import KEGGVisualisation
-from gws_core import (File,TaskRunner,Settings,BaseTestCase,TableImporter)
 
 settings = Settings.get_instance()
 

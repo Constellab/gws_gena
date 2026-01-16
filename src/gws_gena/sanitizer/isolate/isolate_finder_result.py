@@ -1,5 +1,5 @@
 
-from gws_core import ResourceSet, TechnicalInfo, resource_decorator, TypingStyle
+from gws_core import ResourceSet, TechnicalInfo, TypingStyle, resource_decorator
 
 
 @resource_decorator("IsolateFinderResult", human_name="Isolate finder result",

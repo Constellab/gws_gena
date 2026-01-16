@@ -1,7 +1,19 @@
 
-from gws_core import (ConfigParams, InputSpec, InputSpecs, OutputSpec,
-                      OutputSpecs, StrParam, Table, Task, TaskInputs, ConfigSpecs,
-                      TaskOutputs, TypingStyle, task_decorator)
+from gws_core import (
+    ConfigParams,
+    ConfigSpecs,
+    InputSpec,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StrParam,
+    Table,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    TypingStyle,
+    task_decorator,
+)
 
 from ...network import Network
 from ..helper.reaction_adder_helper import ReactionAdderHelper

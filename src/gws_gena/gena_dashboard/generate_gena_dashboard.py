@@ -1,7 +1,19 @@
-from gws_core import (ConfigParams, AppConfig, AppType, OutputSpec,
-                      OutputSpecs, StreamlitResource, Task, TaskInputs,
-                      TaskOutputs, app_decorator, task_decorator,
-                      InputSpecs, ConfigSpecs, BoolParam)
+from gws_core import (
+    AppConfig,
+    AppType,
+    BoolParam,
+    ConfigParams,
+    ConfigSpecs,
+    InputSpecs,
+    OutputSpec,
+    OutputSpecs,
+    StreamlitResource,
+    Task,
+    TaskInputs,
+    TaskOutputs,
+    app_decorator,
+    task_decorator,
+)
 
 
 @app_decorator("GenaDashboardAppConfig", app_type=AppType.STREAMLIT,

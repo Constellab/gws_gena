@@ -1,10 +1,8 @@
 
 
-from typing import Dict
 
 from gws_biota import Compartment as BiotaCompartment
-from gws_biota import \
-    CompartmentNotFoundException as BiotaCompartmentNotFoundException
+from gws_biota import CompartmentNotFoundException as BiotaCompartmentNotFoundException
 from gws_core import BadRequestException
 
 from ..exceptions.compartment_exceptions import InvalidCompartmentException
@@ -68,7 +66,7 @@ class Compartment:
             ))
         return compart
 
-    def dumps(self) -> Dict:
+    def dumps(self) -> dict:
         """ Dumps as JSON """
         return {
             "id": None,

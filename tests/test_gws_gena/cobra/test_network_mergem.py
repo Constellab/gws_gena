@@ -1,8 +1,8 @@
 
 import os
 
-from gws_core import ( File, BaseTestCase, Settings, TaskRunner)
-from gws_gena import NetworkMergem, NetworkImporter
+from gws_core import BaseTestCase, File, Settings, TaskRunner
+from gws_gena import NetworkMergem
 
 settings = Settings.get_instance()
 

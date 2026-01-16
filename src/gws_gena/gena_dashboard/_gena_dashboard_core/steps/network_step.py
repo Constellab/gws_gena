@@ -1,13 +1,43 @@
 import os
-import streamlit as st
+
 import pandas as pd
-from typing import Type, Dict, Optional
-from gws_gena.gena_dashboard._gena_dashboard_core.state import State
-from gws_core.streamlit import StreamlitAuthenticateUser, StreamlitTaskRunner, StreamlitMenuButton, StreamlitMenuButtonItem, StreamlitContainers, StreamlitResourceSelect
-from gws_core import Settings, ScenarioStatus, Scenario, ResourceModel, ScenarioProxy, Scenario, ScenarioWaiterBasic, InputTask, File, TableImporter, ResourceOrigin
-from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import display_network, add_tags_on_network, get_status_prettify, get_status_emoji
-from gws_gena import GapFiller, ReactionAdder, ReactionRemover, OrphanRemover, NetworkMerger, NetworkMergem, TransporterAdder
+import streamlit as st
+from gws_core import (
+    File,
+    InputTask,
+    ResourceModel,
+    ResourceOrigin,
+    Scenario,
+    ScenarioProxy,
+    ScenarioStatus,
+    ScenarioWaiterBasic,
+    Settings,
+    TableImporter,
+)
+from gws_core.streamlit import (
+    StreamlitAuthenticateUser,
+    StreamlitContainers,
+    StreamlitMenuButton,
+    StreamlitMenuButtonItem,
+    StreamlitResourceSelect,
+    StreamlitTaskRunner,
+)
 from gws_core.task.task import Task
+from gws_gena import (
+    GapFiller,
+    NetworkMergem,
+    NetworkMerger,
+    OrphanRemover,
+    ReactionAdder,
+    ReactionRemover,
+    TransporterAdder,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.functions_steps import (
+    add_tags_on_network,
+    display_network,
+)
+from gws_gena.gena_dashboard._gena_dashboard_core.state import State
+
 
 def display_process_history(processes_list, gena_state : State):
     """Display a nice timeline view of all processes in the protocol"""
@@ -73,14 +103,14 @@ def display_process_history(processes_list, gena_state : State):
 
 
 def _run_network_editing_task(
-    task_class: Type[Task],
+    task_class: type[Task],
     task_name: str,
     gena_state: State,
     config_session_key: str,
     config_getter_method: str,
     task_input_name_for_network: str = 'network',
-    additional_inputs: Optional[Dict[str, Dict[str, str]]] = None,
-    table_type_options: Optional[Dict[str, list]] = None
+    additional_inputs: dict[str, dict[str, str]] | None = None,
+    table_type_options: dict[str, list] | None = None
 ) -> None:
     """
     Generic function to run network editing tasks.
