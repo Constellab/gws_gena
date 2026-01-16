@@ -3,19 +3,16 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings
-from gws_gena import ContextImporter, FVAProto, NetworkImporter
-
-settings = Settings.get_instance()
+from gws_core import File, IExperiment
+from gws_gena import ContextImporter, DataProvider, FVAProto, NetworkImporter
 
 
 class TestFVA(BaseTestCaseUsingFullBiotaDB):
-
     def test_toy_fva(self):
         self.print("Test FVAProto: Small metwork")
-        testdata_dir = settings.get_variable("gws_gena:testdata_dir")
+        testdata_dir = DataProvider.get_test_data_dir()
         data_dir = os.path.join(testdata_dir, "toy")
-        organism_result_dir = os.path.join(testdata_dir, 'fva', "toy")
+        organism_result_dir = os.path.join(testdata_dir, "fva", "toy")
 
         def run_fva(solver="highs", relax_qssa=False, parsimony_strength=0.0):
             experiment = IExperiment(FVAProto)
@@ -26,12 +23,10 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             ctx_file = File()
             ctx_file.path = os.path.join(data_dir, "toy_context.json")
 
-            net = NetworkImporter.call(File(
-                path=os.path.join(data_dir, "toy.json")
-            ), params={"add_biomass": True})
-            ctx = ContextImporter.call(File(
-                path=os.path.join(data_dir, "toy_context.json")
-            ))
+            net = NetworkImporter.call(
+                File(path=os.path.join(data_dir, "toy.json")), params={"add_biomass": True}
+            )
+            ctx = ContextImporter.call(File(path=os.path.join(data_dir, "toy_context.json")))
 
             proto.set_input("network", net)
             proto.set_input("context", ctx)
@@ -50,10 +45,12 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             result = proto.get_output("fva_result")
             fluxes = result.get_fluxes_dataframe()
             sv = result.get_sv_dataframe()
-            print(fluxes)
-            print(sv)
+            self.print(fluxes)
+            self.print(sv)
             th, p = result.compute_zero_flux_threshold()
-            print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
+            self.print(
+                f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}"
+            )
 
             result_dir = os.path.join(organism_result_dir, solver, relax_dir)
 

@@ -1,43 +1,31 @@
-
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner
-from gws_gena import ContextImporter, NetworkImporter, Twin, TwinBuilder
-
-settings = Settings.get_instance()
+from gws_core import File, TaskRunner
+from gws_gena import ContextImporter, DataProvider, NetworkImporter, Twin, TwinBuilder
 
 
 class TestTwinBuilder(BaseTestCaseUsingFullBiotaDB):
-
     def test_twin_builder(self):
         self.print("Test Twin")
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = DataProvider.get_test_data_dir()
         data_dir = os.path.join(data_dir, "small_net")
 
         file_path = os.path.join(data_dir, "small_net.json")
-        net = NetworkImporter.call(
-            File(path=file_path),
-            params={"add_biomass" : True}
-        )
+        net = NetworkImporter.call(File(path=file_path), params={"add_biomass": True})
         file_path = os.path.join(data_dir, "small_context.json")
-        ctx = ContextImporter.call(
-            File(path=file_path),
-            params={}
-        )
+        ctx = ContextImporter.call(File(path=file_path), params={})
 
         twin = Twin()
         twin.add_network(net)
         twin.add_context(ctx, related_network=net)
 
         tester = TaskRunner(
-            params={},
-            inputs={"network": net, "context": ctx},
-            task_type=TwinBuilder
+            params={}, inputs={"network": net, "context": ctx}, task_type=TwinBuilder
         )
         outputs = tester.run()
 
         twin = outputs["twin"]
 
-        print(twin.networks)
-        print(twin)
+        self.print(twin.networks)
+        self.print(twin)

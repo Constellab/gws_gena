@@ -2,54 +2,50 @@ import json
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TableImporter, TaskRunner
+from gws_core import File, TableImporter, TaskRunner
 from gws_gena import (
     KOA,
     ContextImporter,
+    DataProvider,
     KOAResultExtractor,
     NetworkImporter,
     TransformerEntityIDTable,
     Twin,
 )
 
-settings = Settings.get_instance()
-
 
 class TestKOA(BaseTestCaseUsingFullBiotaDB):
-
     def test_toy_koa(self):
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = DataProvider.get_test_data_dir()
         net = NetworkImporter.call(
             File(path=os.path.join(data_dir, "koa", "toy", "toy_ko.json")),
-            params = {"add_biomass" : True}
+            params={"add_biomass": True},
         )
         ctx = ContextImporter.call(
-            File(path=os.path.join(data_dir, "koa", "toy", "toy_ko_context.json")),
-            {}
+            File(path=os.path.join(data_dir, "koa", "toy", "toy_ko_context.json")), {}
         )
 
         ko_table = TableImporter.call(
-            File(path=os.path.join(data_dir, "koa", "toy", "ko_table.csv")),
-            {}
+            File(path=os.path.join(data_dir, "koa", "toy", "ko_table.csv")), {}
         )
-        runner_transformer = TaskRunner( inputs={"table": ko_table},
-            task_type=TransformerEntityIDTable, params = {'id_column_name': "id"})
-        ko_table = runner_transformer.run()['transformed_table']
+        runner_transformer = TaskRunner(
+            inputs={"table": ko_table},
+            task_type=TransformerEntityIDTable,
+            params={"id_column_name": "id"},
+        )
+        ko_table = runner_transformer.run()["transformed_table"]
 
         twin = Twin()
         twin.add_network(network=net, related_context=ctx)
 
         tester = TaskRunner(
-            inputs={
-                'twin': twin,
-                'ko_table': ko_table
-            },
+            inputs={"twin": twin, "ko_table": ko_table},
             params={
                 "fluxes_to_maximize": ["toy_cell_RB"],
                 "relax_qssa": False,
-                "ko_delimiter": ","
+                "ko_delimiter": ",",
             },
-            task_type=KOA
+            task_type=KOA,
         )
 
         outputs = tester.run()
@@ -57,7 +53,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         # KO: toy_cell_R1
         table = ko_result.get_flux_dataframe("toy_cell_R1")
-        print(table)
+        self.print(table)
         self.assertAlmostEqual(table.at["toy_cell_RB", "value"], -4.304792760918324e-08, delta=1e-2)
 
         # KO: toy_cell_R2
@@ -66,7 +62,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         # KO: toy_cell_RB
         table = ko_result.get_flux_dataframe("toy_cell_RB")
-        print(table)
+        self.print(table)
         self.assertAlmostEqual(table.at["toy_cell_RB", "value"], 9.013964577066061e-07, delta=1e-2)
 
         # KO: toy_cell_R1,toy_cell_R2
@@ -77,7 +73,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         result_dir = os.path.join(data_dir, "koa")
         annotated_twin = outputs["twin"]
         net = list(annotated_twin.networks.values())[0]
-        with open(os.path.join(result_dir, './toy_koa_dump.json'), 'w', encoding="utf-8") as fp:
+        with open(os.path.join(result_dir, "./toy_koa_dump.json"), "w", encoding="utf-8") as fp:
             data = net.dumps()
             json.dump(data, fp, indent=4)
 
@@ -85,16 +81,16 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
         tester = TaskRunner(
             inputs={
-                'koa_result': ko_result,
+                "koa_result": ko_result,
             },
             params={
                 "fluxes_to_extract": ["toy_cell_RB", "toy_cell_R1"],
             },
-            task_type=KOAResultExtractor
+            task_type=KOAResultExtractor,
         )
         outputs = tester.run()
         table = outputs["table"]
-        print(table)
+        self.print(table)
 
         data = table.get_data()
         self.assertEqual(data.shape, (8, 5))

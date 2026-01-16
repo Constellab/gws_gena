@@ -5,7 +5,7 @@
   "description": "Genome-based regulatory Network Analytics (GENA)",
   "version": "0.12.2",
   "variables": {
-    "gws_gena:testdata_dir": "${CURRENT_DIR}/tests/testdata"
+    "testdata_dir": "${CURRENT_DIR}/tests/testdata"
   },
   "environment": {
     "bricks": [

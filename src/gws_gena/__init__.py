@@ -1,4 +1,3 @@
-
 # cobra
 from .cobra.conversion_annotation.conversion_annotation import ConvertAnnotation
 from .cobra.network_convert.convert_xml_to_json import ConvertXmlToJson
@@ -86,6 +85,7 @@ from .sanitizer.isolate.helper.isolate_finder_helper import IsolateFinderHelper
 from .sanitizer.isolate.isolate_finder import IsolateFinder
 from .sanitizer.isolate.isolate_finder_result import IsolateFinderResult
 from .sanitizer.orphan.orphan_remover import OrphanRemover
+from .test.data_provider import DataProvider
 
 # transporter
 from .transporter.transporter_adder import TransporterAdder

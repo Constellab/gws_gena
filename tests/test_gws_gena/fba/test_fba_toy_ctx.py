@@ -3,35 +3,39 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, Settings, TableImporter, TaskRunner
-from gws_gena import ContextBuilder, FBAProto, NetworkImporter, TransformerFluxTable
-
-settings = Settings.get_instance()
+from gws_core import File, IExperiment, TableImporter, TaskRunner
+from gws_gena import ContextBuilder, DataProvider, FBAProto, NetworkImporter, TransformerFluxTable
 
 
 class TestFBA(BaseTestCaseUsingFullBiotaDB):
-
     def test_toy_fba_with_context_builder(self):
-        testdata_dir = settings.get_variable("gws_gena:testdata_dir")
+        testdata_dir = DataProvider.get_test_data_dir()
         data_dir = os.path.join(testdata_dir, "toy")
-        organism_result_dir = os.path.join(testdata_dir, 'fba', "toy_ctx")
+        organism_result_dir = os.path.join(testdata_dir, "fba", "toy_ctx")
 
-        def run_fba(ctx_name, solver="highs", relax_qssa=False, parsimony_strength = 0.0):
+        def run_fba(ctx_name, solver="highs", relax_qssa=False, parsimony_strength=0.0):
             file_path = os.path.join(data_dir, "ctx_data", f"{ctx_name}.csv")
             flux_data = TableImporter.call(File(path=file_path), params={"delimiter": ","})
             tester = TaskRunner(
-                inputs={"table": flux_data},task_type=TransformerFluxTable,
-                params = {'entity_id_column': "reaction_id",'target_column': "target",
-                        'lower_bound_column': "lower_bound",'upper_bound_column': "upper_bound",
-                        'confidence_score_column' : "confidence_score"})
-            flux_data = tester.run()['transformed_table']
+                inputs={"table": flux_data},
+                task_type=TransformerFluxTable,
+                params={
+                    "entity_id_column": "reaction_id",
+                    "target_column": "target",
+                    "lower_bound_column": "lower_bound",
+                    "upper_bound_column": "upper_bound",
+                    "confidence_score_column": "confidence_score",
+                },
+            )
+            flux_data = tester.run()["transformed_table"]
 
-            net = NetworkImporter.call(File(path=os.path.join(data_dir, "toy.json")), params={"add_biomass" : True})
+            net = NetworkImporter.call(
+                File(path=os.path.join(data_dir, "toy.json")), params={"add_biomass": True}
+            )
 
             # build context
             tester = TaskRunner(
-                inputs={"network": net, "flux_table": flux_data},
-                task_type=ContextBuilder
+                inputs={"network": net, "flux_table": flux_data}, task_type=ContextBuilder
             )
             output = tester.run()
             ctx = output["context"]
@@ -43,7 +47,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             proto.set_input("context", ctx)
             fba = proto.get_process("fba")
             fba.set_param("solver", solver)
-            fba.set_param('fluxes_to_maximize', ["toy_cell_RB"])
+            fba.set_param("fluxes_to_maximize", ["toy_cell_RB"])
             experiment.run()
 
             # test results
@@ -51,19 +55,18 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             fluxes = result.get_fluxes_dataframe()
             sv = result.get_sv_dataframe()
 
-            print(fluxes)
-            print(sv)
+            self.print(fluxes)
+            self.print(sv)
             th, p = result.compute_zero_flux_threshold()
-            print(f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}")
+            self.print(
+                f"sv_mean = {sv['value'].mean()}, sv_std = {sv['value'].std()}, sv_th={th}, sv_p = {p}"
+            )
 
-            if solver == "quad":
-                relax_dir = "relax" if relax_qssa else "no-relax"
-            else:
-                relax_dir = ""
+            relax_dir = ("relax" if relax_qssa else "no-relax") if solver == "quad" else ""
 
             result_dir = os.path.join(organism_result_dir, ctx_name, solver, relax_dir)
 
-            #if not os.path.exists(result_dir):
+            # if not os.path.exists(result_dir):
             #    os.makedirs(result_dir)
             # # write test results in files
             # file_path = os.path.join(result_dir, "sv.csv")
@@ -73,7 +76,7 @@ class TestFBA(BaseTestCaseUsingFullBiotaDB):
             # with open(file_path, 'w', encoding="utf-8") as fp:
             #     fp.write(fluxes.to_csv())
 
-            print(fluxes)
+            self.print(fluxes)
             table = fluxes.to_numpy()
             table = numpy.array(table, dtype=float)
 

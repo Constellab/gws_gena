@@ -1,31 +1,20 @@
-
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, Settings, TaskRunner
-from gws_gena import GapFiller, GapFinderHelper, NetworkImporter
-
-settings = Settings.get_instance()
+from gws_core import File, TaskRunner
+from gws_gena import DataProvider, GapFiller, GapFinderHelper, NetworkImporter
 
 
 class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
-
     def test_gap_filler_with_no_gaps(self):
-        data_dir = settings.get_variable("gws_gena:testdata_dir")
+        data_dir = DataProvider.get_test_data_dir()
         file_path = os.path.join(data_dir, "./ecoli/gaps/ecoli_without_AKGDH.json")
-        net = NetworkImporter.call(
-            File(path=file_path),
-            {"add_biomass" : True}
-        )
+        net = NetworkImporter.call(File(path=file_path), {"add_biomass": True})
 
         # params = {"tax_id":  "562"}  # ecoli
-        params = {"tax_id":  "2"}  # bacteria
+        params = {"tax_id": "2"}  # bacteria
 
-        tester = TaskRunner(
-            params=params,
-            inputs={"network": net},
-            task_type=GapFiller
-        )
+        tester = TaskRunner(params=params, inputs={"network": net}, task_type=GapFiller)
         outputs = tester.run()
 
         # test results
@@ -33,4 +22,4 @@ class TestGapFinder(BaseTestCaseUsingFullBiotaDB):
 
         helper = GapFinderHelper()
         dead = helper.find_deadend_compound_ids(net)
-        print(f"After gap filling: {len(dead)} dead-ends")
+        self.print(f"After gap filling: {len(dead)} dead-ends")

@@ -1,20 +1,19 @@
-
 import json
 import os
 import pickle
 
-from gws_core import Logger, Settings
+from gws_core import Logger
 from pandas import DataFrame
+
+from gws_gena import DataProvider
 
 from ..network.network import Network
 
 
 class Unicell:
-
     @classmethod
     def create_network(cls, tax_id: str = None, refresh: bool = False) -> Network:
-        settings = Settings.get_instance()
-        data_dir = os.path.join(settings.get_brick_data_dir(brick_name="gws_gena"), "unicell")
+        data_dir = os.path.join(DataProvider.get_test_data_dir(), "unicell")
         if tax_id:
             file_path = os.path.join(data_dir, f"network_{tax_id}.pkl")
         else:
@@ -23,14 +22,13 @@ class Unicell:
             os.makedirs(data_dir)
 
         net = None
-        if not refresh:
-            if os.path.exists(file_path):
-                with open(file_path, 'rb') as fp:
-                    net = pickle.load(fp)
+        if not refresh and os.path.exists(file_path):
+            with open(file_path, "rb") as fp:
+                net = pickle.load(fp)
 
         if net is None:
             net = Network.from_biota(tax_id=tax_id)
-            with open(file_path, 'wb') as fp:
+            with open(file_path, "wb") as fp:
                 pickle.dump(net, fp)
         return net
 
