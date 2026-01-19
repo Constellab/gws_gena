@@ -1,7 +1,15 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, TableImporter, TaskRunner
+from gws_core import (
+    File,
+    InputTask,
+    ResourceModel,
+    ResourceOrigin,
+    ScenarioProxy,
+    TableImporter,
+    TaskRunner,
+)
 from gws_gena import (
     DataProvider,
     ReconProto,
@@ -40,17 +48,39 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
 
         biomass_table = runner_transformer_biomasss.run()["transformed_table"]
 
-        experiment = IExperiment(ReconProto)
+        experiment = ScenarioProxy()
         proto = experiment.get_protocol()
 
-        proto.set_input("ec_table", ec_table)
-        proto.set_input("biomass_table", biomass_table)
+        recon_proto = proto.add_process(ReconProto, "recon_proto")
 
-        recon = proto.get_process("recon")
+        ec_table_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            ec_table, origin=ResourceOrigin.UPLOADED
+        )
+        biomass_table_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            biomass_table, origin=ResourceOrigin.UPLOADED
+        )
+
+        ec_table_resource = proto.add_process(
+            InputTask, "ec_table_resource", {InputTask.config_name: ec_table_resource_model.id}
+        )
+        proto.add_connector(
+            out_port=ec_table_resource >> "resource", in_port=recon_proto << "ec_table"
+        )
+
+        biomass_table_resource = proto.add_process(
+            InputTask,
+            "biomass_table_resource",
+            {InputTask.config_name: biomass_table_resource_model.id},
+        )
+        proto.add_connector(
+            out_port=biomass_table_resource >> "resource", in_port=recon_proto << "biomass_table"
+        )
+
+        recon = recon_proto.get_process("recon")
         # recon.set_param('tax_id', "4753")  # pcystis
         recon.set_param("tax_id", "263815")  # pcystis murina
 
-        gap_filler = proto.get_process("gap_filler")
+        gap_filler = recon_proto.get_process("gap_filler")
         # gap_filler.set_param('tax_id', "4753")      # pcystis
         gap_filler.set_param("tax_id", "4751")  # fungi
         # gap_filler.set_param('tax_id', "2759")    # eukaryota
@@ -61,7 +91,8 @@ class TestRecon(BaseTestCaseUsingFullBiotaDB):
         experiment.run()
 
         # test results
-        recon_net = proto.get_output("draft_recon_network")
+        recon_proto.refresh()
+        recon_net = recon_proto.get_output("draft_recon_network")
 
         # TESTS
 

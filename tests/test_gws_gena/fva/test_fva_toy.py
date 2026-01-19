@@ -3,7 +3,7 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment
+from gws_core import File, InputTask, ResourceModel, ResourceOrigin, ScenarioProxy
 from gws_gena import ContextImporter, DataProvider, FVAProto, NetworkImporter
 
 
@@ -15,7 +15,7 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
         organism_result_dir = os.path.join(testdata_dir, "fva", "toy")
 
         def run_fva(solver="highs", relax_qssa=False, parsimony_strength=0.0):
-            experiment = IExperiment(FVAProto)
+            experiment = ScenarioProxy()
             proto = experiment.get_protocol()
 
             network_file = File()
@@ -28,10 +28,30 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
             )
             ctx = ContextImporter.call(File(path=os.path.join(data_dir, "toy_context.json")))
 
-            proto.set_input("network", net)
-            proto.set_input("context", ctx)
+            fva_proto = proto.add_process(FVAProto, "fva_proto")
 
-            fva = proto.get_process("fva")
+            net_resource_model: ResourceModel = ResourceModel.save_from_resource(
+                net, origin=ResourceOrigin.UPLOADED
+            )
+            ctx_resource_model: ResourceModel = ResourceModel.save_from_resource(
+                ctx, origin=ResourceOrigin.UPLOADED
+            )
+
+            context_resource = proto.add_process(
+                InputTask, "context_resource", {InputTask.config_name: ctx_resource_model.id}
+            )
+            proto.add_connector(
+                out_port=context_resource >> "resource", in_port=fva_proto << "context"
+            )
+
+            network_resource = proto.add_process(
+                InputTask, "network_resource", {InputTask.config_name: net_resource_model.id}
+            )
+            proto.add_connector(
+                out_port=network_resource >> "resource", in_port=fva_proto << "network"
+            )
+
+            fva = fva_proto.get_process("fva")
             fva.set_param("solver", solver)
             fva.set_param("relax_qssa", relax_qssa)
 
@@ -42,7 +62,8 @@ class TestFVA(BaseTestCaseUsingFullBiotaDB):
                 relax_dir = "relax" if relax_qssa else "no-relax"
 
             # test results
-            result = proto.get_output("fva_result")
+            fva_proto.refresh()
+            result = fva_proto.get_output("fva_result")
             fluxes = result.get_fluxes_dataframe()
             sv = result.get_sv_dataframe()
             self.print(fluxes)

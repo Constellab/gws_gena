@@ -3,7 +3,7 @@ import os
 import numpy
 import pandas
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment
+from gws_core import File, InputTask, ResourceModel, ResourceOrigin, ScenarioProxy
 from gws_gena import ContextImporter, DataProvider, FBAProto, NetworkImporter
 
 
@@ -12,7 +12,7 @@ class TestPFBA(BaseTestCaseUsingFullBiotaDB):
         data_dir = DataProvider.get_test_data_dir()
 
         def run_fba(organism, solver="highs", relax_qssa=False):
-            experiment = IExperiment(FBAProto)
+            experiment = ScenarioProxy()
             proto = experiment.get_protocol()
             organism_dir = os.path.join(data_dir, organism)
 
@@ -21,9 +21,30 @@ class TestPFBA(BaseTestCaseUsingFullBiotaDB):
             )
             ctx = ContextImporter.call(File(os.path.join(organism_dir, f"{organism}_context.json")))
 
-            proto.set_input("network", net)
-            proto.set_input("context", ctx)
-            fba = proto.get_process("fba")
+            fba_proto = proto.add_process(FBAProto, "fba_proto")
+
+            net_resource_model: ResourceModel = ResourceModel.save_from_resource(
+                net, origin=ResourceOrigin.UPLOADED
+            )
+            ctx_resource_model: ResourceModel = ResourceModel.save_from_resource(
+                ctx, origin=ResourceOrigin.UPLOADED
+            )
+
+            context_resource = proto.add_process(
+                InputTask, "context_resource", {InputTask.config_name: ctx_resource_model.id}
+            )
+            proto.add_connector(
+                out_port=context_resource >> "resource", in_port=fba_proto << "context"
+            )
+
+            network_resource = proto.add_process(
+                InputTask, "network_resource", {InputTask.config_name: net_resource_model.id}
+            )
+            proto.add_connector(
+                out_port=network_resource >> "resource", in_port=fba_proto << "network"
+            )
+
+            fba = fba_proto.get_process("fba")
             fba.set_param("solver", solver)
             fba.set_param("relax_qssa", relax_qssa)
             fba.set_param("qssa_relaxation_strength", 1)
@@ -41,7 +62,8 @@ class TestPFBA(BaseTestCaseUsingFullBiotaDB):
                 relax_dir = "relax" if relax_qssa else "no-relax"
 
             # test results
-            result = proto.get_output("fba_result")
+            fba_proto.refresh()
+            result = fba_proto.get_output("fba_result")
             # biomass_flux = result.get_biomass_flux_dataframe()
             # self.print("---------------- BIOMASS FLUX ----------------")
             # self.print(biomass_flux)

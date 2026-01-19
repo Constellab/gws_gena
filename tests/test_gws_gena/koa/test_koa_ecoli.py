@@ -1,7 +1,15 @@
 import os
 
 from gws_biota import BaseTestCaseUsingFullBiotaDB
-from gws_core import File, IExperiment, TableImporter, TaskRunner
+from gws_core import (
+    File,
+    InputTask,
+    ResourceModel,
+    ResourceOrigin,
+    ScenarioProxy,
+    TableImporter,
+    TaskRunner,
+)
 from gws_gena import (
     ContextImporter,
     DataProvider,
@@ -15,7 +23,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
     def test_ecoli_koa(self):
         data_dir = DataProvider.get_test_data_dir()
 
-        experiment = IExperiment(KOAProto)
+        experiment = ScenarioProxy()
         proto = experiment.get_protocol()
 
         net = NetworkImporter.call(
@@ -35,17 +43,43 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
         )
         ko_table = runner_transformer.run()["transformed_table"]
 
-        proto.set_input("network", net)
-        proto.set_input("context", ctx)
-        proto.set_input("ko_table", ko_table)
+        koa_proto = proto.add_process(KOAProto, "koa_proto")
 
-        koa = proto.get_process("koa")
+        net_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            net, origin=ResourceOrigin.UPLOADED
+        )
+        ctx_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            ctx, origin=ResourceOrigin.UPLOADED
+        )
+
+        ko_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            ko_table, origin=ResourceOrigin.UPLOADED
+        )
+
+        context_resource = proto.add_process(
+            InputTask, "context_resource", {InputTask.config_name: ctx_resource_model.id}
+        )
+        proto.add_connector(out_port=context_resource >> "resource", in_port=koa_proto << "context")
+
+        network_resource = proto.add_process(
+            InputTask, "network_resource", {InputTask.config_name: net_resource_model.id}
+        )
+        proto.add_connector(out_port=network_resource >> "resource", in_port=koa_proto << "network")
+
+        ko_resource = proto.add_process(
+            InputTask, "ko_resource", {InputTask.config_name: ko_resource_model.id}
+        )
+        proto.add_connector(out_port=ko_resource >> "resource", in_port=koa_proto << "ko_table")
+
+        koa = koa_proto.get_process("koa")
         koa.set_param("fluxes_to_maximize", ["ecoli_BIOMASS_Ecoli_core_w_GAM"])
         koa.set_param("solver", "quad")
         koa.set_param("relax_qssa", True)
         koa.set_param("qssa_relaxation_strength", 1)
         experiment.run()
-        ko_results = proto.get_output("koa_result")
+
+        koa_proto.refresh()
+        ko_results = koa_proto.get_output("koa_result")
 
         self.print(ko_results)
 
@@ -64,7 +98,7 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
 
     def test_ecoli_koa_genes(self):
         data_dir = DataProvider.get_test_data_dir()
-        experiment = IExperiment(KOAProto)
+        experiment = ScenarioProxy()
         proto = experiment.get_protocol()
 
         net = NetworkImporter.call(
@@ -78,18 +112,43 @@ class TestKOA(BaseTestCaseUsingFullBiotaDB):
             File(path=os.path.join(data_dir, "koa", "ecoli", "ko_table_genes.csv")), {}
         )
 
-        proto.set_input("network", net)
-        proto.set_input("context", ctx)
-        proto.set_input("ko_table", ko_table)
+        koa_proto = proto.add_process(KOAProto, "koa_proto")
 
-        koa = proto.get_process("koa")
+        net_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            net, origin=ResourceOrigin.UPLOADED
+        )
+        ctx_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            ctx, origin=ResourceOrigin.UPLOADED
+        )
+
+        ko_resource_model: ResourceModel = ResourceModel.save_from_resource(
+            ko_table, origin=ResourceOrigin.UPLOADED
+        )
+
+        context_resource = proto.add_process(
+            InputTask, "context_resource", {InputTask.config_name: ctx_resource_model.id}
+        )
+        proto.add_connector(out_port=context_resource >> "resource", in_port=koa_proto << "context")
+
+        network_resource = proto.add_process(
+            InputTask, "network_resource", {InputTask.config_name: net_resource_model.id}
+        )
+        proto.add_connector(out_port=network_resource >> "resource", in_port=koa_proto << "network")
+
+        ko_resource = proto.add_process(
+            InputTask, "ko_resource", {InputTask.config_name: ko_resource_model.id}
+        )
+        proto.add_connector(out_port=ko_resource >> "resource", in_port=koa_proto << "ko_table")
+
+        koa = koa_proto.get_process("koa")
         koa.set_param("fluxes_to_maximize", ["ecoli_BIOMASS_Ecoli_core_w_GAM"])
         koa.set_param("solver", "quad")
         koa.set_param("relax_qssa", True)
         koa.set_param("qssa_relaxation_strength", 1)
         koa.set_param("type_ko", "genes")
         experiment.run()
-        ko_results = proto.get_output("koa_result")
+        koa_proto.refresh()
+        ko_results = koa_proto.get_output("koa_result")
 
         table = ko_results.get_flux_dataframe(ko_id="ecoli_PGI")
 
