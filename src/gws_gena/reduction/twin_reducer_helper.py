@@ -36,20 +36,21 @@ class TwinReducerHelper:
             bool: True if installation was successful, False otherwise
         """
         try:
-
             # Update package list
-            result = shell_proxy.run("apt update", shell_mode=True)
+            result = shell_proxy.run("sudo apt update", shell_mode=True)
             if result != 0:
                 shell_proxy.log_error_message("[TwinReducerHelper] Failed to update package list")
                 return False
 
             # Install Java JDK
-            result = shell_proxy.run("apt -y install default-jdk", shell_mode=True)
+            result = shell_proxy.run("sudo apt -y install default-jdk", shell_mode=True)
             if result != 0:
                 shell_proxy.log_error_message("[TwinReducerHelper] Failed to install Java JDK")
                 return False
             return True
 
         except Exception as e:
-            shell_proxy.log_error_message(f"[TwinReducerHelper] Error during Java installation: {str(e)}")
+            shell_proxy.log_error_message(
+                f"[TwinReducerHelper] Error during Java installation: {str(e)}"
+            )
             return False
