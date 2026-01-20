@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 from gws_core import BaseTestCase, File, Table, TableImporter, TaskRunner
 from gws_gena import DataProvider
 from gws_gena.fba.flux_table_analysis.plot_flux_table_analysis import PlotFluxTableAnalysis
@@ -17,7 +18,7 @@ class TestPlotFluxTableAnalysis(BaseTestCase):
         flux_table_2 = TableImporter.call(File(path=flux_table_2), params={"index_column": 0})
         # load reactions modified :
         reactions_modified = os.path.join(data_dir, "reactions_modified.csv")
-        reactions_modified = File(reactions_modified)
+        reactions_modified = TableImporter.call(File(path=reactions_modified))
 
         # create the TaskRunner
         runner_flux_analysis = TaskRunner(
@@ -46,13 +47,12 @@ class TestPlotFluxTableAnalysis(BaseTestCase):
 
         # import the expected table to compare it to the TaskRunner result.
         expected_table = os.path.join(data_dir, "expected_output_table.csv")
-        # expected_table = File(expected_table)
         expected_table = TableImporter.call(File(path=expected_table))
 
         table_output_flux_analysis = table_output_flux_analysis.get_data()
         expected_table = expected_table.get_data()
         table_output_flux_analysis = table_output_flux_analysis.reset_index(drop=True)
         expected_table = expected_table.reset_index(drop=True)
-        expected_table = expected_table.to_dict()
-        table_output_flux_analysis = table_output_flux_analysis.to_dict()
-        self.assertDictEqual(table_output_flux_analysis, expected_table)
+        self.assertTrue(
+            pd.testing.assert_frame_equal(table_output_flux_analysis, expected_table) is None
+        )

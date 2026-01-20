@@ -10,7 +10,11 @@ class TestLoadBiggModel(BaseTestCase):
         self.print("Test Load BiGG Model")
 
         runner_load_bigg_model = TaskRunner(
-            task_type=LoadBiGGModels, params={"organism": "e_coli_core", "format": "json"}
+            task_type=LoadBiGGModels,
+            params={
+                "name_organism": "Escherichia coli str. K-12 substr. MG1655, e_coli_core",
+                "format": "json",
+            },
         )
         # execute the TaskRunner
         outputs_load_bigg_model = runner_load_bigg_model.run()
