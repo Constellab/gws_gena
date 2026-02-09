@@ -1,15 +1,13 @@
-
 import pandas as pd
 import streamlit as st
 from gws_core import ResourceModel, Scenario
-from gws_core.streamlit import StreamlitTranslateLang, StreamlitTranslateService
 from gws_core.tag.entity_tag_list import EntityTagList
 from gws_core.tag.tag_entity_type import TagEntityType
+from gws_streamlit_main import StreamlitTranslateLang, StreamlitTranslateService
 
 
 class State:
-    """Class to manage the state of the app.
-    """
+    """Class to manage the state of the app."""
 
     TAG_BRICK = "brick"
     TAG_GENA = "gena"
@@ -33,7 +31,6 @@ class State:
     FBA_SCENARIO_NAME_INPUT_KEY = "fba_scenario_name_input"
     FVA_SCENARIO_NAME_INPUT_KEY = "fva_scenario_name_input"
     KOA_SCENARIO_NAME_INPUT_KEY = "koa_scenario_name_input"
-
 
     SELECTED_SCENARIO_KEY = "selected_scenario"
     SELECTED_ANALYSIS_KEY = "selected_analysis"
@@ -95,8 +92,12 @@ class State:
     FBA_CONFIG_KEY = "fba_config"
     FVA_CONFIG_KEY = "fva_config"
     KOA_CONFIG_KEY = "koa_config"
-    GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY = "generation_multi_simulations_metabolite_config"
-    GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY = "generation_multi_simulations_reaction_config"
+    GENERATION_MULTI_SIMULATIONS_METABOLITE_CONFIG_KEY = (
+        "generation_multi_simulations_metabolite_config"
+    )
+    GENERATION_MULTI_SIMULATIONS_REACTION_CONFIG_KEY = (
+        "generation_multi_simulations_reaction_config"
+    )
     ID_CONVERT_CONFIG_KEY = "id_convert_config"
     CONTEXT_FROM_DEG_CONFIG_KEY = "context_from_deg_config"
 
@@ -136,7 +137,7 @@ class State:
         return st.session_state.get(cls.TRANSLATE_SERVICE, None)
 
     @classmethod
-    def set_translate_service(cls, value : StreamlitTranslateService) -> None:
+    def set_translate_service(cls, value: StreamlitTranslateService) -> None:
         st.session_state[cls.TRANSLATE_SERVICE] = value
 
     @classmethod
@@ -168,11 +169,11 @@ class State:
         return True
 
     @classmethod
-    def get_edited_network(cls)-> str:
+    def get_edited_network(cls) -> str:
         return st.session_state.get(cls.EDITED_NETWORK, None)
 
     @classmethod
-    def set_edited_network(cls, df_network : pd.DataFrame) -> None:
+    def set_edited_network(cls, df_network: pd.DataFrame) -> None:
         st.session_state[cls.EDITED_NETWORK] = df_network
 
     @classmethod
@@ -251,7 +252,7 @@ class State:
     # Infos of the network scenario
     @classmethod
     def get_current_tag_value_by_key(cls, key: str) -> str:
-        network_scenario : Scenario = cls.get_selected_analysis()
+        network_scenario: Scenario = cls.get_selected_analysis()
         entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, network_scenario.id)
         tag = entity_tag_list.get_tags_by_key(key)[0].to_simple_tag()
         return tag.value
