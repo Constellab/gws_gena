@@ -1,72 +1,74 @@
-# Load required libraries
-library(readr)
-library(pathview)
-library(foreach)
-library(doParallel)
+#!/usr/bin/env Rscript
 
-# Read command-line arguments
-args <- commandArgs(trailingOnly = TRUE)
+args <- commandArgs(trailingOnly=TRUE)
+gene_csv    <- args[[1]]
+specie      <- args[[2]]
+pathway_txt <- args[[3]]
+fold_change <- args[[4]]   # "Yes" / "No"
+kegg_dir    <- args[[5]]
 
-if (length(args)==0) { # test if there is at least one argument: if not, return an error
-  stop("At least one argument must be supplied (input file).", call.=FALSE)
+suppressPackageStartupMessages({
+  library(readr)
+  library(dplyr)
+  library(pathview)
+})
+
+df <- read_csv(gene_csv, show_col_types = FALSE)
+
+if (!("kegg_short" %in% colnames(df))) {
+  colnames(df)[1] <- "kegg_short"
+}
+
+df <- df %>% filter(!is.na(kegg_short), kegg_short != "")
+
+if (nrow(df) == 0) {
+  write.csv(data.frame(pathway=character(), level="ERROR", message="gene_kegg.csv empty"),
+            "pathway_debug.csv", row.names=FALSE)
+  quit(status=1)
+}
+
+if (fold_change == "Yes" && ("log2FoldChange" %in% colnames(df))) {
+  vals <- suppressWarnings(as.numeric(df$log2FoldChange))
+  names(vals) <- df$kegg_short
+  gene.data <- vals
 } else {
-  # retrieve the different arguments
-  list_gene_entrez_path = args[1]
-  specie = args[2]
-  pathway_kegg_path = args[3]
-  fold_change = args[4]
+  vals <- rep(1, nrow(df))
+  names(vals) <- df$kegg_short
+  gene.data <- vals
 }
 
-#load data
-list_gene_entrez <- read.csv(list_gene_entrez_path, header = TRUE, sep = ",", row.names = 1)
-pathway_kegg <- read.table(pathway_kegg_path, quote="\"", comment.char="")
+pids <- readLines(pathway_txt, warn=FALSE)
+pids <- trimws(pids)
+pids <- pids[pids != ""]
 
-#Map genes on KEGG pathway for each pathway
-
-list_pathway_error <- list() #list to keep the pathways that gives an error with the function pathview. 
-
-# Register parallel backend
-cores <- detectCores()
-cl <- makeCluster(cores)
-registerDoParallel(cl)
-
-if (fold_change == "Yes"){ #If the fold change values are provided, we give the column of the genes and the valeus to pathview 
-  run_pathview <- function(pathway, gene_data, specie) {
-      try_pathview <- try(suppressMessages(pathview(gene.data = list_gene_entrez, pathway.id = pathway, gene.idtype = "entrez", species = specie)), silent = TRUE)
-      return(list(try_pathview = try_pathview, pathway = pathway))
-    }
-  # Perform parallel execution of pathview for each pathway
-  pathway_results <- foreach(pathway = pathway_kegg$V1, .packages = c("pathview")) %dopar% {
-  run_pathview(pathway, list_gene_entrez, specie)}
-
-  for (result in pathway_results) {
-    if (class(result$try_pathview) == "try-error"){
-      print(paste0("An error has occurred -> the pathway ", result$pathway, " cannot be displayed." ))
-      #append name pathview to end of list
-      len <- length(list_pathway_error)
-      list_pathway_error[[len+1]] <- result$pathway
-    }
-  }
-} else{  #If the fold change values are not provided, we only give the column of the genes to pathview 
-  run_pathview <- function(pathway, gene_data, specie) {
-      try_pathview <- try(suppressMessages(pathview(gene.data = row.names(list_gene_entrez), pathway.id = pathway, gene.idtype = "entrez", species = specie)), silent = TRUE)
-      return(list(try_pathview = try_pathview, pathway = pathway))
-    }
-  # Perform parallel execution of pathview for each pathway
-  pathway_results <- foreach(pathway = pathway_kegg$V1, .packages = c("pathview")) %dopar% {
-  run_pathview(pathway, list_gene_entrez, specie)}
-
-  for (result in pathway_results) {
-    if (class(result$try_pathview) == "try-error"){
-      print(paste0("An error has occurred -> the pathway ", result$pathway, " cannot be displayed." ))
-      #append name pathview to end of list
-      len <- length(list_pathway_error)
-      list_pathway_error[[len+1]] <- result$pathway
-    }
-  }
+if (length(pids) == 0) {
+  write.csv(data.frame(pathway=character(), level="ERROR", message="No pathways provided"),
+            "pathway_debug.csv", row.names=FALSE)
+  quit(status=1)
 }
 
-# Close parallel backend
-stopCluster(cl)
+dbg <- data.frame(pathway=character(), level=character(), message=character(),
+                  stringsAsFactors=FALSE)
 
-write.csv(list_pathway_error, file = "list_pathway_error.csv", row.names = FALSE)
+for (pid in pids) {
+  tryCatch({
+    pathview(
+      gene.data = gene.data,
+      pathway.id = pid,
+      species = specie,
+      gene.idtype = "kegg",
+      kegg.native = TRUE,
+      same.layer = FALSE,
+      kegg.dir = kegg_dir,
+      out.suffix = "pathview"
+    )
+    dbg <- rbind(dbg, data.frame(pathway=pid, level="INFO", message="OK",
+                                 stringsAsFactors=FALSE))
+  }, error=function(e) {
+    dbg <- rbind(dbg, data.frame(pathway=pid, level="ERROR",
+                                 message=as.character(e$message),
+                                 stringsAsFactors=FALSE))
+  })
+}
+
+write.csv(dbg, "pathway_debug.csv", row.names=FALSE)
