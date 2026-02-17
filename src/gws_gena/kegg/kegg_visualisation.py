@@ -31,7 +31,6 @@ from .kegg_r_env_task import KeggREnvHelper
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# organism autocomplete list
 KORG_PATH = os.path.join(_THIS_DIR, "list_organisms_pathview.txt")
 _KORG = pd.read_csv(KORG_PATH, sep=None, engine="python", dtype=str, keep_default_na=False)
 
@@ -76,32 +75,30 @@ def hypergeom_right_tail(N: int, K: int, n: int, k: int) -> float:
     return min(1.0, p)
 
 
+def parse_fc_cols(s: str) -> List[str]:
+    s = (s or "").strip()
+    if not s:
+        return []
+    cols = [x.strip() for x in s.split(",")]
+    return [x for x in cols if x]
+
+
 @task_decorator(
     "KEGGVisualisation",
     human_name="KEGG enrichment analysis",
-    short_description="Organism autocomplete -> Entrez->KEGG genes -> enrichment -> Pathview PNGs",
+    short_description="Entrez -> KEGG genes -> KEGG enrichment -> Pathview multi-state PNGs",
     style=TypingStyle.material_icon(material_icon_name="collections_bookmark", background_color="#d9d9d9"),
 )
 class KEGGVisualisation(Task):
     """
     KEGG enrichment + Pathview (Entrez -> KEGG gene IDs)
 
-    This task expects a DEG table with an Entrez Gene ID column (NCBI GeneID).
-    If you start from other identifiers (Ensembl, symbols, FlyBase IDs), first run
-    the Omix “Gene ID conversion” task and set target namespace = ENTREZGENE.
+    Expects an Entrez Gene ID (NCBI GeneID) column.
+    If starting from other IDs, run Omix 'Gene ID conversion' with target namespace = ENTREZGENE.
 
-    Workflow:
-    1) Convert Entrez Gene IDs to KEGG gene IDs via KEGG REST (conv).
-    2) Compute KEGG pathway enrichment (hypergeometric test + BH/FDR).
-    3) Render up to N Pathview PNGs for the top enriched pathways.
-
-    Notes:
-    - overlap = number of your mapped genes present in a given pathway.
-    - min_genes_mapped_required stops the pipeline if too few genes map to KEGG.
-    - max_pathways_to_render limits the number of Pathview images produced.
-    - Some KEGG “overview/global” maps may show little/no coloring due to node types.
+    Supports multi-state Pathview: if foldchange_columns contains multiple columns,
+    each gene box is split into sub-boxes (one per column) on the same PNG.
     """
-
 
     input_specs = InputSpecs({
         "deg_file": InputSpec([File, Table], human_name="DEG table (CSV/TSV)"),
@@ -111,20 +108,22 @@ class KEGGVisualisation(Task):
         "pathways": OutputSpec(ResourceSet, human_name="Pathview PNGs"),
         "kegg_enrichment": OutputSpec(Table, human_name="KEGG enrichment (with pathway names)"),
         "gene_kegg_used": OutputSpec(Table, human_name="Genes used (mapped) + pathway names"),
+        "list_pathway_error": OutputSpec(Table, human_name="Pathways that failed to render (Pathview)"),
     })
 
     config_specs = ConfigSpecs({
         "organism_name": StrParam(allowed_values=SUPPORTED_ORGANISM_NAMES, human_name="Organism (autocomplete)"),
-
         "id_column": StrParam(default_value="gene_id", human_name="ID column (optional)"),
-        "foldchange_column": StrParam(default_value="log2FoldChange", human_name="Fold-change column (optional)"),
-
         "col_entrez": StrParam(
             default_value="entrez",
-            human_name="Entrez Gene list",
-            short_description="Column with Entrez Gene IDs (e.g. 318213). Use 'Gene ID conversion' task to generate it",
+            human_name="Entrez Gene column",
+            short_description="Column with NCBI Entrez Gene IDs. Use Omix 'Gene ID conversion' with target namespace=ENTREZGENE.",
         ),
-
+        "foldchange_columns": StrParam(
+            default_value="log2FoldChange",
+            human_name="Fold-change columns (comma-separated)",
+            short_description="e.g. log2FC_A,log2FC_B,log2FC_C. If >=2 columns => multi-state Pathview (split boxes).",
+        ),
         "min_genes_mapped_required": StrParam(default_value="10", human_name="Minimum mapped genes required"),
         "max_pathways_to_render": StrParam(default_value="30", human_name="Max pathways rendered by Pathview"),
     })
@@ -136,27 +135,35 @@ class KEGGVisualisation(Task):
         specie = self._specie_from_name(organism_name)
         self.log_info_message(f"Selected organism: {organism_name} -> KEGG code: {specie}")
 
-        id_col = str(params.get("id_column", "index")).strip()
-        fc_col = str(params.get("foldchange_column", "log2FoldChange")).strip()
+        id_col = str(params.get("id_column", "") or "").strip()
         col_entrez = (params.get("col_entrez") or "").strip()
+        fc_cols_arg = str(params.get("foldchange_columns", "") or "").strip()
 
         min_mapped = int(str(params.get("min_genes_mapped_required", "10")).strip() or "10")
         top_n = int(str(params.get("max_pathways_to_render", "30")).strip() or "30")
 
-        #  Pathview only if overlap > 1
-        MIN_OVERLAP_TO_RENDER = 1
+        # hard rule (no parameter): render only pathways with overlap > 2
+        MIN_OVERLAP_TO_RENDER = 3
+
+        # (recommended) exclude KEGG overview maps like dme01xxx (often not colorable)
+        EXCLUDE_OVERVIEW_MAPS = True
 
         deg_path = self._materialize_input(inputs["deg_file"], shell)
 
-        # validate input columns early
         header_df = pd.read_csv(deg_path, sep=None, engine="python", dtype=str, keep_default_na=False, nrows=1)
         cols = set(header_df.columns.tolist())
-        if col_entrez == "":
+
+        if not col_entrez:
             raise Exception("col_entrez is empty. Please set the Entrez column name.")
         if col_entrez not in cols:
             raise Exception(f"col_entrez='{col_entrez}' not found in input columns: {sorted(cols)}")
 
-        # 1) resolve genes (Entrez only)
+        fc_cols = parse_fc_cols(fc_cols_arg)
+        for c in fc_cols:
+            if c not in cols:
+                raise Exception(f"foldchange_columns contains '{c}', not found in input columns: {sorted(cols)}")
+
+        # 1) resolve genes (Entrez -> KEGG)
         resolver_py = os.path.join(_THIS_DIR, "_kegg_resolve_gene_ids.py")
         out_used = os.path.join(shell.working_dir, "gene_kegg_used.csv")
         out_gene_kegg = os.path.join(shell.working_dir, "gene_kegg.csv")
@@ -167,8 +174,8 @@ class KEGGVisualisation(Task):
             "--deg", shlex.quote(deg_path),
             "--specie", shlex.quote(specie),
             "--id_col", shlex.quote(id_col),
-            "--fc_col", shlex.quote(fc_col),
             "--col_entrez", shlex.quote(col_entrez),
+            "--fc_cols", shlex.quote(",".join(fc_cols)),
             "--min_mapped", shlex.quote(str(min_mapped)),
             "--out_used", shlex.quote(out_used),
             "--out_gene_kegg", shlex.quote(out_gene_kegg),
@@ -177,7 +184,7 @@ class KEGGVisualisation(Task):
 
         rc = shell.run(cmd, shell_mode=True)
         if rc != 0 or (not os.path.exists(out_gene_kegg)) or os.path.getsize(out_gene_kegg) == 0:
-            raise Exception("KEGG resolver failed. Check internal mapping_debug.csv/gene_kegg_used.csv in run folder.")
+            raise Exception("KEGG resolver failed. Check run folder outputs.")
 
         used_df = pd.read_csv(out_used, dtype=str, keep_default_na=False)
         used_df["kegg_full"] = used_df.get("kegg_full", "").astype(str).str.strip()
@@ -187,7 +194,7 @@ class KEGGVisualisation(Task):
         if mapped.shape[0] < min_mapped:
             raise Exception(f"Too few genes mapped to KEGG ({mapped.shape[0]} < {min_mapped}).")
 
-        # 2) universe
+        # 2) universe gene<->pathway
         gp = self._kegg_link_pathway_species(specie)
         if gp.empty:
             raise Exception("KEGG link/pathway/<specie> returned empty universe (network/proxy or parsing issue).")
@@ -199,18 +206,31 @@ class KEGGVisualisation(Task):
             pw2genes.setdefault(r["pathway"], set()).add(r["gene"])
             gene2pws.setdefault(r["gene"], set()).add(r["pathway"])
 
-        query = sorted(set(mapped["kegg_full"].astype(str).tolist()))
-        query = [g for g in query if g in universe]
+        query_all = sorted(set(mapped["kegg_full"].astype(str).tolist()))
+        query_in_universe = [g for g in query_all if g in universe]
+        query_with_pathways = [g for g in query_in_universe if g in gene2pws and len(gene2pws[g]) > 0]
+
         N = len(universe)
-        n = len(query)
+        n = len(query_with_pathways)
+
         if n == 0:
-            raise Exception("Query genes do not intersect KEGG universe. Check kegg_full formatting/universe parsing.")
+            ex = ", ".join(query_all[:10])
+            raise Exception(
+                "Aucun des gènes KEGG mappés dans ce subset n'est annoté dans des pathways KEGG pour cet organisme.\n"
+                f"- mapped KEGG genes (subset): {len(query_all)}\n"
+                f"- in KEGG universe: {len(query_in_universe)}\n"
+                f"- with at least 1 pathway: {n}\n"
+                f"Exemples de kegg_full: {ex}\n"
+                "Astuce: sur un petit subset, c'est fréquent. KEGG a des gènes sans pathways."
+            )
+
+        query = query_with_pathways
+        qset = set(query)
 
         # 3) pathway names
         pw_names_df = self._kegg_list_pathways(specie)
         pw_name_map = dict(zip(pw_names_df["pathway"], pw_names_df["pathway_name"]))
 
-        # add pathway ids + names into gene_kegg_used
         def join_sorted(xs: Set[str]) -> str:
             return ";".join(sorted(xs)) if xs else ""
 
@@ -227,7 +247,6 @@ class KEGGVisualisation(Task):
 
         # 4) enrichment
         rows = []
-        qset = set(query)
         for pw, geneset in pw2genes.items():
             K = len(geneset)
             k = len(qset & geneset)  # overlap
@@ -246,17 +265,18 @@ class KEGGVisualisation(Task):
         enr = enr.sort_values(["padj", "pvalue", "overlap"], ascending=[True, True, False]).reset_index(drop=True)
         enr["pathway_name"] = enr["pathway"].map(lambda p: pw_name_map.get(p, ""))
 
+        if EXCLUDE_OVERVIEW_MAPS:
+            enr = enr[~enr["pathway"].astype(str).str.startswith(specie + "01")].copy()
+
         enr_csv = os.path.join(shell.working_dir, "kegg_enrichment.csv")
         enr.to_csv(enr_csv, index=False)
 
-        # 5) pathview (✅ filter overlap > 2)
+        # 5) pathview (overlap > 2 only)
         def to_pid5(pw: str) -> str:
             digs = "".join(ch for ch in str(pw) if ch.isdigit())
             return digs[-5:] if len(digs) >= 5 else ""
 
         enr_render = enr[enr["overlap"] >= MIN_OVERLAP_TO_RENDER].copy()
-
-        # Fallback: if nothing passes, don't produce 0 images silently
         if enr_render.empty:
             self.log_info_message(
                 f"No pathways with overlap >= {MIN_OVERLAP_TO_RENDER}. Falling back to top {max(1, top_n)} pathways."
@@ -274,19 +294,18 @@ class KEGGVisualisation(Task):
         os.makedirs(kegg_dir, exist_ok=True)
         self._prefetch_kegg_files(specie, pids, kegg_dir)
 
-        fold_change = "Yes" if ("log2FoldChange" in pd.read_csv(out_gene_kegg, nrows=1).columns) else "No"
         r_script = os.path.join(_THIS_DIR, "kegg_visualisation.R")
         cmd_r = " ".join([
             "Rscript", "--vanilla", shlex.quote(r_script),
             shlex.quote(out_gene_kegg),
             shlex.quote(specie),
             shlex.quote(pathway_list),
-            shlex.quote(fold_change),
+            shlex.quote(",".join(fc_cols)),
             shlex.quote(kegg_dir),
         ])
         rc = shell.run(cmd_r, shell_mode=True)
         if rc != 0:
-            raise Exception("R/pathview crashed. Check internal pathway_debug.csv in run folder.")
+            raise Exception("R/pathview crashed. Check pathway_debug.csv in run folder.")
 
         # collect pngs
         rs = ResourceSet()
@@ -299,10 +318,16 @@ class KEGGVisualisation(Task):
         gene_kegg_used_tbl = TableImporter.call(File(out_used), params={"index_column": -1})
         kegg_enrichment_tbl = TableImporter.call(File(enr_csv), params={"index_column": -1})
 
+        err_csv = os.path.join(shell.working_dir, "list_pathway_error.csv")
+        if not os.path.exists(err_csv):
+            pd.DataFrame(columns=["pathway", "message"]).to_csv(err_csv, index=False)
+        list_pathway_error_tbl = TableImporter.call(File(err_csv), params={"index_column": -1})
+
         return {
             "pathways": rs,
             "kegg_enrichment": kegg_enrichment_tbl,
             "gene_kegg_used": gene_kegg_used_tbl,
+            "list_pathway_error": list_pathway_error_tbl,
         }
 
     def _specie_from_name(self, organism_name: str) -> str:
@@ -327,11 +352,6 @@ class KEGGVisualisation(Task):
     def _kegg_link_pathway_species(self, specie: str) -> pd.DataFrame:
         url = f"https://rest.kegg.jp/link/pathway/{specie}"
         raw = self._fetch(url, timeout=240)
-
-        head = raw.lstrip()[:300].lower()
-        if head.startswith("<!doctype") or head.startswith("<html") or "forbidden" in head or "error" in head:
-            sample = "\n".join(raw.splitlines()[:10])
-            raise Exception(f"Unexpected KEGG response for {url}. First lines:\n{sample}")
 
         genes, pws = [], []
         for line in raw.splitlines():

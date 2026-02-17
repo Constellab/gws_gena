@@ -2,7 +2,9 @@ import os
 
 from gws_core import BaseTestCase, File, TableImporter, TaskRunner
 from gws_gena import DataProvider
+from gws_omix import IDConvertTask
 from gws_gena.kegg.kegg_visualisation import KEGGVisualisation
+
 
 
 class TestKEGGVisualisation(BaseTestCase):
@@ -12,17 +14,30 @@ class TestKEGGVisualisation(BaseTestCase):
         self.print("Test KEGG Visualisation : human")
         # load genes:
         list_genes = File(os.path.join(data_dir, "kegg/genes_human.txt"))
+        # create the taskrunner to call gprofiler to convert genes
+        gprofiler = TaskRunner(
+            task_type=IDConvertTask,
+            inputs={"table_file": list_genes},
+            params={"organism_name": 'Homo sapiens',
+                    "id_column": "NCBI GeneID",
+                    "target_namespace": "ENTREZGENE",
+                    "numeric_namespace": "ENTREZGENE_ACC",
+            }
+        )
+        gprofiler_output = gprofiler.run()
+        annotated_table = gprofiler_output["annotated_file"]
         # create the TaskRunner
         runner_kegg_visualisation = TaskRunner(
             task_type=KEGGVisualisation,
-            inputs={"list_genes": list_genes},
+            inputs={"deg_file": annotated_table},
             params={
-                "genes_database": "entrez",
-                "specie": "hsa",
-                "email": "your email here",
-                "fold_change": "No",
-            },
-        )
+                "organism_name": 'Homo sapiens',
+                "id_column": "NCBI GeneID",
+                "col_entrez": "converted",
+                "min_genes_mapped_required": "0",
+                "max_pathways_to_render": "1000"
+                    }
+                )
         # execute the TaskRunner
         outputs_kegg_visualisation = runner_kegg_visualisation.run()
 

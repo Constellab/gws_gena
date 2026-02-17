@@ -112,9 +112,6 @@ def kegg_conv_entrez_to_species(
     """
     GET https://rest.kegg.jp/conv/<org>/ncbi-geneid:<id>+...
 
-    Output can be:
-      <org>:<gene>\tncbi-geneid:<id>
-      OR reversed
     Returns mapping: <entrez_id> -> <org>:<gene>
     """
     ids = [str(x).strip() for x in entrez_ids if str(x).strip()]
@@ -159,13 +156,23 @@ class DebugRow:
     note: str
 
 
+def parse_fc_cols(fc_cols_arg: str) -> List[str]:
+    if not fc_cols_arg:
+        return []
+    cols = [c.strip() for c in fc_cols_arg.split(",")]
+    return [c for c in cols if c]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--deg", required=True)
     ap.add_argument("--specie", required=True)
     ap.add_argument("--id_col", default="")
-    ap.add_argument("--fc_col", default="log2FoldChange")
     ap.add_argument("--col_entrez", required=True)
+
+    # multi FC
+    ap.add_argument("--fc_cols", default="")  # comma-separated
+
     ap.add_argument("--min_mapped", type=int, default=10)
     ap.add_argument("--out_used", required=True)
     ap.add_argument("--out_gene_kegg", required=True)
@@ -188,14 +195,13 @@ def main():
     else:
         df["_id_raw"] = df[df.columns[0]].astype(str).str.strip()
 
-    # fold-change (optional)
-    if args.fc_col and args.fc_col in df.columns:
-        df["_log2fc"] = pd.to_numeric(df[args.fc_col], errors="coerce")
-    else:
-        df["_log2fc"] = pd.NA
-
     if args.col_entrez not in df.columns:
         raise SystemExit(f"Entrez column '{args.col_entrez}' not found in input.")
+
+    fc_cols = parse_fc_cols(args.fc_cols)
+    for c in fc_cols:
+        if c not in df.columns:
+            raise SystemExit(f"Fold-change column '{c}' not found in input.")
 
     raw_entrez = clean_str_series(df[args.col_entrez])
     cleaned = raw_entrez.apply(clean_entrez)
@@ -212,13 +218,14 @@ def main():
         SLEEP_BETWEEN_CALLS_SEC,
     )
 
-    # map per row
-    mapped_full = cleaned.map(lambda x: conv.get(x, ""))  # full = "dme:XXXX"
+    mapped_full = cleaned.map(lambda x: conv.get(x, ""))  # "dme:XXXXX"
+
     df["kegg_full"] = ""
     df["kegg_short"] = ""
-
     df.loc[mapped_full.index, "kegg_full"] = mapped_full
-    df.loc[mapped_full.index, "kegg_short"] = mapped_full.apply(lambda x: x.split(":", 1)[1] if ":" in x else "")
+    df.loc[mapped_full.index, "kegg_short"] = mapped_full.apply(
+        lambda x: x.split(":", 1)[1] if ":" in x else ""
+    )
 
     n_mapped = int((df["kegg_short"].astype(str) != "").sum())
 
@@ -239,10 +246,10 @@ def main():
     if mapped_df.shape[0] < args.min_mapped:
         raise SystemExit(f"Too few genes mapped to KEGG ({mapped_df.shape[0]} < {args.min_mapped}).")
 
+    # gene_kegg.csv: kegg_short + ALL requested FC columns
     out = mapped_df[["kegg_short"]].copy()
-    if mapped_df["_log2fc"].notna().sum() > 0:
-        out["log2FoldChange"] = pd.to_numeric(mapped_df["_log2fc"], errors="coerce")
-
+    for c in fc_cols:
+        out[c] = pd.to_numeric(mapped_df[c], errors="coerce")
     out.to_csv(args.out_gene_kegg, index=False)
 
 
