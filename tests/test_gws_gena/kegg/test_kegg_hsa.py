@@ -1,147 +1,105 @@
 import os
+import re
+import tempfile
 
-from gws_core import BaseTestCase, File, TableImporter, TaskRunner
+from gws_core import BaseTestCase, File, TaskRunner
 from gws_gena import DataProvider
-from gws_omix import IDConvertTask
 from gws_gena.kegg.kegg_visualisation import KEGGVisualisation
 
 
-
 class TestKEGGVisualisation(BaseTestCase):
-    def test_kegg_visualisation(self):
+
+    def _make_no_fc_csv_force_comma(self, src_path: str, header: str) -> File:
+        """
+        Format:
+            NCBI GeneID,_
+            1234,
+            5678,
+        """
+        with open(src_path, "r", encoding="utf-8") as f:
+            raw_lines = [ln.strip() for ln in f if ln.strip()]
+
+        ids = []
+        for ln in raw_lines:
+            # skip header-like line if present
+            if ln.strip() == header:
+                continue
+            # accept pure digits only (Entrez IDs)
+            if re.fullmatch(r"\d+", ln):
+                ids.append(ln)
+
+        fd, out_path = tempfile.mkstemp(suffix=".csv")
+        os.close(fd)
+
+        with open(out_path, "w", encoding="utf-8") as out:
+            out.write(f"{header},_\n")      # second column exists but is irrelevant
+            for gid in ids:
+                out.write(f"{gid},\n")      # empty second field
+
+        return File(out_path)
+
+    def _run_kegg(self, infile: File, organism: str, col_entrez: str, foldchange_cols: str):
+        runner = TaskRunner(
+            task_type=KEGGVisualisation,
+            inputs={"deg_file": infile},
+            params={
+                "organism_name": organism,
+                "col_entrez": col_entrez,
+                "foldchange_cols": foldchange_cols,
+            },
+        )
+        return runner.run()
+
+    def _print_png_count(self, outputs, label: str):
+        pathways = outputs["pathways"].get_resources()
+        self.print(f"---- Test: [{label}] PNG generated: {len(pathways)} ----")
+        return pathways
+
+    def test_hsa_no_fc(self):
+        self.print("Test KEGG Visualisation: HSA, 0FC")
+
         data_dir = DataProvider.get_test_data_dir()
-        ## CASE HSA ONLY GENES ##
-        self.print("Test KEGG Visualisation : human")
-        # load genes:
-        list_genes = File(os.path.join(data_dir, "kegg/genes_human.txt"))
-        # create the taskrunner to call gprofiler to convert genes
-        gprofiler = TaskRunner(
-            task_type=IDConvertTask,
-            inputs={"table_file": list_genes},
-            params={"organism_name": 'Homo sapiens',
-                    "id_column": "NCBI GeneID",
-                    "target_namespace": "ENTREZGENE",
-                    "numeric_namespace": "ENTREZGENE_ACC",
-            }
-        )
-        gprofiler_output = gprofiler.run()
-        annotated_table = gprofiler_output["annotated_file"]
-        # create the TaskRunner
-        runner_kegg_visualisation = TaskRunner(
-            task_type=KEGGVisualisation,
-            inputs={"deg_file": annotated_table},
-            params={
-                "organism_name": 'Homo sapiens',
-                "id_column": "NCBI GeneID",
-                "col_entrez": "converted",
-                "min_genes_mapped_required": "0",
-                "max_pathways_to_render": "1000"
-                    }
-                )
-        # execute the TaskRunner
-        outputs_kegg_visualisation = runner_kegg_visualisation.run()
+        src_path = os.path.join(data_dir, "kegg/genes_human.txt")
 
-        # check if we retrieve the output
-        pathways = outputs_kegg_visualisation["pathways"].get_resources()
+        # IMPORTANT: make a CSV that forces comma detection
+        deg_file = self._make_no_fc_csv_force_comma(src_path, header="NCBI GeneID")
+
+        outputs = self._run_kegg(
+            deg_file,
+            organism="Homo sapiens",
+            col_entrez="NCBI GeneID",
+            foldchange_cols="",
+        )
+
+        pathways = self._print_png_count(outputs, "HSA/NO_FC")
         self.assertTrue("hsa00480.pathview.png" in pathways)
-        list_pathway_error = outputs_kegg_visualisation["list_pathway_error"]
-        self.assertTrue("hsa01240" in list_pathway_error.to_dataframe().values)
 
-        ## CASE HSA ONLY GENES WITH TABLE ##
-        self.print("Test KEGG Visualisation : human TABLE")
-        # load genes:
-        list_genes = TableImporter.call(
-            File(path=os.path.join(data_dir, "kegg/genes_human.txt")), params={"index_column": -1}
-        )
-        # create the TaskRunner
-        runner_kegg_visualisation = TaskRunner(
-            task_type=KEGGVisualisation,
-            inputs={"list_genes": list_genes},
-            params={
-                "genes_database": "entrez",
-                "specie": "hsa",
-                "email": "your email here",
-                "fold_change": "No",
-            },
-        )
-        # execute the TaskRunner
-        outputs_kegg_visualisation = runner_kegg_visualisation.run()
+    def test_hsa_one_fc(self):
+        self.print("Test KEGG Visualisation: HSA, 1 FC")
+        data_dir = DataProvider.get_test_data_dir()
+        deg_file = File(os.path.join(data_dir, "kegg/genes_human_one_fold_change.txt"))
 
-        # check if we retrieve the output
-        pathways = outputs_kegg_visualisation["pathways"].get_resources()
+        outputs = self._run_kegg(
+            deg_file,
+            organism="Homo sapiens",
+            col_entrez="NCBI GeneID",
+            foldchange_cols="FoldChange",
+        )
+
+        pathways = self._print_png_count(outputs, "HSA/1FC")
         self.assertTrue("hsa00480.pathview.png" in pathways)
-        list_pathway_error = outputs_kegg_visualisation["list_pathway_error"]
-        self.assertTrue(
-            "hsa01240" in list_pathway_error.to_dataframe().values
-        )  ####################
 
-        ## CASE HSA GENES + ONE FOLD CHANGE ##
-        self.print("Test KEGG Visualisation : human + 1 fold change")
-        # load genes:
-        list_genes = File(os.path.join(data_dir, "kegg/genes_human_one_fold_change.txt"))
-        # create the TaskRunner
-        runner_kegg_visualisation = TaskRunner(
-            task_type=KEGGVisualisation,
-            inputs={"list_genes": list_genes},
-            params={
-                "genes_database": "entrez",
-                "specie": "hsa",
-                "email": "your email here",
-                "fold_change": "Yes",
-            },
+    def test_hsa_two_fc(self):
+        self.print("Test KEGG Visualisation: HSA, 2 FC")
+        data_dir = DataProvider.get_test_data_dir()
+        deg_file = File(os.path.join(data_dir, "kegg/genes_human_two_fold_change.txt"))
+
+        outputs = self._run_kegg(
+            deg_file,
+            organism="Homo sapiens",
+            col_entrez="NCBI GeneID",
+            foldchange_cols="FoldChange,FoldChange 2",
         )
-        # execute the TaskRunner
-        outputs_kegg_visualisation = runner_kegg_visualisation.run()
 
-        # check if we retrieve the output
-        pathways = outputs_kegg_visualisation["pathways"].get_resources()
-        self.assertTrue("hsa00480.pathview.png" in pathways)
-        list_pathway_error = outputs_kegg_visualisation["list_pathway_error"]
-        self.assertTrue("hsa01240" in list_pathway_error.to_dataframe().values)
-
-        ## CASE HSA GENES + TWO FOLD CHANGE ##
-        self.print("Test KEGG Visualisation : human + 2 fold change")
-        list_genes = File(os.path.join(data_dir, "kegg/genes_human_two_fold_change.txt"))
-        # create the TaskRunner
-        runner_kegg_visualisation = TaskRunner(
-            task_type=KEGGVisualisation,
-            inputs={"list_genes": list_genes},
-            params={
-                "genes_database": "entrez",
-                "specie": "hsa",
-                "email": "your email here",
-                "fold_change": "Yes",
-            },
-        )
-        # execute the TaskRunner
-        outputs_kegg_visualisation = runner_kegg_visualisation.run()
-
-        # check if we retrieve the output
-        pathways = outputs_kegg_visualisation["pathways"].get_resources()
+        pathways = self._print_png_count(outputs, "HSA/2FC")
         self.assertTrue("hsa00480.pathview.multi.png" in pathways)
-        list_pathway_error = outputs_kegg_visualisation["list_pathway_error"]
-        self.assertTrue("hsa01240" in list_pathway_error.to_dataframe().values)
-
-        ## CASE HSA GENES ENSEMBL + TWO FOLD CHANGE ##
-        self.print("Test KEGG Visualisation : human; genes ensembl + 2 fold change")
-        list_genes = File(os.path.join(data_dir, "kegg/gene_Ensembl_human_with_two_fc.txt"))
-        # create the TaskRunner
-        runner_kegg_visualisation = TaskRunner(
-            task_type=KEGGVisualisation,
-            inputs={"list_genes": list_genes},
-            params={
-                "genes_database": "ensembl",
-                "organism": "hsapiens",
-                "specie": "hsa",
-                "email": "your email here",
-                "fold_change": "Yes",
-            },
-        )
-        # execute the TaskRunner
-        outputs_kegg_visualisation = runner_kegg_visualisation.run()
-
-        # check if we retrieve the output
-        pathways = outputs_kegg_visualisation["pathways"].get_resources()
-        self.assertTrue("hsa00562.pathview.multi.png" in pathways)
-        list_pathway_error = outputs_kegg_visualisation["list_pathway_error"]
-        self.assertTrue("hsa04215" in list_pathway_error.to_dataframe().values)

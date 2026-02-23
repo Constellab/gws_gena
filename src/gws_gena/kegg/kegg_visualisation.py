@@ -2,7 +2,7 @@ import os
 import re
 import shlex
 import urllib.request
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Optional, Tuple
 
 import pandas as pd
 
@@ -28,9 +28,9 @@ from gws_core import (
 
 from .kegg_r_env_task import KeggREnvHelper
 
-
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
+# organism autocomplete list
 KORG_PATH = os.path.join(_THIS_DIR, "list_organisms_pathview.txt")
 _KORG = pd.read_csv(KORG_PATH, sep=None, engine="python", dtype=str, keep_default_na=False)
 
@@ -75,58 +75,158 @@ def hypergeom_right_tail(N: int, K: int, n: int, k: int) -> float:
     return min(1.0, p)
 
 
-def parse_fc_cols(s: str) -> List[str]:
-    s = (s or "").strip()
-    if not s:
-        return []
-    cols = [x.strip() for x in s.split(",")]
-    return [x for x in cols if x]
-
-
 @task_decorator(
     "KEGGVisualisation",
-    human_name="KEGG enrichment analysis",
-    short_description="Entrez -> KEGG genes -> KEGG enrichment -> Pathview multi-state PNGs",
+    human_name="KEGG enrichment + Pathview",
+    short_description="Entrez (NCBI) -> KEGG genes -> enrichment -> Pathview (multi-state if multiple FC columns).",
     style=TypingStyle.material_icon(material_icon_name="collections_bookmark", background_color="#d9d9d9"),
 )
 class KEGGVisualisation(Task):
     """
-    KEGG enrichment + Pathview (Entrez -> KEGG gene IDs)
+    Generates a KEGG pathway using the genes specified in the input.
 
-    Expects an Entrez Gene ID (NCBI GeneID) column.
-    If starting from other IDs, run Omix 'Gene ID conversion' with target namespace = ENTREZGENE.
+    Please provide a list of genes such as:
+    NCBI gene ID,FoldChange
+    Gene1,value
+    Gene2,value
 
-    Supports multi-state Pathview: if foldchange_columns contains multiple columns,
-    each gene box is split into sub-boxes (one per column) on the same PNG.
+    If you don't have gene expression, just provide the gene names with a header.
+    If you want to compare more than one fold change, add the other fold change in the following columns.
+    In the output, each box of the pathway will be separated depending on the number of fold changes.
+    So the colours may be different depending on the condition.
+
+    You can find the list of allowed organisms values attached to this story: https://constellab.community/bricks/gws_gena/latest/doc/use-cases/kegg-enrichment-analysis/0ad51cdb-8dc7-4e27-a58b-9b3ca848f750
+
+    Be aware that this task can take some time, especially the first time, as a virtual environment has to be installed, and also depending on the length of the genes provided, it can take more time.
+
+    In the output you will also get a Table with the pathways where genes are mapped, but these pathways can't be shown with the pathview package.
+
+    KEGG is a database resource for understanding high-level functions and utilities of the biological system.
+    Kanehisa Laboratories owns and controls the rights to KEGG.
+    Although the KEGG database is made freely available for academic use via the website, it is not in the public domain.
+    All commercial use of KEGG requires a license. Please ensure that you have licence to use KEGG database.
     """
-
     input_specs = InputSpecs({
         "deg_file": InputSpec([File, Table], human_name="DEG table (CSV/TSV)"),
     })
 
     output_specs = OutputSpecs({
         "pathways": OutputSpec(ResourceSet, human_name="Pathview PNGs"),
-        "kegg_enrichment": OutputSpec(Table, human_name="KEGG enrichment (with pathway names)"),
-        "gene_kegg_used": OutputSpec(Table, human_name="Genes used (mapped) + pathway names"),
-        "list_pathway_error": OutputSpec(Table, human_name="Pathways that failed to render (Pathview)"),
+        "kegg_enrichment": OutputSpec(Table, human_name="KEGG enrichment (with pathway names)")
     })
 
     config_specs = ConfigSpecs({
         "organism_name": StrParam(allowed_values=SUPPORTED_ORGANISM_NAMES, human_name="Organism (autocomplete)"),
-        "id_column": StrParam(default_value="gene_id", human_name="ID column (optional)"),
         "col_entrez": StrParam(
-            default_value="entrez",
-            human_name="Entrez Gene column",
-            short_description="Column with NCBI Entrez Gene IDs. Use Omix 'Gene ID conversion' with target namespace=ENTREZGENE.",
+            default_value="NCBI GeneID",
+            human_name="NCBI Entrez Gene column",
+            short_description="Must contain only digits (NCBI Entrez Gene IDs).",
         ),
-        "foldchange_columns": StrParam(
-            default_value="log2FoldChange",
-            human_name="Fold-change columns (comma-separated)",
-            short_description="e.g. log2FC_A,log2FC_B,log2FC_C. If >=2 columns => multi-state Pathview (split boxes).",
+        "foldchange_cols": StrParam(
+            default_value="",
+            human_name="Fold-change columns (optional, ',' separated)",
+            short_description="Example: 'log2FoldChange' or 'FoldChange,FoldChange 2'.",
         ),
-        "min_genes_mapped_required": StrParam(default_value="10", human_name="Minimum mapped genes required"),
-        "max_pathways_to_render": StrParam(default_value="30", human_name="Max pathways rendered by Pathview"),
     })
+
+    # -----------------------------
+    def _read_header_only_columns(self, path: str, sep: str) -> List[str]:
+        """
+        Read ONLY the header (no data rows) to get column names.
+        This does not depend on file length.
+        """
+        df0 = pd.read_csv(path, sep=sep, dtype=str, keep_default_na=False, nrows=0)
+        return [str(c).strip() for c in df0.columns]
+
+    def _detect_sep_and_validate_column_exists(self, path: str, col_entrez: str) -> str:
+        """
+        Only allowed separators: comma or tab.
+        Returns the separator that contains col_entrez in header.
+        """
+        if not col_entrez:
+            raise Exception("Entrez column name is empty.")
+
+        # Try comma, then tab. No sniffing.
+        for sep in [",", "\t"]:
+            try:
+                cols = self._read_header_only_columns(path, sep=sep)
+                if col_entrez in cols:
+                    return sep
+            except Exception:
+                continue
+
+        # Build a debug message with what we *did* parse (best-effort)
+        parsed_cols: Optional[List[str]] = None
+        parsed_sep: Optional[str] = None
+        for sep in [",", "\t"]:
+            try:
+                parsed_cols = self._read_header_only_columns(path, sep=sep)
+                parsed_sep = sep
+                break
+            except Exception:
+                pass
+
+        if parsed_cols is not None:
+            raise Exception(
+                f"Entrez column '{col_entrez}' not found in input. "
+                f"Allowed separators are ',' or tab. "
+                f"Parsed columns (sep={'TAB' if parsed_sep == chr(9) else ','}): {parsed_cols}"
+            )
+        raise Exception(
+            f"Entrez column '{col_entrez}' not found in input. "
+            f"Allowed separators are ',' or tab. Also failed to parse header."
+        )
+
+    def _stream_validate_entrez_digits(
+        self,
+        path: str,
+        sep: str,
+        col_entrez: str,
+        chunksize: int = 1_000_000,
+    ) -> None:
+        """
+        Streaming validation: reads only the Entrez column in chunks.
+        Supports extremely large files without RAM blowup.
+        Raises early if too many non-numeric values are detected.
+        """
+        digit_re = re.compile(r"^\d+(\.0)?$")
+
+        bad_count = 0
+        nonempty_seen = 0
+
+        # read only the one column
+        for chunk in pd.read_csv(
+            path,
+            sep=sep,
+            dtype=str,
+            keep_default_na=False,
+            usecols=[col_entrez],
+            chunksize=chunksize,
+        ):
+            s = chunk[col_entrez].astype(str).str.strip()
+            s = s[s != ""]
+            if s.empty:
+                continue
+
+            nonempty_seen += int(s.shape[0])
+
+            # vectorized-ish: still uses python for regex per element, but chunked
+            bad_mask = ~s.map(lambda v: bool(digit_re.fullmatch(v)))
+            bad_here = int(bad_mask.sum())
+            bad_count += bad_here
+
+            # Keep your original spirit: if there are many bads, fail early
+            if bad_count > 5 and nonempty_seen > 0:
+                # show a few examples
+                examples = s[bad_mask].head(10).tolist()
+                raise Exception(
+                    "The selected Entrez column contains non-numeric values.\n"
+                    "It must contain NCBI Entrez Gene IDs (digits only).\n"
+                    f"Examples: {examples}\n"
+                    "Please run OmiX 'Gene ID conversion' with target_namespace='ENTREZGENE' "
+                    "(and numeric_namespace='ENTREZGENE_ACC' if your IDs are numeric), "
+                    "then use the produced Entrez column."
+                )
 
     def run(self, params: ConfigParams, inputs: TaskInputs) -> TaskOutputs:
         shell: ShellProxy = KeggREnvHelper.create_proxy(self.message_dispatcher)
@@ -135,117 +235,64 @@ class KEGGVisualisation(Task):
         specie = self._specie_from_name(organism_name)
         self.log_info_message(f"Selected organism: {organism_name} -> KEGG code: {specie}")
 
-        id_col = str(params.get("id_column", "") or "").strip()
         col_entrez = (params.get("col_entrez") or "").strip()
-        fc_cols_arg = str(params.get("foldchange_columns", "") or "").strip()
-
-        min_mapped = int(str(params.get("min_genes_mapped_required", "10")).strip() or "10")
-        top_n = int(str(params.get("max_pathways_to_render", "30")).strip() or "30")
-
-        # hard rule (no parameter): render only pathways with overlap > 2
-        MIN_OVERLAP_TO_RENDER = 3
-
-        # (recommended) exclude KEGG overview maps like dme01xxx (often not colorable)
-        EXCLUDE_OVERVIEW_MAPS = True
+        foldchange_cols = (params.get("foldchange_cols") or "").strip()
 
         deg_path = self._materialize_input(inputs["deg_file"], shell)
 
-        header_df = pd.read_csv(deg_path, sep=None, engine="python", dtype=str, keep_default_na=False, nrows=1)
-        cols = set(header_df.columns.tolist())
+        # -----------------------------
+        # FIXED VALIDATION (no nrows limit, no sep sniffing)
+        # -----------------------------
+        sep_used = self._detect_sep_and_validate_column_exists(deg_path, col_entrez)
+        self._stream_validate_entrez_digits(deg_path, sep_used, col_entrez)
 
-        if not col_entrez:
-            raise Exception("col_entrez is empty. Please set the Entrez column name.")
-        if col_entrez not in cols:
-            raise Exception(f"col_entrez='{col_entrez}' not found in input columns: {sorted(cols)}")
-
-        fc_cols = parse_fc_cols(fc_cols_arg)
-        for c in fc_cols:
-            if c not in cols:
-                raise Exception(f"foldchange_columns contains '{c}', not found in input columns: {sorted(cols)}")
-
-        # 1) resolve genes (Entrez -> KEGG)
-        resolver_py = os.path.join(_THIS_DIR, "_kegg_resolve_gene_ids.py")
-        out_used = os.path.join(shell.working_dir, "gene_kegg_used.csv")
+        # 1) Prepare KEGG gene table for pathview (and mapping table)
+        prep_py = os.path.join(_THIS_DIR, "_kegg_prepare_kegg_gene_data.py")
         out_gene_kegg = os.path.join(shell.working_dir, "gene_kegg.csv")
-        out_dbg = os.path.join(shell.working_dir, "mapping_debug.csv")  # internal
+        out_used = os.path.join(shell.working_dir, "gene_used.csv")
 
         cmd = " ".join([
-            "python3", shlex.quote(resolver_py),
+            "python3", shlex.quote(prep_py),
             "--deg", shlex.quote(deg_path),
             "--specie", shlex.quote(specie),
-            "--id_col", shlex.quote(id_col),
             "--col_entrez", shlex.quote(col_entrez),
-            "--fc_cols", shlex.quote(",".join(fc_cols)),
-            "--min_mapped", shlex.quote(str(min_mapped)),
-            "--out_used", shlex.quote(out_used),
+            "--foldchange_cols", shlex.quote(foldchange_cols),
             "--out_gene_kegg", shlex.quote(out_gene_kegg),
-            "--out_debug", shlex.quote(out_dbg),
+            "--out_used", shlex.quote(out_used),
         ])
 
         rc = shell.run(cmd, shell_mode=True)
         if rc != 0 or (not os.path.exists(out_gene_kegg)) or os.path.getsize(out_gene_kegg) == 0:
-            raise Exception("KEGG resolver failed. Check run folder outputs.")
+            raise Exception("Gene preparation failed: gene_kegg.csv not produced.")
 
         used_df = pd.read_csv(out_used, dtype=str, keep_default_na=False)
-        used_df["kegg_full"] = used_df.get("kegg_full", "").astype(str).str.strip()
-        mapped = used_df[used_df["kegg_full"] != ""].copy()
+        mapped_full = used_df["kegg_full"].astype(str)
+        query_full = sorted(set([x for x in mapped_full.tolist() if x and x.startswith(specie + ":")]))
 
-        self.log_info_message(f"Mapped rows to KEGG genes: {mapped.shape[0]}/{used_df.shape[0]}")
-        if mapped.shape[0] < min_mapped:
-            raise Exception(f"Too few genes mapped to KEGG ({mapped.shape[0]} < {min_mapped}).")
-
-        # 2) universe gene<->pathway
+        # 2) Universe + pathway gene sets
         gp = self._kegg_link_pathway_species(specie)
         if gp.empty:
             raise Exception("KEGG link/pathway/<specie> returned empty universe (network/proxy or parsing issue).")
 
         universe = set(gp["gene"].tolist())
+        query = [g for g in query_full if g in universe]
+        self.log_info_message(f"Universe KEGG gene size: {len(universe)} | Query∩Universe: {len(query)}")
+        if len(query) == 0:
+            raise Exception("Query genes do not intersect KEGG universe (after Entrez->KEGG conversion).")
+
         pw2genes: Dict[str, Set[str]] = {}
-        gene2pws: Dict[str, Set[str]] = {}
         for _, r in gp.iterrows():
             pw2genes.setdefault(r["pathway"], set()).add(r["gene"])
-            gene2pws.setdefault(r["gene"], set()).add(r["pathway"])
 
-        query_all = sorted(set(mapped["kegg_full"].astype(str).tolist()))
-        query_in_universe = [g for g in query_all if g in universe]
-        query_with_pathways = [g for g in query_in_universe if g in gene2pws and len(gene2pws[g]) > 0]
-
-        N = len(universe)
-        n = len(query_with_pathways)
-
-        if n == 0:
-            ex = ", ".join(query_all[:10])
-            raise Exception(
-                "Aucun des gènes KEGG mappés dans ce subset n'est annoté dans des pathways KEGG pour cet organisme.\n"
-                f"- mapped KEGG genes (subset): {len(query_all)}\n"
-                f"- in KEGG universe: {len(query_in_universe)}\n"
-                f"- with at least 1 pathway: {n}\n"
-                f"Exemples de kegg_full: {ex}\n"
-                "Astuce: sur un petit subset, c'est fréquent. KEGG a des gènes sans pathways."
-            )
-
-        query = query_with_pathways
-        qset = set(query)
-
-        # 3) pathway names
+        # 3) Pathway names
         pw_names_df = self._kegg_list_pathways(specie)
         pw_name_map = dict(zip(pw_names_df["pathway"], pw_names_df["pathway_name"]))
 
-        def join_sorted(xs: Set[str]) -> str:
-            return ";".join(sorted(xs)) if xs else ""
+        # 4) Enrichment
+        qset = set(query)
+        N = len(universe)
+        n = len(query)
 
-        def join_names(pws: Set[str]) -> str:
-            if not pws:
-                return ""
-            names = [pw_name_map.get(p, "") for p in sorted(pws)]
-            names = [x for x in names if x]
-            return ";".join(names)
-
-        used_df["pathways"] = used_df["kegg_full"].map(lambda g: join_sorted(gene2pws.get(g, set())))
-        used_df["pathway_names"] = used_df["kegg_full"].map(lambda g: join_names(gene2pws.get(g, set())))
-        used_df.to_csv(out_used, index=False)
-
-        # 4) enrichment
         rows = []
         for pw, geneset in pw2genes.items():
             K = len(geneset)
@@ -262,28 +309,18 @@ class KEGGVisualisation(Task):
             "pathway", "overlap", "pathway_size", "query_size", "universe_size", "pvalue"
         ])
         enr["padj"] = bh_adjust(enr["pvalue"].tolist())
-        enr = enr.sort_values(["padj", "pvalue", "overlap"], ascending=[True, True, False]).reset_index(drop=True)
         enr["pathway_name"] = enr["pathway"].map(lambda p: pw_name_map.get(p, ""))
-
-        if EXCLUDE_OVERVIEW_MAPS:
-            enr = enr[~enr["pathway"].astype(str).str.startswith(specie + "01")].copy()
+        enr = enr.sort_values(["padj", "pvalue", "overlap"], ascending=[True, True, False]).reset_index(drop=True)
 
         enr_csv = os.path.join(shell.working_dir, "kegg_enrichment.csv")
         enr.to_csv(enr_csv, index=False)
 
-        # 5) pathview (overlap > 2 only)
+        # 5) Pathview: render ALL overlapped pathways (no top-N limit)
         def to_pid5(pw: str) -> str:
             digs = "".join(ch for ch in str(pw) if ch.isdigit())
             return digs[-5:] if len(digs) >= 5 else ""
 
-        enr_render = enr[enr["overlap"] >= MIN_OVERLAP_TO_RENDER].copy()
-        if enr_render.empty:
-            self.log_info_message(
-                f"No pathways with overlap >= {MIN_OVERLAP_TO_RENDER}. Falling back to top {max(1, top_n)} pathways."
-            )
-            enr_render = enr.copy()
-
-        pids = [to_pid5(x) for x in enr_render.head(max(1, top_n))["pathway"].astype(str).tolist()]
+        pids = [to_pid5(x) for x in enr["pathway"].astype(str).tolist()]
         pids = [x for x in pids if x]
 
         pathway_list = os.path.join(shell.working_dir, "pathway_kegg.txt")
@@ -295,17 +332,20 @@ class KEGGVisualisation(Task):
         self._prefetch_kegg_files(specie, pids, kegg_dir)
 
         r_script = os.path.join(_THIS_DIR, "kegg_visualisation.R")
+
         cmd_r = " ".join([
-            "Rscript", "--vanilla", shlex.quote(r_script),
-            shlex.quote(out_gene_kegg),
-            shlex.quote(specie),
-            shlex.quote(pathway_list),
-            shlex.quote(",".join(fc_cols)),
-            shlex.quote(kegg_dir),
+            "bash", "-c",
+            shlex.quote(
+                f"cd {shlex.quote(shell.working_dir)} && "
+                f"Rscript --vanilla {shlex.quote(r_script)} "
+                f"{shlex.quote(out_gene_kegg)} {shlex.quote(specie)} "
+                f"{shlex.quote(pathway_list)} {shlex.quote(kegg_dir)}"
+            )
         ])
+
         rc = shell.run(cmd_r, shell_mode=True)
         if rc != 0:
-            raise Exception("R/pathview crashed. Check pathway_debug.csv in run folder.")
+            raise Exception("R/pathview crashed (non-zero exit). Check list_pathway_error.csv.")
 
         # collect pngs
         rs = ResourceSet()
@@ -315,19 +355,18 @@ class KEGGVisualisation(Task):
             if os.path.isfile(fp) and (fn.endswith(".pathview.png") or fn.endswith(".pathview.multi.png")):
                 rs.add_resource(File(fp), fn)
 
-        gene_kegg_used_tbl = TableImporter.call(File(out_used), params={"index_column": -1})
+        # import tables
         kegg_enrichment_tbl = TableImporter.call(File(enr_csv), params={"index_column": -1})
 
-        err_csv = os.path.join(shell.working_dir, "list_pathway_error.csv")
-        if not os.path.exists(err_csv):
-            pd.DataFrame(columns=["pathway", "message"]).to_csv(err_csv, index=False)
-        list_pathway_error_tbl = TableImporter.call(File(err_csv), params={"index_column": -1})
+        err_fp = os.path.join(shell.working_dir, "list_pathway_error.csv")
+        if os.path.exists(err_fp) and os.path.getsize(err_fp) > 0:
+            _ = TableImporter.call(File(err_fp), params={"index_column": -1})
+        else:
+            pd.DataFrame(columns=["pathway", "status", "message"]).to_csv(err_fp, index=False)
 
         return {
             "pathways": rs,
             "kegg_enrichment": kegg_enrichment_tbl,
-            "gene_kegg_used": gene_kegg_used_tbl,
-            "list_pathway_error": list_pathway_error_tbl,
         }
 
     def _specie_from_name(self, organism_name: str) -> str:
@@ -352,6 +391,11 @@ class KEGGVisualisation(Task):
     def _kegg_link_pathway_species(self, specie: str) -> pd.DataFrame:
         url = f"https://rest.kegg.jp/link/pathway/{specie}"
         raw = self._fetch(url, timeout=240)
+
+        head = raw.lstrip()[:300].lower()
+        if head.startswith("<!doctype") or head.startswith("<html") or "forbidden" in head or "error" in head:
+            sample = "\n".join(raw.splitlines()[:10])
+            raise Exception(f"Unexpected KEGG response for {url}. First lines:\n{sample}")
 
         genes, pws = [], []
         for line in raw.splitlines():

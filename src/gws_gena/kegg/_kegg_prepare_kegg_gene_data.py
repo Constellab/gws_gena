@@ -8,7 +8,6 @@ import time
 import random
 import urllib.request
 import urllib.error
-from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
 import pandas as pd
@@ -32,14 +31,13 @@ def read_table(path: str) -> pd.DataFrame:
     return pd.read_csv(path, sep=sep, dtype=str, keep_default_na=False, engine="python")
 
 
-def clean_str_series(s: pd.Series) -> pd.Series:
-    x = s.astype(str).str.strip()
-    x = x.replace({"": pd.NA, "nan": pd.NA, "NaN": pd.NA, "None": pd.NA})
-    return x.dropna()
-
-
 def clean_entrez(x: str) -> str:
-    # accept "318213.0", " 318213 ", "GeneID:318213"
+    """
+    Accept:
+      - "318213.0", " 318213 ", "GeneID:318213"
+    Return:
+      - "318213" or "" if invalid
+    """
     x = str(x).strip()
     x = re.sub(r"\.0$", "", x)
     x = re.sub(r"[^\d]", "", x)
@@ -111,8 +109,7 @@ def kegg_conv_entrez_to_species(
 ) -> Dict[str, str]:
     """
     GET https://rest.kegg.jp/conv/<org>/ncbi-geneid:<id>+...
-
-    Returns mapping: <entrez_id> -> <org>:<gene>
+    Returns mapping: entrez_id -> "<org>:<gene>"
     """
     ids = [str(x).strip() for x in entrez_ids if str(x).strip()]
     ids = sorted(set(ids))
@@ -146,37 +143,19 @@ def kegg_conv_entrez_to_species(
     return mapping
 
 
-@dataclass
-class DebugRow:
-    step: str
-    n_rows: int
-    n_nonempty_entrez: int
-    n_unique_entrez: int
-    n_mapped_rows: int
-    note: str
-
-
-def parse_fc_cols(fc_cols_arg: str) -> List[str]:
-    if not fc_cols_arg:
-        return []
-    cols = [c.strip() for c in fc_cols_arg.split(",")]
-    return [c for c in cols if c]
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--deg", required=True)
     ap.add_argument("--specie", required=True)
-    ap.add_argument("--id_col", default="")
     ap.add_argument("--col_entrez", required=True)
-
-    # multi FC
-    ap.add_argument("--fc_cols", default="")  # comma-separated
-
-    ap.add_argument("--min_mapped", type=int, default=10)
-    ap.add_argument("--out_used", required=True)
+    ap.add_argument(
+        "--foldchange_cols",
+        default="",
+        help="Comma-separated list of fold-change columns, e.g. 'FC1,FC2,log2FoldChange'",
+    )
+    ap.add_argument("--min_genes_required", type=int, default=1)
     ap.add_argument("--out_gene_kegg", required=True)
-    ap.add_argument("--out_debug", required=True)
+    ap.add_argument("--out_used", required=True)
     args = ap.parse_args()
 
     TIMEOUT_SEC = 180
@@ -189,25 +168,29 @@ def main():
     if df.empty:
         raise SystemExit("Input DEG is empty.")
 
-    # id label column (optional)
-    if args.id_col and args.id_col in df.columns:
-        df["_id_raw"] = df[args.id_col].astype(str).str.strip()
-    else:
-        df["_id_raw"] = df[df.columns[0]].astype(str).str.strip()
-
     if args.col_entrez not in df.columns:
-        raise SystemExit(f"Entrez column '{args.col_entrez}' not found in input.")
+        raise SystemExit(f"Entrez column '{args.col_entrez}' not found in input columns: {list(df.columns)}")
 
-    fc_cols = parse_fc_cols(args.fc_cols)
-    for c in fc_cols:
-        if c not in df.columns:
-            raise SystemExit(f"Fold-change column '{c}' not found in input.")
+    # ---- Clean & validate Entrez column ----
+    raw = df[args.col_entrez].astype(str).str.strip()
+    cleaned = raw.map(clean_entrez)
+    n_valid = int((cleaned != "").sum())
 
-    raw_entrez = clean_str_series(df[args.col_entrez])
-    cleaned = raw_entrez.apply(clean_entrez)
-    cleaned = cleaned[cleaned != ""]
-    unique_ids = sorted(set(cleaned.tolist()))
+    # Hard check: if user provided non-numeric IDs, stop with a clear message
+    if n_valid == 0:
+        sample_bad = raw[raw != ""].head(10).tolist()
+        raise SystemExit(
+            "Selected column does not contain valid NCBI Entrez Gene IDs (numbers). "
+            "Please run Gene ID conversion (OmiX) to ENTREZGENE and re-run with that numeric column. "
+            f"Example values seen: {sample_bad}"
+        )
 
+    # Keep only rows with valid Entrez
+    df["_entrez"] = cleaned
+    df = df[df["_entrez"] != ""].copy()
+
+    # ---- Convert Entrez -> KEGG gene ----
+    unique_ids = sorted(set(df["_entrez"].tolist()))
     conv = kegg_conv_entrez_to_species(
         args.specie,
         unique_ids,
@@ -218,39 +201,32 @@ def main():
         SLEEP_BETWEEN_CALLS_SEC,
     )
 
-    mapped_full = cleaned.map(lambda x: conv.get(x, ""))  # "dme:XXXXX"
+    df["kegg_full"] = df["_entrez"].map(lambda x: conv.get(x, ""))
+    df["kegg_short"] = df["kegg_full"].map(lambda x: x.split(":", 1)[1] if ":" in x else "")
 
-    df["kegg_full"] = ""
-    df["kegg_short"] = ""
-    df.loc[mapped_full.index, "kegg_full"] = mapped_full
-    df.loc[mapped_full.index, "kegg_short"] = mapped_full.apply(
-        lambda x: x.split(":", 1)[1] if ":" in x else ""
-    )
+    mapped = df[df["kegg_short"] != ""].copy()
+    if mapped.shape[0] < args.min_genes_required:
+        raise SystemExit(f"Too few genes mapped to KEGG ({mapped.shape[0]} < {args.min_genes_required}).")
 
-    n_mapped = int((df["kegg_short"].astype(str) != "").sum())
+    # ---- Fold-change columns (optional) ----
+    fc_cols = [c.strip() for c in (args.foldchange_cols or "").split(",") if c.strip()]
+    for c in fc_cols:
+        if c not in mapped.columns:
+            raise SystemExit(f"Fold-change column '{c}' not found in input.")
 
-    dbg = pd.DataFrame([DebugRow(
-        step="entrez_to_kegg_conv",
-        n_rows=len(df),
-        n_nonempty_entrez=len(raw_entrez),
-        n_unique_entrez=len(unique_ids),
-        n_mapped_rows=n_mapped,
-        note=f"conv pairs={len(conv)} specie={args.specie} source=ncbi-geneid",
-    ).__dict__])
-    dbg.to_csv(args.out_debug, index=False)
+    out = mapped[["kegg_short"] + fc_cols].copy()
 
-    df["mapping_mode"] = "entrez"
+    # Make FC numeric where possible (Pathview needs numeric)
+    for c in fc_cols:
+        out[c] = pd.to_numeric(out[c], errors="coerce")
+
+    out.to_csv(args.out_gene_kegg, index=False)
+
+    # Debug / trace file (not an output of the task)
     df.to_csv(args.out_used, index=False)
 
-    mapped_df = df[df["kegg_short"].astype(str) != ""].copy()
-    if mapped_df.shape[0] < args.min_mapped:
-        raise SystemExit(f"Too few genes mapped to KEGG ({mapped_df.shape[0]} < {args.min_mapped}).")
-
-    # gene_kegg.csv: kegg_short + ALL requested FC columns
-    out = mapped_df[["kegg_short"]].copy()
-    for c in fc_cols:
-        out[c] = pd.to_numeric(mapped_df[c], errors="coerce")
-    out.to_csv(args.out_gene_kegg, index=False)
+    print(f"Valid Entrez IDs in input: {n_valid}")
+    print(f"Mapped rows to KEGG genes: {mapped.shape[0]}/{df.shape[0]}")
 
 
 if __name__ == "__main__":
