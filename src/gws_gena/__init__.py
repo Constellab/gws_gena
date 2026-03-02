@@ -28,9 +28,6 @@ from .fba.fba_result import FBAResult
 from .fva.fva import FVA
 from .fva.fva_result import FVAResult
 
-# kegg
-from .kegg.kegg_visualisation import KEGGVisualisation
-
 # KnockOut
 from .koa.koa import KOA
 from .koa.koa_result import KOAResult
