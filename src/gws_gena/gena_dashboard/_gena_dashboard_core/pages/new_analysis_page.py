@@ -88,10 +88,13 @@ def render_new_analysis_page(gena_state: State):
         ):
             # select network data : the user can select network resource, file json or file xml or file matlab
             resource_select = StreamlitResourceSelect()
-            resource_select.filters["resourceTypingNames"] = [
-                "RESOURCE.gws_gena.Network",
-                "RESOURCE.gws_core.File",
-            ]
+            resource_select.add_filter(
+                "resourceTypingNames",
+                [
+                    "RESOURCE.gws_gena.Network",
+                    "RESOURCE.gws_core.File",
+                ],
+            )
             resource_select.select_resource(
                 placeholder=translate_service.translate("search_network_resource"),
                 key=gena_state.RESOURCE_SELECTOR_NETWORK_KEY,
