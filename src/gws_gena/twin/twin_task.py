@@ -9,6 +9,7 @@ from gws_core import (
     FileHelper,
     ResourceExporter,
     ResourceImporter,
+    SelectParam,
     StrParam,
     TypingStyle,
     exporter_decorator,
@@ -43,8 +44,8 @@ class TwinImporter(ResourceImporter):
 
     config_specs: ConfigSpecs = ConfigSpecs(
         {
-            "file_format": StrParam(
-                allowed_values=["json"], default_value="json", short_description="File format"
+            "file_format": SelectParam(
+                options=["json"], default_value="json", short_description="File format"
             )
         }
     )
@@ -106,8 +107,8 @@ class TwinExporter(ResourceExporter):
             "file_name": StrParam(
                 default_value="twin", short_description="File name (without extension)"
             ),
-            "file_format": StrParam(
-                allowed_values=["json"], default_value="json", short_description="File format."
+            "file_format": SelectParam(
+                options=["json"], default_value="json", short_description="File format."
             ),
         }
     )

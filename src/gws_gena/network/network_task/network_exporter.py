@@ -8,6 +8,7 @@ from gws_core import (
     File,
     FileHelper,
     ResourceExporter,
+    SelectParam,
     StrParam,
     TypingStyle,
     exporter_decorator,
@@ -32,8 +33,8 @@ class NetworkExporter(ResourceExporter):
             "file_name": StrParam(
                 default_value="network", short_description="File name (without extension)"
             ),
-            "file_format": StrParam(
-                allowed_values=ALLOWED_FILE_FORMATS,
+            "file_format": SelectParam(
+                options=ALLOWED_FILE_FORMATS,
                 default_value=DEFAULT_FILE_FORMAT,
                 short_description="File format",
             ),
