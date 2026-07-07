@@ -170,5 +170,12 @@
     "select_resource": "Sélectionner une ressource",
     "create_new_resource": "Créer une nouvelle ressource",
     "ec_table": "Table EC",
-    "entity_id_table": "Table des ID d'entité"
+    "entity_id_table": "Table des ID d'entité",
+    "rename_recipe_label": "Nouveau nom",
+    "cancel": "Annuler",
+    "confirm_delete_recipe": "Êtes-vous sûr de vouloir supprimer la recette **{recipe_name}** ? Cette action est irréversible.",
+    "confirm_delete": "Confirmer",
+    "recipe_name_cannot_be_empty": "Le nom de la recette ne peut pas être vide.",
+    "error_renaming_recipe": "Erreur lors du renommage : {error}",
+    "error_deleting_recipe": "Erreur lors de la suppression : {error}"
 }

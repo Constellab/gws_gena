@@ -18,6 +18,8 @@ from gws_core.tag.entity_tag import EntityTag
 from gws_core.tag.entity_tag_list import EntityTagList
 from gws_core.tag.tag import TagOrigin
 from gws_core.tag.tag_entity_type import TagEntityType
+from gws_core.entity_navigator.entity_navigator_service import EntityNavigatorService
+from gws_core.scenario.scenario_service import ScenarioService
 from gws_gena import Context, Network
 from gws_gena.gena_dashboard._gena_dashboard_core.state import State
 from gws_streamlit_main import StreamlitTaskRunner
@@ -569,3 +571,75 @@ def should_include_row(idx, selected_simulations):
     if len(parts) > 1 and parts[-1].isdigit():
         return int(parts[-1]) in selected_simulations
     return True
+
+
+def rename_gena_recipe(recipe_id: str, new_name: str, gena_state: State) -> None:
+    """Rename a gena recipe: updates TAG_ANALYSIS_NAME tag on all related scenarios
+    and rebuilds the main scenario title (replacing only the first part before " - ").
+
+    :param recipe_id: ID of the network scenario for the recipe
+    :param new_name: New recipe name typed by the user
+    :param gena_state: The current gena State
+    """
+    new_name_parsed = Tag.parse_tag(new_name.strip())
+    recipe_tag = Tag(key=gena_state.TAG_ANALYSIS_NAME, value=new_name_parsed)
+    user_origin = TagOrigin.current_user_origin()
+
+    # Update the scenario title: keep any " - suffix", replace only the first part
+    main_scenario = Scenario.get_by_id_and_check(recipe_id)
+    current_title = main_scenario.title or ""
+    new_title = (
+        f"{new_name_parsed} - {current_title.split(' - ', 1)[1]}"
+        if " - " in current_title
+        else new_name_parsed
+    )
+    ScenarioService.update_scenario_title(recipe_id, new_title)
+
+    # Update the tag on the main scenario
+    main_tags = EntityTagList.find_by_entity(
+        TagEntityType.SCENARIO, recipe_id, default_origin=user_origin
+    )
+    main_tags.replace_tag(recipe_tag)
+
+    # Also update the tag on all related scenarios sharing the same pipeline_id
+    pipeline_id_tags = main_tags.get_tags_by_key(gena_state.TAG_GENA_PIPELINE_ID)
+    pipeline_id = pipeline_id_tags[0].tag_value if pipeline_id_tags else None
+    if pipeline_id:
+        related = (
+            ScenarioSearchBuilder()
+            .add_tag_filter(Tag(key=gena_state.TAG_GENA_PIPELINE_ID, value=pipeline_id))
+            .add_is_archived_filter(False)
+            .search_all()
+        )
+        for scenario in related:
+            if scenario.id == recipe_id:
+                continue
+            EntityTagList.find_by_entity(
+                TagEntityType.SCENARIO, scenario.id, default_origin=user_origin
+            ).replace_tag(recipe_tag)
+
+
+def delete_gena_recipe(recipe_id: str, gena_state: State) -> None:
+    """Delete all scenarios associated with a gena recipe.
+
+    :param recipe_id: ID of the network scenario for the recipe
+    :param gena_state: The current gena State
+    """
+    entity_tag_list = EntityTagList.find_by_entity(TagEntityType.SCENARIO, recipe_id)
+    pipeline_id_tags = entity_tag_list.get_tags_by_key(gena_state.TAG_GENA_PIPELINE_ID)
+    pipeline_id = pipeline_id_tags[0].tag_value if pipeline_id_tags else None
+
+    scenarios_to_delete = (
+        ScenarioSearchBuilder()
+        .add_tag_filter(Tag(key=gena_state.TAG_GENA_PIPELINE_ID, value=pipeline_id))
+        .add_is_archived_filter(False)
+        .search_all()
+        if pipeline_id
+        else [Scenario.get_by_id_and_check(recipe_id)]
+    )
+
+    for scenario in scenarios_to_delete:
+        try:
+            EntityNavigatorService.delete_scenario(scenario.id)
+        except Exception:  # noqa: BLE001
+            pass

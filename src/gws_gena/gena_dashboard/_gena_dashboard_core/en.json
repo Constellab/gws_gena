@@ -170,5 +170,12 @@
     "select_resource": "Select a resource",
     "create_new_resource": "Create new resource",
     "ec_table": "EC Table",
-    "entity_id_table": "Entity ID Table"
+    "entity_id_table": "Entity ID Table",
+    "rename_recipe_label": "New name",
+    "cancel": "Cancel",
+    "confirm_delete_recipe": "Are you sure you want to delete the recipe **{recipe_name}**? This action cannot be undone.",
+    "confirm_delete": "Confirm",
+    "recipe_name_cannot_be_empty": "Recipe name cannot be empty.",
+    "error_renaming_recipe": "Error renaming recipe: {error}",
+    "error_deleting_recipe": "Error deleting recipe: {error}"
 }
